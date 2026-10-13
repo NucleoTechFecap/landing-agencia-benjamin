@@ -1,0 +1,212 @@
+ID,Título,Épico,Prioridade,Escopo,Responsável,GitHub,Situação do GitHub,Backup
+GOV-01,Revisar ata e relatório de projeto,Gestão e requisitos,P0,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+GOV-02,Consolidar mapa de requisitos funcionais e não funcionais,Gestão e requisitos,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+GOV-03,Validar escopo e prioridades do MVP com a Benjamin,Gestão e requisitos,P0,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+GOV-04,"Definir fluxo de comunicação, aprovações e responsáveis",Gestão e requisitos,P0,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+GOV-05,Organizar GitHub Project e catálogo de issues,Gestão e requisitos,P0,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+GOV-06,Verificar convites de colaboradores pendentes no GitHub,Gestão e requisitos,P1,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+GOV-07,Distribuir tecnicamente as frentes e confirmar ownership,Gestão e requisitos,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+GOV-08,Planejar checkpoints de acompanhamento com a Benjamin,Gestão e requisitos,P1,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+GOV-09,Criar matriz de riscos e bloqueios,Gestão e requisitos,P1,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+GOV-10,"Definir convenção de branches, commits e pull requests",Gestão e requisitos,P1,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+GOV-11,Validar requisitos de publicação com a Agência Benjamin,Gestão e requisitos,P0,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+GOV-12,Controlar mudanças de escopo e novas solicitações,Gestão e requisitos,P1,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+GOV-13,Formalizar critérios de aceite da primeira entrega,Gestão e requisitos,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+CON-01,Conferir pacote de identidade visual já recebido,Conteúdo e insumos da agência,P0,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Julia Damásio
+CON-02,Solicitar e receber manifesto definitivo,Conteúdo e insumos da agência,P0,MVP,Agência Benjamin — Melissa Namie / Renan Hida,,Externo (Agência Benjamin),Julia Damásio
+CON-03,Solicitar e receber apresentação institucional e Sobre,Conteúdo e insumos da agência,P0,MVP,Agência Benjamin — Melissa Namie / Renan Hida,,Externo (Agência Benjamin),Julia Damásio
+CON-04,Validar textos finais das seis áreas de atuação,Conteúdo e insumos da agência,P1,MVP,Agência Benjamin — Melissa Namie / Renan Hida,,Externo (Agência Benjamin),Julia Damásio
+CON-05,Receber descrição final dos nove serviços,Conteúdo e insumos da agência,P0,MVP,Agência Benjamin — Melissa Namie / Renan Hida,,Externo (Agência Benjamin),Julia Damásio
+CON-06,Receber materiais do case Aventura de Construir,Conteúdo e insumos da agência,P1,MVP,Agência Benjamin — Melissa Namie / Renan Hida,,Externo (Agência Benjamin),Julia Damásio
+CON-07,Receber materiais do case Meridiano,Conteúdo e insumos da agência,P1,MVP,Agência Benjamin — Melissa Namie / Renan Hida,,Externo (Agência Benjamin),Julia Damásio
+CON-08,Receber materiais do case FECAP,Conteúdo e insumos da agência,P1,MVP,Agência Benjamin — Melissa Namie / Renan Hida,,Externo (Agência Benjamin),Julia Damásio
+CON-09,Definir apresentação e informações do time da Benjamin,Conteúdo e insumos da agência,P2,MVP,Agência Benjamin — Melissa Namie / Renan Hida,,Externo (Agência Benjamin),Julia Damásio
+CON-10,Validar dados de contato e destinatários institucionais,Conteúdo e insumos da agência,P0,MVP,Agência Benjamin — Melissa Namie / Renan Hida,,Externo (Agência Benjamin),Julia Damásio
+CON-11,Definir domínio oficial e encaminhar dados para configuração,Conteúdo e insumos da agência,P0,MVP,Agência Benjamin — Melissa Namie / Renan Hida,,Externo (Agência Benjamin),Julia Damásio
+CON-12,Revisar links oficiais de redes sociais,Conteúdo e insumos da agência,P1,MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Binda
+CON-13,Consolidar conteúdos provisórios sem publicá-los como finais,Conteúdo e insumos da agência,P1,MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Binda
+CON-14,Concluir revisão editorial de todo conteúdo público,Conteúdo e insumos da agência,P0,MVP,Agência Benjamin — Melissa Namie / Renan Hida,,Externo (Agência Benjamin),Julia Damásio
+UX-01,Auditar o brandbook e levantar tokens visuais,UX/UI e identidade visual,P0,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+UX-02,"Analisar Grupo In Press, Edelman, Ogilvy e Ginga",UX/UI e identidade visual,P1,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+UX-03,Definir mapa do site e hierarquia de navegação,UX/UI e identidade visual,P0,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+UX-04,Desenhar wireframes mobile e desktop,UX/UI e identidade visual,P0,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+UX-05,Definir sistema de seções com cores variadas,UX/UI e identidade visual,P0,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+UX-06,"Criar direção visual de mockups, halftone e texturas",UX/UI e identidade visual,P0,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+UX-07,Montar design system com componentes no Figma,UX/UI e identidade visual,P0,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+UX-08,Prototipar Home completa no Figma,UX/UI e identidade visual,P0,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+UX-09,"Prototipar páginas Sobre, Áreas e Serviços",UX/UI e identidade visual,P0,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+UX-10,"Prototipar Portfólio, case interno e formulários",UX/UI e identidade visual,P0,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+UX-11,Prototipar dashboard e fluxo básico do CMS,UX/UI e identidade visual,P1,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+UX-12,Validar protótipos principais com a Agência Benjamin,UX/UI e identidade visual,P0,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+UX-13,Incorporar ajustes de design da validação,UX/UI e identidade visual,P1,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+UX-14,Preparar assets web otimizados e licenciados,UX/UI e identidade visual,P1,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+ARC-01,Definir arquitetura da plataforma e critérios de decisão,"Arquitetura, repositório e ambientes",P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+ARC-02,Definir stack final de desenvolvimento,"Arquitetura, repositório e ambientes",P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+ARC-03,Criar repositório central e estrutura inicial,"Arquitetura, repositório e ambientes",P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+ARC-04,"Configurar lint, format, TypeScript e padrões de código","Arquitetura, repositório e ambientes",P1,MVP,Caio Moraes,caiomorhaes,Atribuível,Vinícius Binda
+ARC-05,Configurar segredos e variáveis de ambiente por estágio,"Arquitetura, repositório e ambientes",P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+ARC-06,"Definir ambientes de desenvolvimento, homologação e produção","Arquitetura, repositório e ambientes",P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+ARC-07,Configurar deploy automático para prévia de PR,"Arquitetura, repositório e ambientes",P1,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Binda
+ARC-08,Configurar pipeline de integração contínua,"Arquitetura, repositório e ambientes",P1,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Binda
+ARC-09,Definir estratégia de logs e tratamento de erros,"Arquitetura, repositório e ambientes",P1,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+ARC-10,Definir armazenamento e otimização de arquivos de mídia,"Arquitetura, repositório e ambientes",P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+ARC-11,Preparar seed de desenvolvimento com dados fictícios,"Arquitetura, repositório e ambientes",P1,MVP,Vinícius Binda,VinnizzZ,Atribuível,Vinícius Nishimura Reis
+ARC-12,Registrar documentação técnica da arquitetura,"Arquitetura, repositório e ambientes",P1,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+TECH-01,"Definir limites de domínios e responsabilidades entre site, CMS, formulários e autenticação",Arquitetura avançada e regras de negócio,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+TECH-02,"Especificar contrato de APIs, erros, paginação e validação para todos os módulos",Arquitetura avançada e regras de negócio,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+TECH-05,"Definir regras de integridade e relacionamento entre áreas, serviços, cases e CTAs",Arquitetura avançada e regras de negócio,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+DB-01,Modelar entidades e relacionamentos do CMS,Banco de dados e APIs,P0,MVP,Vinícius Binda,VinnizzZ,Atribuível,Murilo Ribeiro Vasconcellos
+DB-02,Criar migrations e constraints do banco,Banco de dados e APIs,P0,MVP,Vinícius Binda,VinnizzZ,Atribuível,Murilo Ribeiro Vasconcellos
+DB-03,Implementar acesso à configuração institucional e páginas,Banco de dados e APIs,P0,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Vinícius Binda
+DB-04,Implementar API pública de áreas e serviços,Banco de dados e APIs,P0,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Vinícius Binda
+DB-05,"Implementar API pública de cases, categorias e detalhe",Banco de dados e APIs,P0,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Vinícius Binda
+DB-06,Implementar criação e consulta segura de leads,Banco de dados e APIs,P0,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Murilo Ribeiro Vasconcellos
+DB-07,Implementar criação e consulta segura de feedbacks,Banco de dados e APIs,P0,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Murilo Ribeiro Vasconcellos
+DB-08,Definir e implementar tratamento de slugs e URLs,Banco de dados e APIs,P1,MVP,Vinícius Binda,VinnizzZ,Atribuível,Murilo Ribeiro Vasconcellos
+DB-09,Implementar validação de schemas na borda de API,Banco de dados e APIs,P0,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Murilo Ribeiro Vasconcellos
+DB-10,Definir backup e recuperação do banco e uploads,Banco de dados e APIs,P1,MVP,Vinícius Binda,VinnizzZ,Atribuível,Murilo Ribeiro Vasconcellos
+FORM-01,Validar campos dos formulários com a Benjamin,"Contato, prospecção e feedback",P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+FORM-02,Construir página institucional de contato,"Contato, prospecção e feedback",P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Vinícius Nishimura Reis
+FORM-03,Implementar formulário de novos clientes e projetos,"Contato, prospecção e feedback",P0,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+FORM-04,Implementar formulário institucional de contato,"Contato, prospecção e feedback",P0,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+FORM-05,Implementar formulário de feedback,"Contato, prospecção e feedback",P0,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+FORM-06,Conectar mensagens ao destinatário institucional definido,"Contato, prospecção e feedback",P0,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+FORM-07,Criar proteções antispam e limites de envio,"Contato, prospecção e feedback",P0,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+FORM-08,"Implementar estados de sucesso, erro e reenvio seguro","Contato, prospecção e feedback",P1,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+FORM-09,Criar visualização administrativa de leads e feedbacks,"Contato, prospecção e feedback",P1,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+FORM-10,Realizar teste completo de entrega de contatos,"Contato, prospecção e feedback",P0,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+ADM-01,Definir perfis e permissões administrativas,Painel administrativo e CMS,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Caio Moraes
+ADM-02,Implementar autenticação para equipe autorizada,Painel administrativo e CMS,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Caio Moraes
+ADM-03,"Proteger rotas, recursos e operações de escrita",Painel administrativo e CMS,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Caio Moraes
+ADM-04,"Construir shell administrativo, navegação e dashboard",Painel administrativo e CMS,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Vinícius Binda
+ADM-05,Implementar editor de páginas e blocos institucionais,Painel administrativo e CMS,P0,MVP,Julia Damásio,Juliadamassio,Atribuível,Caio Moraes
+ADM-06,Implementar CRUD de serviços,Painel administrativo e CMS,P0,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+ADM-07,Implementar CRUD de áreas de atuação,Painel administrativo e CMS,P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+ADM-08,Implementar CRUD de cases e categorias,Painel administrativo e CMS,P0,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+ADM-09,Implementar gerenciador de biblioteca de mídia,Painel administrativo e CMS,P0,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+ADM-10,"Implementar edição de contato, links e redes sociais",Painel administrativo e CMS,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Vinícius Binda
+ADM-11,Implementar editor de CTAs e destaques da Home,Painel administrativo e CMS,P1,MVP,Caio Moraes,caiomorhaes,Atribuível,Vinícius Binda
+ADM-12,Definir fluxo mínimo de rascunho e publicação,Painel administrativo e CMS,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Caio Moraes
+ADM-13,"Implementar estados rascunho, publicado e arquivado",Painel administrativo e CMS,P0,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+ADM-14,Implementar visualização prévia de conteúdo antes de publicar,Painel administrativo e CMS,P2,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+ADM-15,"Criar validações administrativas para links, mídia e campos",Painel administrativo e CMS,P0,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+ADM-16,Revisar responsividade e usabilidade completa do admin,Painel administrativo e CMS,P1,MVP,Caio Moraes,caiomorhaes,Atribuível,Vinícius Binda
+ADM-17,Avaliar histórico de versões sem bloquear o MVP,Painel administrativo e CMS,P2,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Caio Moraes
+ADM-18,Criar tela de gerenciamento de conteúdos publicados,Painel administrativo e CMS,P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+SEG-01,Definir tratamento de dados e finalidade de cada formulário,"Segurança, LGPD e acessibilidade",P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+SEG-02,Validar aviso/política de privacidade com responsáveis institucionais,"Segurança, LGPD e acessibilidade",P0,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+SEG-03,Implementar aviso e consentimento quando aplicável,"Segurança, LGPD e acessibilidade",P0,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+SEG-04,Testar autorização de leitura de dados pessoais no admin,"Segurança, LGPD e acessibilidade",P0,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+SEG-05,Revisar segurança de uploads e sanitização de entradas,"Segurança, LGPD e acessibilidade",P0,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+SEG-06,"Aplicar políticas de headers, TLS e proteção de sessão","Segurança, LGPD e acessibilidade",P0,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+SEG-07,"Revisar acessibilidade de menus, formulários e contraste","Segurança, LGPD e acessibilidade",P0,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+SEG-08,"Otimizar imagens, carga inicial e métricas básicas de performance","Segurança, LGPD e acessibilidade",P1,MVP,Caio Moraes,caiomorhaes,Atribuível,Vinícius Nishimura Reis
+SEG-09,"Configurar metadados, SEO básico, sitemap e compartilhamento","Segurança, LGPD e acessibilidade",P1,MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Nishimura Reis
+SEG-10,Verificar disponibilidade e conteúdo da página de privacidade,"Segurança, LGPD e acessibilidade",P0,MVP,Agência Benjamin — Melissa Namie / Renan Hida,,Externo (Agência Benjamin),Vinícius Nishimura Reis
+TECH-03,Definir matriz RBAC granular por recurso e operação administrativa,Arquitetura avançada e regras de negócio,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+TECH-04,Especificar máquina de estados e invariantes de publicação do CMS,Arquitetura avançada e regras de negócio,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+TECH-06,"Desenhar regras de captação e roteamento de leads, contato e feedback",Arquitetura avançada e regras de negócio,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+TECH-07,"Definir idempotência, reenvio seguro e tratamento de falhas dos formulários",Arquitetura avançada e regras de negócio,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+TECH-08,"Definir modelo de autorização, retenção e ciclo de vida de dados pessoais",Arquitetura avançada e regras de negócio,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+TECH-09,"Definir cache, invalidação e consistência de dados após publicação no CMS",Arquitetura avançada e regras de negócio,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+TECH-10,Definir trilha de auditoria e limites de operações críticas do CMS,Arquitetura avançada e regras de negócio,P1,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+DBX-01,"Criar dicionário de dados, cardinalidades e convenções de integridade",Banco de dados: modelagem e governança,P0,MVP,Vinícius Binda,VinnizzZ,Atribuível,Murilo Ribeiro Vasconcellos
+DBX-02,"Versionar migrations reexecutáveis, rollback e seeds controlados",Banco de dados: modelagem e governança,P0,MVP,Vinícius Binda,VinnizzZ,Atribuível,Murilo Ribeiro Vasconcellos
+DBX-03,"Otimizar índices e consultas de serviços, cases e filtros de portfólio",Banco de dados: modelagem e governança,P0,MVP,Vinícius Binda,VinnizzZ,Atribuível,Murilo Ribeiro Vasconcellos
+DBX-04,Implementar constraints de estados editoriais e integridade de publicação,Banco de dados: modelagem e governança,P0,MVP,Vinícius Binda,VinnizzZ,Atribuível,Murilo Ribeiro Vasconcellos
+DBX-05,"Planejar execução segura de retenção, recuperação e descarte de dados sensíveis",Banco de dados: modelagem e governança,P1,MVP,Vinícius Binda,VinnizzZ,Atribuível,Murilo Ribeiro Vasconcellos
+DBX-06,Verificar isolamento de leads/feedbacks e acesso mínimo ao banco,Banco de dados: modelagem e governança,P0,MVP,Vinícius Binda,VinnizzZ,Atribuível,Murilo Ribeiro Vasconcellos
+LAY-01,Implementar estrutura de rotas e layout público,Estrutura compartilhada do site,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Julia Damásio
+LAY-02,"Implementar header, menu e navegação mobile",Estrutura compartilhada do site,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Julia Damásio
+LAY-03,Implementar footer com contatos e redes sociais,Estrutura compartilhada do site,P0,MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Binda
+LAY-04,Implementar tokens de tema e cores por seção,Estrutura compartilhada do site,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Julia Damásio
+LAY-05,Implementar biblioteca de componentes compartilhados,Estrutura compartilhada do site,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Julia Damásio
+LAY-06,Aplicar fontes oficiais e assets gráficos,Estrutura compartilhada do site,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Julia Damásio
+LAY-07,"Criar estados globais de carregamento, vazio e erro",Estrutura compartilhada do site,P1,MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Binda
+LAY-08,Implementar transições e microinterações discretas,Estrutura compartilhada do site,P2,MVP,Caio Moraes,caiomorhaes,Atribuível,Julia Damásio
+LAY-09,Implementar tratamento de página não encontrada,Estrutura compartilhada do site,P1,MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Binda
+HOME-01,Construir hero e manifesto institucional,Home e manifestação de marca,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Julia Damásio
+HOME-02,Construir bloco Quem é a Benjamin,Home e manifestação de marca,P0,MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Binda
+HOME-03,Construir seção de serviços em destaque,Home e manifestação de marca,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Julia Damásio
+HOME-04,Construir seção de cases em destaque,Home e manifestação de marca,P0,MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Binda
+HOME-05,"Implementar CTAs para Serviços, Cases, Sobre e Contato",Home e manifestação de marca,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Julia Damásio
+HOME-06,Aplicar mockups e halftone na composição da Home,Home e manifestação de marca,P1,MVP,Caio Moraes,caiomorhaes,Atribuível,Julia Damásio
+HOME-07,Integrar Home aos conteúdos dinâmicos do CMS,Home e manifestação de marca,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Julia Damásio
+SOB-01,Construir página Sobre a Benjamin,Sobre e áreas de atuação,P0,MVP,Julia Damásio,Juliadamassio,Atribuível,Caio Moraes
+SOB-02,Criar seção de proposta de valor e modelo de atuação,Sobre e áreas de atuação,P1,MVP,Julia Damásio,Juliadamassio,Atribuível,Caio Moraes
+SOB-03,Construir seção Nosso time como bloco opcional,Sobre e áreas de atuação,P2,MVP,Julia Damásio,Juliadamassio,Atribuível,Caio Moraes
+SOB-04,Construir listagem das seis áreas de atuação,Sobre e áreas de atuação,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Vinícius Binda
+SOB-05,Inserir área Eventos e Parcerias,Sobre e áreas de atuação,P1,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+SOB-06,Inserir área Social Media,Sobre e áreas de atuação,P1,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+SOB-07,Inserir área Comunicação Interna,Sobre e áreas de atuação,P1,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+SOB-08,Inserir área Copywriting,Sobre e áreas de atuação,P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+SOB-09,Inserir área Criação,Sobre e áreas de atuação,P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+SOB-10,Inserir área Assessoria de Imprensa,Sobre e áreas de atuação,P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+SERV-01,Construir página de listagem e apresentação de serviços,Serviços,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Vinícius Binda
+SERV-02,Construir template de detalhe e CTA de serviço,Serviços,P1,MVP,Caio Moraes,caiomorhaes,Atribuível,Vinícius Binda
+SERV-03,Cadastrar serviço Estratégia Digital,Serviços,P1,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+SERV-04,Cadastrar serviço Social Media,Serviços,P1,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+SERV-05,Cadastrar serviço Eventos,Serviços,P1,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Caio Moraes
+SERV-06,Cadastrar serviço Produção de Conteúdo,Serviços,P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+SERV-07,Cadastrar serviço Copywriting,Serviços,P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+SERV-08,Cadastrar serviço Design e Identidade Visual,Serviços,P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+SERV-09,Cadastrar serviço Audiovisual,Serviços,P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+SERV-10,Cadastrar serviço Assessoria de Imprensa / PR,Serviços,P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+SERV-11,Cadastrar serviço Comunicação Interna,Serviços,P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Caio Moraes
+SERV-12,Integrar serviços a cases e formulário de prospecção,Serviços,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Vinícius Binda
+CASE-01,Construir página de portfólio e grade responsiva,"Cases, portfólio e conteúdos",P0,MVP,Julia Damásio,Juliadamassio,Atribuível,Murilo Ribeiro Vasconcellos
+CASE-02,Implementar template de detalhe do case,"Cases, portfólio e conteúdos",P0,MVP,Julia Damásio,Juliadamassio,Atribuível,Murilo Ribeiro Vasconcellos
+CASE-03,"Implementar filtros por cliente, categoria ou serviço","Cases, portfólio e conteúdos",P1,MVP,Caio Moraes,caiomorhaes,Atribuível,Murilo Ribeiro Vasconcellos
+CASE-04,Criar galeria de imagens e peças do case,"Cases, portfólio e conteúdos",P1,MVP,Caio Moraes,caiomorhaes,Atribuível,Murilo Ribeiro Vasconcellos
+CASE-05,Preparar case Aventura de Construir,"Cases, portfólio e conteúdos",P1,MVP,Julia Damásio,Juliadamassio,Atribuível,Murilo Ribeiro Vasconcellos
+CASE-06,Preparar case Meridiano,"Cases, portfólio e conteúdos",P1,MVP,Julia Damásio,Juliadamassio,Atribuível,Murilo Ribeiro Vasconcellos
+CASE-07,Preparar case FECAP,"Cases, portfólio e conteúdos",P1,MVP,Julia Damásio,Juliadamassio,Atribuível,Murilo Ribeiro Vasconcellos
+CASE-08,Criar categoria Copywriting para cases e conteúdos,"Cases, portfólio e conteúdos",P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Vinícius Binda
+CASE-09,Criar categoria Social Media & Criação,"Cases, portfólio e conteúdos",P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Vinícius Binda
+CASE-10,Criar categoria Assessoria de Imprensa,"Cases, portfólio e conteúdos",P1,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Vinícius Binda
+CASE-11,Definir campos e status de publicação do case no CMS,"Cases, portfólio e conteúdos",P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Murilo Ribeiro Vasconcellos
+INT-01,Integrar design system aprovado às páginas públicas,Integração e publicação de conteúdos,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Vinícius Nishimura Reis
+INT-02,Conectar serviços e cases à base publicada,Integração e publicação de conteúdos,P0,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Vinícius Nishimura Reis
+INT-03,Conectar edição da Home e informações institucionais ao front,Integração e publicação de conteúdos,P0,MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Nishimura Reis
+INT-04,Cadastrar serviços oficiais e revisar consistência dos nove itens,Integração e publicação de conteúdos,P0,MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Nishimura Reis
+INT-05,Cadastrar cases liberados pela Benjamin no ambiente final,Integração e publicação de conteúdos,P1,MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Nishimura Reis
+INT-06,Revisar links externos e CTAs ponta a ponta,Integração e publicação de conteúdos,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Vinícius Nishimura Reis
+INT-07,Integrar painel de leads com entrega operacional,Integração e publicação de conteúdos,P0,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+INT-08,Preparar cadastro inicial de administrador da Benjamin,Integração e publicação de conteúdos,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+TECH-11,Definir contrato de integração ponta a ponta e estratégia de compatibilidade entre módulos,Arquitetura avançada e regras de negócio,P1,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+TECH-12,Revisar jornadas completas e invariantes com testes de aceitação ponta a ponta,Arquitetura avançada e regras de negócio,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+TECH-13,"Revisar e aprovar PRs críticos de integrações, permissões e publicação",Arquitetura avançada e regras de negócio,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+TECH-14,Conduzir decisão técnica de go/no-go do MVP antes da publicação,Arquitetura avançada e regras de negócio,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+QA-01,Escrever matriz de testes alinhada aos critérios de aceite,Testes e homologação,P0,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Julia Damásio
+QA-02,Testar navegação pública e rotas fundamentais,Testes e homologação,P0,MVP,Caio Moraes,caiomorhaes,Atribuível,Julia Damásio
+QA-03,"Testar responsividade em mobile, tablet e desktop",Testes e homologação,P0,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Julia Damásio
+QA-04,Testar CRUD e estados de publicação do CMS,Testes e homologação,P0,MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Julia Damásio
+QA-05,"Testar formulários, validações e notificações",Testes e homologação,P0,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Julia Damásio
+QA-06,Executar testes de acesso indevido e proteção de dados,Testes e homologação,P0,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Julia Damásio
+QA-07,"Validar SEO, acessibilidade e desempenho essenciais",Testes e homologação,P1,MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Binda
+QA-08,Preparar ambiente e checklist de homologação da Benjamin,Testes e homologação,P0,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Julia Damásio
+QA-09,Conduzir homologação conjunta com Melissa e Renan,Testes e homologação,P0,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Julia Damásio
+QA-10,Corrigir bugs bloqueantes encontrados na homologação,Testes e homologação,P0,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Julia Damásio
+QA-11,Reexecutar smoke test e checklist pós-correções,Testes e homologação,P0,MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Julia Damásio
+QA-12,Revisar conteúdo e identidade visual antes da publicação,Testes e homologação,P0,MVP,Vinícius Cardoso de Lima,,Aguardando usuário GitHub / convite (GOV-06),Julia Damásio
+GO-01,Definir checklist de release e plano de rollback,Deploy e entrega,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+GO-02,Provisionar ambiente de produção e recursos necessários,Deploy e entrega,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+GO-03,"Configurar DNS, domínio oficial e certificado HTTPS",Deploy e entrega,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+GO-04,Executar migrations e seed autorizado em produção,Deploy e entrega,P0,MVP,Vinícius Binda,VinnizzZ,Atribuível,Vinícius Nishimura Reis
+GO-05,Validar formulários e links no domínio de produção,Deploy e entrega,P0,MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Binda
+GO-06,Publicar primeira versão da plataforma,Deploy e entrega,P0,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+GO-07,Realizar verificação final e aceite institucional,Deploy e entrega,P0,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Binda
+GO-08,Entregar documentação de acesso e uso do CMS,Deploy e entrega,P1,MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Binda
+GO-09,"Entregar documentação técnica, manutenção e handoff",Deploy e entrega,P1,MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+GO-10,Atualizar vitrine pública do projeto no NúcleoTech,Deploy e entrega,P2,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Binda
+GO-11,"Planejar suporte, correções e evolução após lançamento",Deploy e entrega,P1,MVP,Flávio Santos,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Binda
+FUT-01,Evoluir módulo de leads para CRM,Evoluções pós-MVP,P3,Pós-MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+FUT-02,Implementar newsletter com gestão de assinantes,Evoluções pós-MVP,P3,Pós-MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+FUT-03,Criar automações de comunicação e campanhas,Evoluções pós-MVP,P3,Pós-MVP,Gustavo Duarte Güering,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+FUT-04,Criar histórico detalhado e restauração de versões do CMS,Evoluções pós-MVP,P3,Pós-MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Vinícius Nishimura Reis
+FUT-05,Adicionar workflow editorial de revisão e aprovação,Evoluções pós-MVP,P3,Pós-MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Nishimura Reis
+FUT-06,Construir analytics avançado para desempenho do site,Evoluções pós-MVP,P3,Pós-MVP,Rafael Morais Rocha,,Aguardando usuário GitHub / convite (GOV-06),Vinícius Nishimura Reis
+FUT-07,Planejar integrações externas adicionais,Evoluções pós-MVP,P3,Pós-MVP,Vinícius Nishimura Reis,Vinishireis,Atribuível,Vinícius Binda
+FUT-08,Criar módulos internos para operação da agência,Evoluções pós-MVP,P3,Pós-MVP,Murilo Ribeiro Vasconcellos,murilovasconcellos,Atribuível,Vinícius Nishimura Reis
+FUT-09,"Aprimorar filtros, busca e relacionamentos de conteúdo",Evoluções pós-MVP,P3,Pós-MVP,Julia Damásio,Juliadamassio,Atribuível,Vinícius Nishimura Reis
+FUT-10,"Planejar novas seções, conteúdos e cases futuros",Evoluções pós-MVP,P3,Pós-MVP,Agência Benjamin — Melissa Namie / Renan Hida,,Externo (Agência Benjamin),Vinícius Nishimura Reis
