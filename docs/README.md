@@ -26,3 +26,4 @@
 | Documento | Issue |
 | --------- | ----- |
 | [Fluxo mínimo de rascunho e publicação](negocio/fluxo-de-publicacao.md) | ADM-12 |
+| [Integridade e relacionamento: áreas, serviços, cases e CTAs](negocio/integridade-de-conteudo.md) | TECH-05 |
