@@ -28,3 +28,4 @@
 | --------- | ----- |
 | [Fluxo mínimo de rascunho e publicação](negocio/fluxo-de-publicacao.md) | ADM-12 |
 | [Integridade e relacionamento: áreas, serviços, cases e CTAs](negocio/integridade-de-conteudo.md) | TECH-05 |
+| [Máquina de estados e invariantes de publicação](negocio/maquina-de-estados-publicacao.md) | TECH-04 |
