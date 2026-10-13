@@ -6,6 +6,7 @@
 | [Índice de ADRs](adr/README.md) | — |
 | [ADR-0001 — Arquitetura da plataforma](adr/0001-arquitetura-da-plataforma.md) | ARC-01 |
 | [ADR-0002 — Stack de desenvolvimento](adr/0002-stack-de-desenvolvimento.md) | ARC-02 |
+| [ADR-0003 — Limites de domínios](adr/0003-limites-de-dominio.md) | TECH-01 |
 
 ## Ambientes e operação
 
