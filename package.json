@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --incremental false",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check:headers": "node scripts/file-headers.mjs --check",
+    "headers:write": "node scripts/file-headers.mjs --write",
+    "verify": "npm run check:headers && npm run typecheck && npm run lint && npm run test && npm run build"
   },
   "dependencies": {
     "next": "16.4.0",
@@ -15,12 +21,17 @@
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
-    "@types/node": "^20",
+    "@types/node": "^22.20.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.4"
+  },
+  "description": "Plataforma institucional da Agência Benjamin (FECAP) desenvolvida pelo NúcleoTech.",
+  "engines": {
+    "node": ">=20.9.0"
   }
 }
