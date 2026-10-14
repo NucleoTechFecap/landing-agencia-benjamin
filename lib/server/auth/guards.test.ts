@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-03).
+ 13/10/2026 Vinícius Nishimura Reis  Teste do registro de acesso negado (TECH-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,6 +27,8 @@ import type { SessionUser } from "./session";
 
 let currentUser: SessionUser | null = null;
 vi.mock("./session", () => ({ getSessionUser: async () => currentUser }));
+const { recordAuditEvent } = vi.hoisted(() => ({ recordAuditEvent: vi.fn(async () => {}) }));
+vi.mock("../audit", () => ({ recordAuditEvent }));
 vi.mock("next/navigation", () => ({
   redirect: (url: string) => {
     throw new Error(`REDIRECT:${url}`);
@@ -53,6 +56,15 @@ describe("requirePermission (Server Actions / Route Handlers)", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     currentUser = user("editor");
     await expect(requirePermission("case", "delete")).rejects.toMatchObject({ code: "FORBIDDEN", status: 403 });
+  });
+
+  it("registra a negação na trilha de auditoria (TECH-10)", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    currentUser = user("viewer");
+    await expect(requirePermission("case", "publish")).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(recordAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ event: "access.denied", outcome: "denied", metadata: { resource: "case", action: "publish" } }),
+    );
   });
 
   it("N08 — super_admin não lê leads", async () => {

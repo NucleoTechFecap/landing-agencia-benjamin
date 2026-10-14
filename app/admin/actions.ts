@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
+ 13/10/2026 Vinícius Nishimura Reis  Auditoria de login, logout e troca de senha (TECH-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,6 +27,7 @@
 import { redirect } from "next/navigation";
 import { siteUrl } from "@/lib/config/public-env";
 import { LOGIN_PATH, passwordProblems, safeAdminRedirect, type AuthFormState } from "@/lib/domain/auth/redirect";
+import { recordAuditEvent } from "@/lib/server/audit";
 import { getSessionUser } from "@/lib/server/auth/session";
 import { logger } from "@/lib/server/logger";
 import { createSessionClient } from "@/lib/server/supabase/server";
@@ -59,6 +61,7 @@ export async function signIn(_prev: AuthFormState, formData: FormData): Promise<
   }
 
   logger.info("auth.login.succeeded", { userId: user.id, role: user.role });
+  await recordAuditEvent({ event: "auth.login.succeeded", resourceId: user.id });
   redirect(safeAdminRedirect(formData.get("next")));
 }
 
@@ -67,6 +70,8 @@ export async function signOut(): Promise<void> {
   try {
     const supabase = await createSessionClient();
     const user = await getSessionUser();
+    // Registrado antes do signOut: depois dele não há sessão para identificar o ator.
+    if (user) await recordAuditEvent({ event: "auth.logout", resourceId: user.id });
     await supabase.auth.signOut();
     logger.info("auth.logout", { userId: user?.id });
   } catch (error) {
@@ -109,5 +114,6 @@ export async function updatePassword(_prev: AuthFormState, formData: FormData): 
     return { error: "Não foi possível atualizar a senha. Tente uma senha diferente." };
   }
   logger.info("auth.password_update.succeeded", { userId: user.id });
+  await recordAuditEvent({ event: "auth.password.changed", resourceId: user.id });
   redirect("/admin");
 }
