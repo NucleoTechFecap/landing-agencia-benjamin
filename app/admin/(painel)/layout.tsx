@@ -18,12 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
+ 13/10/2026 Vinícius Nishimura Reis  Bloqueio de contas pendentes (ADM-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { redirect } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import { ROLE_LABELS } from "@/lib/domain/auth/rbac";
+import { PENDING_ACCESS_PATH } from "@/lib/server/auth/guards";
 import { getSessionUser } from "@/lib/server/auth/session";
 import { signOut } from "../actions";
 
@@ -41,7 +43,9 @@ export default function PanelLayout({ children }: LayoutProps<"/admin">) {
 
 async function PanelGate({ children }: { children: ReactNode }) {
   const user = await getSessionUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/admin/login?erro=sessao");
+  // Conta sem papel liberado nunca vê a casca do painel (RBAC N03).
+  if (user.role === "pending") redirect(PENDING_ACCESS_PATH);
 
   return (
     <div className="min-h-dvh">
