@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -27,11 +28,15 @@ import { notFound } from "next/navigation";
 import { CaseCard } from "@/components/cards/case-card";
 import { ClosingCta } from "@/components/sections/closing-cta";
 import { PageHero } from "@/components/sections/page-hero";
+import { JsonLd } from "@/components/seo/json-ld";
 import { BrandIcon } from "@/components/ui/brand-icon";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Section } from "@/components/ui/section";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { getServiceDetail, listPublishedSlugs, listServices } from "@/lib/server/content/repository";
+import { siteUrl } from "@/lib/config/public-env";
+import { serviceSchema } from "@/lib/domain/seo/structured-data";
+import { getServiceDetail, getSiteSettings, listPublishedSlugs, listServices } from "@/lib/server/content/repository";
+import { buildMetadata } from "@/lib/server/seo";
 
 /** Prerenderiza os serviços publicados; novos slugs entram por ISR com App Shell. */
 export async function generateStaticParams() {
@@ -43,7 +48,16 @@ export async function generateMetadata({ params }: PageProps<"/servicos/[slug]">
   const { slug } = await params;
   const detail = await getServiceDetail(slug);
   if (!detail) return { title: "Serviço não encontrado", robots: { index: false } };
-  return { title: detail.service.name, description: detail.service.summary };
+  const { service, areas } = detail;
+  return buildMetadata(
+    {
+      title: `${service.name} — serviço de comunicação`,
+      description: service.summary,
+      path: `/servicos/${service.slug}`,
+      keywords: [service.name, ...areas.map((area) => area.name), ...service.examples],
+    },
+    await getSiteSettings(),
+  );
 }
 
 /** Detalhe do serviço com entregas, áreas, cases relacionados e CTA de contato (SERV-02, SERV-12). */
@@ -58,8 +72,10 @@ export default async function ServicePage({ params }: PageProps<"/servicos/[slug
 
   return (
     <>
+      <JsonLd data={serviceSchema(service, areas, siteUrl)} />
       <PageHero
         eyebrow="Serviço"
+        path={`/servicos/${service.slug}`}
         title={service.name}
         description={<p>{service.summary}</p>}
         breadcrumbs={[

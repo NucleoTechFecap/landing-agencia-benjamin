@@ -19,9 +19,11 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-03).
  13/10/2026 Vinícius Nishimura Reis  Home completa com seções e conteúdo do repositório (estrutura da landing).
+ 13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
+import type { Metadata } from "next";
 import { AreaCard } from "@/components/cards/area-card";
 import { CaseCard } from "@/components/cards/case-card";
 import { ServiceCard } from "@/components/cards/service-card";
@@ -39,6 +41,21 @@ import {
   listFeaturedCases,
   listServices,
 } from "@/lib/server/content/repository";
+import { DEFAULT_TITLE, buildMetadata } from "@/lib/server/seo";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  return buildMetadata(
+    {
+      title: DEFAULT_TITLE,
+      absoluteTitle: true,
+      description: settings.description,
+      path: "/",
+      keywords: ["agência experimental de comunicação", "Agência Benjamin FECAP"],
+    },
+    settings,
+  );
+}
 
 const AREA_COLORS: BrandIconColor[] = ["verde", "laranja", "azul", "rosa", "verde-claro", "lima"];
 

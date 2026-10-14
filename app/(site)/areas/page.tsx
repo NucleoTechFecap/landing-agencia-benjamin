@@ -18,10 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/server/seo";
 import Link from "next/link";
 import { ClosingCta } from "@/components/sections/closing-cta";
 import { PageHero } from "@/components/sections/page-hero";
@@ -29,13 +31,19 @@ import { ProvisionalBadge } from "@/components/ui/badge";
 import { BrandIcon, type BrandIconColor } from "@/components/ui/brand-icon";
 import { Container } from "@/components/ui/container";
 import { SECTION_TONES, type SectionTone } from "@/components/ui/section";
-import { listAreas, listServices } from "@/lib/server/content/repository";
+import { getSiteSettings, listAreas, listServices } from "@/lib/server/content/repository";
 
-export const metadata: Metadata = {
-  title: "Áreas de atuação",
-  description:
-    "Eventos e Parcerias, Social Media, Comunicação Interna, Copywriting, Criação e Assessoria de Imprensa: as seis áreas da Agência Benjamin.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata(
+    {
+      title: "Áreas de atuação",
+      description: "Eventos e Parcerias, Social Media, Comunicação Interna, Copywriting, Criação e Assessoria de Imprensa: as seis áreas da Agência Benjamin.",
+      path: "/areas",
+      keywords: ["áreas de atuação", "social media", "copywriting", "criação", "assessoria de imprensa", "eventos e parcerias", "comunicação interna"],
+    },
+    await getSiteSettings(),
+  );
+}
 
 const TONES: { tone: SectionTone; icon: BrandIconColor }[] = [
   { tone: "nyanza", icon: "verde" },
@@ -56,6 +64,7 @@ export default async function AreasPage() {
         eyebrow="Áreas de atuação"
         title="Seis frentes de comunicação, um só time"
         description={<p>Conheça o que cada área da Benjamin faz e quais serviços nascem dela.</p>}
+        path="/areas"
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Áreas de atuação" }]}
         icon="estrela"
       >

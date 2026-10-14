@@ -18,10 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 13/10/2026 Vinícius Nishimura Reis  BreadcrumbList em JSON-LD (SEO da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { ReactNode } from "react";
+import { siteUrl } from "@/lib/config/public-env";
+import { breadcrumbSchema } from "@/lib/domain/seo/structured-data";
+import { JsonLd } from "../seo/json-ld";
 import { ProvisionalBadge } from "../ui/badge";
 import { BrandIcon, type BrandIconColor } from "../ui/brand-icon";
 import { Breadcrumbs, type Crumb } from "../ui/breadcrumbs";
@@ -37,6 +41,7 @@ export function PageHero({
   icon,
   iconColor = "lima",
   provisional = false,
+  path,
   children,
 }: {
   eyebrow?: string;
@@ -47,10 +52,16 @@ export function PageHero({
   icon?: string;
   iconColor?: BrandIconColor;
   provisional?: boolean;
+  /** Caminho da página: gera o BreadcrumbList em JSON-LD. */
+  path?: string;
   children?: ReactNode;
 }) {
+  const crumbsForSchema = path
+    ? breadcrumbs.map((crumb, index) => ({ name: crumb.label, path: crumb.href ?? (index === breadcrumbs.length - 1 ? path : "/") }))
+    : [];
   return (
     <Section tone={tone} halftone className="py-12 sm:py-16" labelledBy="pagina-titulo">
+      {path ? <JsonLd data={breadcrumbSchema(crumbsForSchema, siteUrl)} /> : null}
       <Breadcrumbs items={breadcrumbs} />
       <div className="mt-8 flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
         <div className="max-w-3xl">
