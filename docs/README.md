@@ -54,6 +54,7 @@
 | Documento | Issue |
 | --------- | ----- |
 | [Contrato de APIs, erros, paginação e validação](api/contratos.md) | TECH-02 |
+| [Contrato de integração e compatibilidade entre módulos](api/integracao-e-compatibilidade.md) | TECH-11 |
 
 ## SEO e descoberta
 
