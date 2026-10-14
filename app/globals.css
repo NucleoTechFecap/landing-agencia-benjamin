@@ -3,7 +3,7 @@
  Sistema      : Agência Benjamin Landing Page
  Módulo       : App
  Arquivo      : globals.css
- Descrição    : Estilos globais e integração do Tailwind CSS v4.
+ Descrição    : Tokens do brandbook (cores, tipografia, sombras) e estilos globais do site.
 
  Desenvolvedor: Vinícius Nishimura Reis
 
@@ -18,31 +18,100 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-03).
+ 13/10/2026 Vinícius Nishimura Reis  Tokens do brandbook e estilos base (estrutura da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Paleta oficial do Guia de Marca 2025 da Agência Benjamin.
+ * Primárias: Verde Paquistanês, Verde Lima, Verde Claro, Nyanza.
+ * Secundárias: Laranja Abóbora, Azul Cobalto, Rosa Lavanda. Neutros: Creme, Preto Noite, Grafite.
+ * Hex das secundárias/neutros amostrados do brandbook — confirmar em UX-01.
+ */
+@theme {
+  --color-benja-verde: #004a1b;
+  --color-benja-lima: #24d139;
+  --color-benja-claro: #a0ef91;
+  --color-benja-nyanza: #f1fcd0;
+  --color-benja-laranja: #f1742e;
+  --color-benja-azul: #1a44a6;
+  --color-benja-rosa: #ffb4e2;
+  --color-benja-creme: #edf1cc;
+  --color-benja-noite: #161313;
+  --color-benja-grafite: #231f20;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-poppins);
-}
+  /* Tipografia: Poppins (texto e títulos — hierarquia do brandbook). Aptly, usada no
+     logotipo, depende de licença (LAY-06) e não é carregada no site. */
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Sombra "sticker" com deslocamento duro, como no logotipo. */
+  --shadow-sticker: 4px 4px 0 0 var(--color-benja-noite);
+  --shadow-sticker-lg: 8px 8px 0 0 var(--color-benja-noite);
+
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(var(--tw-rotate, 0deg));
+    }
+    50% {
+      transform: translateY(-10px) rotate(var(--tw-rotate, 0deg));
+    }
   }
+}
+
+:root {
+  --background: var(--color-benja-nyanza);
+  --foreground: var(--color-benja-noite);
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-poppins), system-ui, sans-serif;
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-benja-lima);
+  color: var(--color-benja-verde);
+}
+
+/* Foco sempre visível para navegação por teclado (RNF-03). */
+:focus-visible {
+  outline: 3px solid var(--color-benja-azul);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Textura halftone da identidade visual, aplicada como camada decorativa. */
+@utility halftone {
+  background-image: radial-gradient(color-mix(in srgb, currentColor 18%, transparent) 1.2px, transparent 1.6px);
+  background-size: 12px 12px;
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
