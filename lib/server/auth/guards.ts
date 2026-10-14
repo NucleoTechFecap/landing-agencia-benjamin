@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-03).
+ 13/10/2026 Vinícius Nishimura Reis  Registro de acesso negado na auditoria (TECH-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -25,6 +26,7 @@ import "server-only";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { LOGIN_PATH } from "@/lib/domain/auth/redirect";
 import { can, type Action, type Resource } from "@/lib/domain/auth/rbac";
+import { recordAuditEvent } from "../audit";
 import { AppError, newRequestId, toPublicError, type PublicError } from "../errors";
 import { logger } from "../logger";
 import { getSessionUser, type SessionUser } from "./session";
@@ -47,6 +49,7 @@ export async function requirePermission(resource: Resource, action: Action): Pro
   const user = await requireUser();
   if (!can(user.role, resource, action)) {
     logger.warn("auth.permission.denied", { userId: user.id, role: user.role, resource, action });
+    await recordAuditEvent({ event: "access.denied", outcome: "denied", metadata: { resource, action } });
     throw new AppError("FORBIDDEN");
   }
   return user;
