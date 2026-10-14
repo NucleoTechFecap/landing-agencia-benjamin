@@ -20,6 +20,7 @@
 | [Matriz de ambientes e acessos](ambientes/matriz-de-ambientes.md) | ARC-06 |
 | [Segredos e variáveis de ambiente por estágio](ambientes/variaveis-de-ambiente.md) | ARC-05 |
 | [Cadastro inicial de administradores](operacao/administrador-inicial.md) | INT-08 |
+| [Provisionamento do ambiente de produção](operacao/provisionamento-producao.md) | GO-02 |
 
 ## Segurança, acesso e dados pessoais
 
