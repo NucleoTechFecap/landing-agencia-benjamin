@@ -41,6 +41,7 @@
 | --------- | ----- |
 | [Matriz de campos dos formulários](formularios/matriz-de-campos.md) | FORM-01 |
 | [Captação e roteamento de leads, contato e feedback](formularios/captacao-e-roteamento.md) | TECH-06 |
+| [Idempotência, reenvio seguro e tratamento de falhas](formularios/idempotencia-e-falhas.md) | TECH-07 |
 
 ## APIs e integração
 
