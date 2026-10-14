@@ -38,3 +38,4 @@
 | Documento | Issue |
 | --------- | ----- |
 | [Matriz de campos dos formulários](formularios/matriz-de-campos.md) | FORM-01 |
+| [Captação e roteamento de leads, contato e feedback](formularios/captacao-e-roteamento.md) | TECH-06 |
