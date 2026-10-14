@@ -39,6 +39,7 @@ Legenda: **O** obrigatória · **R** recomendada · **—** não usar · *públi
 | `CONTACT_NOTIFICATION_TO` | servidor | — | — | R | R | Destinatários de contato geral (fallback: `LEAD_NOTIFICATION_TO`) |
 | `FEEDBACK_NOTIFICATION_TO` | servidor | — | — | R | R | Destinatários de feedback (fallback: `LEAD_NOTIFICATION_TO`) |
 | `CONTENT_REVALIDATE_SECRET` | servidor | — | — | R | R | Bearer do `POST /api/internal/revalidate` (TECH-09); ≥ 32 caracteres |
+| `CRON_SECRET` | servidor | — | — | R | O | Bearer dos jobs internos (`/api/internal/jobs/*`) chamados pelo Vercel Cron |
 | `LOG_LEVEL` | servidor | `debug` | `info` | `info` | `info` | Nível mínimo dos logs (ARC-09) |
 
 ## 3. Validação no código
