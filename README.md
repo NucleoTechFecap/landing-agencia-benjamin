@@ -6,7 +6,7 @@ comunicação da FECAP, desenvolvido pelo **NúcleoTech — Núcleo de Tecnologi
 - **Data-alvo da primeira versão:** 04/11/2026
 - **Backlog:** [GitHub Projects](https://github.com/users/NucleoTechFecap/projects/4) ·
   [Issues](https://github.com/NucleoTechFecap/landing-agencia-benjamin/issues)
-- **Documentação técnica:** [`docs/`](docs/README.md)
+- **Documentação técnica:** [`docs/`](docs/README.md) · [visão consolidada da arquitetura](docs/arquitetura/documentacao-tecnica.md)
 
 ## Stack
 
