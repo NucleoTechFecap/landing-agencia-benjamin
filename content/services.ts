@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 13/10/2026 Vinícius Nishimura Reis  Audiovisual em destaque na Home (estrutura da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -127,7 +128,7 @@ export const services: Service[] = [
     areaIds: ["area-criacao"],
     examples: ["Vídeos institucionais", "Vídeos para redes", "Cobertura de eventos"],
     icon: "like",
-    featured: false,
+    featured: true,
     order: 7,
   },
   {
