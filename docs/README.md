@@ -25,6 +25,7 @@
 | [Matriz RBAC granular](seguranca/matriz-rbac.md) | TECH-03 |
 | [Tratamento de dados e finalidade por formulário](seguranca/tratamento-de-dados-formularios.md) | SEG-01 |
 | [Autorização, retenção e ciclo de vida de dados pessoais](seguranca/ciclo-de-vida-dados-pessoais.md) | TECH-08 |
+| [Autenticação da equipe autorizada](seguranca/autenticacao.md) | ADM-02 |
 
 ## Regras de negócio e conteúdo
 
