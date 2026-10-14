@@ -54,6 +54,7 @@ O site público funciona sem banco configurado (usa o conteúdo provisório vers
 | `npm run verify` | Executa tudo acima, na ordem usada antes de abrir PR |
 | `npm run test:e2e` | Jornadas ponta a ponta com Playwright (Chrome do sistema; requer `npm run build`) |
 | `npm run check:release-content` | Falha se houver conteúdo provisório publicado (go-live) |
+| `npm run release:check` | `verify` + gate de conteúdo provisório (checklist de release — GO-01) |
 
 ## Estrutura
 
