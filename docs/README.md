@@ -26,6 +26,7 @@
 | [Tratamento de dados e finalidade por formulário](seguranca/tratamento-de-dados-formularios.md) | SEG-01 |
 | [Autorização, retenção e ciclo de vida de dados pessoais](seguranca/ciclo-de-vida-dados-pessoais.md) | TECH-08 |
 | [Autenticação da equipe autorizada](seguranca/autenticacao.md) | ADM-02 |
+| [Proteção de rotas, recursos e operações de escrita](seguranca/protecao-de-rotas.md) | ADM-03 |
 
 ## Regras de negócio e conteúdo
 
