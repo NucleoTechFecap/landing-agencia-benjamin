@@ -19,6 +19,7 @@
 | --------- | ----- |
 | [Matriz de ambientes e acessos](ambientes/matriz-de-ambientes.md) | ARC-06 |
 | [Segredos e variáveis de ambiente por estágio](ambientes/variaveis-de-ambiente.md) | ARC-05 |
+| [Cadastro inicial de administradores](operacao/administrador-inicial.md) | INT-08 |
 
 ## Segurança, acesso e dados pessoais
 
