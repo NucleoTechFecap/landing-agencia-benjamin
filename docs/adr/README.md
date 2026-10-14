@@ -11,6 +11,7 @@ gera um novo ADR que **substitui** o anterior (o antigo muda para `Substituída 
 | [0002](0002-stack-de-desenvolvimento.md) | Stack final de desenvolvimento | Aceita | ARC-02 |
 | [0003](0003-limites-de-dominio.md) | Limites de domínios e responsabilidades | Aceita | TECH-01 |
 | [0004](0004-logs-e-tratamento-de-erros.md) | Estratégia de logs e tratamento de erros | Aceita | ARC-09 |
+| [0005](0005-armazenamento-de-midia.md) | Armazenamento e otimização de mídia | Aceita | ARC-10 |
 
 ## Modelo
 

@@ -8,6 +8,7 @@
 | [ADR-0002 — Stack de desenvolvimento](adr/0002-stack-de-desenvolvimento.md) | ARC-02 |
 | [ADR-0003 — Limites de domínios](adr/0003-limites-de-dominio.md) | TECH-01 |
 | [ADR-0004 — Logs e tratamento de erros](adr/0004-logs-e-tratamento-de-erros.md) | ARC-09 |
+| [ADR-0005 — Armazenamento e otimização de mídia](adr/0005-armazenamento-de-midia.md) | ARC-10 |
 
 ## Ambientes e operação
 
