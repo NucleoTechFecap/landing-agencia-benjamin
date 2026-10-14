@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "check:headers": "node scripts/file-headers.mjs --check",
     "headers:write": "node scripts/file-headers.mjs --write",
-    "verify": "npm run check:headers && npm run typecheck && npm run lint && npm run test && npm run build"
+    "verify": "npm run check:headers && npm run typecheck && npm run lint && npm run test && npm run build",
+    "check:release-content": "RELEASE_GATE=1 vitest run content"
   },
   "dependencies": {
     "next": "16.4.0",
