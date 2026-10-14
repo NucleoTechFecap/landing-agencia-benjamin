@@ -28,6 +28,7 @@
 | [Autorização, retenção e ciclo de vida de dados pessoais](seguranca/ciclo-de-vida-dados-pessoais.md) | TECH-08 |
 | [Autenticação da equipe autorizada](seguranca/autenticacao.md) | ADM-02 |
 | [Proteção de rotas, recursos e operações de escrita](seguranca/protecao-de-rotas.md) | ADM-03 |
+| [Trilha de auditoria e limites de operações críticas](seguranca/trilha-de-auditoria.md) | TECH-10 |
 
 ## Regras de negócio e conteúdo
 
