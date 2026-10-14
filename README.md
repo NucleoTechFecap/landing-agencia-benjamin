@@ -52,6 +52,8 @@ O site público funciona sem banco configurado (usa o conteúdo provisório vers
 | `npm run check:headers` | Valida o cabeçalho padrão dos arquivos de código |
 | `npm run headers:write` | Insere o cabeçalho padrão nos arquivos que não o possuem |
 | `npm run verify` | Executa tudo acima, na ordem usada antes de abrir PR |
+| `npm run test:e2e` | Jornadas ponta a ponta com Playwright (Chrome do sistema; requer `npm run build`) |
+| `npm run check:release-content` | Falha se houver conteúdo provisório publicado (go-live) |
 
 ## Estrutura
 

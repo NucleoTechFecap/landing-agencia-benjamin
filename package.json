@@ -13,7 +13,8 @@
     "check:headers": "node scripts/file-headers.mjs --check",
     "headers:write": "node scripts/file-headers.mjs --write",
     "verify": "npm run check:headers && npm run typecheck && npm run lint && npm run test && npm run build",
-    "check:release-content": "RELEASE_GATE=1 vitest run content"
+    "check:release-content": "RELEASE_GATE=1 vitest run content",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -25,6 +26,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^22.20.5",
     "@types/react": "^19",
