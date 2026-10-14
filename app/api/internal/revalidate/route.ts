@@ -18,16 +18,17 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-09).
+ 13/10/2026 Vinícius Nishimura Reis  Autenticação compartilhada das rotas internas (GO-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
-import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { getServerEnv } from "@/lib/config/server-env";
 import { SLUG_PATTERN } from "@/lib/domain/content/slug";
 import { invalidateContentFromRoute } from "@/lib/server/content/invalidate";
 import { AppError } from "@/lib/server/errors";
 import { apiRoute, jsonOk } from "@/lib/server/http";
+import { hasBearerSecret } from "@/lib/server/internal-auth";
 
 const slug = z.string().regex(SLUG_PATTERN).max(80).optional();
 const bodySchema = z.object({
@@ -36,19 +37,12 @@ const bodySchema = z.object({
   previousSlug: slug,
 });
 
-function isAuthorized(header: string | null, secret: string | undefined): boolean {
-  if (!secret || !header?.startsWith("Bearer ")) return false;
-  const received = Buffer.from(header.slice("Bearer ".length));
-  const expected = Buffer.from(secret);
-  return received.length === expected.length && timingSafeEqual(received, expected);
-}
-
 /**
  * Invalidação de cache para fontes externas ao painel (webhook do Supabase em alteração
  * de conteúdo, rotina ou correção manual). O painel usa updateTag nas Server Actions.
  */
 export const POST = apiRoute(async (request, _context, requestId) => {
-  if (!isAuthorized(request.headers.get("authorization"), getServerEnv().CONTENT_REVALIDATE_SECRET)) {
+  if (!hasBearerSecret(request.headers.get("authorization"), getServerEnv().CONTENT_REVALIDATE_SECRET)) {
     throw new AppError("UNAUTHENTICATED");
   }
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));

@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-05).
  13/10/2026 Vinícius Nishimura Reis  Segredo do endpoint de invalidação de cache (TECH-09).
+ 13/10/2026 Vinícius Nishimura Reis  Segredo dos jobs agendados (GO-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -51,6 +52,8 @@ export const serverEnvSchema = z.object({
   LOG_LEVEL: z.preprocess(emptyToUndefined, z.enum(["debug", "info", "warn", "error"]).default("info")),
   // Segredo do endpoint de invalidação de cache chamado por webhook/rotina (TECH-09).
   CONTENT_REVALIDATE_SECRET: z.preprocess(emptyToUndefined, z.string().min(32, "Use ao menos 32 caracteres.").optional()),
+  // Segredo enviado pelo agendador (Vercel Cron) aos jobs internos (GO-02).
+  CRON_SECRET: z.preprocess(emptyToUndefined, z.string().min(32, "Use ao menos 32 caracteres.").optional()),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
