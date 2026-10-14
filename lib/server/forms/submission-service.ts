@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-07).
+ 13/10/2026 Vinícius Nishimura Reis  Tipo de estado movido para o domínio (estrutura da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,22 +38,12 @@ import {
   type RecipientConfig,
 } from "@/lib/domain/forms/routing";
 import { parseSubmission, type SubmissionInput, type SubmissionKind } from "@/lib/domain/forms/schemas";
-import { AppError, toPublicError, type ErrorCode } from "../errors";
+import type { FormActionState } from "@/lib/domain/forms/state";
+import { AppError, toPublicError } from "../errors";
 import { logger } from "../logger";
 import { DuplicateSubmissionError, type Notifier, type SubmissionRecord, type SubmissionStore } from "./types";
 
-/** Estado devolvido às Server Actions dos formulários (contrato em TECH-02 §5). */
-export type FormActionState =
-  | { status: "idle" }
-  | { status: "success"; protocol: string; duplicate: boolean }
-  | {
-      status: "error";
-      code: ErrorCode;
-      message: string;
-      requestId: string;
-      fieldErrors?: Record<string, string[]>;
-      values?: Record<string, string>;
-    };
+export type { FormActionState } from "@/lib/domain/forms/state";
 
 export interface SubmissionDeps {
   store: SubmissionStore;

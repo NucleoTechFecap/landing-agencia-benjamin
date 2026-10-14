@@ -30,7 +30,7 @@ Legenda: **O** obrigatória · **R** recomendada · **—** não usar · *públi
 | `NEXT_PUBLIC_SITE_ENV` | pública | `development` | `preview` | `homologation` | `production` | Controla indexação (`noindex` fora de produção) e exigências de validação |
 | `NEXT_PUBLIC_SUPABASE_URL` | pública | R | O | O | O | URL do projeto Supabase do ambiente |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | pública | R | O | O | O | Chave anônima (segura com RLS ativa) |
-| `SUPABASE_SERVICE_ROLE_KEY` | servidor | R | — | O* | O* | Ignora RLS. *Somente para scripts operacionais (INT-08); nunca usada em rotas públicas |
+| `SUPABASE_SERVICE_ROLE_KEY` | servidor | R | — | O* | O* | Ignora RLS. *Somente scripts operacionais (INT-08) e gravação, no servidor, de envios de formulário já validados (`lib/server/supabase/admin.ts`); nunca em leitura de conteúdo nem no cliente |
 | `SUBMISSION_HASH_SECRET` | servidor | R | O | O | O | HMAC de IP/impressão digital de formulários (TECH-07); ≥ 32 caracteres, diferente por ambiente |
 | `NOTIFY_PROVIDER` | servidor | `log` | `log` | `resend` | `resend` | Provedor de notificação |
 | `RESEND_API_KEY` | servidor | — | — | O | O | Chave da Resend (prefixo `re_`) |

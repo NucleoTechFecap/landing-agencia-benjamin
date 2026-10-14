@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-07).
+ 13/10/2026 Vinícius Nishimura Reis  Armazenamento Supabase e aviso único de segredo efêmero (estrutura da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -28,9 +29,11 @@ import { getServerEnv } from "@/lib/config/server-env";
 import { listServices } from "../content/repository";
 import { AppError } from "../errors";
 import { logger } from "../logger";
+import { getServiceClient } from "../supabase/admin";
 import { MemorySubmissionStore } from "./memory-store";
 import { LogNotifier, ResendNotifier } from "./notifier";
 import type { SubmissionDeps } from "./submission-service";
+import { SupabaseSubmissionStore } from "./supabase-store";
 import type { SubmissionStore } from "./types";
 
 let devSecret: string | undefined;
@@ -48,6 +51,8 @@ export function registerSubmissionStore(factory: () => SubmissionStore | null) {
 function resolveStore(): SubmissionStore {
   const persistent = storeOverride?.();
   if (persistent) return persistent;
+  const serviceClient = getServiceClient();
+  if (serviceClient) return new SupabaseSubmissionStore(serviceClient);
   if (siteEnvironment === "production" || siteEnvironment === "homologation") {
     // Nunca aceitar leads em memória em ambiente real: seriam perdidos (RN-04).
     throw new AppError("SERVICE_UNAVAILABLE", { internal: { reason: "submission_store_not_configured" } });
@@ -57,8 +62,8 @@ function resolveStore(): SubmissionStore {
 }
 
 function hmacFactory(secret: string | undefined) {
-  if (!secret) {
-    devSecret ??= randomBytes(32).toString("hex");
+  if (!secret && !devSecret) {
+    devSecret = randomBytes(32).toString("hex");
     logger.warn("forms.hash_secret.ephemeral", { reason: "SUBMISSION_HASH_SECRET ausente em desenvolvimento" });
   }
   const key = secret ?? devSecret!;
