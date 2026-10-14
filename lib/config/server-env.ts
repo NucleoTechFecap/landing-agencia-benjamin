@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-05).
+ 13/10/2026 Vinícius Nishimura Reis  Segredo do endpoint de invalidação de cache (TECH-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -48,6 +49,8 @@ export const serverEnvSchema = z.object({
   CONTACT_NOTIFICATION_TO: emailList,
   FEEDBACK_NOTIFICATION_TO: emailList,
   LOG_LEVEL: z.preprocess(emptyToUndefined, z.enum(["debug", "info", "warn", "error"]).default("info")),
+  // Segredo do endpoint de invalidação de cache chamado por webhook/rotina (TECH-09).
+  CONTENT_REVALIDATE_SECRET: z.preprocess(emptyToUndefined, z.string().min(32, "Use ao menos 32 caracteres.").optional()),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
