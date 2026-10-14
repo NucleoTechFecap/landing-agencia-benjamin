@@ -67,3 +67,4 @@
 | Documento | Issue |
 | --------- | ----- |
 | [Jornadas críticas e testes E2E](qualidade/jornadas-e2e.md) | TECH-12 |
+| [Revisão e aprovação de PRs críticos](qualidade/revisao-de-prs.md) | TECH-13 |
