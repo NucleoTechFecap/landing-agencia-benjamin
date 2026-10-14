@@ -13,6 +13,7 @@ gera um novo ADR que **substitui** o anterior (o antigo muda para `Substituída 
 | [0004](0004-logs-e-tratamento-de-erros.md) | Estratégia de logs e tratamento de erros | Aceita | ARC-09 |
 | [0005](0005-armazenamento-de-midia.md) | Armazenamento e otimização de mídia | Aceita | ARC-10 |
 | [0006](0006-cache-e-invalidacao.md) | Cache, invalidação e consistência após publicação | Aceita | TECH-09 |
+| [0007](0007-historico-de-versoes.md) | Histórico de versões do conteúdo (fora do MVP) | Aceita | ADM-17 |
 
 ## Modelo
 
