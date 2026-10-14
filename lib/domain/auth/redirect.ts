@@ -18,12 +18,20 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
+ 13/10/2026 Vinícius Nishimura Reis  Rotas públicas do painel (ADM-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 /** Destino padrão após login. */
 export const ADMIN_HOME = "/admin";
 export const LOGIN_PATH = "/admin/login";
+
+/** Rotas do painel acessíveis sem sessão (todas as demais exigem login — ADM-03). */
+export const PUBLIC_ADMIN_PATHS = ["/admin/login", "/admin/recuperar-senha", "/admin/auth/callback"];
+
+export function isPublicAdminPath(pathname: string): boolean {
+  return PUBLIC_ADMIN_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+}
 
 /**
  * Valida o parâmetro `next` do login para evitar *open redirect*: só caminhos internos
