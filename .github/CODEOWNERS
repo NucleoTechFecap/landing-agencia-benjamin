@@ -1,0 +1,42 @@
+# ════════════════════════════════════════════════════════════════════════════════
+#  Agência Benjamin Landing Page — responsáveis pela revisão de código (TECH-13)
+#  Caminhos críticos (integrações, permissões, publicação, dados pessoais) pedem
+#  revisão automática da coordenação técnica. Último padrão que casar vence.
+# ════════════════════════════════════════════════════════════════════════════════
+
+# Padrão: qualquer integrante com acesso de escrita revisa.
+
+# Autenticação, autorização e sessão
+/proxy.ts                         @Vinishireis
+/lib/domain/auth/                 @Vinishireis
+/lib/server/auth/                 @Vinishireis
+/app/admin/actions.ts             @Vinishireis
+/app/admin/auth/                  @Vinishireis
+
+# Publicação, cache e integridade do conteúdo
+/lib/domain/content/              @Vinishireis
+/lib/server/content/              @Vinishireis @VinnizzZ
+
+# Formulários e dados pessoais
+/lib/domain/forms/                @Vinishireis
+/lib/server/forms/                @Vinishireis
+/app/(site)/actions.ts            @Vinishireis
+
+# Banco de dados, RLS e migrations
+/supabase/                        @VinnizzZ @Vinishireis
+
+# Auditoria, logs, erros, configuração e segredos
+/lib/server/audit.ts              @Vinishireis
+/lib/server/logger.ts             @Vinishireis
+/lib/server/errors.ts             @Vinishireis
+/lib/config/                      @Vinishireis
+/.env.example                     @Vinishireis
+/next.config.ts                   @Vinishireis
+
+# Contratos de API e integração
+/lib/domain/api/                  @Vinishireis
+/app/api/                         @Vinishireis
+
+# Governança do repositório
+/.github/                         @Vinishireis
+/CONTRIBUTING.md                  @Vinishireis
