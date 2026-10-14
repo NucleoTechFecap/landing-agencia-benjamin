@@ -19,12 +19,14 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
  13/10/2026 Vinícius Nishimura Reis  Barreira de autenticação para rotas não públicas do painel (ADM-03).
+ 13/10/2026 Vinícius Nishimura Reis  404 real para serviços e cases inexistentes (estrutura da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { LOGIN_PATH, isPublicAdminPath } from "@/lib/domain/auth/redirect";
+import { publishedSlugExists, type DetailRoute } from "@/lib/server/content/published-slugs";
 
 /**
  * Primeira barreira do painel (ADM-03) e renovação de sessão (ADM-02):
@@ -34,8 +36,10 @@ import { LOGIN_PATH, isPublicAdminPath } from "@/lib/domain/auth/redirect";
  * Roda apenas em /admin: o site público não lê sessão e continua cacheável.
  */
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request });
   const { pathname, search } = request.nextUrl;
+  if (!pathname.startsWith("/admin")) return guardDetailRoute(request, pathname);
+
+  let response = NextResponse.next({ request });
   const isPublic = isPublicAdminPath(pathname);
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -62,6 +66,19 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
+/**
+ * Detalhes de serviço/case: slug inexistente, rascunho ou arquivado responde 404 real
+ * (RF-18). Feito aqui porque, com Partial Prerendering, `notFound()` dentro da página
+ * só consegue status 200 + noindex (o shell já começou a ser enviado).
+ */
+async function guardDetailRoute(request: NextRequest, pathname: string) {
+  const [, route, slug] = pathname.split("/") as [string, DetailRoute, string];
+  if (slug && !(await publishedSlugExists(route, slug))) {
+    return NextResponse.rewrite(new URL("/_conteudo-inexistente", request.url), { status: 404 });
+  }
+  return NextResponse.next();
+}
+
 function redirectToLogin(request: NextRequest, next: string) {
   const loginUrl = new URL(LOGIN_PATH, request.url);
   if (next !== "/admin") loginUrl.searchParams.set("next", next);
@@ -69,5 +86,5 @@ function redirectToLogin(request: NextRequest, next: string) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/servicos/:slug", "/cases/:slug"],
 };
