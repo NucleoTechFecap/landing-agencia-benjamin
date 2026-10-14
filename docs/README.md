@@ -20,3 +20,9 @@
 | Documento | Issue |
 | --------- | ----- |
 | [Perfis e permissões administrativas](seguranca/perfis-e-permissoes.md) | ADM-01 |
+
+## Regras de negócio e conteúdo
+
+| Documento | Issue |
+| --------- | ----- |
+| [Fluxo mínimo de rascunho e publicação](negocio/fluxo-de-publicacao.md) | ADM-12 |
