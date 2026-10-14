@@ -81,3 +81,4 @@
 | Documento | Issue |
 | --------- | ----- |
 | [Evolução do módulo de leads para CRM](roadmap/evolucao-crm.md) | FUT-01 |
+| [Planejamento de integrações externas](roadmap/integracoes-externas.md) | FUT-07 |
