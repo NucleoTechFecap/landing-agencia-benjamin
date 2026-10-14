@@ -23,6 +23,7 @@
 | --------- | ----- |
 | [Perfis e permissões administrativas](seguranca/perfis-e-permissoes.md) | ADM-01 |
 | [Matriz RBAC granular](seguranca/matriz-rbac.md) | TECH-03 |
+| [Tratamento de dados e finalidade por formulário](seguranca/tratamento-de-dados-formularios.md) | SEG-01 |
 
 ## Regras de negócio e conteúdo
 
