@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-03).
  13/10/2026 Vinícius Nishimura Reis  Otimização de imagens e bucket de mídia do Supabase (ARC-10).
+ 13/10/2026 Vinícius Nishimura Reis  Cabeçalhos de segurança e X-Robots-Tag por ambiente (SEO da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,7 +30,27 @@ import type { NextConfig } from "next";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const mediaPatterns = supabaseUrl ? [new URL("/storage/v1/object/public/media/**", supabaseUrl)] : [];
 
+const isProduction = process.env.NEXT_PUBLIC_SITE_ENV === "production";
+
+// Cabeçalhos de segurança básicos (refinamento de CSP/sessão em SEG-06).
+const securityHeaders = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+];
+
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
+  async headers() {
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Fora de produção nada é indexado; o painel nunca é indexado (ARC-06).
+      ...(isProduction ? [] : [{ source: "/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }]),
+      { source: "/admin/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
+    ];
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: mediaPatterns,

@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -28,10 +29,14 @@ import { notFound } from "next/navigation";
 import { CaseCard } from "@/components/cards/case-card";
 import { ClosingCta } from "@/components/sections/closing-cta";
 import { PageHero } from "@/components/sections/page-hero";
+import { JsonLd } from "@/components/seo/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { BrandIcon } from "@/components/ui/brand-icon";
 import { Section } from "@/components/ui/section";
-import { getCaseDetail, listCases, listPublishedSlugs } from "@/lib/server/content/repository";
+import { siteUrl } from "@/lib/config/public-env";
+import { caseSchema } from "@/lib/domain/seo/structured-data";
+import { getCaseDetail, getSiteSettings, listCases, listPublishedSlugs } from "@/lib/server/content/repository";
+import { buildMetadata } from "@/lib/server/seo";
 
 export async function generateStaticParams() {
   const { cases } = await listPublishedSlugs();
@@ -42,7 +47,17 @@ export async function generateMetadata({ params }: PageProps<"/cases/[slug]">): 
   const { slug } = await params;
   const detail = await getCaseDetail(slug);
   if (!detail) return { title: "Case não encontrado", robots: { index: false } };
-  return { title: `${detail.item.title} — ${detail.item.client}`, description: detail.item.summary };
+  const { item, category, services } = detail;
+  return buildMetadata(
+    {
+      title: `${item.title} — ${item.client}`,
+      description: item.summary,
+      path: `/cases/${item.slug}`,
+      type: "article",
+      keywords: [item.client, category?.name ?? "", ...services.map((service) => service.name)].filter(Boolean),
+    },
+    await getSiteSettings(),
+  );
 }
 
 const MONTHS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
@@ -68,8 +83,10 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
 
   return (
     <>
+      <JsonLd data={caseSchema(item, category?.name, services, siteUrl)} />
       <PageHero
         eyebrow={item.client}
+        path={`/cases/${item.slug}`}
         title={item.title}
         description={<p>{item.summary}</p>}
         breadcrumbs={[

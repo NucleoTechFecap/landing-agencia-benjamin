@@ -58,6 +58,7 @@ O site público funciona sem banco configurado (usa o conteúdo provisório vers
 ```text
 .
 ├── app/                 # Rotas (App Router): site público, painel /admin, APIs e metadados
+├── assets/fonts/        # Fontes (OFL) usadas nas imagens de compartilhamento
 ├── components/          # Componentes React reutilizáveis (UI, layout, seções, formulários)
 ├── content/             # Conteúdo provisório versionado (fallback até o CMS)
 ├── lib/

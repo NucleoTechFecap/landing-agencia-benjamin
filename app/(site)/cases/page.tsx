@@ -18,33 +18,47 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/server/seo";
 import { Suspense } from "react";
 import { CaseCard } from "@/components/cards/case-card";
 import { CaseFilters, type ActiveFilters } from "@/components/sections/case-filters";
 import { ClosingCta } from "@/components/sections/closing-cta";
 import { PageHero } from "@/components/sections/page-hero";
+import { JsonLd } from "@/components/seo/json-ld";
 import { Section } from "@/components/ui/section";
+import { siteUrl } from "@/lib/config/public-env";
 import { isValidSlug } from "@/lib/domain/content/slug";
-import { listAreas, listCases, listCategories, listServices } from "@/lib/server/content/repository";
+import { itemListSchema } from "@/lib/domain/seo/structured-data";
+import { getSiteSettings, listAreas, listCases, listCategories, listServices } from "@/lib/server/content/repository";
 
-export const metadata: Metadata = {
-  title: "Cases e portfólio",
-  description:
-    "Portfólio da Agência Benjamin: cases de copywriting, social media & criação e assessoria de imprensa desenvolvidos para clientes reais.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata(
+    {
+      title: "Cases e portfólio",
+      description: "Portfólio da Agência Benjamin: cases de copywriting, social media & criação e assessoria de imprensa desenvolvidos para clientes reais.",
+      path: "/cases",
+      keywords: ["portfólio", "cases de comunicação", "Aventura de Construir", "Meridiano", "FECAP"],
+    },
+    await getSiteSettings(),
+  );
+}
 
 /** Portfólio com filtros por categoria, serviço e área (CASE-01, CASE-03). */
-export default function CasesPage({ searchParams }: PageProps<"/cases">) {
+export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
+  const allCases = await listCases();
   return (
     <>
+      <JsonLd data={itemListSchema("Cases da Agência Benjamin", allCases.map((item) => ({ name: item.title, path: `/cases/${item.slug}` })), siteUrl)} />
       <PageHero
         eyebrow="Portfólio"
         title="Cases e conteúdos"
         description={<p>Trabalhos desenvolvidos pela Agência Benjamin para clientes, parceiros e para a própria FECAP.</p>}
+        path="/cases"
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Cases" }]}
         icon="coracao"
         iconColor="rosa"

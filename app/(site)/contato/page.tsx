@@ -18,10 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/server/seo";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ContactForm } from "@/components/forms/contact-form";
@@ -34,10 +36,17 @@ import { CONTACT_SUBJECTS } from "@/lib/domain/forms/schemas";
 import { getSiteSettings, listServices } from "@/lib/server/content/repository";
 import { submitContact, submitLead } from "../actions";
 
-export const metadata: Metadata = {
-  title: "Contato",
-  description: "Peça um projeto ou fale com a Agência Benjamin: formulário de novos projetos e contato institucional.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata(
+    {
+      title: "Contato",
+      description: "Peça um projeto ou fale com a Agência Benjamin: formulário de novos projetos e contato institucional.",
+      path: "/contato",
+      keywords: ["contato Agência Benjamin", "orçamento de comunicação", "contratar agência de comunicação"],
+    },
+    await getSiteSettings(),
+  );
+}
 
 /** Contato institucional + formulário de prospecção (FORM-02, FORM-03, FORM-04). */
 export default async function ContactPage({ searchParams }: PageProps<"/contato">) {
@@ -48,6 +57,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contato"
         eyebrow="Contato"
         title="Vamos conversar?"
         description={<p>Conte sobre o seu projeto ou mande sua mensagem. A equipe da Benjamin responde pelo e-mail informado.</p>}
+        path="/contato"
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Contato" }]}
         icon="comentario"
       />

@@ -18,18 +18,28 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/server/seo";
+import { getSiteSettings } from "@/lib/server/content/repository";
 import Link from "next/link";
 import { PageHero } from "@/components/sections/page-hero";
 import { Section } from "@/components/ui/section";
 
-export const metadata: Metadata = {
-  title: "Aviso de privacidade",
-  description: "Como a Agência Benjamin trata os dados enviados pelos formulários de contato, novos projetos e feedback.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata(
+    {
+      title: "Aviso de privacidade",
+      description: "Como a Agência Benjamin trata os dados enviados pelos formulários de contato, novos projetos e feedback.",
+      path: "/privacidade",
+      keywords: ["privacidade", "LGPD"],
+    },
+    await getSiteSettings(),
+  );
+}
 
 const SECTIONS = [
   {
@@ -84,6 +94,7 @@ export default function PrivacyPage() {
         eyebrow="Privacidade"
         title="Aviso de privacidade"
         description={<p>Como tratamos os dados enviados pelos formulários deste site.</p>}
+        path="/privacidade"
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Aviso de privacidade" }]}
         tone="creme"
         provisional

@@ -18,10 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/server/seo";
 import { AreaCard } from "@/components/cards/area-card";
 import { ClosingCta } from "@/components/sections/closing-cta";
 import { PageHero } from "@/components/sections/page-hero";
@@ -30,10 +32,17 @@ import { Section } from "@/components/ui/section";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { getSiteSettings, listAreas } from "@/lib/server/content/repository";
 
-export const metadata: Metadata = {
-  title: "Sobre a Benjamin",
-  description: "Conheça a Agência Benjamin, agência experimental de comunicação da FECAP: proposta de valor, modelo de atuação e relação com a FECAP.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata(
+    {
+      title: "Sobre a Benjamin",
+      description: "Conheça a Agência Benjamin, agência experimental de comunicação da FECAP: proposta de valor, modelo de atuação e relação com a FECAP.",
+      path: "/sobre",
+      keywords: ["sobre a Agência Benjamin", "agência experimental FECAP", "agência de comunicação universitária"],
+    },
+    await getSiteSettings(),
+  );
+}
 
 const AREA_COLORS: BrandIconColor[] = ["verde", "laranja", "azul", "rosa", "verde-claro", "lima"];
 
@@ -53,6 +62,7 @@ export default async function AboutPage() {
         eyebrow="Sobre a Benjamin"
         title={about.title}
         description={<p>{about.intro}</p>}
+        path="/sobre"
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Sobre" }]}
         icon="hermes"
         provisional={about.provisional}

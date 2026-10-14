@@ -18,19 +18,29 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/server/seo";
+import { getSiteSettings } from "@/lib/server/content/repository";
 import { FeedbackForm } from "@/components/forms/feedback-form";
 import { PageHero } from "@/components/sections/page-hero";
 import { Section } from "@/components/ui/section";
 import { submitFeedback } from "../actions";
 
-export const metadata: Metadata = {
-  title: "Feedback",
-  description: "Clientes, parceiros, alunos e comunidade: conte para a Agência Benjamin como foi a sua experiência.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata(
+    {
+      title: "Feedback",
+      description: "Clientes, parceiros, alunos e comunidade: conte para a Agência Benjamin como foi a sua experiência.",
+      path: "/feedback",
+      keywords: ["feedback Agência Benjamin", "avaliação"],
+    },
+    await getSiteSettings(),
+  );
+}
 
 /** Canal de feedback (PRJ §14 / FORM-05). */
 export default function FeedbackPage() {
@@ -40,6 +50,7 @@ export default function FeedbackPage() {
         eyebrow="Feedback"
         title="Como foi com a Benjamin?"
         description={<p>Elogio, crítica ou sugestão: tudo ajuda a agência a melhorar. Você pode responder sem se identificar.</p>}
+        path="/feedback"
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Feedback" }]}
         tone="rosa"
         icon="like"

@@ -53,3 +53,9 @@
 | Documento | Issue |
 | --------- | ----- |
 | [Contrato de APIs, erros, paginação e validação](api/contratos.md) | TECH-02 |
+
+## SEO e descoberta
+
+| Documento | Issue |
+| --------- | ----- |
+| [SEO, compartilhamento e descoberta por IA](seo/estrategia-de-seo.md) | SEG-09 (base) |

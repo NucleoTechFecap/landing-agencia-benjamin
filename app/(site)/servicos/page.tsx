@@ -18,32 +18,45 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/server/seo";
 import { ServiceCard } from "@/components/cards/service-card";
 import { ClosingCta } from "@/components/sections/closing-cta";
 import { PageHero } from "@/components/sections/page-hero";
 import { ProcessSteps } from "@/components/sections/process-steps";
+import { JsonLd } from "@/components/seo/json-ld";
 import { Section } from "@/components/ui/section";
-import { listServices } from "@/lib/server/content/repository";
+import { siteUrl } from "@/lib/config/public-env";
+import { itemListSchema } from "@/lib/domain/seo/structured-data";
+import { getSiteSettings, listServices } from "@/lib/server/content/repository";
 
-export const metadata: Metadata = {
-  title: "Serviços",
-  description:
-    "Estratégia digital, social media, eventos, produção de conteúdo, copywriting, design e identidade visual, audiovisual, assessoria de imprensa e comunicação interna.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata(
+    {
+      title: "Serviços",
+      description: "Estratégia digital, social media, eventos, produção de conteúdo, copywriting, design e identidade visual, audiovisual, assessoria de imprensa e comunicação interna.",
+      path: "/servicos",
+      keywords: ["serviços de comunicação", "agência de comunicação", "estratégia digital", "social media", "audiovisual"],
+    },
+    await getSiteSettings(),
+  );
+}
 
 /** Listagem dos serviços publicados (SERV-01). */
 export default async function ServicesPage() {
   const services = await listServices();
   return (
     <>
+      <JsonLd data={itemListSchema("Serviços da Agência Benjamin", services.map((service) => ({ name: service.name, path: `/servicos/${service.slug}` })), siteUrl)} />
       <PageHero
         eyebrow="Serviços"
         title="Comunicação completa, feita por quem está chegando com tudo"
         description={<p>{services.length} serviços que se combinam conforme o objetivo do seu projeto.</p>}
+        path="/servicos"
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Serviços" }]}
         icon="megafone"
       />
