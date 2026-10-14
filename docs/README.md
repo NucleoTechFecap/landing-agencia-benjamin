@@ -20,6 +20,7 @@
 | Documento | Issue |
 | --------- | ----- |
 | [Perfis e permissões administrativas](seguranca/perfis-e-permissoes.md) | ADM-01 |
+| [Matriz RBAC granular](seguranca/matriz-rbac.md) | TECH-03 |
 
 ## Regras de negócio e conteúdo
 
