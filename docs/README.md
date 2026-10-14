@@ -61,3 +61,9 @@
 | Documento | Issue |
 | --------- | ----- |
 | [SEO, compartilhamento e descoberta por IA](seo/estrategia-de-seo.md) | SEG-09 (base) |
+
+## Qualidade e entrega
+
+| Documento | Issue |
+| --------- | ----- |
+| [Jornadas críticas e testes E2E](qualidade/jornadas-e2e.md) | TECH-12 |
