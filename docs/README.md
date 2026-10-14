@@ -73,3 +73,4 @@
 | [Revisão e aprovação de PRs críticos](qualidade/revisao-de-prs.md) | TECH-13 |
 | [Checklist de release e plano de rollback](operacao/release-e-rollback.md) | GO-01 |
 | [Decisão técnica de go/no-go](operacao/go-no-go.md) | TECH-14 |
+| [Publicação da primeira versão](operacao/publicacao-mvp.md) | GO-06 |
