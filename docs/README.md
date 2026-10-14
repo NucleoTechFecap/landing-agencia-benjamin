@@ -7,6 +7,7 @@
 | [ADR-0001 — Arquitetura da plataforma](adr/0001-arquitetura-da-plataforma.md) | ARC-01 |
 | [ADR-0002 — Stack de desenvolvimento](adr/0002-stack-de-desenvolvimento.md) | ARC-02 |
 | [ADR-0003 — Limites de domínios](adr/0003-limites-de-dominio.md) | TECH-01 |
+| [ADR-0004 — Logs e tratamento de erros](adr/0004-logs-e-tratamento-de-erros.md) | ARC-09 |
 
 ## Ambientes e operação
 
