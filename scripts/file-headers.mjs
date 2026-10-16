@@ -11,7 +11,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 16/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-03).
+ 16/10/2026 Caio Moraes              Verifica também .mts e .cts (ARC-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -39,6 +40,8 @@ export const TARGET_EXTENSIONS = new Set([
   ".cjs",
   ".css",
   ".sql",
+  ".mts",
+  ".cts",
   ...HASH_COMMENT_EXTENSIONS,
 ]);
 const IGNORED_DIRS = new Set([".git", ".next", "node_modules", "coverage", "out", "build", "docs"]);
