@@ -9,7 +9,7 @@ Benjamin (GOV-10). Valem para todos os integrantes do NúcleoTech.
    e mova para **In progress**.
 2. Atualize a `main` e crie a branch a partir dela.
 3. Faça commits pequenos e coerentes, seguindo a convenção abaixo.
-4. Rode `npm run verify` localmente.
+4. Rode `npm run format` e depois `npm run verify` localmente.
 5. Abra o PR para `main` usando o template, com `Closes #<issue>`.
 6. Peça revisão; corrija os apontamentos; o merge é feito por quem aprovou ou pelo autor após aprovação.
 7. A issue fecha automaticamente no merge e vai para **Done** no Project.
@@ -74,7 +74,7 @@ base manualmente antes do merge (os `Closes #n` só fecham issues em PRs cuja ba
 ### Checklist de PR
 
 - [ ] Branch e commits seguem a convenção (tipo + ID da issue)
-- [ ] `npm run verify` passou localmente (cabeçalhos, tipos, lint, testes, build)
+- [ ] `npm run verify` passou localmente (cabeçalhos, formatação, tipos, lint, testes, build)
 - [ ] Arquivos novos/alterados com cabeçalho padrão e histórico atualizado
 - [ ] Sem segredos, dados pessoais reais ou conteúdo provisório marcado como final
 - [ ] Mudanças em banco têm migration versionada com RLS e plano de rollback
@@ -113,3 +113,19 @@ homologação ou saída de testes).
 Todo arquivo de código começa com o bloco de cabeçalho do projeto (ver README). Ao alterar um
 arquivo existente, atualize **Modificado em** e acrescente uma linha ao **Histórico** com data,
 autor e o ID da issue.
+
+## 9. Formatação
+
+A formatação é definida pelo **Prettier** ([`prettier.config.mjs`](prettier.config.mjs)), em
+conjunto com o [`.editorconfig`](.editorconfig). Não formate na mão nem discuta estilo em revisão:
+o que o Prettier gera é o padrão.
+
+- Rode `npm run format` antes de commitar. O `npm run format:check` só confere, sem alterar
+  nada, e já roda dentro do `verify`.
+- Ficam fora do Prettier: arquivos `.md`, o `package-lock.json` e as migrations em
+  `supabase/migrations/` (ver [`.prettierignore`](.prettierignore)). Nos `.md`, siga o estilo do
+  próprio arquivo.
+- No editor, instale a extensão **EditorConfig**, para que ele respeite a indentação e a quebra
+  de linha final. A extensão do Prettier é opcional.
+- O [`.gitattributes`](.gitattributes) força quebra de linha LF em todos os sistemas. No Windows
+  não é preciso mexer no `core.autocrlf`.
