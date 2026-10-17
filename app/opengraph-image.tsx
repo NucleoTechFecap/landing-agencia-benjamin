@@ -34,7 +34,12 @@ export const contentType = "image/png";
 export default async function OpenGraphImage() {
   const [settings, logo, fonts] = await Promise.all([getSiteSettings(), ogLogoDataUrl(), ogFonts()]);
   return new ImageResponse(
-    <OgCard eyebrow="Agência Benjamin" title={settings.manifesto.title} subtitle="Estratégia, conteúdo, criação, eventos e assessoria de imprensa." logoSrc={logo} />,
+    <OgCard
+      eyebrow="Agência Benjamin"
+      title={settings.manifesto.title}
+      subtitle="Estratégia, conteúdo, criação, eventos e assessoria de imprensa."
+      logoSrc={logo}
+    />,
     { ...size, fonts },
   );
 }

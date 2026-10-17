@@ -31,7 +31,15 @@ export interface CaseCardData extends CaseStudy {
 }
 
 /** Card de case com capa, cliente, categoria e resumo. */
-export function CaseCard({ item, headingLevel = "h3", priority = false }: { item: CaseCardData; headingLevel?: "h2" | "h3"; priority?: boolean }) {
+export function CaseCard({
+  item,
+  headingLevel = "h3",
+  priority = false,
+}: {
+  item: CaseCardData;
+  headingLevel?: "h2" | "h3";
+  priority?: boolean;
+}) {
   const Heading = headingLevel;
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border-2 border-benja-noite bg-benja-nyanza text-benja-noite shadow-sticker transition hover:-translate-y-1 hover:shadow-sticker-lg">

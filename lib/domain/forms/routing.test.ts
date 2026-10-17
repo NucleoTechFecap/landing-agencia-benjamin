@@ -41,7 +41,15 @@ const lead: SubmissionInput = {
 };
 const contact: SubmissionInput = {
   kind: "contact",
-  data: { ...technical, name: "João", email: "joao@x.com", phone: undefined, subject: "imprensa", message: "Pauta.", privacyConsent: true },
+  data: {
+    ...technical,
+    name: "João",
+    email: "joao@x.com",
+    phone: undefined,
+    subject: "imprensa",
+    message: "Pauta.",
+    privacyConsent: true,
+  },
 };
 const feedback: SubmissionInput = {
   kind: "feedback",
@@ -63,8 +71,16 @@ describe("routeSubmission", () => {
       viewResource: "lead",
       priority: "alta",
     });
-    expect(routeSubmission(contact)).toMatchObject({ category: "contact:imprensa", viewResource: "lead", priority: "alta" });
-    expect(routeSubmission(feedback)).toMatchObject({ category: "feedback:aluno", viewResource: "feedback", priority: "normal" });
+    expect(routeSubmission(contact)).toMatchObject({
+      category: "contact:imprensa",
+      viewResource: "lead",
+      priority: "alta",
+    });
+    expect(routeSubmission(feedback)).toMatchObject({
+      category: "feedback:aluno",
+      viewResource: "feedback",
+      priority: "normal",
+    });
   });
 
   it("usa 'nao-sei' quando o serviço não foi escolhido", () => {

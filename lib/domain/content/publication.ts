@@ -76,7 +76,11 @@ export interface TransitionContext {
   validateForPublish: () => string[];
 }
 
-export function allowedCommands(status: PublicationStatus, role: Role | null | undefined, resource: Resource): PublicationCommand[] {
+export function allowedCommands(
+  status: PublicationStatus,
+  role: Role | null | undefined,
+  resource: Resource,
+): PublicationCommand[] {
   return PUBLICATION_COMMANDS.filter(
     (command) => TRANSITIONS[status][command] !== undefined && can(role, resource, COMMAND_PERMISSION[command]),
   );
@@ -86,7 +90,11 @@ export function allowedCommands(status: PublicationStatus, role: Role | null | u
  * Aplica um comando ao estado atual respeitando as invariantes de publicação:
  * transição permitida → permissão do papel → validação de conteúdo → novos campos de controle.
  */
-export function transition(current: PublicationState, command: PublicationCommand, context: TransitionContext): TransitionResult {
+export function transition(
+  current: PublicationState,
+  command: PublicationCommand,
+  context: TransitionContext,
+): TransitionResult {
   const target = TRANSITIONS[current.status][command];
   if (!target) {
     return {

@@ -62,7 +62,10 @@ export interface SubmissionStore {
   insert(record: SubmissionRecord): Promise<void>;
   updateNotification(
     id: string,
-    patch: Pick<SubmissionRecord, "notificationStatus" | "notificationAttempts" | "lastNotificationError" | "updatedAt">,
+    patch: Pick<
+      SubmissionRecord,
+      "notificationStatus" | "notificationAttempts" | "lastNotificationError" | "updatedAt"
+    >,
   ): Promise<void>;
   listNotificationBacklog(limit: number): Promise<SubmissionRecord[]>;
 }

@@ -51,7 +51,10 @@ export const serverEnvSchema = z.object({
   FEEDBACK_NOTIFICATION_TO: emailList,
   LOG_LEVEL: z.preprocess(emptyToUndefined, z.enum(["debug", "info", "warn", "error"]).default("info")),
   // Segredo do endpoint de invalidação de cache chamado por webhook/rotina (TECH-09).
-  CONTENT_REVALIDATE_SECRET: z.preprocess(emptyToUndefined, z.string().min(32, "Use ao menos 32 caracteres.").optional()),
+  CONTENT_REVALIDATE_SECRET: z.preprocess(
+    emptyToUndefined,
+    z.string().min(32, "Use ao menos 32 caracteres.").optional(),
+  ),
   // Segredo enviado pelo agendador (Vercel Cron) aos jobs internos (GO-02).
   CRON_SECRET: z.preprocess(emptyToUndefined, z.string().min(32, "Use ao menos 32 caracteres.").optional()),
 });
@@ -72,8 +75,9 @@ export function parseServerEnv(raw: Record<string, string | undefined>, environm
   if (result.success && (environment === "production" || environment === "homologation")) {
     const env = result.data;
     if (!env.SUBMISSION_HASH_SECRET) problems.push("SUBMISSION_HASH_SECRET: obrigatória fora do desenvolvimento.");
-    if (env.NOTIFY_PROVIDER !== "resend") problems.push("NOTIFY_PROVIDER: use \"resend\" fora do desenvolvimento.");
-    if (env.NOTIFY_PROVIDER === "resend" && !env.RESEND_API_KEY) problems.push("RESEND_API_KEY: obrigatória com Resend.");
+    if (env.NOTIFY_PROVIDER !== "resend") problems.push('NOTIFY_PROVIDER: use "resend" fora do desenvolvimento.');
+    if (env.NOTIFY_PROVIDER === "resend" && !env.RESEND_API_KEY)
+      problems.push("RESEND_API_KEY: obrigatória com Resend.");
     if (!env.NOTIFICATION_FROM) problems.push("NOTIFICATION_FROM: obrigatória fora do desenvolvimento.");
     if (env.LEAD_NOTIFICATION_TO.length === 0) problems.push("LEAD_NOTIFICATION_TO: informe ao menos um destinatário.");
   }

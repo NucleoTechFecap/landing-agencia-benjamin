@@ -23,7 +23,11 @@
 
 import type { Area, CaseCategory, CaseStudy, ContentSnapshot, Cta, Service } from "../types";
 
-const base = { status: "published" as const, publishedAt: "2026-10-01T12:00:00.000Z", updatedAt: "2026-10-01T12:00:00.000Z" };
+const base = {
+  status: "published" as const,
+  publishedAt: "2026-10-01T12:00:00.000Z",
+  updatedAt: "2026-10-01T12:00:00.000Z",
+};
 
 export function area(id: string, overrides: Partial<Area> = {}): Area {
   return { ...base, id, slug: id, name: id, summary: "s", description: "d", highlights: [], order: 0, ...overrides };
@@ -49,7 +53,12 @@ export function category(id: string, overrides: Partial<CaseCategory> = {}): Cas
   return { ...base, id, slug: id, name: id, description: "d", order: 0, ...overrides };
 }
 
-export function caseStudy(id: string, categoryId: string, serviceIds: string[], overrides: Partial<CaseStudy> = {}): CaseStudy {
+export function caseStudy(
+  id: string,
+  categoryId: string,
+  serviceIds: string[],
+  overrides: Partial<CaseStudy> = {},
+): CaseStudy {
   return {
     ...base,
     id,

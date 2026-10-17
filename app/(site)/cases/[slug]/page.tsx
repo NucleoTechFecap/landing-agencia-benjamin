@@ -60,7 +60,20 @@ export async function generateMetadata({ params }: PageProps<"/cases/[slug]">): 
   );
 }
 
-const MONTHS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+const MONTHS = [
+  "janeiro",
+  "fevereiro",
+  "março",
+  "abril",
+  "maio",
+  "junho",
+  "julho",
+  "agosto",
+  "setembro",
+  "outubro",
+  "novembro",
+  "dezembro",
+];
 const formatMonth = (value?: string) => {
   if (!value) return undefined;
   const [year, month] = value.split("-").map(Number);
@@ -73,7 +86,9 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
   const detail = await getCaseDetail(slug);
   if (!detail) notFound();
   const { item, category, services, areas } = detail;
-  const related = category ? (await listCases({ category: category.slug })).filter((entry) => entry.id !== item.id).slice(0, 3) : [];
+  const related = category
+    ? (await listCases({ category: category.slug })).filter((entry) => entry.id !== item.id).slice(0, 3)
+    : [];
   const story = [
     { id: "desafio", title: "Desafio", text: item.challenge, icon: "interrogacao" },
     { id: "solucao", title: "Solução", text: item.solution, icon: "raio" },
@@ -89,11 +104,7 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
         path={`/cases/${item.slug}`}
         title={item.title}
         description={<p>{item.summary}</p>}
-        breadcrumbs={[
-          { label: "Início", href: "/" },
-          { label: "Cases", href: "/cases" },
-          { label: item.client },
-        ]}
+        breadcrumbs={[{ label: "Início", href: "/" }, { label: "Cases", href: "/cases" }, { label: item.client }]}
         tone="azul"
         provisional={item.provisional}
       >
@@ -111,7 +122,14 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
       {item.cover ? (
         <div className="border-b-2 border-benja-noite bg-benja-noite">
           <div className="relative mx-auto aspect-[16/9] max-h-[640px] w-full max-w-6xl">
-            <Image src={item.cover.src} alt={item.cover.alt} fill priority sizes="(min-width: 1152px) 1152px, 100vw" className="object-cover" />
+            <Image
+              src={item.cover.src}
+              alt={item.cover.alt}
+              fill
+              priority
+              sizes="(min-width: 1152px) 1152px, 100vw"
+              className="object-cover"
+            />
           </div>
         </div>
       ) : null}
@@ -140,7 +158,10 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
               </p>
             )}
           </div>
-          <aside aria-label="Ficha do projeto" className="h-fit space-y-6 rounded-3xl border-2 border-benja-noite bg-benja-claro p-6 shadow-sticker">
+          <aside
+            aria-label="Ficha do projeto"
+            className="h-fit space-y-6 rounded-3xl border-2 border-benja-noite bg-benja-claro p-6 shadow-sticker"
+          >
             <div>
               <h3 className="text-xs font-black tracking-widest text-benja-verde uppercase">Cliente</h3>
               <p className="mt-1 font-bold">{item.client}</p>
@@ -151,7 +172,10 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
                 <ul className="mt-2 flex flex-wrap gap-2">
                   {services.map((service) => (
                     <li key={service.id}>
-                      <Link href={`/servicos/${service.slug}`} className="inline-block rounded-full border-2 border-benja-noite bg-benja-nyanza px-3 py-1 text-sm font-bold text-benja-verde">
+                      <Link
+                        href={`/servicos/${service.slug}`}
+                        className="inline-block rounded-full border-2 border-benja-noite bg-benja-nyanza px-3 py-1 text-sm font-bold text-benja-verde"
+                      >
                         {service.name}
                       </Link>
                     </li>
@@ -177,7 +201,12 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
                 <ul className="mt-2 space-y-1">
                   {item.externalLinks.map((link) => (
                     <li key={link.url}>
-                      <a href={link.url} target="_blank" rel="noopener noreferrer" className="font-bold text-benja-verde underline underline-offset-4">
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-bold text-benja-verde underline underline-offset-4"
+                      >
                         {link.label}
                         <span className="sr-only"> (abre em nova aba)</span>
                       </a>
@@ -197,8 +226,17 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
           </h2>
           <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {item.gallery.map((image) => (
-              <li key={image.src} className="relative aspect-square overflow-hidden rounded-3xl border-2 border-benja-noite">
-                <Image src={image.src} alt={image.alt} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
+              <li
+                key={image.src}
+                className="relative aspect-square overflow-hidden rounded-3xl border-2 border-benja-noite"
+              >
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  className="object-cover"
+                />
               </li>
             ))}
           </ul>

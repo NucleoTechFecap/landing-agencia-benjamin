@@ -46,7 +46,16 @@ const eslintConfig = defineConfig([
           patterns: [
             serverOnlyModules,
             {
-              group: ["next", "next/*", "react", "react-dom", "@/components/*", "@/components/**", "@/app/*", "@/app/**"],
+              group: [
+                "next",
+                "next/*",
+                "react",
+                "react-dom",
+                "@/components/*",
+                "@/components/**",
+                "@/app/*",
+                "@/app/**",
+              ],
               message: "lib/domain contém apenas regras puras, sem framework ou UI (ADR-0003).",
             },
           ],

@@ -117,7 +117,13 @@ export class SupabaseSubmissionStore implements SubmissionStore {
     if (error) throw error;
   }
 
-  async updateNotification(id: string, patch: Pick<SubmissionRecord, "notificationStatus" | "notificationAttempts" | "lastNotificationError" | "updatedAt">) {
+  async updateNotification(
+    id: string,
+    patch: Pick<
+      SubmissionRecord,
+      "notificationStatus" | "notificationAttempts" | "lastNotificationError" | "updatedAt"
+    >,
+  ) {
     const { error } = await this.db
       .from(TABLE)
       .update({

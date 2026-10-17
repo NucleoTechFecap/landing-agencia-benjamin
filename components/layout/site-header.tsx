@@ -35,7 +35,14 @@ export function SiteHeader() {
       <Container className="relative flex h-20 items-center justify-between gap-4">
         <Link href="/" className="shrink-0" aria-label="Agência Benjamin — página inicial">
           {/* Tamanho mínimo do logotipo em telas: 70 px (brandbook). */}
-          <Image src="/brand/logo-horizontal.webp" alt="Agência Benjamin" width={110} height={70} priority className="h-14 w-auto" />
+          <Image
+            src="/brand/logo-horizontal.webp"
+            alt="Agência Benjamin"
+            width={110}
+            height={70}
+            priority
+            className="h-14 w-auto"
+          />
         </Link>
         <nav aria-label="Principal" className="flex items-center gap-2">
           <NavLinks />

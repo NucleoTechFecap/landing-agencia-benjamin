@@ -66,7 +66,10 @@ describe.runIf(process.env.RELEASE_GATE === "1")("gate de release (GO-01)", () =
     ]
       .filter((item) => item.provisional && isPubliclyVisible(item))
       .map((item) => item.id);
-    const settings = [siteSettings.manifesto.provisional && "manifesto", siteSettings.about.provisional && "sobre"].filter(Boolean);
+    const settings = [
+      siteSettings.manifesto.provisional && "manifesto",
+      siteSettings.about.provisional && "sobre",
+    ].filter(Boolean);
     expect([...provisional, ...settings]).toEqual([]);
   });
 });

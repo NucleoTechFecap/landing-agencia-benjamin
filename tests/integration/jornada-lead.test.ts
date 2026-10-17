@@ -43,7 +43,11 @@ describe("J3 · lead enviado chega ao destinatário e só o admin consulta", () 
     const deps = {
       store,
       notifier: { send: async (email: OutgoingEmail) => void sent.push(email) },
-      recipients: { LEAD_NOTIFICATION_TO: ["comercial@benjamin.test"], CONTACT_NOTIFICATION_TO: [], FEEDBACK_NOTIFICATION_TO: [] },
+      recipients: {
+        LEAD_NOTIFICATION_TO: ["comercial@benjamin.test"],
+        CONTACT_NOTIFICATION_TO: [],
+        FEEDBACK_NOTIFICATION_TO: [],
+      },
       hmac: (value: string) => createHmac("sha256", "segredo").update(value).digest("hex"),
       now: () => now,
       siteUrl: "https://benjamin.test",
@@ -78,7 +82,9 @@ describe("J3 · lead enviado chega ao destinatário e só o admin consulta", () 
     expect(can("super_admin", decision.viewResource, "view")).toBe(false);
 
     // Retenção: mantido dentro do prazo
-    expect(planRetention([{ id: record.id, kind: "lead", lastActivityAt: record.createdAt, identified: true }], now)).toEqual({
+    expect(
+      planRetention([{ id: record.id, kind: "lead", lastActivityAt: record.createdAt, identified: true }], now),
+    ).toEqual({
       delete: [],
       anonymize: [],
       keep: 1,

@@ -52,7 +52,7 @@ export function useSubmission(action: FormAction) {
     (firstInvalid ?? formRef.current?.querySelector<HTMLElement>("[data-form-error]"))?.focus();
   }, [state]);
 
-  const errors = state.status === "error" ? state.fieldErrors ?? {} : {};
-  const values = state.status === "error" ? state.values ?? {} : {};
+  const errors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
+  const values = state.status === "error" ? (state.values ?? {}) : {};
   return { state, formAction, pending, meta, formRef, errors, values };
 }

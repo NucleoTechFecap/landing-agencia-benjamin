@@ -36,7 +36,11 @@ describe("recordAuditEvent", () => {
 
   it("envia evento com metadados filtrados (sem PII)", async () => {
     rpc.mockResolvedValue({ error: null });
-    await recordAuditEvent({ event: "content.published", resourceId: "case-1", metadata: { slug: "fecap", email: "x@y.com" } });
+    await recordAuditEvent({
+      event: "content.published",
+      resourceId: "case-1",
+      metadata: { slug: "fecap", email: "x@y.com" },
+    });
     expect(rpc).toHaveBeenCalledWith("record_audit_event", {
       p_event: "content.published",
       p_resource_type: "content",

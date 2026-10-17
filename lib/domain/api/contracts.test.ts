@@ -27,7 +27,10 @@ import { caseQuerySchema, paginate, toCaseCardDTO, toServiceDTO } from "./contra
 
 describe("paginação", () => {
   it("calcula meta e fatia os itens", () => {
-    expect(paginate([1, 2, 3, 4, 5], 2, 2)).toEqual({ data: [3, 4], meta: { page: 2, pageSize: 2, total: 5, totalPages: 3 } });
+    expect(paginate([1, 2, 3, 4, 5], 2, 2)).toEqual({
+      data: [3, 4],
+      meta: { page: 2, pageSize: 2, total: 5, totalPages: 3 },
+    });
   });
 
   it("retorna página vazia além do fim e totalPages mínimo 1", () => {
@@ -48,7 +51,9 @@ describe("validação de query", () => {
 
 describe("DTOs públicos", () => {
   it("não expõem id interno, status nem campos de controle", () => {
-    const dto = toServiceDTO(service("svc-1", ["area-1"], { slug: "audiovisual" }), [area("area-1", { slug: "criacao" })]);
+    const dto = toServiceDTO(service("svc-1", ["area-1"], { slug: "audiovisual" }), [
+      area("area-1", { slug: "criacao" }),
+    ]);
     expect(dto).not.toHaveProperty("id");
     expect(dto).not.toHaveProperty("status");
     expect(dto).not.toHaveProperty("provisional");
@@ -56,7 +61,11 @@ describe("DTOs públicos", () => {
   });
 
   it("monta card de case com categoria resolvida", () => {
-    const dto = toCaseCardDTO({ ...caseStudy("case-1", "cat", ["svc"], { slug: "fecap" }), categoryName: "Assessoria", categorySlug: "assessoria" });
+    const dto = toCaseCardDTO({
+      ...caseStudy("case-1", "cat", ["svc"], { slug: "fecap" }),
+      categoryName: "Assessoria",
+      categorySlug: "assessoria",
+    });
     expect(dto.category).toEqual({ slug: "assessoria", name: "Assessoria" });
     expect(dto.url).toBe("/cases/fecap");
   });

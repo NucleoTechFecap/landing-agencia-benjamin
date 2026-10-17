@@ -25,8 +25,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 const VARIANTS = {
-  primary:
-    "bg-benja-verde text-benja-nyanza border-benja-noite hover:bg-benja-lima hover:text-benja-verde",
+  primary: "bg-benja-verde text-benja-nyanza border-benja-noite hover:bg-benja-lima hover:text-benja-verde",
   secondary: "bg-benja-nyanza text-benja-verde border-benja-noite hover:bg-benja-claro",
   lima: "bg-benja-lima text-benja-verde border-benja-noite hover:bg-benja-nyanza",
   ghost: "bg-transparent text-current border-current shadow-none hover:bg-white/15",

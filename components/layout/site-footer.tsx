@@ -35,7 +35,13 @@ export function SiteFooter({ settings, year }: { settings: SiteSettings; year: n
       <div aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-40" />
       <Container className="relative grid gap-10 py-14 md:grid-cols-[1.3fr_1fr_1fr]">
         <div>
-          <Image src="/brand/logo-horizontal.webp" alt="Agência Benjamin" width={180} height={115} className="h-auto w-44" />
+          <Image
+            src="/brand/logo-horizontal.webp"
+            alt="Agência Benjamin"
+            width={180}
+            height={115}
+            className="h-auto w-44"
+          />
           <p className="mt-4 max-w-sm text-sm leading-relaxed opacity-90">{settings.description}</p>
           <p className="mt-4 text-sm font-bold tracking-widest uppercase">{settings.tagline}</p>
         </div>
@@ -61,7 +67,12 @@ export function SiteFooter({ settings, year }: { settings: SiteSettings; year: n
             ) : null}
             {settings.contact.phone ? <p>{settings.contact.phone}</p> : null}
             {settings.contact.address ? (
-              <a href={settings.contact.mapsUrl} target="_blank" rel="noopener noreferrer" className="block underline-offset-4 hover:underline">
+              <a
+                href={settings.contact.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block underline-offset-4 hover:underline"
+              >
                 {settings.contact.address}
                 <span className="sr-only"> (abre o mapa em nova aba)</span>
               </a>
@@ -77,7 +88,12 @@ export function SiteFooter({ settings, year }: { settings: SiteSettings; year: n
         <p>© {year} Agência Benjamin · Agência experimental da FECAP.</p>
         <p>
           Plataforma desenvolvida pelo{" "}
-          <a href="https://www.instagram.com/nucleotechfecap" target="_blank" rel="noopener noreferrer" className="font-bold underline underline-offset-4">
+          <a
+            href="https://www.instagram.com/nucleotechfecap"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold underline underline-offset-4"
+          >
             NúcleoTech FECAP
           </a>
           .

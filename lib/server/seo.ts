@@ -60,7 +60,11 @@ export function buildMetadata(page: PageSeo, settings?: Pick<SiteSettings, "keyw
     description: page.description,
     keywords,
     alternates: { canonical: page.path },
-    robots: { index, follow: index, googleBot: { index, follow: index, "max-image-preview": "large", "max-snippet": -1 } },
+    robots: {
+      index,
+      follow: index,
+      googleBot: { index, follow: index, "max-image-preview": "large", "max-snippet": -1 },
+    },
     openGraph: {
       type: page.type ?? "website",
       locale: "pt_BR",

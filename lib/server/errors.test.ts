@@ -46,7 +46,7 @@ describe("AppError e toPublicError", () => {
 
   it("esconde detalhes de erros inesperados e registra no log", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const result = toPublicError(new Error("relation \"leads\" does not exist"), "req-2");
+    const result = toPublicError(new Error('relation "leads" does not exist'), "req-2");
     expect(result).toEqual({ code: "INTERNAL_ERROR", message: ERROR_CODES.INTERNAL_ERROR.message, requestId: "req-2" });
     expect(spy.mock.calls[0][0]).toContain("does not exist");
   });

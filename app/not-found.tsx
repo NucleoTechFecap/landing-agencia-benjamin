@@ -48,7 +48,12 @@ export default async function NotFound() {
     <>
       <SiteHeader />
       <main id="conteudo" className="flex flex-1 flex-col">
-        <Section tone="lima" halftone className="flex flex-1 items-center" containerClassName="flex flex-col items-center py-10 text-center">
+        <Section
+          tone="lima"
+          halftone
+          className="flex flex-1 items-center"
+          containerClassName="flex flex-col items-center py-10 text-center"
+        >
           <BrandIcon name="seta-curva" color="verde" size={120} className="animate-float" />
           <p className="mt-6 text-sm font-bold tracking-widest uppercase">Erro 404</p>
           <h1 className="mt-2 text-balance text-4xl font-black sm:text-6xl">Essa pauta não saiu do briefing.</h1>

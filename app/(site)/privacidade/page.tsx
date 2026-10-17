@@ -33,7 +33,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata(
     {
       title: "Aviso de privacidade",
-      description: "Como a Agência Benjamin trata os dados enviados pelos formulários de contato, novos projetos e feedback.",
+      description:
+        "Como a Agência Benjamin trata os dados enviados pelos formulários de contato, novos projetos e feedback.",
       path: "/privacidade",
       keywords: ["privacidade", "LGPD"],
     },
