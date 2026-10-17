@@ -113,7 +113,11 @@ export function buildNotification(
 ): NotificationContent {
   const when = meta.receivedAt.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
   const header = [`Protocolo: ${meta.protocol}`, `Recebido em: ${when}`, `Categoria: ${decision.category}`];
-  const footer = ["", `Consulte no painel: ${meta.siteUrl}/admin`, "Mensagem automática da plataforma Agência Benjamin."];
+  const footer = [
+    "",
+    `Consulte no painel: ${meta.siteUrl}/admin`,
+    "Mensagem automática da plataforma Agência Benjamin.",
+  ];
 
   switch (input.kind) {
     case "lead": {

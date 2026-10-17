@@ -39,7 +39,10 @@ export function ProcessSteps() {
       <SectionHeading id="processo-titulo" eyebrow="Como trabalhamos" title="Do briefing à entrega" />
       <ol className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {STEPS.map((step, index) => (
-          <li key={step.title} className="rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-6 text-benja-noite shadow-sticker">
+          <li
+            key={step.title}
+            className="rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-6 text-benja-noite shadow-sticker"
+          >
             <div className="flex items-center justify-between">
               <BrandIcon name={step.icon} color="azul" size={52} />
               <span className="text-4xl font-black text-benja-azul/30">{String(index + 1).padStart(2, "0")}</span>

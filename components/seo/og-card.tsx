@@ -25,7 +25,17 @@
  * Arte das imagens Open Graph (1200×630) gerada com ImageResponse. Usa apenas estilos
  * inline suportados pelo Satori. `logoSrc` é o logotipo em data URL.
  */
-export function OgCard({ eyebrow, title, subtitle, logoSrc }: { eyebrow: string; title: string; subtitle?: string; logoSrc: string }) {
+export function OgCard({
+  eyebrow,
+  title,
+  subtitle,
+  logoSrc,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle?: string;
+  logoSrc: string;
+}) {
   return (
     <div
       style={{
@@ -40,7 +50,15 @@ export function OgCard({ eyebrow, title, subtitle, logoSrc }: { eyebrow: string;
         fontWeight: 700,
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", flex: 1, position: "relative" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          flex: 1,
+          position: "relative",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div
             style={{
@@ -61,8 +79,12 @@ export function OgCard({ eyebrow, title, subtitle, logoSrc }: { eyebrow: string;
           <img src={logoSrc} alt="" width={210} height={134} />
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: title.length > 48 ? 64 : 80, fontWeight: 900, lineHeight: 1.02, letterSpacing: -2 }}>{title}</div>
-          {subtitle ? <div style={{ fontSize: 32, marginTop: 24, color: "#a0ef91", lineHeight: 1.3 }}>{subtitle}</div> : null}
+          <div style={{ fontSize: title.length > 48 ? 64 : 80, fontWeight: 900, lineHeight: 1.02, letterSpacing: -2 }}>
+            {title}
+          </div>
+          {subtitle ? (
+            <div style={{ fontSize: 32, marginTop: 24, color: "#a0ef91", lineHeight: 1.3 }}>{subtitle}</div>
+          ) : null}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 26, color: "#a0ef91" }}>
           <span>Agência experimental da FECAP</span>

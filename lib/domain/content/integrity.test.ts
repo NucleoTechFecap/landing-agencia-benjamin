@@ -97,7 +97,9 @@ describe("resolveCtaHref", () => {
   const snapshot = mvpSnapshot();
 
   it("leva ao detalhe do serviço publicado", () => {
-    expect(resolveCtaHref({ kind: "service", serviceId: "audiovisual" }, snapshot, NOW).href).toBe("/servicos/audiovisual");
+    expect(resolveCtaHref({ kind: "service", serviceId: "audiovisual" }, snapshot, NOW).href).toBe(
+      "/servicos/audiovisual",
+    );
   });
 
   it("pré-seleciona o serviço no formulário de contato", () => {

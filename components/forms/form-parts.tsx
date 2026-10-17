@@ -44,7 +44,10 @@ export function PrivacyConsentText() {
       <Link href="/privacidade" className="font-bold text-benja-verde underline underline-offset-4" target="_blank">
         aviso de privacidade
       </Link>
-      . <span aria-hidden className="text-benja-laranja">*</span>
+      .{" "}
+      <span aria-hidden className="text-benja-laranja">
+        *
+      </span>
     </>
   );
 }
@@ -54,7 +57,12 @@ export function FormErrorBanner({ state }: { state: FormActionState }) {
   if (state.status !== "error") return null;
   const isValidation = state.code === "VALIDATION_FAILED";
   return (
-    <div data-form-error tabIndex={-1} role="alert" className="rounded-2xl border-2 border-[#9a2e00] bg-[#ffe1d1] p-4 text-sm text-[#5c1b00] outline-none">
+    <div
+      data-form-error
+      tabIndex={-1}
+      role="alert"
+      className="rounded-2xl border-2 border-[#9a2e00] bg-[#ffe1d1] p-4 text-sm text-[#5c1b00] outline-none"
+    >
       <p className="font-bold">{isValidation ? "Revise os campos destacados." : state.message}</p>
       {!isValidation ? (
         <p className="mt-1">
@@ -68,7 +76,10 @@ export function FormErrorBanner({ state }: { state: FormActionState }) {
 /** Confirmação de recebimento com protocolo (TECH-06 §5). */
 export function FormSuccess({ protocol, title, onReset }: { protocol: string; title: string; onReset: () => void }) {
   return (
-    <div role="status" className="rounded-3xl border-2 border-benja-noite bg-benja-claro p-8 text-center text-benja-verde shadow-sticker">
+    <div
+      role="status"
+      className="rounded-3xl border-2 border-benja-noite bg-benja-claro p-8 text-center text-benja-verde shadow-sticker"
+    >
       <p className="text-3xl font-black">{title}</p>
       <p className="mt-3 text-benja-noite">
         Protocolo <strong className="font-mono text-lg">{protocol}</strong>. Guarde este número caso precise falar com a

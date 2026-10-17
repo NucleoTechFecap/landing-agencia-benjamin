@@ -69,7 +69,10 @@ const trimmed = (max: number, label: string) =>
     .max(max, `${label[0].toUpperCase()}${label.slice(1)} deve ter até ${max} caracteres.`);
 
 const optionalText = (max: number, label: string) =>
-  z.preprocess((value) => (typeof value === "string" && value.trim() === "" ? undefined : value), trimmed(max, label).optional());
+  z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    trimmed(max, label).optional(),
+  );
 
 const name = trimmed(LIMITS.name, "seu nome").min(2, "Informe seu nome.");
 const email = z
@@ -120,7 +123,10 @@ export const leadSchema = technicalFieldsSchema.extend({
   phone,
   company: optionalText(LIMITS.company, "a empresa"),
   serviceInterest: optionalText(80, "o serviço"),
-  projectDescription: trimmed(LIMITS.message, "a descrição do projeto").min(20, "Conte um pouco mais sobre o projeto (mín. 20 caracteres)."),
+  projectDescription: trimmed(LIMITS.message, "a descrição do projeto").min(
+    20,
+    "Conte um pouco mais sobre o projeto (mín. 20 caracteres).",
+  ),
   privacyConsent,
 });
 
@@ -168,9 +174,7 @@ export const SCHEMAS = { lead: leadSchema, contact: contactSchema, feedback: fee
 
 export type FieldErrors = Record<string, string[]>;
 
-export type ParseResult =
-  | { success: true; value: SubmissionInput }
-  | { success: false; fieldErrors: FieldErrors };
+export type ParseResult = { success: true; value: SubmissionInput } | { success: false; fieldErrors: FieldErrors };
 
 /** Converte FormData/objeto em entrada validada do tipo informado. */
 export function parseSubmission(kind: SubmissionKind, raw: Record<string, unknown>): ParseResult {

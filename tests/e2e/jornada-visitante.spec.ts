@@ -57,7 +57,9 @@ test.describe("J1 · visitante encontra um serviço, vê um case e pede um proje
     await page.waitForTimeout(3_100);
     await page.getByLabel(/^Nome/).fill("Pessoa de Teste E2E");
     await page.getByLabel(/^E-mail/).fill("teste.e2e@exemplo.com");
-    await page.getByLabel(/Conte sobre o projeto/).fill("Queremos uma série de artigos para o blog da empresa em 2027.");
+    await page
+      .getByLabel(/Conte sobre o projeto/)
+      .fill("Queremos uma série de artigos para o blog da empresa em 2027.");
     await page.getByLabel(/aviso de privacidade/).check();
     await page.getByRole("button", { name: "Enviar pedido" }).click();
 

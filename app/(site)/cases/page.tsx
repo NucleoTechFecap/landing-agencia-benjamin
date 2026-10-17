@@ -40,7 +40,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata(
     {
       title: "Cases e portfólio",
-      description: "Portfólio da Agência Benjamin: cases de copywriting, social media & criação e assessoria de imprensa desenvolvidos para clientes reais.",
+      description:
+        "Portfólio da Agência Benjamin: cases de copywriting, social media & criação e assessoria de imprensa desenvolvidos para clientes reais.",
       path: "/cases",
       keywords: ["portfólio", "cases de comunicação", "Aventura de Construir", "Meridiano", "FECAP"],
     },
@@ -53,11 +54,19 @@ export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
   const allCases = await listCases();
   return (
     <>
-      <JsonLd data={itemListSchema("Cases da Agência Benjamin", allCases.map((item) => ({ name: item.title, path: `/cases/${item.slug}` })), siteUrl)} />
+      <JsonLd
+        data={itemListSchema(
+          "Cases da Agência Benjamin",
+          allCases.map((item) => ({ name: item.title, path: `/cases/${item.slug}` })),
+          siteUrl,
+        )}
+      />
       <PageHero
         eyebrow="Portfólio"
         title="Cases e conteúdos"
-        description={<p>Trabalhos desenvolvidos pela Agência Benjamin para clientes, parceiros e para a própria FECAP.</p>}
+        description={
+          <p>Trabalhos desenvolvidos pela Agência Benjamin para clientes, parceiros e para a própria FECAP.</p>
+        }
         path="/cases"
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Cases" }]}
         icon="coracao"
@@ -90,7 +99,12 @@ const pick = (value: string | string[] | undefined) => {
 
 async function FilteredCases({ searchParams }: Pick<PageProps<"/cases">, "searchParams">) {
   const params = await searchParams;
-  const [categories, services, areas, allCases] = await Promise.all([listCategories(), listServices(), listAreas(), listCases()]);
+  const [categories, services, areas, allCases] = await Promise.all([
+    listCategories(),
+    listServices(),
+    listAreas(),
+    listCases(),
+  ]);
   const clients = [...new Set(allCases.map((item) => item.client))].sort((a, b) => a.localeCompare(b, "pt-BR"));
   const rawClient = Array.isArray(params.cliente) ? params.cliente[0] : params.cliente;
   const active: ActiveFilters = {
@@ -100,7 +114,12 @@ async function FilteredCases({ searchParams }: Pick<PageProps<"/cases">, "search
     // Cliente aceita só valores existentes (evita refletir texto arbitrário na página).
     cliente: clients.find((client) => client === rawClient),
   };
-  const cases = await listCases({ category: active.categoria, service: active.servico, area: active.area, client: active.cliente });
+  const cases = await listCases({
+    category: active.categoria,
+    service: active.servico,
+    area: active.area,
+    client: active.cliente,
+  });
   const option = (item: { slug: string; name: string }) => ({ slug: item.slug, name: item.name });
 
   return (

@@ -36,7 +36,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata(
     {
       title: "Sobre a Benjamin",
-      description: "Conheça a Agência Benjamin, agência experimental de comunicação da FECAP: proposta de valor, modelo de atuação e relação com a FECAP.",
+      description:
+        "Conheça a Agência Benjamin, agência experimental de comunicação da FECAP: proposta de valor, modelo de atuação e relação com a FECAP.",
       path: "/sobre",
       keywords: ["sobre a Agência Benjamin", "agência experimental FECAP", "agência de comunicação universitária"],
     },
@@ -104,7 +105,12 @@ export default async function AboutPage() {
         description="Seja um projeto para sua marca ou vontade de fazer parte da Benjamin, a conversa começa por aqui."
         links={[
           { id: "projeto", label: "Quero um projeto", href: "/contato#formulario", external: false },
-          { id: "fazer-parte", label: "Quero fazer parte", href: "/contato?assunto=fazer-parte#formulario", external: false },
+          {
+            id: "fazer-parte",
+            label: "Quero fazer parte",
+            href: "/contato?assunto=fazer-parte#formulario",
+            external: false,
+          },
         ]}
       />
     </>

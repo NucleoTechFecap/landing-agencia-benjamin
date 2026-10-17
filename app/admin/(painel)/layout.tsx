@@ -56,7 +56,10 @@ async function PanelGate({ children }: { children: ReactNode }) {
             {user.name} · <strong>{ROLE_LABELS[user.role]}</strong>
           </span>
           <form action={signOut}>
-            <button type="submit" className="rounded-full border-2 border-[#f1fcd0] px-4 py-1.5 font-semibold hover:bg-[#f1fcd0] hover:text-[#004a1b]">
+            <button
+              type="submit"
+              className="rounded-full border-2 border-[#f1fcd0] px-4 py-1.5 font-semibold hover:bg-[#f1fcd0] hover:text-[#004a1b]"
+            >
               Sair
             </button>
           </form>

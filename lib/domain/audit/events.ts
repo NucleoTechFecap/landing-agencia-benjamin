@@ -43,13 +43,21 @@ export const AUDIT_EVENTS = {
   "user.role_changed": { description: "Alteração de papel", resourceType: "user", critical: true },
   "user.activation_changed": { description: "Conta ativada/desativada", resourceType: "user", critical: true },
   "content.created": { description: "Conteúdo criado", resourceType: "content", critical: false },
-  "content.updated": { description: "Conteúdo editado (inclui edição de publicado)", resourceType: "content", critical: false },
+  "content.updated": {
+    description: "Conteúdo editado (inclui edição de publicado)",
+    resourceType: "content",
+    critical: false,
+  },
   "content.published": { description: "Conteúdo publicado", resourceType: "content", critical: true },
   "content.unpublished": { description: "Conteúdo despublicado", resourceType: "content", critical: true },
   "content.archived": { description: "Conteúdo arquivado", resourceType: "content", critical: true },
   "content.restored": { description: "Conteúdo restaurado", resourceType: "content", critical: false },
   "content.deleted": { description: "Conteúdo excluído definitivamente", resourceType: "content", critical: true },
-  "settings.updated": { description: "Contato, links ou redes sociais alterados", resourceType: "settings", critical: true },
+  "settings.updated": {
+    description: "Contato, links ou redes sociais alterados",
+    resourceType: "settings",
+    critical: true,
+  },
   "media.uploaded": { description: "Mídia enviada", resourceType: "media", critical: false },
   "media.deleted": { description: "Mídia excluída", resourceType: "media", critical: true },
   "lead.viewed": { description: "Lead/contato aberto", resourceType: "lead", critical: false },
@@ -95,7 +103,9 @@ const MAX_VALUE_LENGTH = 120;
  * Filtra os metadados do evento: mantém apenas chaves da lista permitida e valores
  * primitivos curtos. Qualquer outra informação é descartada (sem payload de PII).
  */
-export function sanitizeAuditMetadata(metadata: Record<string, unknown> = {}): Record<string, string | number | boolean> {
+export function sanitizeAuditMetadata(
+  metadata: Record<string, unknown> = {},
+): Record<string, string | number | boolean> {
   const clean: Record<string, string | number | boolean> = {};
   for (const [key, value] of Object.entries(metadata)) {
     if (!ALLOWED_METADATA_KEYS.has(key)) continue;

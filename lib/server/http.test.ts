@@ -42,7 +42,9 @@ describe("apiRoute", () => {
     });
     const response = await handler(new Request("http://x/api", { headers: { "x-request-id": "r1" } }), {});
     expect(response.status).toBe(404);
-    expect(await response.json()).toEqual({ error: { code: "NOT_FOUND", message: "Case não encontrado.", requestId: "r1" } });
+    expect(await response.json()).toEqual({
+      error: { code: "NOT_FOUND", message: "Case não encontrado.", requestId: "r1" },
+    });
   });
 
   it("esconde erro inesperado como INTERNAL_ERROR 500", async () => {

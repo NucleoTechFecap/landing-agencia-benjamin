@@ -69,7 +69,11 @@ beforeEach(() => {
   deps = {
     store,
     notifier,
-    recipients: { LEAD_NOTIFICATION_TO: ["comercial@benjamin.test"], CONTACT_NOTIFICATION_TO: [], FEEDBACK_NOTIFICATION_TO: [] },
+    recipients: {
+      LEAD_NOTIFICATION_TO: ["comercial@benjamin.test"],
+      CONTACT_NOTIFICATION_TO: [],
+      FEEDBACK_NOTIFICATION_TO: [],
+    },
     hmac: (value) => createHmac("sha256", "segredo-de-teste").update(value).digest("hex"),
     now: () => now,
     siteUrl: "https://benjamin.test",
@@ -81,7 +85,11 @@ describe("processSubmission — cenários (TECH-07)", () => {
     const result = await processSubmission("lead", lead(), context, deps);
     expect(result).toEqual({ status: "success", protocol: "AB-0B6C2F", duplicate: false });
     expect(store.all()).toHaveLength(1);
-    expect(store.all()[0]).toMatchObject({ notificationStatus: "sent", notificationAttempts: 1, category: "lead:nao-sei" });
+    expect(store.all()[0]).toMatchObject({
+      notificationStatus: "sent",
+      notificationAttempts: 1,
+      category: "lead:nao-sei",
+    });
     expect(store.all()[0].ipHash).not.toContain("203.0.113.10");
     expect(notifier.sent[0]).toMatchObject({ to: ["comercial@benjamin.test"], idempotencyKey: `submission-${ID}` });
   });
@@ -128,8 +136,12 @@ describe("processSubmission — cenários (TECH-07)", () => {
   });
 
   it("S6 honeypot e envio rápido demais: sucesso silencioso sem persistir", async () => {
-    expect(await processSubmission("lead", lead({ website: "spam.com" }), context, deps)).toMatchObject({ status: "success" });
-    expect(await processSubmission("lead", lead({ startedAt: String(T0.getTime() - 500) }), context, deps)).toMatchObject({
+    expect(await processSubmission("lead", lead({ website: "spam.com" }), context, deps)).toMatchObject({
+      status: "success",
+    });
+    expect(
+      await processSubmission("lead", lead({ startedAt: String(T0.getTime() - 500) }), context, deps),
+    ).toMatchObject({
       status: "success",
     });
     expect(store.all()).toHaveLength(0);
@@ -162,11 +174,19 @@ describe("processSubmission — cenários (TECH-07)", () => {
   it("S9 limite por origem: sexto envio em 10 min é bloqueado", async () => {
     for (let index = 0; index < 5; index += 1) {
       const id = `0b6c2f0e-6f1d-4c8a-9a51-3d2f9f1b7e1${index}`;
-      await processSubmission("lead", lead({ submissionId: id, projectDescription: `Projeto número ${index} com detalhes.` }), context, deps);
+      await processSubmission(
+        "lead",
+        lead({ submissionId: id, projectDescription: `Projeto número ${index} com detalhes.` }),
+        context,
+        deps,
+      );
     }
     const blocked = await processSubmission(
       "lead",
-      lead({ submissionId: "0b6c2f0e-6f1d-4c8a-9a51-3d2f9f1b7e19", projectDescription: "Projeto número 9 com detalhes." }),
+      lead({
+        submissionId: "0b6c2f0e-6f1d-4c8a-9a51-3d2f9f1b7e19",
+        projectDescription: "Projeto número 9 com detalhes.",
+      }),
       context,
       deps,
     );

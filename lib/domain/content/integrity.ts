@@ -26,7 +26,16 @@ import type { ContentEntityType, ContentSnapshot, CtaTarget, MediaRef, Publishab
 import { isPubliclyVisible } from "./visibility";
 
 /** Rotas públicas conhecidas: CTAs internos só podem apontar para elas (TECH-05). */
-export const PUBLIC_ROUTE_PREFIXES = ["/", "/sobre", "/areas", "/servicos", "/cases", "/contato", "/feedback", "/privacidade"];
+export const PUBLIC_ROUTE_PREFIXES = [
+  "/",
+  "/sobre",
+  "/areas",
+  "/servicos",
+  "/cases",
+  "/contato",
+  "/feedback",
+  "/privacidade",
+];
 
 /** Destino usado quando o alvo de um link deixa de estar visível (arquivado/excluído). */
 export const FALLBACK_PATHS = {
@@ -111,7 +120,8 @@ export function findIntegrityIssues(snapshot: ContentSnapshot, now: Date = new D
 
   // R04/R06/R07 — case publicado exige categoria e ao menos um serviço visíveis.
   for (const item of snapshot.cases) {
-    if (!categoryIds.has(item.categoryId)) push("R04", "error", "case", item.id, `Categoria inexistente: ${item.categoryId}.`);
+    if (!categoryIds.has(item.categoryId))
+      push("R04", "error", "case", item.id, `Categoria inexistente: ${item.categoryId}.`);
     for (const id of item.serviceIds) {
       if (!serviceIds.has(id)) push("R04", "error", "case", item.id, `Serviço inexistente: ${id}.`);
     }
@@ -140,9 +150,11 @@ export function findIntegrityIssues(snapshot: ContentSnapshot, now: Date = new D
     const reference = referencedId(target);
     if (reference) {
       const exists =
-        reference.type === "service" ? serviceIds.has(reference.id)
-        : reference.type === "case" ? caseIds.has(reference.id)
-        : areaIds.has(reference.id);
+        reference.type === "service"
+          ? serviceIds.has(reference.id)
+          : reference.type === "case"
+            ? caseIds.has(reference.id)
+            : areaIds.has(reference.id);
       if (!exists) push("R04", "error", "cta", cta.id, `Destino inexistente: ${reference.type} ${reference.id}.`);
       else if (visible(cta) && !resolveCtaHref(target, snapshot, now).isTargetVisible) {
         push("R08", "warning", "cta", cta.id, "Destino não publicado: o site usará o link de fallback.");
@@ -153,7 +165,13 @@ export function findIntegrityIssues(snapshot: ContentSnapshot, now: Date = new D
   // R11 — limites de destaque na Home.
   const featuredServices = snapshot.services.filter((service) => service.featured && visible(service));
   if (featuredServices.length > FEATURED_LIMITS.services) {
-    push("R11", "warning", "service", featuredServices[0].id, `Mais de ${FEATURED_LIMITS.services} serviços em destaque.`);
+    push(
+      "R11",
+      "warning",
+      "service",
+      featuredServices[0].id,
+      `Mais de ${FEATURED_LIMITS.services} serviços em destaque.`,
+    );
   }
   const featuredCases = snapshot.cases.filter((item) => item.featured && visible(item));
   if (featuredCases.length > FEATURED_LIMITS.cases) {
@@ -277,17 +295,22 @@ export function assessRemovalImpact(
         ),
     );
     if (orphaned.length) {
-      report.blockers.push(`${orphaned.length} serviço(s) publicado(s) ficariam sem área: ${orphaned.map((s) => s.name).join(", ")}.`);
+      report.blockers.push(
+        `${orphaned.length} serviço(s) publicado(s) ficariam sem área: ${orphaned.map((s) => s.name).join(", ")}.`,
+      );
     }
   }
 
   if (type === "service") {
     const dependentCases = visibleCases.filter((item) => item.serviceIds.includes(id));
     const wouldOrphan = dependentCases.filter(
-      (item) => !item.serviceIds.some((other) => other !== id && visibleServices.some((service) => service.id === other)),
+      (item) =>
+        !item.serviceIds.some((other) => other !== id && visibleServices.some((service) => service.id === other)),
     );
     if (wouldOrphan.length) {
-      report.blockers.push(`${wouldOrphan.length} case(s) publicado(s) ficariam sem serviço: ${wouldOrphan.map((c) => c.title).join(", ")}.`);
+      report.blockers.push(
+        `${wouldOrphan.length} case(s) publicado(s) ficariam sem serviço: ${wouldOrphan.map((c) => c.title).join(", ")}.`,
+      );
     } else if (dependentCases.length) {
       report.warnings.push(`O vínculo com ${dependentCases.length} case(s) deixará de aparecer no site.`);
     }

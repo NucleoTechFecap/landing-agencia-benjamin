@@ -79,7 +79,14 @@ export function MobileMenu() {
         className="flex size-11 items-center justify-center rounded-full border-2 border-benja-noite bg-benja-nyanza shadow-sticker"
       >
         <span className="sr-only">{open ? "Fechar menu" : "Abrir menu"}</span>
-        <svg viewBox="0 0 24 24" aria-hidden className="size-6 stroke-benja-verde" fill="none" strokeWidth={2.5} strokeLinecap="round">
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden
+          className="size-6 stroke-benja-verde"
+          fill="none"
+          strokeWidth={2.5}
+          strokeLinecap="round"
+        >
           {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
         </svg>
       </button>

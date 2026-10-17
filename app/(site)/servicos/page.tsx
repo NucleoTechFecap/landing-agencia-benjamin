@@ -38,9 +38,16 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata(
     {
       title: "Serviços",
-      description: "Estratégia digital, social media, eventos, produção de conteúdo, copywriting, design e identidade visual, audiovisual, assessoria de imprensa e comunicação interna.",
+      description:
+        "Estratégia digital, social media, eventos, produção de conteúdo, copywriting, design e identidade visual, audiovisual, assessoria de imprensa e comunicação interna.",
       path: "/servicos",
-      keywords: ["serviços de comunicação", "agência de comunicação", "estratégia digital", "social media", "audiovisual"],
+      keywords: [
+        "serviços de comunicação",
+        "agência de comunicação",
+        "estratégia digital",
+        "social media",
+        "audiovisual",
+      ],
     },
     await getSiteSettings(),
   );
@@ -51,7 +58,13 @@ export default async function ServicesPage() {
   const services = await listServices();
   return (
     <>
-      <JsonLd data={itemListSchema("Serviços da Agência Benjamin", services.map((service) => ({ name: service.name, path: `/servicos/${service.slug}` })), siteUrl)} />
+      <JsonLd
+        data={itemListSchema(
+          "Serviços da Agência Benjamin",
+          services.map((service) => ({ name: service.name, path: `/servicos/${service.slug}` })),
+          siteUrl,
+        )}
+      />
       <PageHero
         eyebrow="Serviços"
         title="Comunicação completa, feita por quem está chegando com tudo"

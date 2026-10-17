@@ -25,7 +25,11 @@ import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/config/public-env";
 import { listCases, listServices } from "@/lib/server/content/repository";
 
-const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
+const STATIC_ROUTES: {
+  path: string;
+  priority: number;
+  changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"];
+}[] = [
   { path: "", priority: 1, changeFrequency: "weekly" },
   { path: "/sobre", priority: 0.8, changeFrequency: "monthly" },
   { path: "/areas", priority: 0.8, changeFrequency: "monthly" },

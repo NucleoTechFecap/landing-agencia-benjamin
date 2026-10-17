@@ -37,7 +37,15 @@ export function ContactForm(props: { action: FormAction; preselectedSubject?: st
   return <ContactFormInner key={round} {...props} onReset={() => setRound((value) => value + 1)} />;
 }
 
-function ContactFormInner({ action, preselectedSubject, onReset }: { action: FormAction; preselectedSubject?: string; onReset: () => void }) {
+function ContactFormInner({
+  action,
+  preselectedSubject,
+  onReset,
+}: {
+  action: FormAction;
+  preselectedSubject?: string;
+  onReset: () => void;
+}) {
   const { state, formAction, pending, meta, formRef, errors, values } = useSubmission(action);
   if (state.status === "success") {
     return <FormSuccess protocol={state.protocol} title="Mensagem enviada!" onReset={onReset} />;
@@ -48,8 +56,25 @@ function ContactFormInner({ action, preselectedSubject, onReset }: { action: For
       <HoneypotField />
       <FormErrorBanner state={state} />
       <div className="grid gap-5 sm:grid-cols-2">
-        <TextField name="name" label="Nome" required autoComplete="name" maxLength={120} errors={errors.name} defaultValue={values.name} />
-        <TextField name="email" label="E-mail" type="email" inputMode="email" required autoComplete="email" errors={errors.email} defaultValue={values.email} />
+        <TextField
+          name="name"
+          label="Nome"
+          required
+          autoComplete="name"
+          maxLength={120}
+          errors={errors.name}
+          defaultValue={values.name}
+        />
+        <TextField
+          name="email"
+          label="E-mail"
+          type="email"
+          inputMode="email"
+          required
+          autoComplete="email"
+          errors={errors.email}
+          defaultValue={values.email}
+        />
         <TextField
           name="phone"
           label="Telefone"
@@ -70,7 +95,15 @@ function ContactFormInner({ action, preselectedSubject, onReset }: { action: For
           defaultValue={values.subject ?? preselectedSubject}
         />
       </div>
-      <TextArea name="message" label="Mensagem" required rows={6} maxLength={3000} errors={errors.message} defaultValue={values.message} />
+      <TextArea
+        name="message"
+        label="Mensagem"
+        required
+        rows={6}
+        maxLength={3000}
+        errors={errors.message}
+        defaultValue={values.message}
+      />
       <CheckboxField name="privacyConsent" required errors={errors.privacyConsent}>
         <PrivacyConsentText />
       </CheckboxField>

@@ -52,7 +52,12 @@ export function ClosingCta({
         <p className="mt-4 text-lg">{description}</p>
         <div className="mt-8 flex flex-wrap gap-3">
           {links.map((link, index) => (
-            <ButtonLink key={link.id} href={link.href} external={link.external} variant={index === 0 ? "primary" : "secondary"}>
+            <ButtonLink
+              key={link.id}
+              href={link.href}
+              external={link.external}
+              variant={index === 0 ? "primary" : "secondary"}
+            >
               {link.label}
             </ButtonLink>
           ))}

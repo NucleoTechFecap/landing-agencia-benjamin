@@ -66,7 +66,10 @@ const TECHNICAL_FIELDS = new Set(["website", "startedAt", "privacyConsent"]);
 /** Valores digitados para repreencher o formulário após erro (funciona sem JavaScript). */
 function echoValues(raw: Record<string, unknown>): Record<string, string> {
   return Object.fromEntries(
-    Object.entries(raw).filter(([key, value]) => typeof value === "string" && !TECHNICAL_FIELDS.has(key)) as [string, string][],
+    Object.entries(raw).filter(([key, value]) => typeof value === "string" && !TECHNICAL_FIELDS.has(key)) as [
+      string,
+      string,
+    ][],
   );
 }
 
@@ -97,7 +100,11 @@ export async function processSubmission(
       if (parsed.fieldErrors.website) {
         // Honeypot preenchido: responde como sucesso para não ensinar o robô.
         log.warn("forms.submission.spam_suspected", { reason: "honeypot" });
-        return { status: "success", protocol: protocolFromId(String(raw.submissionId ?? "00000000")), duplicate: false };
+        return {
+          status: "success",
+          protocol: protocolFromId(String(raw.submissionId ?? "00000000")),
+          duplicate: false,
+        };
       }
       throw new AppError("VALIDATION_FAILED", { fieldErrors: parsed.fieldErrors });
     }
@@ -119,7 +126,10 @@ export async function processSubmission(
 
     // Idempotência 2: mesmo conteúdo na janela (página recarregada e enviada de novo).
     const fingerprint = deps.hmac(canonicalContent(input));
-    const sameContent = await deps.store.findRecentByFingerprint(fingerprint, new Date(now.getTime() - DEDUPE_WINDOW_MS));
+    const sameContent = await deps.store.findRecentByFingerprint(
+      fingerprint,
+      new Date(now.getTime() - DEDUPE_WINDOW_MS),
+    );
     if (sameContent) {
       log.info("forms.submission.duplicate", { submissionId, by: "fingerprint", originalId: sameContent.id });
       return { status: "success", protocol: sameContent.protocol, duplicate: true };

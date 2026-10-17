@@ -1,0 +1,11 @@
+# O Prettier já ignora tudo o que está no .gitignore (node_modules, .next, coverage, build...).
+# Aqui ficam só as exceções específicas do projeto.
+
+# Gerado pelo npm
+package-lock.json
+
+# Migrations já aplicadas no banco não devem mudar
+supabase/migrations/
+
+# Documentação fora da formatação por enquanto, para não reescrever as tabelas dos docs (ARC-04)
+*.md

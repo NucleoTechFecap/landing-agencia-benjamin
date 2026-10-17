@@ -36,7 +36,9 @@ const UNAVAILABLE = "Autenticação indisponível neste ambiente. Contate o Núc
 
 /** Login com e-mail e senha. Mensagem genérica para não revelar quais e-mails existem. */
 export async function signIn(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
   const password = String(formData.get("password") ?? "");
   if (!email || !password) return { error: "Informe e-mail e senha.", email };
 
@@ -82,7 +84,9 @@ export async function signOut(): Promise<void> {
 
 /** Envia link de redefinição. Sempre responde igual, exista ou não a conta. */
 export async function requestPasswordReset(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
   if (!email.includes("@")) return { error: "Informe um e-mail válido.", email };
   try {
     const supabase = await createSessionClient();

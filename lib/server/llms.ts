@@ -27,7 +27,11 @@ import { getSiteSettings, listAreas, listCases, listServices } from "./content/r
 
 const PAGES = [
   { path: "/", title: "Início", text: "manifesto, apresentação da agência, áreas, serviços e cases em destaque." },
-  { path: "/sobre", title: "Sobre a Benjamin", text: "o que é a agência experimental, proposta de valor, modelo de atuação e relação com a FECAP." },
+  {
+    path: "/sobre",
+    title: "Sobre a Benjamin",
+    text: "o que é a agência experimental, proposta de valor, modelo de atuação e relação com a FECAP.",
+  },
   { path: "/areas", title: "Áreas de atuação", text: "as seis áreas da agência e os serviços de cada uma." },
   { path: "/servicos", title: "Serviços", text: "os serviços oferecidos e como a agência trabalha." },
   { path: "/cases", title: "Cases", text: "portfólio filtrável por categoria, serviço, área e cliente." },
@@ -44,7 +48,12 @@ const tidy = (lines: string[]) =>
 
 /** Resumo em Markdown para assistentes de IA (padrão https://llmstxt.org). */
 export async function buildLlmsTxt(): Promise<string> {
-  const [settings, areas, services, cases] = await Promise.all([getSiteSettings(), listAreas(), listServices(), listCases()]);
+  const [settings, areas, services, cases] = await Promise.all([
+    getSiteSettings(),
+    listAreas(),
+    listServices(),
+    listCases(),
+  ]);
   return tidy([
     `# ${settings.name}`,
     "",
@@ -66,7 +75,9 @@ export async function buildLlmsTxt(): Promise<string> {
     "",
     "## Cases",
     "",
-    ...cases.map((item) => `- [${item.title}](${siteUrl}/cases/${item.slug}): ${item.summary} (cliente: ${item.client})`),
+    ...cases.map(
+      (item) => `- [${item.title}](${siteUrl}/cases/${item.slug}): ${item.summary} (cliente: ${item.client})`,
+    ),
     "",
     "## Optional",
     "",
@@ -81,7 +92,12 @@ export async function buildLlmsTxt(): Promise<string> {
 
 /** Versão completa com as descrições de cada item, para leitura integral por IA. */
 export async function buildLlmsFullTxt(): Promise<string> {
-  const [settings, areas, services, cases] = await Promise.all([getSiteSettings(), listAreas(), listServices(), listCases()]);
+  const [settings, areas, services, cases] = await Promise.all([
+    getSiteSettings(),
+    listAreas(),
+    listServices(),
+    listCases(),
+  ]);
   const areaName = new Map(areas.map((area) => [area.id, area.name]));
   return tidy([
     `# ${settings.name} — conteúdo completo`,
@@ -119,7 +135,10 @@ export async function buildLlmsFullTxt(): Promise<string> {
       "",
       service.description,
       "",
-      `- Áreas: ${service.areaIds.map((id) => areaName.get(id)).filter(Boolean).join(", ")}`,
+      `- Áreas: ${service.areaIds
+        .map((id) => areaName.get(id))
+        .filter(Boolean)
+        .join(", ")}`,
       `- Exemplos de entrega: ${service.examples.join("; ")}`,
       `- Página: ${siteUrl}/servicos/${service.slug}`,
       `- Solicitar: ${siteUrl}/contato?servico=${service.slug}`,

@@ -2,7 +2,7 @@
 ════════════════════════════════════════════════════════════════════════════════
  Sistema      : Agência Benjamin Landing Page
  Módulo       : Config
- Arquivo      : vitest.config.ts
+ Arquivo      : vitest.config.mts
  Descrição    : Configuração do Vitest para testes unitários em ambiente Node.
 
  Desenvolvedor: Vinícius Nishimura Reis
@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 16/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-03).
  13/10/2026 Vinícius Nishimura Reis  Alias do server-only para testes (ARC-05).
+ 16/10/2026 Caio Moraes              Renomeado para .mts: ESM explícito (ARC-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 

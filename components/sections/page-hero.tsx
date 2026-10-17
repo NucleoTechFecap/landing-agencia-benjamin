@@ -57,7 +57,10 @@ export function PageHero({
   children?: ReactNode;
 }) {
   const crumbsForSchema = path
-    ? breadcrumbs.map((crumb, index) => ({ name: crumb.label, path: crumb.href ?? (index === breadcrumbs.length - 1 ? path : "/") }))
+    ? breadcrumbs.map((crumb, index) => ({
+        name: crumb.label,
+        path: crumb.href ?? (index === breadcrumbs.length - 1 ? path : "/"),
+      }))
     : [];
   return (
     <Section tone={tone} halftone className="py-12 sm:py-16" labelledBy="pagina-titulo">
@@ -66,7 +69,10 @@ export function PageHero({
       <div className="mt-8 flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
         <div className="max-w-3xl">
           {eyebrow ? <p className="text-sm font-bold tracking-widest uppercase opacity-90">{eyebrow}</p> : null}
-          <h1 id="pagina-titulo" className="mt-2 text-balance text-4xl leading-[1.02] font-black tracking-tight sm:text-6xl">
+          <h1
+            id="pagina-titulo"
+            className="mt-2 text-balance text-4xl leading-[1.02] font-black tracking-tight sm:text-6xl"
+          >
             {title}
           </h1>
           {description ? <div className="mt-5 text-lg leading-relaxed opacity-95">{description}</div> : null}

@@ -56,7 +56,11 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section id={id} aria-labelledby={labelledBy} className={`relative overflow-hidden py-16 sm:py-24 ${SECTION_TONES[tone]} ${className}`}>
+    <section
+      id={id}
+      aria-labelledby={labelledBy}
+      className={`relative overflow-hidden py-16 sm:py-24 ${SECTION_TONES[tone]} ${className}`}
+    >
       {halftone ? <div aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-60" /> : null}
       <Container className={`relative ${containerClassName}`}>{children}</Container>
     </section>

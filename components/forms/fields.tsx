@@ -38,7 +38,10 @@ function Label({ name, label, required }: { name: string; label: string; require
       {label}
       {required ? (
         <>
-          <span aria-hidden className="text-benja-laranja"> *</span>
+          <span aria-hidden className="text-benja-laranja">
+            {" "}
+            *
+          </span>
           <span className="sr-only"> (obrigatório)</span>
         </>
       ) : (

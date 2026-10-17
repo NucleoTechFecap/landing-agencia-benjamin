@@ -1,0 +1,4 @@
+# Força quebra de linha LF em todos os arquivos de texto, em qualquer sistema operacional.
+# Sem isso, o Git no Windows (core.autocrlf=true) converte os arquivos para CRLF e o
+# format:check do Prettier falha no projeto inteiro (ARC-04). Alinhado ao .editorconfig.
+* text=auto eol=lf

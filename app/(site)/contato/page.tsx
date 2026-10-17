@@ -40,7 +40,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata(
     {
       title: "Contato",
-      description: "Peça um projeto ou fale com a Agência Benjamin: formulário de novos projetos e contato institucional.",
+      description:
+        "Peça um projeto ou fale com a Agência Benjamin: formulário de novos projetos e contato institucional.",
       path: "/contato",
       keywords: ["contato Agência Benjamin", "orçamento de comunicação", "contratar agência de comunicação"],
     },
@@ -56,25 +57,38 @@ export default async function ContactPage({ searchParams }: PageProps<"/contato"
       <PageHero
         eyebrow="Contato"
         title="Vamos conversar?"
-        description={<p>Conte sobre o seu projeto ou mande sua mensagem. A equipe da Benjamin responde pelo e-mail informado.</p>}
+        description={
+          <p>Conte sobre o seu projeto ou mande sua mensagem. A equipe da Benjamin responde pelo e-mail informado.</p>
+        }
         path="/contato"
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Contato" }]}
         icon="comentario"
       />
       <Section tone="nyanza" labelledBy="formulario-titulo">
         <div className="grid gap-10 lg:grid-cols-[1fr_1.6fr]">
-          <aside aria-label="Outros canais" className="h-fit space-y-6 rounded-3xl border-2 border-benja-noite bg-benja-claro p-7 shadow-sticker">
+          <aside
+            aria-label="Outros canais"
+            className="h-fit space-y-6 rounded-3xl border-2 border-benja-noite bg-benja-claro p-7 shadow-sticker"
+          >
             <BrandIcon name="enviado" color="verde" size={64} />
             <div>
               <h2 className="text-xl font-black text-benja-verde">Onde estamos</h2>
               {settings.contact.address ? (
-                <a href={settings.contact.mapsUrl} target="_blank" rel="noopener noreferrer" className="mt-2 block underline underline-offset-4">
+                <a
+                  href={settings.contact.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 block underline underline-offset-4"
+                >
                   {settings.contact.address}
                   <span className="sr-only"> (abre o mapa em nova aba)</span>
                 </a>
               ) : null}
               {settings.contact.email ? (
-                <a href={`mailto:${settings.contact.email}`} className="mt-2 block font-bold underline underline-offset-4">
+                <a
+                  href={`mailto:${settings.contact.email}`}
+                  className="mt-2 block font-bold underline underline-offset-4"
+                >
                   {settings.contact.email}
                 </a>
               ) : null}
@@ -91,7 +105,10 @@ export default async function ContactPage({ searchParams }: PageProps<"/contato"
               .
             </p>
           </aside>
-          <div id="formulario" className="scroll-mt-28 rounded-3xl border-2 border-benja-noite bg-white/70 p-6 shadow-sticker-lg sm:p-8">
+          <div
+            id="formulario"
+            className="scroll-mt-28 rounded-3xl border-2 border-benja-noite bg-white/70 p-6 shadow-sticker-lg sm:p-8"
+          >
             <h2 id="formulario-titulo" className="sr-only">
               Formulário de contato
             </h2>
@@ -120,19 +137,33 @@ async function ContactForms({ searchParams }: Pick<PageProps<"/contato">, "searc
       <nav aria-label="Tipo de mensagem" className="mb-8">
         <ul className="flex gap-2 rounded-full border-2 border-benja-noite bg-benja-nyanza p-1.5">
           <li className="flex flex-1">
-            <Link href="/contato#formulario" aria-current={tipo === "projeto" ? "page" : undefined} className={tabClass(tipo === "projeto")} scroll={false}>
+            <Link
+              href="/contato#formulario"
+              aria-current={tipo === "projeto" ? "page" : undefined}
+              className={tabClass(tipo === "projeto")}
+              scroll={false}
+            >
               Quero um projeto
             </Link>
           </li>
           <li className="flex flex-1">
-            <Link href="/contato?tipo=contato#formulario" aria-current={tipo === "contato" ? "page" : undefined} className={tabClass(tipo === "contato")} scroll={false}>
+            <Link
+              href="/contato?tipo=contato#formulario"
+              aria-current={tipo === "contato" ? "page" : undefined}
+              className={tabClass(tipo === "contato")}
+              scroll={false}
+            >
               Fale com a gente
             </Link>
           </li>
         </ul>
       </nav>
       {tipo === "projeto" ? (
-        <LeadForm action={submitLead} services={services.map((service) => ({ value: service.slug, label: service.name }))} preselectedService={servico} />
+        <LeadForm
+          action={submitLead}
+          services={services.map((service) => ({ value: service.slug, label: service.name }))}
+          preselectedService={servico}
+        />
       ) : (
         <ContactForm action={submitContact} preselectedSubject={assunto} />
       )}

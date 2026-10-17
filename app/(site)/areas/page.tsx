@@ -37,9 +37,18 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata(
     {
       title: "Áreas de atuação",
-      description: "Eventos e Parcerias, Social Media, Comunicação Interna, Copywriting, Criação e Assessoria de Imprensa: as seis áreas da Agência Benjamin.",
+      description:
+        "Eventos e Parcerias, Social Media, Comunicação Interna, Copywriting, Criação e Assessoria de Imprensa: as seis áreas da Agência Benjamin.",
       path: "/areas",
-      keywords: ["áreas de atuação", "social media", "copywriting", "criação", "assessoria de imprensa", "eventos e parcerias", "comunicação interna"],
+      keywords: [
+        "áreas de atuação",
+        "social media",
+        "copywriting",
+        "criação",
+        "assessoria de imprensa",
+        "eventos e parcerias",
+        "comunicação interna",
+      ],
     },
     await getSiteSettings(),
   );
@@ -72,7 +81,10 @@ export default async function AreasPage() {
           <ul className="flex flex-wrap gap-2">
             {areas.map((area) => (
               <li key={area.id}>
-                <a href={`#${area.slug}`} className="inline-block rounded-full border-2 border-current px-3 py-1 text-sm font-bold hover:bg-benja-lima hover:text-benja-verde">
+                <a
+                  href={`#${area.slug}`}
+                  className="inline-block rounded-full border-2 border-current px-3 py-1 text-sm font-bold hover:bg-benja-lima hover:text-benja-verde"
+                >
                   {area.name}
                 </a>
               </li>
@@ -94,7 +106,9 @@ export default async function AreasPage() {
             <Container className="grid gap-10 md:grid-cols-[auto_1fr] md:items-start">
               <BrandIcon name={area.icon ?? "estrela"} color={icon} size={120} />
               <div>
-                <p className="text-sm font-bold tracking-widest uppercase opacity-80">Área {String(index + 1).padStart(2, "0")}</p>
+                <p className="text-sm font-bold tracking-widest uppercase opacity-80">
+                  Área {String(index + 1).padStart(2, "0")}
+                </p>
                 <h2 id={`${area.slug}-titulo`} className="mt-1 text-4xl font-black sm:text-5xl">
                   {area.name}
                 </h2>
@@ -103,7 +117,10 @@ export default async function AreasPage() {
                 {area.highlights.length > 0 ? (
                   <ul className="mt-6 flex flex-wrap gap-2">
                     {area.highlights.map((highlight) => (
-                      <li key={highlight} className="rounded-full border-2 border-current px-3 py-1 text-sm font-semibold">
+                      <li
+                        key={highlight}
+                        className="rounded-full border-2 border-current px-3 py-1 text-sm font-semibold"
+                      >
                         {highlight}
                       </li>
                     ))}

@@ -57,11 +57,12 @@ describe("J2 · editor publica um case novo e ele aparece no site", () => {
     expect(isPubliclyVisible(draft, now)).toBe(false);
     expect(can("editor", "case", "publish")).toBe(true);
 
-    const result = transition(
-      { status: draft.status, publishedAt: draft.publishedAt, archivedAt: null },
-      "publish",
-      { role: "editor", resource: "case", now, validateForPublish: () => validateCaseForPublish(draft, now) },
-    );
+    const result = transition({ status: draft.status, publishedAt: draft.publishedAt, archivedAt: null }, "publish", {
+      role: "editor",
+      resource: "case",
+      now,
+      validateForPublish: () => validateCaseForPublish(draft, now),
+    });
     expect(result.ok).toBe(true);
     if (!result.ok || !("publishedAt" in result.next)) return;
     Object.assign(draft, result.next);
@@ -73,7 +74,9 @@ describe("J2 · editor publica um case novo e ele aparece no site", () => {
 
   it("negativo: viewer não publica e case incompleto não vai ao ar", () => {
     const state = { status: "draft" as const, publishedAt: null, archivedAt: null };
-    expect(transition(state, "publish", { role: "viewer", resource: "case", now, validateForPublish: () => [] })).toMatchObject({
+    expect(
+      transition(state, "publish", { role: "viewer", resource: "case", now, validateForPublish: () => [] }),
+    ).toMatchObject({
       ok: false,
       error: { code: "FORBIDDEN" },
     });

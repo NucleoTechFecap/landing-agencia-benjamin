@@ -61,7 +61,15 @@ function LeadFormInner({
       <HoneypotField />
       <FormErrorBanner state={state} />
       <div className="grid gap-5 sm:grid-cols-2">
-        <TextField name="name" label="Nome" required autoComplete="name" maxLength={120} errors={errors.name} defaultValue={values.name} />
+        <TextField
+          name="name"
+          label="Nome"
+          required
+          autoComplete="name"
+          maxLength={120}
+          errors={errors.name}
+          defaultValue={values.name}
+        />
         <TextField
           name="email"
           label="E-mail"
@@ -82,7 +90,14 @@ function LeadFormInner({
           errors={errors.phone}
           defaultValue={values.phone}
         />
-        <TextField name="company" label="Empresa ou organização" autoComplete="organization" maxLength={120} errors={errors.company} defaultValue={values.company} />
+        <TextField
+          name="company"
+          label="Empresa ou organização"
+          autoComplete="organization"
+          maxLength={120}
+          errors={errors.company}
+          defaultValue={values.company}
+        />
       </div>
       <SelectField
         name="serviceInterest"

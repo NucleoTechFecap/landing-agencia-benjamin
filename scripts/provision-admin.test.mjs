@@ -33,7 +33,12 @@ const env = {
 
 describe("provision-admin parseArgs", () => {
   it("aceita convite válido com confirmação do ambiente", () => {
-    expect(parseArgs(["--email", "Pessoa@Exemplo.com", "--name", "Pessoa Teste", "--role", "admin", "--confirm", "hml"], env)).toEqual({
+    expect(
+      parseArgs(
+        ["--email", "Pessoa@Exemplo.com", "--name", "Pessoa Teste", "--role", "admin", "--confirm", "hml"],
+        env,
+      ),
+    ).toEqual({
       email: "pessoa@exemplo.com",
       name: "Pessoa Teste",
       role: "admin",
@@ -48,14 +53,19 @@ describe("provision-admin parseArgs", () => {
   });
 
   it("papel padrão é pending e dry-run dispensa confirmação", () => {
-    expect(parseArgs(["--email", "a@b.com", "--name", "Ana", "--dry-run"], env)).toMatchObject({ role: "pending", dryRun: true });
+    expect(parseArgs(["--email", "a@b.com", "--name", "Ana", "--dry-run"], env)).toMatchObject({
+      role: "pending",
+      dryRun: true,
+    });
   });
 
   it("recusa papel inexistente, e-mail inválido e variáveis ausentes", () => {
-    expect(() => parseArgs(["--email", "a@b.com", "--name", "Ana", "--role", "owner", "--dry-run"], env)).toThrow(/--role/);
-    expect(() => parseArgs(["--email", "invalido", "--name", "Ana", "--dry-run"], env)).toThrow(/--email/);
-    expect(() => parseArgs(["--email", "a@b.com", "--name", "Ana", "--dry-run"], { ...env, SUPABASE_SERVICE_ROLE_KEY: "" })).toThrow(
-      /SUPABASE_SERVICE_ROLE_KEY/,
+    expect(() => parseArgs(["--email", "a@b.com", "--name", "Ana", "--role", "owner", "--dry-run"], env)).toThrow(
+      /--role/,
     );
+    expect(() => parseArgs(["--email", "invalido", "--name", "Ana", "--dry-run"], env)).toThrow(/--email/);
+    expect(() =>
+      parseArgs(["--email", "a@b.com", "--name", "Ana", "--dry-run"], { ...env, SUPABASE_SERVICE_ROLE_KEY: "" }),
+    ).toThrow(/SUPABASE_SERVICE_ROLE_KEY/);
   });
 });

@@ -40,12 +40,16 @@ describe("retenção", () => {
   });
 
   it("contato vence em 6 meses", () => {
-    expect(retentionActionFor(subject({ kind: "contact", lastActivityAt: "2026-04-12T00:00:00Z" }), NOW)).toBe("delete");
+    expect(retentionActionFor(subject({ kind: "contact", lastActivityAt: "2026-04-12T00:00:00Z" }), NOW)).toBe(
+      "delete",
+    );
     expect(retentionActionFor(subject({ kind: "contact", lastActivityAt: "2026-05-01T00:00:00Z" }), NOW)).toBe("keep");
   });
 
   it("anonimiza feedback identificado e exclui anônimo após 24 meses", () => {
-    expect(retentionActionFor(subject({ kind: "feedback", lastActivityAt: "2025-09-01T00:00:00Z" }), NOW)).toBe("anonymize");
+    expect(retentionActionFor(subject({ kind: "feedback", lastActivityAt: "2025-09-01T00:00:00Z" }), NOW)).toBe(
+      "anonymize",
+    );
     expect(
       retentionActionFor(subject({ kind: "feedback", identified: false, lastActivityAt: "2025-09-01T00:00:00Z" }), NOW),
     ).toBe("keep");

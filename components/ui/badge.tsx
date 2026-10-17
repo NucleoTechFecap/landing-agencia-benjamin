@@ -25,7 +25,9 @@ import type { ReactNode } from "react";
 
 export function Badge({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <span className={`inline-flex items-center rounded-full border-2 border-benja-noite bg-benja-nyanza px-3 py-0.5 text-xs font-bold text-benja-verde ${className}`}>
+    <span
+      className={`inline-flex items-center rounded-full border-2 border-benja-noite bg-benja-nyanza px-3 py-0.5 text-xs font-bold text-benja-verde ${className}`}
+    >
       {children}
     </span>
   );

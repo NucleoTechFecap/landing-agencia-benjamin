@@ -35,7 +35,12 @@ export default async function ServiceOgImage({ params }: { params: Promise<{ slu
   const { slug } = await params;
   const [detail, logo, fonts] = await Promise.all([getServiceDetail(slug), ogLogoDataUrl(), ogFonts()]);
   return new ImageResponse(
-    <OgCard eyebrow="Serviço" title={detail?.service.name ?? "Serviços"} subtitle={detail?.service.summary} logoSrc={logo} />,
+    <OgCard
+      eyebrow="Serviço"
+      title={detail?.service.name ?? "Serviços"}
+      subtitle={detail?.service.summary}
+      logoSrc={logo}
+    />,
     { ...size, fonts },
   );
 }
