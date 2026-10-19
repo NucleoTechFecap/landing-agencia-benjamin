@@ -58,17 +58,23 @@ describe("validateUpload", () => {
   });
 
   it("recusa SVG e formatos não listados", () => {
-    expect(validateUpload(candidate({ declaredType: "image/svg+xml", head: SVG }))[0].code).toBe("UNSUPPORTED_MEDIA_TYPE");
+    expect(validateUpload(candidate({ declaredType: "image/svg+xml", head: SVG }))[0].code).toBe(
+      "UNSUPPORTED_MEDIA_TYPE",
+    );
     expect(validateUpload(candidate({ declaredType: "video/mp4" }))[0].code).toBe("UNSUPPORTED_MEDIA_TYPE");
   });
 
   it("detecta arquivo disfarçado (extensão/tipo não batem com o conteúdo)", () => {
-    expect(validateUpload(candidate({ declaredType: "image/jpeg", head: PNG })).map((p) => p.code)).toContain("TYPE_MISMATCH");
+    expect(validateUpload(candidate({ declaredType: "image/jpeg", head: PNG })).map((p) => p.code)).toContain(
+      "TYPE_MISMATCH",
+    );
   });
 
   it("aplica limite de tamanho por tipo", () => {
     expect(validateUpload(candidate({ size: 6 * 1024 * 1024 }))[0].code).toBe("PAYLOAD_TOO_LARGE");
-    expect(validateUpload(candidate({ declaredType: "application/pdf", head: PDF, size: 8 * 1024 * 1024 }))).toEqual([]);
+    expect(validateUpload(candidate({ declaredType: "application/pdf", head: PDF, size: 8 * 1024 * 1024 }))).toEqual(
+      [],
+    );
   });
 
   it("limita dimensões de imagem e rejeita arquivo vazio", () => {
@@ -79,12 +85,19 @@ describe("validateUpload", () => {
 
 describe("buildStoragePath / publicMediaUrl", () => {
   it("gera caminho por ano/mês com UUID e nome normalizado", () => {
-    const path = buildStoragePath("Campanha Aventura de Construir!.PNG", "image/png", "6f1c", new Date("2026-10-13T12:00:00Z"));
+    const path = buildStoragePath(
+      "Campanha Aventura de Construir!.PNG",
+      "image/png",
+      "6f1c",
+      new Date("2026-10-13T12:00:00Z"),
+    );
     expect(path).toBe("2026/10/6f1c-campanha-aventura-de-construir.png");
   });
 
   it("usa a extensão do tipo real, não a do nome", () => {
-    expect(buildStoragePath("foto.jpeg", "image/webp", "id", new Date("2026-01-05T00:00:00Z"))).toBe("2026/01/id-foto.webp");
+    expect(buildStoragePath("foto.jpeg", "image/webp", "id", new Date("2026-01-05T00:00:00Z"))).toBe(
+      "2026/01/id-foto.webp",
+    );
   });
 
   it("monta a URL pública do bucket", () => {

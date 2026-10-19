@@ -35,7 +35,17 @@ const V1_FIELDS = {
   service: ["areas", "description", "examples", "featured", "icon", "image", "name", "slug", "summary", "url"],
   category: ["description", "name", "slug"],
   caseCard: ["category", "client", "cover", "date", "deliveryType", "featured", "slug", "summary", "title", "url"],
-  caseDetailExtra: ["areas", "challenge", "externalLinks", "gallery", "publishedAt", "results", "services", "solution", "team"],
+  caseDetailExtra: [
+    "areas",
+    "challenge",
+    "externalLinks",
+    "gallery",
+    "publishedAt",
+    "results",
+    "services",
+    "solution",
+    "team",
+  ],
 };
 
 const keys = (value: object) => Object.keys(value).sort();

@@ -34,13 +34,7 @@ import type { BrandIconColor } from "@/components/ui/brand-icon";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Section } from "@/components/ui/section";
 import { SectionHeading } from "@/components/ui/section-heading";
-import {
-  getSiteSettings,
-  listAreas,
-  listCtas,
-  listFeaturedCases,
-  listServices,
-} from "@/lib/server/content/repository";
+import { getSiteSettings, listAreas, listCtas, listFeaturedCases, listServices } from "@/lib/server/content/repository";
 import { DEFAULT_TITLE, buildMetadata } from "@/lib/server/seo";
 
 export async function generateMetadata(): Promise<Metadata> {

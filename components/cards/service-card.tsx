@@ -28,13 +28,24 @@ import { BrandIcon, type BrandIconColor } from "../ui/brand-icon";
 const ICON_COLORS: BrandIconColor[] = ["lima", "laranja", "azul", "rosa", "verde-claro", "verde"];
 
 /** Card de serviço usado na Home, em /servicos e no detalhe de área. */
-export function ServiceCard({ service, index = 0, headingLevel = "h3" }: { service: Service; index?: number; headingLevel?: "h2" | "h3" }) {
+export function ServiceCard({
+  service,
+  index = 0,
+  headingLevel = "h3",
+}: {
+  service: Service;
+  index?: number;
+  headingLevel?: "h2" | "h3";
+}) {
   const Heading = headingLevel;
   return (
     <article className="group relative flex h-full flex-col rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-6 text-benja-noite shadow-sticker transition hover:-translate-y-1 hover:shadow-sticker-lg">
       <BrandIcon name={service.icon ?? "estrela"} color={ICON_COLORS[index % ICON_COLORS.length]} size={64} />
       <Heading className="mt-4 text-xl font-black text-benja-verde">
-        <Link href={`/servicos/${service.slug}`} className="after:absolute after:inset-0 after:rounded-3xl focus-visible:outline-none">
+        <Link
+          href={`/servicos/${service.slug}`}
+          className="after:absolute after:inset-0 after:rounded-3xl focus-visible:outline-none"
+        >
           {service.name}
         </Link>
       </Heading>

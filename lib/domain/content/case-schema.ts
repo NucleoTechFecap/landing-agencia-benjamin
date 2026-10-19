@@ -82,7 +82,10 @@ export const caseDraftSchema = z.object({
   solution: optionalLongText,
   results: optionalLongText,
   cover: media.partial({ alt: true }).optional(),
-  gallery: z.array(media.partial({ alt: true })).max(CASE_LIMITS.gallery).default([]),
+  gallery: z
+    .array(media.partial({ alt: true }))
+    .max(CASE_LIMITS.gallery)
+    .default([]),
   externalLinks: z.array(externalLink).max(CASE_LIMITS.links).default([]),
   date: z.string().optional(),
   team: z.array(z.string().trim().min(2).max(80)).max(CASE_LIMITS.team).default([]),

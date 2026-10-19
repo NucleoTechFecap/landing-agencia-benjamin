@@ -186,7 +186,7 @@ plataforma é a vitrine da agência e também a ferramenta de trabalho da equipe
 | E-mail | **Resend** (API REST com `Idempotency-Key`) | Notificações de formulários sem envio duplicado |
 | Hospedagem | **Vercel**, região `gru1` (São Paulo) | Previews por PR, homologação na `main`, Cron e baixa latência no Brasil |
 | Testes | **Vitest 5** · **Playwright** | Testes unitários, de integração e E2E em desktop e mobile |
-| Qualidade | ESLint (flat config do Next) · `tsc` · checagem de cabeçalhos | Um gate único: `npm run verify` |
+| Qualidade | ESLint (flat config do Next) · Prettier · `tsc` · checagem de cabeçalhos | Um gate único: `npm run verify` |
 
 As justificativas e alternativas consideradas estão no
 [ADR-0002 — Stack de desenvolvimento](docs/adr/0002-stack-de-desenvolvimento.md).
@@ -336,13 +336,15 @@ A matriz por ambiente (local, preview, homologação e produção) e as regras d
 | `npm run build` | Build de produção |
 | `npm run start` | Sobe o build de produção |
 | `npm run lint` | ESLint, incluindo as regras de camadas |
+| `npm run format` | Formata o código com o Prettier (altera os arquivos) |
+| `npm run format:check` | Confere a formatação sem alterar nada (roda dentro do `verify`) |
 | `npm run typecheck` | `next typegen` + `tsc --noEmit` |
 | `npm run test` | Testes unitários e de integração (Vitest) |
 | `npm run test:watch` | Vitest em modo *watch* |
 | `npm run test:e2e` | Jornadas ponta a ponta com Playwright, em desktop e mobile (requer `npm run build`) |
 | `npm run check:headers` | Valida o cabeçalho padrão dos arquivos de código |
 | `npm run headers:write` | Insere o cabeçalho padrão nos arquivos que ainda não o têm |
-| `npm run verify` | **Gate de PR:** cabeçalhos → tipos → lint → testes → build |
+| `npm run verify` | **Gate de PR:** cabeçalhos → formatação → tipos → lint → testes → build |
 | `npm run check:release-content` | Falha se houver conteúdo provisório publicado |
 | `npm run release:check` | **Gate de release:** `verify` + conteúdo provisório ([GO-01](docs/operacao/release-e-rollback.md)) |
 
@@ -510,7 +512,7 @@ A estratégia completa está em [`docs/seo/estrategia-de-seo.md`](docs/seo/estra
 | Contrato | Vitest | Compatibilidade dos DTOs da API e consistência entre o RBAC em código e o seed SQL |
 | Integração | Vitest | Jornadas de **publicação** e de **lead**, de ponta a ponta no servidor |
 | E2E | Playwright | Jornada do visitante em **desktop e mobile**: navegação, filtros, 404 e formulário |
-| Estático | ESLint · `tsc` · cabeçalhos | Camadas, tipos e padrão de cabeçalho |
+| Estático | ESLint · Prettier · `tsc` · cabeçalhos | Camadas, formatação, tipos e padrão de cabeçalho |
 
 ```bash
 npm run verify       # gate obrigatório antes de abrir PR

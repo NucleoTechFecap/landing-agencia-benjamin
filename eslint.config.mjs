@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 16/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,12 +19,14 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-03).
  13/10/2026 Vinícius Nishimura Reis  Regras de fronteira entre camadas (TECH-01).
+ 16/10/2026 Caio Moraes              Integra eslint-config-prettier para evitar conflitos (ARC-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import eslintConfigPrettier from "eslint-config-prettier/flat";
 
 // Fronteiras de camadas (ADR-0003 / TECH-01): violações aparecem no `npm run lint`.
 const serverOnlyModules = {
@@ -44,7 +46,16 @@ const eslintConfig = defineConfig([
           patterns: [
             serverOnlyModules,
             {
-              group: ["next", "next/*", "react", "react-dom", "@/components/*", "@/components/**", "@/app/*", "@/app/**"],
+              group: [
+                "next",
+                "next/*",
+                "react",
+                "react-dom",
+                "@/components/*",
+                "@/components/**",
+                "@/app/*",
+                "@/app/**",
+              ],
               message: "lib/domain contém apenas regras puras, sem framework ou UI (ADR-0003).",
             },
           ],
@@ -82,6 +93,7 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  eslintConfigPrettier,
 ]);
 
 export default eslintConfig;

@@ -42,9 +42,9 @@ describe("parsePublicEnv", () => {
   });
 
   it("exige URL e chave do Supabase juntas", () => {
-    expect(() =>
-      parsePublicEnv({ NEXT_PUBLIC_SUPABASE_URL: "https://abc.supabase.co" }),
-    ).toThrow(/NEXT_PUBLIC_SUPABASE_ANON_KEY/);
+    expect(() => parsePublicEnv({ NEXT_PUBLIC_SUPABASE_URL: "https://abc.supabase.co" })).toThrow(
+      /NEXT_PUBLIC_SUPABASE_ANON_KEY/,
+    );
   });
 
   it("rejeita ambiente desconhecido", () => {

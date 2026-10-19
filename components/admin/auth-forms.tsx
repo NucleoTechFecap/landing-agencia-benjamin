@@ -61,13 +61,28 @@ export function LoginForm({ action, next }: { action: AuthAction; next?: string 
         <label htmlFor="email" className="text-sm font-semibold">
           E-mail
         </label>
-        <input id="email" name="email" type="email" autoComplete="username" required defaultValue={state.email} className={input} />
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="username"
+          required
+          defaultValue={state.email}
+          className={input}
+        />
       </div>
       <div className="space-y-1">
         <label htmlFor="password" className="text-sm font-semibold">
           Senha
         </label>
-        <input id="password" name="password" type="password" autoComplete="current-password" required className={input} />
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          className={input}
+        />
       </div>
       <Feedback state={state} />
       <button type="submit" className={button} disabled={pending}>
@@ -90,7 +105,15 @@ export function ResetRequestForm({ action }: { action: AuthAction }) {
         <label htmlFor="email" className="text-sm font-semibold">
           E-mail cadastrado
         </label>
-        <input id="email" name="email" type="email" autoComplete="email" required defaultValue={state.email} className={input} />
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          defaultValue={state.email}
+          className={input}
+        />
       </div>
       <Feedback state={state} />
       <button type="submit" className={button} disabled={pending}>
@@ -131,7 +154,14 @@ export function NewPasswordForm({ action }: { action: AuthAction }) {
         <label htmlFor="confirmation" className="text-sm font-semibold">
           Confirme a nova senha
         </label>
-        <input id="confirmation" name="confirmation" type="password" autoComplete="new-password" required className={input} />
+        <input
+          id="confirmation"
+          name="confirmation"
+          type="password"
+          autoComplete="new-password"
+          required
+          className={input}
+        />
       </div>
       <Feedback state={state} />
       <button type="submit" className={button} disabled={pending}>

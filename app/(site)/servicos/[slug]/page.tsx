@@ -114,14 +114,20 @@ export default async function ServicePage({ params }: PageProps<"/servicos/[slug
               </>
             ) : null}
           </div>
-          <aside aria-labelledby="areas-envolvidas" className="h-fit rounded-3xl border-2 border-benja-noite bg-benja-claro p-6 shadow-sticker">
+          <aside
+            aria-labelledby="areas-envolvidas"
+            className="h-fit rounded-3xl border-2 border-benja-noite bg-benja-claro p-6 shadow-sticker"
+          >
             <h2 id="areas-envolvidas" className="text-sm font-black tracking-widest text-benja-verde uppercase">
               Áreas envolvidas
             </h2>
             <ul className="mt-4 space-y-3">
               {areas.map((area) => (
                 <li key={area.id}>
-                  <Link href={`/areas#${area.slug}`} className="flex items-center gap-3 font-bold text-benja-verde hover:underline">
+                  <Link
+                    href={`/areas#${area.slug}`}
+                    className="flex items-center gap-3 font-bold text-benja-verde hover:underline"
+                  >
                     <BrandIcon name={area.icon ?? "estrela"} color="verde" size={36} />
                     {area.name}
                   </Link>

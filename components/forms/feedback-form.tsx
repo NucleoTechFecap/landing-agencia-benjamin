@@ -48,13 +48,22 @@ function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: (
 
       <fieldset aria-describedby={errors.profile ? "profile-erro" : undefined}>
         <legend className="text-sm font-bold">
-          Você é <span aria-hidden className="text-benja-laranja">*</span>
+          Você é{" "}
+          <span aria-hidden className="text-benja-laranja">
+            *
+          </span>
           <span className="sr-only"> (obrigatório)</span>
         </legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {Object.entries(FEEDBACK_PROFILES).map(([value, label]) => (
             <label key={value} className="cursor-pointer">
-              <input type="radio" name="profile" value={value} defaultChecked={values.profile === value} className="peer sr-only" />
+              <input
+                type="radio"
+                name="profile"
+                value={value}
+                defaultChecked={values.profile === value}
+                className="peer sr-only"
+              />
               <span className="inline-block rounded-full border-2 border-benja-noite bg-white px-4 py-2 text-sm font-bold peer-checked:bg-benja-verde peer-checked:text-benja-nyanza peer-focus-visible:outline-3 peer-focus-visible:outline-benja-azul">
                 {label}
               </span>
@@ -75,7 +84,13 @@ function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: (
         <div className="mt-2 flex gap-2">
           {[1, 2, 3, 4, 5].map((rating) => (
             <label key={rating} className="cursor-pointer">
-              <input type="radio" name="rating" value={rating} defaultChecked={values.rating === String(rating)} className="peer sr-only" />
+              <input
+                type="radio"
+                name="rating"
+                value={rating}
+                defaultChecked={values.rating === String(rating)}
+                className="peer sr-only"
+              />
               <span className="flex size-11 items-center justify-center rounded-full border-2 border-benja-noite bg-white font-black peer-checked:bg-benja-lima peer-checked:text-benja-verde peer-focus-visible:outline-3 peer-focus-visible:outline-benja-azul">
                 {rating}
                 <span className="sr-only"> de 5</span>
@@ -85,13 +100,36 @@ function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: (
         </div>
       </fieldset>
 
-      <TextArea name="message" label="Seu feedback" required rows={6} maxLength={2000} errors={errors.message} defaultValue={values.message} />
+      <TextArea
+        name="message"
+        label="Seu feedback"
+        required
+        rows={6}
+        maxLength={2000}
+        errors={errors.message}
+        defaultValue={values.message}
+      />
 
       <div className="rounded-2xl border-2 border-dashed border-benja-verde/30 p-4">
         <p className="text-sm font-bold">Quer se identificar? Os campos abaixo são opcionais.</p>
         <div className="mt-3 grid gap-5 sm:grid-cols-2">
-          <TextField name="name" label="Nome" autoComplete="name" maxLength={120} errors={errors.name} defaultValue={values.name} />
-          <TextField name="email" label="E-mail" type="email" inputMode="email" autoComplete="email" errors={errors.email} defaultValue={values.email} />
+          <TextField
+            name="name"
+            label="Nome"
+            autoComplete="name"
+            maxLength={120}
+            errors={errors.name}
+            defaultValue={values.name}
+          />
+          <TextField
+            name="email"
+            label="E-mail"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            errors={errors.email}
+            defaultValue={values.email}
+          />
         </div>
         <div className="mt-4">
           <CheckboxField name="allowContact" defaultChecked={values.allowContact === "on"}>

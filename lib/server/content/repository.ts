@@ -169,7 +169,11 @@ export async function listCases(filters: CaseFilters = {}): Promise<CaseCard[]> 
     }
     return true;
   });
-  return toCaseCards(snapshot, visibleSorted(filtered, (item) => item.title, now), now);
+  return toCaseCards(
+    snapshot,
+    visibleSorted(filtered, (item) => item.title, now),
+    now,
+  );
 }
 
 export async function listFeaturedCases(limit = 6): Promise<CaseCard[]> {
@@ -193,7 +197,9 @@ export async function getCaseDetail(slug: string): Promise<CaseDetail | null> {
   const areaIds = new Set(services.flatMap((service) => service.areaIds));
   return {
     item,
-    category: snapshot.categories.find((category) => category.id === item.categoryId && isPubliclyVisible(category, now)) ?? null,
+    category:
+      snapshot.categories.find((category) => category.id === item.categoryId && isPubliclyVisible(category, now)) ??
+      null,
     services,
     areas: visibleSorted(
       snapshot.areas.filter((area) => areaIds.has(area.id)),

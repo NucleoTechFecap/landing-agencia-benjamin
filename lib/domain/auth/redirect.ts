@@ -43,7 +43,9 @@ export function safeAdminRedirect(next: unknown): string {
   if (next.startsWith(LOGIN_PATH)) return ADMIN_HOME;
   try {
     const url = new URL(next, "https://local.invalid");
-    return url.origin === "https://local.invalid" && url.pathname.startsWith("/admin") ? `${url.pathname}${url.search}` : ADMIN_HOME;
+    return url.origin === "https://local.invalid" && url.pathname.startsWith("/admin")
+      ? `${url.pathname}${url.search}`
+      : ADMIN_HOME;
   } catch {
     return ADMIN_HOME;
   }

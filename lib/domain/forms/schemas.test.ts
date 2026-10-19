@@ -76,14 +76,25 @@ describe("formulário de novo projeto (lead)", () => {
 
 describe("contato institucional", () => {
   it("valida o assunto a partir da lista fechada", () => {
-    const base = { ...technical, name: "João", email: "joao@x.com", message: "Gostaria de propor uma parceria.", privacyConsent: true };
+    const base = {
+      ...technical,
+      name: "João",
+      email: "joao@x.com",
+      message: "Gostaria de propor uma parceria.",
+      privacyConsent: true,
+    };
     expect(parseSubmission("contact", { ...base, subject: "parceria" }).success).toBe(true);
     expect(parseSubmission("contact", { ...base, subject: "vendas" }).success).toBe(false);
   });
 });
 
 describe("feedback", () => {
-  const base = { ...technical, profile: "aluno", message: "Adorei a palestra sobre social media!", privacyConsent: "on" };
+  const base = {
+    ...technical,
+    profile: "aluno",
+    message: "Adorei a palestra sobre social media!",
+    privacyConsent: "on",
+  };
 
   it("aceita feedback anônimo", () => {
     const result = parseSubmission("feedback", base);

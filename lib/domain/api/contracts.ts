@@ -231,7 +231,11 @@ export function toCaseDetailDTO(detail: {
     gallery: item.gallery.map((ref) => media(ref)!),
     externalLinks: item.externalLinks,
     team: item.team,
-    services: detail.services.map((service) => ({ slug: service.slug, name: service.name, url: `/servicos/${service.slug}` })),
+    services: detail.services.map((service) => ({
+      slug: service.slug,
+      name: service.name,
+      url: `/servicos/${service.slug}`,
+    })),
     areas: detail.areas.map((area) => ({ slug: area.slug, name: area.name })),
     publishedAt: item.publishedAt,
   };

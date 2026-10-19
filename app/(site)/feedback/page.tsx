@@ -34,7 +34,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata(
     {
       title: "Feedback",
-      description: "Clientes, parceiros, alunos e comunidade: conte para a Agência Benjamin como foi a sua experiência.",
+      description:
+        "Clientes, parceiros, alunos e comunidade: conte para a Agência Benjamin como foi a sua experiência.",
       path: "/feedback",
       keywords: ["feedback Agência Benjamin", "avaliação"],
     },
@@ -49,7 +50,9 @@ export default function FeedbackPage() {
       <PageHero
         eyebrow="Feedback"
         title="Como foi com a Benjamin?"
-        description={<p>Elogio, crítica ou sugestão: tudo ajuda a agência a melhorar. Você pode responder sem se identificar.</p>}
+        description={
+          <p>Elogio, crítica ou sugestão: tudo ajuda a agência a melhorar. Você pode responder sem se identificar.</p>
+        }
         path="/feedback"
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Feedback" }]}
         tone="rosa"

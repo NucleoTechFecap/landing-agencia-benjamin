@@ -52,7 +52,9 @@ export function parseArgs(argv, env) {
     }
   }
 
-  const email = String(args.email ?? "").trim().toLowerCase();
+  const email = String(args.email ?? "")
+    .trim()
+    .toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Informe --email válido.");
   const name = String(args.name ?? "").trim();
   if (name.length < 2) throw new Error("Informe --name com o nome completo.");
@@ -100,7 +102,10 @@ async function run() {
   const userId = data.user.id;
 
   // O trigger handle_new_user cria o perfil como "pending"; aqui aplicamos o papel inicial.
-  const { error: roleError } = await supabase.from("profiles").update({ role: options.role, full_name: options.name }).eq("id", userId);
+  const { error: roleError } = await supabase
+    .from("profiles")
+    .update({ role: options.role, full_name: options.name })
+    .eq("id", userId);
   if (roleError) throw new Error(`Convite enviado, mas falhou ao definir o papel: ${roleError.message}`);
 
   // Operação de sistema (sem sessão): registrada diretamente na trilha de auditoria.

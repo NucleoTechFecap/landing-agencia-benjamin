@@ -63,7 +63,10 @@ export function nextRetryDelayMs(attempts: number): number {
   return NOTIFICATION_RETRY.baseDelayMs * 2 ** Math.max(0, attempts - 1);
 }
 
-export function shouldRetryNotification(record: { notificationAttempts: number; updatedAt: string }, now: Date): boolean {
+export function shouldRetryNotification(
+  record: { notificationAttempts: number; updatedAt: string },
+  now: Date,
+): boolean {
   if (record.notificationAttempts >= NOTIFICATION_RETRY.maxAttempts) return false;
   return now.getTime() - Date.parse(record.updatedAt) >= nextRetryDelayMs(record.notificationAttempts);
 }

@@ -31,7 +31,14 @@ const published = {
 
 /** Chamadas para ação da Home (PRJ §7.3): Serviços, Cases, Sobre e Contato. */
 export const ctas: Cta[] = [
-  { ...published, id: "cta-hero-projeto", label: "Quero um projeto", target: { kind: "contact" }, placement: "home-hero", order: 1 },
+  {
+    ...published,
+    id: "cta-hero-projeto",
+    label: "Quero um projeto",
+    target: { kind: "contact" },
+    placement: "home-hero",
+    order: 1,
+  },
   {
     ...published,
     id: "cta-hero-servicos",

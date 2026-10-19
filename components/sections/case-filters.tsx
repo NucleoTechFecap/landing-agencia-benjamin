@@ -86,7 +86,10 @@ export function CaseFilters({
           })}
         </ul>
       </nav>
-      <Form action="/cases" className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto_auto] sm:items-end">
+      <Form
+        action="/cases"
+        className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto_auto] sm:items-end"
+      >
         {active.categoria ? <input type="hidden" name="categoria" value={active.categoria} /> : null}
         <label className="text-xs font-bold tracking-widest uppercase">
           Serviço
@@ -121,7 +124,10 @@ export function CaseFilters({
             ))}
           </select>
         </label>
-        <button type="submit" className="rounded-full border-2 border-benja-noite bg-benja-lima px-6 py-3 font-bold text-benja-verde shadow-sticker">
+        <button
+          type="submit"
+          className="rounded-full border-2 border-benja-noite bg-benja-lima px-6 py-3 font-bold text-benja-verde shadow-sticker"
+        >
           Filtrar
         </button>
         {hasFilters ? (

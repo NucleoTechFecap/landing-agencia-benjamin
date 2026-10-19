@@ -29,9 +29,20 @@ export function AuthCard({ title, subtitle, children }: { title: string; subtitl
   return (
     <main className="flex min-h-dvh items-center justify-center px-4 py-12">
       <div className="w-full max-w-md rounded-3xl border-2 border-[#004a1b] bg-[#f1fcd0] p-8 shadow-[8px_8px_0_#004a1b]">
-        <Image src="/brand/logo-horizontal.webp" alt="Agência Benjamin" width={180} height={115} className="mx-auto mb-6 h-auto w-44" priority />
+        <Image
+          src="/brand/logo-horizontal.webp"
+          alt="Agência Benjamin"
+          width={180}
+          height={115}
+          className="mx-auto mb-6 h-auto w-44"
+          priority
+        />
         <h1 className="text-center text-2xl font-black text-[#004a1b]">{title}</h1>
-        {subtitle ? <p className="mt-1 mb-6 text-center text-sm text-[#231f20]/80">{subtitle}</p> : <div className="mb-6" />}
+        {subtitle ? (
+          <p className="mt-1 mb-6 text-center text-sm text-[#231f20]/80">{subtitle}</p>
+        ) : (
+          <div className="mb-6" />
+        )}
         {children}
       </div>
     </main>

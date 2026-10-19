@@ -63,7 +63,11 @@ describe("requirePermission (Server Actions / Route Handlers)", () => {
     currentUser = user("viewer");
     await expect(requirePermission("case", "publish")).rejects.toMatchObject({ code: "FORBIDDEN" });
     expect(recordAuditEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ event: "access.denied", outcome: "denied", metadata: { resource: "case", action: "publish" } }),
+      expect.objectContaining({
+        event: "access.denied",
+        outcome: "denied",
+        metadata: { resource: "case", action: "publish" },
+      }),
     );
   });
 

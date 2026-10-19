@@ -75,21 +75,33 @@ describe("transições", () => {
 
   it("arquivar registra a data e restaurar volta para rascunho limpando-a", () => {
     const archivedResult = transition(published, "archive", context());
-    expect(archivedResult.ok && archivedResult.next).toMatchObject({ status: "archived", archivedAt: NOW.toISOString() });
+    expect(archivedResult.ok && archivedResult.next).toMatchObject({
+      status: "archived",
+      archivedAt: NOW.toISOString(),
+    });
     const restored = transition(archived, "restore", context());
     expect(restored.ok && restored.next).toMatchObject({ status: "draft", archivedAt: null });
   });
 
   it("excluir só é possível a partir de arquivado", () => {
     expect(transition(published, "delete", context({ role: "admin" }))).toMatchObject({ ok: false });
-    expect(transition(archived, "delete", context({ role: "admin" }))).toMatchObject({ ok: true, next: { status: "deleted" } });
+    expect(transition(archived, "delete", context({ role: "admin" }))).toMatchObject({
+      ok: true,
+      next: { status: "deleted" },
+    });
   });
 });
 
 describe("permissões", () => {
   it("viewer não salva nem publica", () => {
-    expect(transition(draft, "save", context({ role: "viewer" }))).toMatchObject({ ok: false, error: { code: "FORBIDDEN" } });
-    expect(transition(draft, "publish", context({ role: "viewer" }))).toMatchObject({ ok: false, error: { code: "FORBIDDEN" } });
+    expect(transition(draft, "save", context({ role: "viewer" }))).toMatchObject({
+      ok: false,
+      error: { code: "FORBIDDEN" },
+    });
+    expect(transition(draft, "publish", context({ role: "viewer" }))).toMatchObject({
+      ok: false,
+      error: { code: "FORBIDDEN" },
+    });
   });
 
   it("editor não exclui definitivamente", () => {
@@ -97,7 +109,10 @@ describe("permissões", () => {
   });
 
   it("sessão sem papel é negada", () => {
-    expect(transition(draft, "save", context({ role: null }))).toMatchObject({ ok: false, error: { code: "FORBIDDEN" } });
+    expect(transition(draft, "save", context({ role: null }))).toMatchObject({
+      ok: false,
+      error: { code: "FORBIDDEN" },
+    });
   });
 
   it("lista apenas os comandos permitidos ao papel", () => {

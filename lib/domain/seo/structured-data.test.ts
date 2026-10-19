@@ -37,7 +37,15 @@ describe("dados estruturados", () => {
   });
 
   it("BreadcrumbList numera e monta URLs absolutas", () => {
-    expect(breadcrumbSchema([{ name: "Início", path: "/" }, { name: "Serviços", path: "/servicos" }], URL).itemListElement).toEqual([
+    expect(
+      breadcrumbSchema(
+        [
+          { name: "Início", path: "/" },
+          { name: "Serviços", path: "/servicos" },
+        ],
+        URL,
+      ).itemListElement,
+    ).toEqual([
       { "@type": "ListItem", position: 1, name: "Início", item: `${URL}/` },
       { "@type": "ListItem", position: 2, name: "Serviços", item: `${URL}/servicos` },
     ]);
@@ -48,6 +56,10 @@ describe("dados estruturados", () => {
     expect(serviceSchema(service, seedSnapshot.areas, URL).provider).toEqual({ "@id": `${URL}/#organizacao` });
     const item = seedSnapshot.cases[0];
     const schema = caseSchema(item, "Copywriting", [service], URL);
-    expect(schema).toMatchObject({ "@type": "CreativeWork", about: { name: item.client }, image: `${URL}${item.cover!.src}` });
+    expect(schema).toMatchObject({
+      "@type": "CreativeWork",
+      about: { name: item.client },
+      image: `${URL}${item.cover!.src}`,
+    });
   });
 });

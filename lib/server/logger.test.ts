@@ -37,7 +37,9 @@ describe("redact", () => {
   });
 
   it("mascara e-mail, telefone e tokens dentro de textos livres", () => {
-    expect(scrubString("contato de joao@empresa.com.br pelo (11) 98765-4321")).toBe("contato de [email] pelo [telefone]");
+    expect(scrubString("contato de joao@empresa.com.br pelo (11) 98765-4321")).toBe(
+      "contato de [email] pelo [telefone]",
+    );
     expect(scrubString("header Bearer abc.def")).toBe(`header Bearer ${REDACTED}`);
     expect(scrubString("jwt eyJhbGciOi.eyJzdWIi.c2lnbmF0dXJl")).toBe(`jwt ${REDACTED}`);
   });
@@ -67,7 +69,12 @@ describe("logger", () => {
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
     logger.info("forms.submission.persisted", { requestId: "r1", email: "x@y.com" });
     const entry = JSON.parse(spy.mock.calls[0][0] as string);
-    expect(entry).toMatchObject({ level: "info", event: "forms.submission.persisted", requestId: "r1", email: REDACTED });
+    expect(entry).toMatchObject({
+      level: "info",
+      event: "forms.submission.persisted",
+      requestId: "r1",
+      email: REDACTED,
+    });
     expect(entry.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 

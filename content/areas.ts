@@ -86,8 +86,7 @@ export const areas: Area[] = [
     slug: "criacao",
     name: "Criação",
     summary: "Identidade visual, design, direção criativa e produção audiovisual.",
-    description:
-      "Dá forma às ideias com identidade visual, peças gráficas, direção criativa e produção audiovisual.",
+    description: "Dá forma às ideias com identidade visual, peças gráficas, direção criativa e produção audiovisual.",
     highlights: ["Identidade visual", "Design e direção criativa", "Produção audiovisual"],
     icon: "raio",
     order: 5,
