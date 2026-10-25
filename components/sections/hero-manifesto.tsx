@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  25/10/2026 Caio Moraes              Hero sem corte de texto em telas estreitas (HOME-01).
+ 25/10/2026 Caio Moraes              Sticker "tá no briefing" ancorado na base (LAY-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -95,6 +96,7 @@ export function HeroManifesto({ settings, ctas }: { settings: SiteSettings; ctas
             name="ta-no-briefing"
             color="rosa"
             width={110}
+            anchor="bottom"
             className="absolute -right-10 -bottom-6 rotate-[8deg] animate-float [animation-delay:1.5s] sm:-right-16"
           />
         </div>
