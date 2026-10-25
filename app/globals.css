@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 25/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-03).
  13/10/2026 Vinícius Nishimura Reis  Tokens do brandbook e estilos base (estrutura da landing).
+ 25/10/2026 Caio Moraes              Tokens de erro dos formulários (LAY-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -41,6 +42,12 @@
   --color-benja-creme: #edf1cc;
   --color-benja-noite: #161313;
   --color-benja-grafite: #231f20;
+
+  /* Estados de erro dos formulários (não são cores do brandbook; contraste AA conferido:
+     erro sobre branco 7,6:1, texto-erro sobre fundo-erro 10,5:1) (LAY-04). */
+  --color-benja-erro: #9a2e00;
+  --color-benja-erro-fundo: #ffe1d1;
+  --color-benja-erro-texto: #5c1b00;
 
   /* Tipografia: Poppins (texto e títulos — hierarquia do brandbook). Aptly, usada no
      logotipo, depende de licença (LAY-06) e não é carregada no site. */

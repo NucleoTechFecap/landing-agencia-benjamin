@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 25/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 25/10/2026 Caio Moraes              Cores de erro via tokens do tema (LAY-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -54,7 +55,7 @@ function Label({ name, label, required }: { name: string; label: string; require
 function FieldError({ name, errors }: { name: string; errors?: string[] }) {
   if (!errors?.length) return null;
   return (
-    <p id={errorId(name)} className="mt-1 text-sm font-semibold text-[#9a2e00]">
+    <p id={errorId(name)} className="mt-1 text-sm font-semibold text-benja-erro">
       {errors[0]}
     </p>
   );
@@ -94,7 +95,7 @@ export function TextField({
         defaultValue={props.defaultValue}
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy(props.name, props.errors, props.hint)}
-        className={`${control} ${invalid ? "border-[#9a2e00]" : "border-benja-noite"}`}
+        className={`${control} ${invalid ? "border-benja-erro" : "border-benja-noite"}`}
       />
       {props.hint ? (
         <p id={`${props.name}-dica`} className="mt-1 text-xs text-benja-grafite/80">
@@ -120,7 +121,7 @@ export function TextArea({ rows = 5, maxLength, ...props }: BaseProps & { rows?:
         defaultValue={props.defaultValue}
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy(props.name, props.errors, props.hint)}
-        className={`${control} ${invalid ? "border-[#9a2e00]" : "border-benja-noite"}`}
+        className={`${control} ${invalid ? "border-benja-erro" : "border-benja-noite"}`}
       />
       {props.hint ? (
         <p id={`${props.name}-dica`} className="mt-1 text-xs text-benja-grafite/80">
@@ -148,7 +149,7 @@ export function SelectField({
         defaultValue={props.defaultValue ?? ""}
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy(props.name, props.errors)}
-        className={`${control} ${invalid ? "border-[#9a2e00]" : "border-benja-noite"}`}
+        className={`${control} ${invalid ? "border-benja-erro" : "border-benja-noite"}`}
       >
         {placeholder ? <option value="">{placeholder}</option> : null}
         {options.map((option) => (

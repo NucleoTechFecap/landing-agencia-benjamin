@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 25/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 25/10/2026 Caio Moraes              Cores de erro via tokens do tema (LAY-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -61,7 +62,7 @@ export function FormErrorBanner({ state }: { state: FormActionState }) {
       data-form-error
       tabIndex={-1}
       role="alert"
-      className="rounded-2xl border-2 border-[#9a2e00] bg-[#ffe1d1] p-4 text-sm text-[#5c1b00] outline-none"
+      className="rounded-2xl border-2 border-benja-erro bg-benja-erro-fundo p-4 text-sm text-benja-erro-texto outline-none"
     >
       <p className="font-bold">{isValidation ? "Revise os campos destacados." : state.message}</p>
       {!isValidation ? (
