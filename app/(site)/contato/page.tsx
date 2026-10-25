@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 25/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
+ 25/10/2026 Caio Moraes              Serviço pré-selecionado também após navegar (SERV-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -158,14 +159,17 @@ async function ContactForms({ searchParams }: Pick<PageProps<"/contato">, "searc
           </li>
         </ul>
       </nav>
+      {/* A key recria o formulário quando o serviço ou o assunto da URL muda. O Next guarda o estado de páginas já
+          visitadas, e sem ela o formulário antigo era reaproveitado sem a pré-seleção (SERV-02). */}
       {tipo === "projeto" ? (
         <LeadForm
+          key={servico ?? "sem-servico"}
           action={submitLead}
           services={services.map((service) => ({ value: service.slug, label: service.name }))}
           preselectedService={servico}
         />
       ) : (
-        <ContactForm action={submitContact} preselectedSubject={assunto} />
+        <ContactForm key={assunto ?? "sem-assunto"} action={submitContact} preselectedSubject={assunto} />
       )}
     </>
   );
