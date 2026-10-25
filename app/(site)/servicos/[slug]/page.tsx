@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 25/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,7 +19,8 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
-──────────────────────────────────────────────────────────────────────────────
+ 25/10/2026 Caio Moraes              Permite navegação bloqueante (instant = false) (LAY-01).
+ ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
@@ -43,6 +44,9 @@ export async function generateStaticParams() {
   const { services } = await listPublishedSlugs();
   return services.map((slug) => ({ slug }));
 }
+
+/** Pode bloquear na navegação: os slugs publicados já são pré-gerados e o proxy.ts responde 404 aos inexistentes (LAY-01). */
+export const instant = false;
 
 export async function generateMetadata({ params }: PageProps<"/servicos/[slug]">): Promise<Metadata> {
   const { slug } = await params;
