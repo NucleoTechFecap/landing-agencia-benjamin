@@ -1,3 +1,24 @@
+# ════════════════════════════════════════════════════════════════════════════════
+#  Sistema      : Agência Benjamin Landing Page
+#  Módulo       : Supabase
+#  Arquivo      : config.toml
+#  Descrição    : Configuração da Supabase CLI (gerada por `supabase init`) para link, db push e banco local.
+#
+#  Desenvolvedor: Vinícius Binda
+#
+#  Projeto      : Agência Benjamin Landing Page
+#  Versão       : 1.0.0
+#  Criado em    : 25/10/2026
+#  Modificado em: 25/10/2026
+# ════════════════════════════════════════════════════════════════════════════════
+#
+#  Histórico
+#  ──────────────────────────────────────────────────────────────────────────────
+#  Data        Autor                     Descrição
+#  ──────────────────────────────────────────────────────────────────────────────
+#  25/10/2026 Vinícius Binda             Criação inicial (DB-02).
+# ──────────────────────────────────────────────────────────────────────────────
+
 # For detailed configuration reference documentation, visit:
 # https://supabase.com/docs/guides/local-development/cli/config
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
