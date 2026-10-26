@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 25/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 25/10/2026 Caio Moraes              Cores de erro via tokens do tema (LAY-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -71,7 +72,7 @@ function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: (
           ))}
         </div>
         {errors.profile ? (
-          <p id="profile-erro" className="mt-1 text-sm font-semibold text-[#9a2e00]">
+          <p id="profile-erro" className="mt-1 text-sm font-semibold text-benja-erro">
             {errors.profile[0]}
           </p>
         ) : null}
