@@ -109,7 +109,7 @@ Fronteiras detalhadas: [ADR-0003](../adr/0003-limites-de-dominio.md).
 | `20261013000200_rbac_permissions.sql` | `role_permissions` (148), `has_permission()`, `assign_role()`, `set_profile_active()`, bucket `media` + policies |
 | `20261013000300_audit_log.sql` | `audit_log` append-only, `record_audit_event()`, auditoria de papéis |
 | `20261013000400_form_submissions.sql` | `form_submissions` (leads, contatos, feedbacks) com RLS por tipo |
-| *(DB-01/DB-02 — `@VinnizzZ`)* | Tabelas de conteúdo: páginas, áreas, serviços, categorias, cases, CTAs, mídia — seguir [integridade](../negocio/integridade-de-conteudo.md) e [campos do case](../negocio/campos-do-case.md) |
+| `20261025000100_cms_content.sql` | `publish_status`, `is_valid_slug()`, `stamp_updated_by()`, `pages`, `blocks`, `areas`, `services`, `service_areas`, `case_categories`, `cases`, `case_services`, `case_media`, `ctas`, `media_assets`, `site_settings` com RLS por RBAC — ver [dicionário de dados](../banco/dicionario-de-dados.md) |
 
 Aplicação: `supabase link --project-ref <ref> && supabase db push` (homologação antes de produção).
 
