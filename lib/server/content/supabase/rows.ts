@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Áreas, serviços, vínculos e mídia do CMS (DB-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,6 +38,46 @@ export interface PublishableRow {
   published_at: string | null;
   archived_at: string | null;
   updated_at: string;
+}
+
+export interface AreaRow extends PublishableRow {
+  id: string;
+  slug: string;
+  name: string;
+  summary: string | null;
+  description: string | null;
+  highlights: string[];
+  icon: string | null;
+  sort_order: number;
+}
+
+export interface ServiceRow extends PublishableRow {
+  id: string;
+  slug: string;
+  name: string;
+  summary: string | null;
+  description: string | null;
+  examples: string[];
+  icon: string | null;
+  image_media_id: string | null;
+  featured: boolean;
+  sort_order: number;
+}
+
+export interface ServiceAreaRow {
+  service_id: string;
+  area_id: string;
+}
+
+export interface MediaAssetRow {
+  id: string;
+  /** Chave do bucket "media" ou caminho em /public (começa com "/"). */
+  path: string;
+  mime_type: string;
+  width: number | null;
+  height: number | null;
+  alt_text: string | null;
+  decorative: boolean;
 }
 
 export interface CtaRow extends PublishableRow {
@@ -83,6 +124,10 @@ const PUBLISHABLE = "status, provisional, published_at, archived_at, updated_at"
 
 /** Colunas pedidas ao PostgREST, por tabela. Nada de `*`: o site só lê o que exibe. */
 export const COLUMNS = {
+  areas: `id, slug, name, summary, description, highlights, icon, sort_order, ${PUBLISHABLE}`,
+  services: `id, slug, name, summary, description, examples, icon, image_media_id, featured, sort_order, ${PUBLISHABLE}`,
+  service_areas: "service_id, area_id",
+  media_assets: "id, path, mime_type, width, height, alt_text, decorative",
   ctas: `id, label, placement, target_kind, target_path, target_url, target_service_id, target_case_id, target_area_id, sort_order, ${PUBLISHABLE}`,
   pages: `id, slug, title, description, ${PUBLISHABLE}`,
   blocks: "id, page_id, type, content, sort_order",

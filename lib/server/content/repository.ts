@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  26/10/2026 Vinícius Nishimura Reis  Lê da fonte ativa (content/ ou Supabase) e expõe páginas (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Detalhe de área com serviços (DB-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -61,6 +62,11 @@ export interface CaseDetail {
   category: CaseCategory | null;
   services: Service[];
   areas: Area[];
+}
+
+export interface AreaDetail {
+  area: Area;
+  services: Service[];
 }
 
 export interface ServiceDetail {
@@ -111,6 +117,23 @@ export async function listAreas(): Promise<Area[]> {
   cacheLife("hours");
   const snapshot = await loadSnapshot();
   return visibleSorted(snapshot.areas, (area) => area.name);
+}
+
+/** Área publicada com os serviços publicados vinculados a ela, em ordem (DB-04). */
+export async function getAreaDetail(slug: string): Promise<AreaDetail | null> {
+  "use cache";
+  cacheTag(CONTENT_TAGS.all, CONTENT_TAGS.areas, CONTENT_TAGS.services);
+  cacheLife("hours");
+  const snapshot = await loadSnapshot();
+  const now = new Date();
+  const area = snapshot.areas.find((item) => item.slug === slug && isPubliclyVisible(item, now));
+  if (!area) return null;
+  const services = visibleSorted(
+    snapshot.services.filter((service) => service.areaIds.includes(area.id)),
+    (service) => service.name,
+    now,
+  );
+  return { area, services };
 }
 
 export async function listServices(options: { featuredOnly?: boolean } = {}): Promise<Service[]> {

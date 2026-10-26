@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  26/10/2026 Vinícius Nishimura Reis  Caso de página sem banco (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -64,5 +65,18 @@ describe("repositório público de conteúdo", () => {
   it("resolve links dos CTAs da Home", async () => {
     const hero = await repository.listCtas("home-hero");
     expect(hero.map((cta) => cta.link.href)).toEqual(["/contato#formulario", "/servicos"]);
+  });
+});
+
+describe("detalhe de área (DB-04)", () => {
+  it("traz a área publicada e os serviços dela em ordem", async () => {
+    const detail = await repository.getAreaDetail("criacao");
+    expect(detail?.area.name).toBe("Criação");
+    expect(detail?.services.map((service) => service.slug)).toEqual([
+      "producao-de-conteudo",
+      "design-e-identidade-visual",
+      "audiovisual",
+    ]);
+    expect(await repository.getAreaDetail("inexistente")).toBeNull();
   });
 });

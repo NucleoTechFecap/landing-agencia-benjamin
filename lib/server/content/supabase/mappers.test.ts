@@ -18,12 +18,13 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { describe, expect, it } from "vitest";
 import { siteSettings } from "@/content";
-import { toCta, toCtaTarget, toPage, toSiteSettings } from "./mappers";
+import { toArea, toCta, toCtaTarget, toMediaRef, toPage, toService, toSiteSettings } from "./mappers";
 import type { CtaRow, PageRow } from "./rows";
 
 const control = {
@@ -121,5 +122,57 @@ describe("toSiteSettings (DB-03)", () => {
     expect(settings.keywords).toEqual([]);
     expect(settings.contact).toEqual(siteSettings.contact);
     expect(problems).toHaveLength(1);
+  });
+});
+
+describe("áreas, serviços e mídia (DB-04)", () => {
+  const media = { id: "m1", mime_type: "image/webp", width: 1200, height: 750, alt_text: "Capa", decorative: false };
+
+  it("mídia: caminho em /public fica como está; chave do bucket vira URL pública", () => {
+    expect(toMediaRef({ ...media, path: "/brand/cases/fecap.webp" }, "https://x.supabase.co").src).toBe(
+      "/brand/cases/fecap.webp",
+    );
+    expect(toMediaRef({ ...media, path: "2026/10/abc-capa.webp" }, "https://x.supabase.co/")).toEqual({
+      src: "https://x.supabase.co/storage/v1/object/public/media/2026/10/abc-capa.webp",
+      alt: "Capa",
+      width: 1200,
+      height: 750,
+    });
+  });
+
+  it("mídia decorativa tem texto alternativo vazio", () => {
+    expect(toMediaRef({ ...media, path: "/x.webp", decorative: true }, "https://x.supabase.co").alt).toBe("");
+  });
+
+  it("área e serviço convertem nulos opcionais e ordem", () => {
+    const area = toArea({
+      ...control,
+      id: "a1",
+      slug: "criacao",
+      name: "Criação",
+      summary: "Resumo",
+      description: "Descrição",
+      highlights: ["Design"],
+      icon: null,
+      sort_order: 5,
+    });
+    expect(area).toMatchObject({ slug: "criacao", order: 5, icon: undefined, highlights: ["Design"] });
+    const service = toService(
+      {
+        ...control,
+        id: "s1",
+        slug: "audiovisual",
+        name: "Audiovisual",
+        summary: null,
+        description: null,
+        examples: [],
+        icon: "like",
+        image_media_id: null,
+        featured: true,
+        sort_order: 7,
+      },
+      ["a1"],
+    );
+    expect(service).toMatchObject({ areaIds: ["a1"], summary: "", featured: true, image: undefined, order: 7 });
   });
 });
