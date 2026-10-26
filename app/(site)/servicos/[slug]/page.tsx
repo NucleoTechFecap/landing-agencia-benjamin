@@ -20,7 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  25/10/2026 Caio Moraes              Permite navegação bloqueante (instant = false) (LAY-01).
- ──────────────────────────────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
