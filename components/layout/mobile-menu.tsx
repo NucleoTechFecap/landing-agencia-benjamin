@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 25/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 25/10/2026 Caio Moraes              Fecha o menu quando o foco sai dele (LAY-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -55,16 +56,19 @@ export function MobileMenu() {
         buttonRef.current?.focus();
       }
     };
-    const onClick = (event: MouseEvent) => {
+    // Fecha ao clicar fora ou quando o foco sai do menu pelo teclado (Tab após o último link) (LAY-02).
+    const closeIfOutside = (event: Event) => {
       const target = event.target as Node;
       if (!panelRef.current?.contains(target) && !buttonRef.current?.contains(target)) setOpen(false);
     };
     document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("mousedown", onClick);
+    document.addEventListener("mousedown", closeIfOutside);
+    document.addEventListener("focusin", closeIfOutside);
     panelRef.current?.querySelector<HTMLElement>("a")?.focus();
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("mousedown", closeIfOutside);
+      document.removeEventListener("focusin", closeIfOutside);
     };
   }, [open]);
 

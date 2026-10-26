@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 25/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 25/10/2026 Caio Moraes              Esconde o CTA do header abaixo de 640 px (LAY-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -46,9 +47,12 @@ export function SiteHeader() {
         </Link>
         <nav aria-label="Principal" className="flex items-center gap-2">
           <NavLinks />
-          <ButtonLink href="/contato" variant="primary" className="hidden px-5 py-2 text-sm sm:inline-flex">
-            Fale com a gente
-          </ButtonLink>
+          {/* O wrapper controla a visibilidade: o ButtonLink já aplica inline-flex, que venceria o hidden (LAY-02). */}
+          <div className="hidden sm:block">
+            <ButtonLink href="/contato" variant="primary" className="px-5 py-2 text-sm">
+              Fale com a gente
+            </ButtonLink>
+          </div>
           <MobileMenu />
         </nav>
       </Container>
