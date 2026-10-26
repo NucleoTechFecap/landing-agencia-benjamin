@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 25/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
+ 25/10/2026 Caio Moraes              Última área sem laranja, distinta do CTA final (SOB-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -54,13 +55,15 @@ export async function generateMetadata(): Promise<Metadata> {
   );
 }
 
+// A última cor não pode ser laranja: o CTA final da página (ClosingCta) é sempre laranja e as duas
+// faixas pareciam uma só (SOB-04).
 const TONES: { tone: SectionTone; icon: BrandIconColor }[] = [
   { tone: "nyanza", icon: "verde" },
   { tone: "lima", icon: "verde" },
   { tone: "azul", icon: "rosa" },
-  { tone: "claro", icon: "laranja" },
-  { tone: "rosa", icon: "azul" },
   { tone: "laranja", icon: "verde" },
+  { tone: "rosa", icon: "azul" },
+  { tone: "claro", icon: "laranja" },
 ];
 
 /** Listagem das seis áreas, cada uma com âncora própria e serviços relacionados (SOB-04…SOB-10). */
