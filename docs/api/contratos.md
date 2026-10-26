@@ -53,7 +53,8 @@ visibilidade é única (TECH-04, invariante I1).
 | `/api/v1/settings` | `SiteSettingsDTO` | — |
 | `/api/v1/pages/{slug}` | `PageDTO` (página publicada e blocos válidos) | 404 |
 | `/api/v1/ctas?placement=` | `CtaDTO[]` (link já resolvido, com fallback) | 400 |
-| `/api/v1/areas` | `AreaDTO[]` | — |
+| `/api/v1/areas` | `AreaDTO[]` (ordem configurada) | — |
+| `/api/v1/areas/{slug}` | `AreaDetailDTO` (área e serviços publicados vinculados) | 404 |
 | `/api/v1/services?featured=` | `ServiceDTO[]` | 400 |
 | `/api/v1/services/{slug}` | `ServiceDTO & { cases: CaseCardDTO[] }` | 404 |
 | `/api/v1/categories` | `CategoryDTO[]` | — |
@@ -64,6 +65,7 @@ visibilidade é única (TECH-04, invariante I1).
 
 ```ts
 AreaDTO        { slug, name, summary, description, highlights[], icon?, url }
+AreaDetailDTO  AreaDTO & { services: { slug, name, summary, url }[] }
 ServiceDTO     { slug, name, summary, description, examples[], areas[] (slugs), featured, icon?, image?: MediaDTO, url }
 CategoryDTO    { slug, name, description }
 CaseCardDTO    { slug, title, client, category: {slug,name}|null, deliveryType?, summary, cover?: MediaDTO, date?, featured, url }
