@@ -44,6 +44,12 @@
 | [Máquina de estados e invariantes de publicação](negocio/maquina-de-estados-publicacao.md) | TECH-04 |
 | [Campos e status de publicação do case](negocio/campos-do-case.md) | CASE-11 |
 
+## Banco de dados
+
+| Documento | Issue |
+| --------- | ----- |
+| [Modelo de dados do CMS: dicionário, cardinalidades e convenções](banco/dicionario-de-dados.md) | DB-01 / DBX-01 |
+
 ## Formulários, leads e feedback
 
 | Documento | Issue |
