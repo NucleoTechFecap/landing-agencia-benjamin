@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 25/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 25/10/2026 Caio Moraes              Hero sem corte de texto em telas estreitas (HOME-01).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -42,13 +43,14 @@ export function HeroManifesto({ settings, ctas }: { settings: SiteSettings; ctas
     <section aria-labelledby="manifesto-titulo" className="relative overflow-hidden bg-benja-verde text-benja-nyanza">
       <div aria-hidden className="halftone pointer-events-none absolute inset-0 text-benja-lima opacity-40" />
       <Container className="relative grid items-center gap-12 py-16 sm:py-24 lg:grid-cols-[1.15fr_0.85fr]">
-        <div>
+        {/* min-w-0: sem ele a coluna do grid não encolhe abaixo da maior palavra e o texto era cortado em 320 px (HOME-01). */}
+        <div className="min-w-0">
           <p className="inline-flex items-center gap-2 rounded-full border-2 border-benja-lima px-4 py-1 text-xs font-bold tracking-widest text-benja-lima uppercase">
             Agência experimental da FECAP
           </p>
           <h1
             id="manifesto-titulo"
-            className="mt-6 text-balance text-5xl leading-[0.95] font-black tracking-tight sm:text-7xl"
+            className="mt-6 text-[clamp(2.25rem,11vw,3rem)] leading-[0.95] font-black tracking-tight text-balance break-words sm:text-7xl"
           >
             {manifesto.title}
           </h1>
