@@ -48,7 +48,7 @@
 
 | Documento | Issue |
 | --------- | ----- |
-| [Modelo de dados do CMS: dicionário, cardinalidades e convenções](banco/dicionario-de-dados.md) | DB-01 / DBX-01 |
+| [Modelo de dados do CMS: dicionário, cardinalidades e convenções](banco/dicionario-de-dados.md) | DB-01 / DBX-01 / DB-02 |
 
 ## Formulários, leads e feedback
 

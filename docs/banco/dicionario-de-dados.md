@@ -2,13 +2,14 @@
 
 | Campo           | Valor                                                                        |
 | --------------- | ---------------------------------------------------------------------------- |
-| Issues          | DB-01 (#57), DBX-01 (#112)                                                   |
+| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58)                                      |
 | Responsável     | Vinícius Binda (`@VinnizzZ`)                                                 |
 | Revisão técnica | Vinícius Nishimura Reis (`@Vinishireis`)                                     |
 | Versão          | 1.0.0                                                                        |
 | Data            | 25/10/2026                                                                   |
 | Migration       | `supabase/migrations/20261025000100_cms_content.sql`                         |
-| Teste           | `lib/server/content/content-sql.test.ts` (SQL × regras de domínio)           |
+| Reversão        | `supabase/rollbacks/20261025000100_cms_content.down.sql`                     |
+| Testes          | `supabase/tests/database/cms_content.test.sql` (pgTAP, 84 testes) e `lib/server/content/content-sql.test.ts` (SQL × regras de domínio) |
 | Insumos         | [integridade](../negocio/integridade-de-conteudo.md), [campos do case](../negocio/campos-do-case.md), [fluxo de publicação](../negocio/fluxo-de-publicacao.md), [proteção de rotas](../seguranca/protecao-de-rotas.md), [ADR-0005](../adr/0005-armazenamento-de-midia.md) |
 
 ## 1. Visão geral
@@ -286,6 +287,32 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 
 | Verificação | Resultado |
 | ----------- | --------- |
-| Base limpa (Postgres 17 + stubs de `auth`/`storage` do Supabase), migrations 0100 → 20261025000100 | Aplicadas sem erro |
-| 84 verificações SQL: dados inválidos (slug, estados, campos de publicação, links, CTA, mídia), integridade referencial (restrict/cascade/set null) e RLS por papel (`anon`, `pending`, `viewer`, `editor`, `admin`) | Todas passaram |
+| `npx supabase db reset` (stack local, Postgres 17.11): migrations 0100 → 20261025000100 em base limpa | Aplicadas sem erro |
+| `npx supabase test db`: 84 testes pgTAP. Cobrem dados inválidos (slug, estados, campos de publicação, links, CTA, mídia), integridade referencial (restrict/cascade/set null) e RLS por papel (`anon`, `pending`, `viewer`, `editor`, `admin`) | `Files=1, Tests=84, Result: PASS` |
+| Reversão: o `.down.sql` é bloqueado se houver conteúdo; confirmado, deixa só as 4 tabelas de 13/10; `migration repair` + `migration up` reaplicam; testes passam de novo | Ciclo completo sem erro |
 | `content-sql.test.ts`: enum × `PUBLICATION_STATUSES`, `is_valid_slug` × `validateSlug`, mídia × `MEDIA_RULES`, RLS em toda tabela | Passa no `npm test` |
+
+## 9. Como aplicar, testar e reverter
+
+```bash
+# Banco local limpo (Docker): aplica todas as migrations em ordem
+npx supabase start
+npx supabase db reset
+npx supabase test db          # testes pgTAP de supabase/tests/
+
+# Ambiente remoto (dev/hml/prd): só migrations, nunca o seed
+npx supabase link --project-ref <ref>
+npx supabase db push --dry-run
+npx supabase db push
+```
+
+**Reversão.** O Supabase CLI não executa reversões. Cada migration de conteúdo tem um
+`supabase/rollbacks/<migration>.down.sql`, aplicado à mão (SQL Editor ou `psql`) em ordem inversa
+e só depois de backup (GO-01). Se houver conteúdo cadastrado, o script para. Para descartar o
+conteúdo de propósito, rode antes, na mesma sessão, `set benjamin.confirmar_rollback = 'sim';`.
+Depois, registre a reversão no histórico:
+
+```bash
+npx supabase migration repair --status reverted 20261025000100      # remoto (projeto linkado)
+npx supabase migration repair --status reverted 20261025000100 --local
+```
