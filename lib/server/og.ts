@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
+ 26/10/2026 Vinícius Nishimura Reis  Logotipo lido de public/brand/logos (UX-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -48,7 +49,7 @@ export async function ogFonts() {
 /** Logotipo horizontal em data URL para as imagens Open Graph. */
 export async function ogLogoDataUrl(): Promise<string> {
   if (!cachedLogo) {
-    const file = await readFile(join(process.cwd(), "public", "brand", "logo-horizontal.png"));
+    const file = await readFile(join(process.cwd(), "public", "brand", "logos", "logo-horizontal.png"));
     cachedLogo = `data:image/png;base64,${file.toString("base64")}`;
   }
   return cachedLogo;

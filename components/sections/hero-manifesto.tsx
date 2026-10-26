@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  25/10/2026 Caio Moraes              Hero sem corte de texto em telas estreitas (HOME-01).
  25/10/2026 Caio Moraes              Sticker "tá no briefing" ancorado na base (LAY-06).
+ 26/10/2026 Vinícius Nishimura Reis  Logotipo vertical em SVG (UX-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -77,13 +78,12 @@ export function HeroManifesto({ settings, ctas }: { settings: SiteSettings; ctas
         {/* Logotipo sem rotação, sombra extra ou sobreposição: zona de exclusão do brandbook. */}
         <div className="relative mx-auto w-full max-w-[240px] px-6 py-10 sm:max-w-xs lg:max-w-sm">
           <Image
-            src="/brand/logo-vertical.webp"
+            src="/brand/logos/logo-vertical.svg"
             alt=""
             aria-hidden
             width={480}
             height={496}
             priority
-            sizes="(min-width: 1024px) 384px, (min-width: 640px) 320px, 240px"
             className="relative z-10 h-auto w-full"
           />
           <Sticker

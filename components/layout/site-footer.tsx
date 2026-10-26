@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 26/10/2026 Vinícius Nishimura Reis  Logotipo horizontal em SVG (UX-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,10 +37,10 @@ export function SiteFooter({ settings, year }: { settings: SiteSettings; year: n
       <Container className="relative grid gap-10 py-14 md:grid-cols-[1.3fr_1fr_1fr]">
         <div>
           <Image
-            src="/brand/logo-horizontal.webp"
+            src="/brand/logos/logo-horizontal.svg"
             alt="Agência Benjamin"
             width={180}
-            height={115}
+            height={117}
             className="h-auto w-44"
           />
           <p className="mt-4 max-w-sm text-sm leading-relaxed opacity-90">{settings.description}</p>

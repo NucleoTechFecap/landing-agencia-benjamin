@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  25/10/2026 Caio Moraes              Esconde o CTA do header abaixo de 640 px (LAY-02).
+ 26/10/2026 Vinícius Nishimura Reis  Logotipo horizontal em SVG (UX-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,9 +38,9 @@ export function SiteHeader() {
         <Link href="/" className="shrink-0" aria-label="Agência Benjamin — página inicial">
           {/* Tamanho mínimo do logotipo em telas: 70 px (brandbook). */}
           <Image
-            src="/brand/logo-horizontal.webp"
+            src="/brand/logos/logo-horizontal.svg"
             alt="Agência Benjamin"
-            width={110}
+            width={107}
             height={70}
             priority
             className="h-14 w-auto"

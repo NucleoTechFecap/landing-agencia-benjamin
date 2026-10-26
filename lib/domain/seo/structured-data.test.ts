@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
+ 26/10/2026 Vinícius Nishimura Reis  Logotipo em /brand/logos (UX-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -33,7 +34,7 @@ describe("dados estruturados", () => {
     expect(schema["@type"]).toBe("Organization");
     expect(schema.sameAs).toHaveLength(3);
     expect(schema.parentOrganization.name).toMatch(/FECAP/);
-    expect(schema.logo).toBe(`${URL}/brand/logo-horizontal.png`);
+    expect(schema.logo).toBe(`${URL}/brand/logos/logo-horizontal.png`);
   });
 
   it("BreadcrumbList numera e monta URLs absolutas", () => {
