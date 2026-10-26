@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,12 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 26/10/2026 Vinícius Nishimura Reis  Lê da fonte ativa (content/ ou Supabase) e expõe páginas (DB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
-import { seedSnapshot, siteSettings } from "@/content";
 import { resolveCtaHref, type ResolvedLink } from "@/lib/domain/content/integrity";
 import type {
   Area,
@@ -31,22 +31,24 @@ import type {
   CaseStudy,
   ContentSnapshot,
   CtaPlacement,
+  Page,
   Service,
   SiteSettings,
 } from "@/lib/domain/content/types";
 import { isPubliclyVisible, visibleSorted } from "@/lib/domain/content/visibility";
 import { CONTENT_TAGS } from "./cache-tags";
+import { getContentSource } from "./sources";
 
 /*
  * Repositório de LEITURA PÚBLICA do conteúdo (ADR-0003). Regra de ouro: nada aqui
  * retorna item que não esteja publicado (RN-01 / TECH-04 I1).
  *
- * Fonte atual: conteúdo provisório versionado em content/. Quando as tabelas do CMS
- * estiverem publicadas (DB-03/DB-04/DB-05), somente `loadSnapshot()` muda para ler
- * do Supabase com a chave anônima (RLS só expõe `published`).
+ * A fonte vem de sources.ts: conteúdo provisório versionado em content/ ou as tabelas do
+ * CMS no Supabase, lidas com a chave anônima (RLS só expõe `published`). Mesmo vindo do
+ * banco, toda lista passa por isPubliclyVisible/visibleSorted antes de sair daqui.
  */
 async function loadSnapshot(): Promise<ContentSnapshot> {
-  return seedSnapshot;
+  return getContentSource().snapshot();
 }
 
 export interface CaseCard extends CaseStudy {
@@ -91,7 +93,16 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   "use cache";
   cacheTag(CONTENT_TAGS.all, CONTENT_TAGS.settings);
   cacheLife("hours");
-  return siteSettings;
+  return getContentSource().settings();
+}
+
+/** Página editável publicada (blocos extras das rotas fixas — DB-03); `null` se não houver. */
+export async function getPage(slug: string): Promise<Page | null> {
+  "use cache";
+  cacheTag(CONTENT_TAGS.all, CONTENT_TAGS.pages, CONTENT_TAGS.page(slug));
+  cacheLife("hours");
+  const page = await getContentSource().page(slug);
+  return page && isPubliclyVisible(page) ? page : null;
 }
 
 export async function listAreas(): Promise<Area[]> {

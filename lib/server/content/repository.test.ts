@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 26/10/2026 Vinícius Nishimura Reis  Caso de página sem banco (DB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -54,6 +55,10 @@ describe("repositório público de conteúdo", () => {
     const detail = await repository.getCaseDetail("meridiano");
     expect(detail?.category?.slug).toBe("social-media-e-criacao");
     expect(detail?.areas.map((area) => area.slug)).toEqual(["social-media", "criacao"]);
+  });
+
+  it("sem banco não há páginas editáveis: as rotas mostram só as seções fixas (DB-03)", async () => {
+    expect(await repository.getPage("sobre")).toBeNull();
   });
 
   it("resolve links dos CTAs da Home", async () => {

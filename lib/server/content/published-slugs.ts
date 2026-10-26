@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 26/10/2026 Vinícius Nishimura Reis  Parâmetro estático para banco vazio (DB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,6 +27,17 @@ import { isValidSlug } from "@/lib/domain/content/slug";
 import { isPubliclyVisible } from "@/lib/domain/content/visibility";
 
 export type DetailRoute = "servicos" | "cases";
+
+/**
+ * Slug impossível (falha em isValidSlug) usado quando não há nada publicado: com Cache
+ * Components, `generateStaticParams` precisa devolver ao menos um parâmetro, senão o build
+ * quebra com o banco vazio. A página responde 404 para ele (proxy e notFound()).
+ */
+export const PLACEHOLDER_SLUG = "__sem-conteudo__";
+
+export function toStaticParams(slugs: readonly string[]): { slug: string }[] {
+  return (slugs.length ? slugs : [PLACEHOLDER_SLUG]).map((slug) => ({ slug }));
+}
 
 /**
  * Verificação leve usada pelo proxy para responder 404 de verdade (RF-18) antes do

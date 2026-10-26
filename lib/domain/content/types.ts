@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,9 +18,11 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-05).
+ 26/10/2026 Vinícius Nishimura Reis  Página editável e entidade page (DB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
+import type { PageBlock } from "./blocks";
 import type { PublicationStatus } from "./publication-status";
 
 /** Campos de controle comuns a todo conteúdo publicável (ADM-12). */
@@ -164,4 +166,13 @@ export interface ContentSnapshot {
   ctas: Cta[];
 }
 
-export type ContentEntityType = "area" | "service" | "category" | "case" | "cta";
+/** Página editável (DB-01/DB-03). Os blocos já chegam validados pelo catálogo de blocks.ts. */
+export interface Page extends Publishable {
+  id: string;
+  slug: string;
+  title: string;
+  description?: string;
+  blocks: PageBlock[];
+}
+
+export type ContentEntityType = "area" | "service" | "category" | "case" | "cta" | "page";

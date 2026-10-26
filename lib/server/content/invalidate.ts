@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-09).
+ 26/10/2026 Vinícius Nishimura Reis  Tags e invalidação de páginas do CMS (DB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -67,6 +68,11 @@ export function tagsForChange(change: ContentChange): string[] {
       break;
     case "cta":
       tags.add(CONTENT_TAGS.ctas);
+      break;
+    case "page":
+      tags.add(CONTENT_TAGS.pages);
+      if (change.slug) tags.add(CONTENT_TAGS.page(change.slug));
+      if (change.previousSlug) tags.add(CONTENT_TAGS.page(change.previousSlug));
       break;
   }
   return [...tags];

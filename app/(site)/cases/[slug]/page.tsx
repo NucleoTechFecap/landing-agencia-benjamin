@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  25/10/2026 Caio Moraes              Permite navegação bloqueante (instant = false) (LAY-01).
+ 26/10/2026 Vinícius Nishimura Reis  Parâmetro estático para banco vazio (DB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,11 +38,12 @@ import { Section } from "@/components/ui/section";
 import { siteUrl } from "@/lib/config/public-env";
 import { caseSchema } from "@/lib/domain/seo/structured-data";
 import { getCaseDetail, getSiteSettings, listCases, listPublishedSlugs } from "@/lib/server/content/repository";
+import { toStaticParams } from "@/lib/server/content/published-slugs";
 import { buildMetadata } from "@/lib/server/seo";
 
 export async function generateStaticParams() {
   const { cases } = await listPublishedSlugs();
-  return cases.map((slug) => ({ slug }));
+  return toStaticParams(cases);
 }
 
 /** Pode bloquear na navegação: os slugs publicados já são pré-gerados e o proxy.ts responde 404 aos inexistentes (LAY-01). */
