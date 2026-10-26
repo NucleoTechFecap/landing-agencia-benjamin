@@ -170,6 +170,8 @@ página seguem o mesmo padrão rascunho/publicação, com campos obrigatórios d
 ## 8. Trabalho em paralelo
 
 - Front-end consome os DTOs acima (tipos exportados de `lib/domain/api/contracts.ts`).
-- Back-end implementa `loadSnapshot()`/repositórios do CMS no Supabase preservando os DTOs.
+- Back-end: `lib/server/content/sources.ts` escolhe a fonte (`CONTENT_SOURCE`); a fonte Supabase
+  (DB-03/04/05) lê configuração, páginas, CTAs, áreas, serviços, categorias, cases, galeria e mídia
+  com a chave anônima, preservando os DTOs. Banco vazio devolve listas vazias e 404 nos detalhes.
 - Testes de contrato: `contracts.test.ts`, `http.test.ts` e smoke test (`curl /api/v1/*`) no checklist de release.
 - Mudança incompatível em DTO ou endpoint ⇒ `/api/v2` (estratégia em TECH-11).
