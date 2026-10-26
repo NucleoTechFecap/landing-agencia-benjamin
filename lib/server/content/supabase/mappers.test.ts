@@ -19,12 +19,24 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
+ 26/10/2026 Vinícius Nishimura Reis  Testes de categorias, cases e galeria (DB-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { describe, expect, it } from "vitest";
 import { siteSettings } from "@/content";
-import { toArea, toCta, toCtaTarget, toMediaRef, toPage, toService, toSiteSettings } from "./mappers";
+import {
+  toArea,
+  toCase,
+  toCategory,
+  toCta,
+  toCtaTarget,
+  toExternalLinks,
+  toMediaRef,
+  toPage,
+  toService,
+  toSiteSettings,
+} from "./mappers";
 import type { CtaRow, PageRow } from "./rows";
 
 const control = {
@@ -174,5 +186,60 @@ describe("áreas, serviços e mídia (DB-04)", () => {
       ["a1"],
     );
     expect(service).toMatchObject({ areaIds: ["a1"], summary: "", featured: true, image: undefined, order: 7 });
+  });
+});
+
+describe("categorias e cases (DB-05)", () => {
+  const row = {
+    ...control,
+    id: "k1",
+    slug: "meridiano",
+    title: "Social media para a Meridiano",
+    client_name: "Meridiano",
+    category_id: "cat1",
+    delivery_type: null,
+    summary: "Resumo com pelo menos trinta caracteres.",
+    challenge: null,
+    solution: "Solução.",
+    results: null,
+    cover_media_id: "m1",
+    external_links: [{ label: "Post", url: "https://instagram.com/p/1" }],
+    reference_month: "2026-08-01",
+    team: ["Ana"],
+    featured: true,
+    sort_order: 3,
+  };
+
+  it("case: mês de referência vira AAAA-MM e nulos viram undefined", () => {
+    const item = toCase(row, { serviceIds: ["s1"], gallery: [] });
+    expect(item).toMatchObject({
+      client: "Meridiano",
+      categoryId: "cat1",
+      serviceIds: ["s1"],
+      date: "2026-08",
+      deliveryType: undefined,
+      challenge: undefined,
+      solution: "Solução.",
+      order: 3,
+    });
+    expect(toCase({ ...row, reference_month: null }, { serviceIds: [], gallery: [] }).date).toBeUndefined();
+  });
+
+  it("links externos: só objetos com label e url https", () => {
+    expect(
+      toExternalLinks([
+        { label: "Matéria", url: "https://g1.globo.com/x" },
+        { label: "Inseguro", url: "http://x.com" },
+        { url: "https://sem-label.com" },
+        "texto",
+      ]),
+    ).toEqual([{ label: "Matéria", url: "https://g1.globo.com/x" }]);
+    expect(toExternalLinks(null)).toEqual([]);
+  });
+
+  it("categoria converte descrição nula", () => {
+    expect(
+      toCategory({ ...control, id: "c1", slug: "copywriting", name: "Copywriting", description: null, sort_order: 1 }),
+    ).toMatchObject({ slug: "copywriting", description: "", order: 1 });
   });
 });

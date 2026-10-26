@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Áreas, serviços, vínculos e mídia do CMS (DB-04).
+ 26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,8 +27,11 @@ import { parseBlock, type PageBlock } from "@/lib/domain/content/blocks";
 import { parseSettingsSections } from "@/lib/domain/content/settings-schema";
 import type {
   Area,
+  CaseCategory,
+  CaseStudy,
   Cta,
   CtaTarget,
+  ExternalLink,
   MediaRef,
   Page,
   Publishable,
@@ -38,6 +42,8 @@ import { publicMediaUrl } from "@/lib/domain/media/policy";
 import type {
   AreaRow,
   BlockRow,
+  CaseRow,
+  CategoryRow,
   CtaRow,
   MediaAssetRow,
   PageRow,
@@ -102,6 +108,62 @@ export function toService(row: ServiceRow, areaIds: string[], image?: MediaRef):
     examples: row.examples,
     icon: row.icon ?? undefined,
     image,
+    featured: row.featured,
+    order: row.sort_order,
+  };
+}
+
+export function toCategory(row: CategoryRow): CaseCategory {
+  return {
+    ...toPublishable(row),
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    description: row.description ?? "",
+    order: row.sort_order,
+  };
+}
+
+/** Links externos válidos (label + url https); qualquer outra coisa no jsonb é ignorada. */
+export function toExternalLinks(value: unknown): ExternalLink[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (link): link is ExternalLink =>
+      typeof link === "object" &&
+      link !== null &&
+      typeof link.label === "string" &&
+      typeof link.url === "string" &&
+      link.url.startsWith("https://"),
+  );
+}
+
+/**
+ * Case com serviços, capa e galeria já resolvidos. `reference_month` (AAAA-MM-01) vira o
+ * mês AAAA-MM do domínio; cliente e categoria vazios só acontecem em rascunho (a
+ * constraint cases_publish_fields exige os dois para publicar).
+ */
+export function toCase(
+  row: CaseRow,
+  relations: { serviceIds: string[]; cover?: MediaRef; gallery: MediaRef[] },
+): CaseStudy {
+  return {
+    ...toPublishable(row),
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    client: row.client_name ?? "",
+    categoryId: row.category_id ?? "",
+    serviceIds: relations.serviceIds,
+    deliveryType: row.delivery_type ?? undefined,
+    summary: row.summary ?? "",
+    challenge: row.challenge ?? undefined,
+    solution: row.solution ?? undefined,
+    results: row.results ?? undefined,
+    cover: relations.cover,
+    gallery: relations.gallery,
+    externalLinks: toExternalLinks(row.external_links),
+    date: row.reference_month?.slice(0, 7),
+    team: row.team,
     featured: row.featured,
     order: row.sort_order,
   };

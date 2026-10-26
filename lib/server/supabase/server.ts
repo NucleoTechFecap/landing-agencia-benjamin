@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
+ 26/10/2026 Vinícius Nishimura Reis  Cliente público fora do Data Cache do fetch (DB-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -56,8 +57,19 @@ export async function createSessionClient() {
   });
 }
 
+/**
+ * O cache do conteúdo público é o `use cache` do repositório, com tags invalidadas pelo CMS
+ * (TECH-09). Sem `no-store`, o fetch do supabase-js também caía no Data Cache do Next — sem
+ * tags e persistido em .next/cache entre builds —, então `updateTag` não o limpava e um
+ * build novo reaproveitava respostas antigas do banco (encontrado no DB-05).
+ */
+const uncachedFetch: typeof fetch = (input, init) => fetch(input, { ...init, cache: "no-store" });
+
 /** Cliente anônimo sem cookies, para leituras públicas (RLS expõe só conteúdo publicado). */
 export function createPublicClient() {
   const { url, anonKey } = credentials();
-  return createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  return createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: uncachedFetch },
+  });
 }

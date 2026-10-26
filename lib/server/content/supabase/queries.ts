@@ -19,19 +19,33 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Áreas, serviços, vínculos e mídia do CMS (DB-04).
+ 26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Area, Cta, MediaRef, Page, Service, SiteSettings } from "@/lib/domain/content/types";
+import type {
+  Area,
+  CaseCategory,
+  CaseStudy,
+  Cta,
+  MediaRef,
+  Page,
+  Service,
+  SiteSettings,
+} from "@/lib/domain/content/types";
 import { AppError } from "../../errors";
 import { logger } from "../../logger";
-import { toArea, toCta, toMediaRef, toPage, toService, toSiteSettings } from "./mappers";
+import { toArea, toCase, toCategory, toCta, toMediaRef, toPage, toService, toSiteSettings } from "./mappers";
 import {
   COLUMNS,
   type AreaRow,
   type BlockRow,
+  type CaseMediaRow,
+  type CaseRow,
+  type CaseServiceRow,
+  type CategoryRow,
   type CtaRow,
   type MediaAssetRow,
   type PageRow,
@@ -108,6 +122,50 @@ export async function fetchAreasAndServices(
         areaIdsByService.get(row.id) ?? [],
         row.image_media_id ? images.get(row.image_media_id) : undefined,
       ),
+    ),
+  };
+}
+
+/**
+ * Categorias e cases publicados com serviços, capa e galeria. case_services só expõe pares
+ * case × serviço publicados e case_media só a galeria de case publicado (RLS); a galeria
+ * segue sort_order.
+ */
+export async function fetchCasesAndCategories(
+  client: SupabaseClient,
+  supabaseUrl: string,
+): Promise<{ categories: CaseCategory[]; cases: CaseStudy[] }> {
+  const [categoryRows, caseRows, serviceLinks, galleryLinks] = await Promise.all([
+    rows<CategoryRow>(
+      "case_categories",
+      client.from("case_categories").select(COLUMNS.case_categories).eq("status", "published"),
+    ),
+    rows<CaseRow>("cases", client.from("cases").select(COLUMNS.cases).eq("status", "published")),
+    rows<CaseServiceRow>("case_services", client.from("case_services").select(COLUMNS.case_services)),
+    rows<CaseMediaRow>("case_media", client.from("case_media").select(COLUMNS.case_media).order("sort_order")),
+  ]);
+  const media = await fetchMedia(
+    client,
+    [...caseRows.map((row) => row.cover_media_id), ...galleryLinks.map((link) => link.media_id)],
+    supabaseUrl,
+  );
+  const group = <T extends { case_id: string }>(links: T[]) => {
+    const byCase = new Map<string, T[]>();
+    for (const link of links) byCase.set(link.case_id, [...(byCase.get(link.case_id) ?? []), link]);
+    return byCase;
+  };
+  const servicesByCase = group(serviceLinks);
+  const galleryByCase = group([...galleryLinks].sort((a, b) => a.sort_order - b.sort_order));
+  return {
+    categories: categoryRows.map(toCategory),
+    cases: caseRows.map((row) =>
+      toCase(row, {
+        serviceIds: (servicesByCase.get(row.id) ?? []).map((link) => link.service_id),
+        cover: row.cover_media_id ? media.get(row.cover_media_id) : undefined,
+        gallery: (galleryByCase.get(row.id) ?? [])
+          .map((link) => media.get(link.media_id))
+          .filter((item): item is MediaRef => Boolean(item)),
+      }),
     ),
   };
 }

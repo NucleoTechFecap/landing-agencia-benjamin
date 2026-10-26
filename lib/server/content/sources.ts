@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Áreas e serviços do Supabase e checagem de slug do proxy (DB-04).
+ 26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,7 +30,14 @@ import { getServerEnv } from "@/lib/config/server-env";
 import type { ContentSnapshot, Page, SiteSettings } from "@/lib/domain/content/types";
 import { isPubliclyVisible } from "@/lib/domain/content/visibility";
 import { createPublicClient } from "../supabase/server";
-import { fetchAreasAndServices, fetchCtas, fetchPage, fetchSiteSettings, isSlugPublished } from "./supabase/queries";
+import {
+  fetchAreasAndServices,
+  fetchCasesAndCategories,
+  fetchCtas,
+  fetchPage,
+  fetchSiteSettings,
+  isSlugPublished,
+} from "./supabase/queries";
 
 export type ContentSourceName = "local" | "supabase";
 
@@ -60,18 +68,20 @@ export const localSource: ContentSource = {
 };
 
 /**
- * Tabelas do CMS lidas com a chave anônima. O snapshot traz áreas, serviços (DB-04) e CTAs
- * (DB-03); categorias e cases entram no DB-05.
+ * Tabelas do CMS lidas com a chave anônima: CTAs (DB-03), áreas e serviços (DB-04),
+ * categorias e cases com galeria (DB-05). As consultas rodam em paralelo.
  */
 export const supabaseSource: ContentSource = {
   name: "supabase",
   async snapshot() {
     const client = createPublicClient();
-    const [{ areas, services }, ctas] = await Promise.all([
-      fetchAreasAndServices(client, publicEnv.NEXT_PUBLIC_SUPABASE_URL!),
+    const supabaseUrl = publicEnv.NEXT_PUBLIC_SUPABASE_URL!;
+    const [{ areas, services }, { categories, cases }, ctas] = await Promise.all([
+      fetchAreasAndServices(client, supabaseUrl),
+      fetchCasesAndCategories(client, supabaseUrl),
       fetchCtas(client),
     ]);
-    return { areas, services, categories: [], cases: [], ctas };
+    return { areas, services, categories, cases, ctas };
   },
   settings: () => fetchSiteSettings(createPublicClient(), siteSettings),
   page: (slug) => fetchPage(createPublicClient(), slug),

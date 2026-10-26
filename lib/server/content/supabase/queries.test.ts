@@ -19,13 +19,21 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
+ 26/10/2026 Vinícius Nishimura Reis  Testes de categorias, cases e galeria (DB-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { describe, expect, it, vi } from "vitest";
 import { siteSettings } from "@/content";
 import { fakeSupabase } from "@/tests/stubs/fake-supabase";
-import { fetchAreasAndServices, fetchCtas, fetchPage, fetchSiteSettings, isSlugPublished } from "./queries";
+import {
+  fetchAreasAndServices,
+  fetchCasesAndCategories,
+  fetchCtas,
+  fetchPage,
+  fetchSiteSettings,
+  isSlugPublished,
+} from "./queries";
 
 vi.spyOn(console, "log").mockImplementation(() => {});
 vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -174,5 +182,75 @@ describe("áreas e serviços (DB-04)", () => {
     expect(await isSlugPublished(client, "services", "eventos")).toBe(false);
     const broken = fakeSupabase({ cases: { error: { message: "timeout" } } });
     expect(await isSlugPublished(broken.client, "cases", "meridiano")).toBe(true);
+  });
+});
+
+describe("categorias e cases (DB-05)", () => {
+  const caseRow = (id: string, status: string, cover: string | null) => ({
+    ...control,
+    id,
+    status,
+    slug: id,
+    title: id,
+    client_name: "Cliente",
+    category_id: "cat",
+    delivery_type: null,
+    summary: "Resumo do case com mais de trinta caracteres.",
+    challenge: null,
+    solution: null,
+    results: null,
+    cover_media_id: cover,
+    external_links: [],
+    reference_month: null,
+    team: [],
+    featured: false,
+    sort_order: 1,
+  });
+  const media = (id: string) => ({
+    id,
+    path: `/brand/${id}.webp`,
+    mime_type: "image/webp",
+    width: null,
+    height: null,
+    alt_text: id,
+    decorative: false,
+  });
+
+  it("monta capa, galeria em ordem e serviços do case; rascunhos ficam de fora", async () => {
+    const { client } = fakeSupabase({
+      case_categories: {
+        data: [
+          {
+            ...control,
+            id: "cat",
+            status: "published",
+            slug: "copywriting",
+            name: "Copywriting",
+            description: null,
+            sort_order: 1,
+          },
+        ],
+      },
+      cases: { data: [caseRow("meridiano", "published", "capa"), caseRow("rascunho", "draft", null)] },
+      case_services: { data: [{ case_id: "meridiano", service_id: "social" }] },
+      case_media: {
+        data: [
+          { case_id: "meridiano", media_id: "g2", sort_order: 2 },
+          { case_id: "meridiano", media_id: "g1", sort_order: 1 },
+        ],
+      },
+      media_assets: { data: [media("capa"), media("g1"), media("g2")] },
+    });
+    const { categories, cases } = await fetchCasesAndCategories(client, "https://x.supabase.co");
+    expect(categories.map((category) => category.slug)).toEqual(["copywriting"]);
+    expect(cases).toHaveLength(1);
+    expect(cases[0]).toMatchObject({ serviceIds: ["social"], cover: { src: "/brand/capa.webp" } });
+    expect(cases[0].gallery.map((item) => item.alt)).toEqual(["g1", "g2"]);
+  });
+
+  it("banco vazio devolve listas vazias sem consultar mídia", async () => {
+    const { client, calls } = fakeSupabase({});
+    expect(await fetchCasesAndCategories(client, "https://x.supabase.co")).toEqual({ categories: [], cases: [] });
+    expect(calls.map((call) => call.table)).not.toContain("media_assets");
   });
 });
