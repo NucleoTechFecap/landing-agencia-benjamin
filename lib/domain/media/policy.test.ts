@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 27/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,11 +18,20 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-10).
+ 27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { describe, expect, it } from "vitest";
-import { buildStoragePath, publicMediaUrl, sniffMimeType, validateUpload, type UploadCandidate } from "./policy";
+import {
+  buildStoragePath,
+  MEDIA_RULES,
+  PANEL_UPLOAD_MAX_BYTES,
+  publicMediaUrl,
+  sniffMimeType,
+  validateUpload,
+  type UploadCandidate,
+} from "./policy";
 
 const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0, 0, 0, 0, 0]);
 const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
@@ -70,11 +79,17 @@ describe("validateUpload", () => {
     );
   });
 
-  it("aplica limite de tamanho por tipo", () => {
+  it("aplica o limite do envio pelo painel, abaixo do teto de 4,5 MB da Vercel (TECH-13)", () => {
+    const pdf = (size: number) => validateUpload(candidate({ declaredType: "application/pdf", head: PDF, size }));
     expect(validateUpload(candidate({ size: 6 * 1024 * 1024 }))[0].code).toBe("PAYLOAD_TOO_LARGE");
-    expect(validateUpload(candidate({ declaredType: "application/pdf", head: PDF, size: 8 * 1024 * 1024 }))).toEqual(
-      [],
-    );
+    expect(validateUpload(candidate({ size: 4.5 * 1024 * 1024 }))[0]).toMatchObject({
+      code: "PAYLOAD_TOO_LARGE",
+      message: expect.stringContaining("4 MB"),
+    });
+    expect(pdf(8 * 1024 * 1024)[0].code).toBe("PAYLOAD_TOO_LARGE");
+    expect(pdf(PANEL_UPLOAD_MAX_BYTES)).toEqual([]);
+    // O limite do banco continua o de armazenamento (10 MB para PDF); o do painel é o do transporte.
+    expect(MEDIA_RULES["application/pdf"].maxBytes).toBe(10 * 1024 * 1024);
   });
 
   it("limita dimensões de imagem e rejeita arquivo vazio", () => {

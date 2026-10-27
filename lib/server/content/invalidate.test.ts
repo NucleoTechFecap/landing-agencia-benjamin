@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 27/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-09).
  26/10/2026 Vinícius Nishimura Reis  Tags e invalidação de páginas do CMS (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Aquecimento da página de detalhe após invalidar (INT-02).
+ 27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,8 +31,13 @@ vi.mock("next/cache", () => ({ updateTag, revalidateTag }));
 const { after } = vi.hoisted(() => ({ after: vi.fn() }));
 vi.mock("next/server", () => ({ after }));
 
-const { detailPathsForChange, invalidateContentFromAction, invalidateContentFromRoute, tagsForChange } =
-  await import("./invalidate");
+const {
+  detailPathsForChange,
+  invalidateContentFromAction,
+  invalidateContentFromRoute,
+  MAX_WARMED_PATHS,
+  tagsForChange,
+} = await import("./invalidate");
 
 describe("tagsForChange", () => {
   it("case publicado invalida lista, detalhe e listas relacionadas", () => {
@@ -89,6 +95,21 @@ describe("aquecimento das páginas de detalhe (INT-02)", () => {
     expect(detailPathsForChange({ entity: "case", slug: "meridiano" })).toEqual(["/cases/meridiano"]);
     expect(detailPathsForChange({ entity: "area", slug: "criacao" })).toEqual([]);
     expect(detailPathsForChange({ entity: "service" })).toEqual([]);
+  });
+
+  it("inclui as páginas relacionadas, sem repetir e com teto (TECH-13)", () => {
+    expect(
+      detailPathsForChange({
+        entity: "case",
+        slug: "meridiano",
+        relatedPaths: ["/servicos/social-media", "/cases/meridiano"],
+      }),
+    ).toEqual(["/cases/meridiano", "/servicos/social-media"]);
+    expect(detailPathsForChange({ entity: "area", slug: "criacao", relatedPaths: ["/servicos/audiovisual"] })).toEqual([
+      "/servicos/audiovisual",
+    ]);
+    const many = Array.from({ length: 30 }, (_, index) => `/cases/case-${index}`);
+    expect(detailPathsForChange({ entity: "category", relatedPaths: many })).toHaveLength(MAX_WARMED_PATHS);
   });
 
   it("a requisição de aquecimento roda depois da resposta (after)", () => {
