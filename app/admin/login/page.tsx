@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
+ 26/10/2026 Vinícius Nishimura Reis  Formulário único no shell; next por promessa (B-08) (ADM-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -35,18 +36,20 @@ const NOTICES: Record<string, string> = {
 };
 
 export default function LoginPage({ searchParams }: PageProps<"/admin/login">) {
+  // Um único formulário, no shell estático: só os avisos e o destino de retorno dependem da URL.
+  const next = searchParams.then((params) => (typeof params.next === "string" ? params.next : undefined));
   return (
     <AuthCard title="Painel da Benjamin" subtitle="Acesso restrito à equipe autorizada.">
-      <Suspense fallback={<LoginForm action={signIn} />}>
-        <LoginWithParams searchParams={searchParams} />
+      <Suspense fallback={null}>
+        <LoginNotices searchParams={searchParams} />
       </Suspense>
+      <LoginForm action={signIn} next={next} />
     </AuthCard>
   );
 }
 
-async function LoginWithParams({ searchParams }: Pick<PageProps<"/admin/login">, "searchParams">) {
+async function LoginNotices({ searchParams }: Pick<PageProps<"/admin/login">, "searchParams">) {
   const params = await searchParams;
-  const next = typeof params.next === "string" ? params.next : undefined;
   const notice = typeof params.erro === "string" ? NOTICES[params.erro] : undefined;
   return (
     <>
@@ -60,7 +63,6 @@ async function LoginWithParams({ searchParams }: Pick<PageProps<"/admin/login">,
           {notice}
         </p>
       ) : null}
-      <LoginForm action={signIn} next={next} />
     </>
   );
 }
