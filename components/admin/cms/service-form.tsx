@@ -18,11 +18,13 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-06).
+ 26/10/2026 Vinícius Nishimura Reis  Atalho para enviar imagem (ADM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
+import Link from "next/link";
 import { CheckboxField, SelectField, TextArea, TextField } from "@/components/forms/fields";
 import { PUBLICATION_STATUS_LABELS } from "@/lib/domain/content/publication-status";
 import { SERVICE_LIMITS } from "@/lib/domain/content/service-schema";
@@ -148,6 +150,14 @@ export function ServiceForm({
                 defaultValue={value("order", String(service?.order ?? 0))}
               />
             </div>
+            <p className="-mt-2 text-sm">
+              <Link
+                href={`/admin/midia?voltar=${encodeURIComponent(service ? `/admin/servicos/${service.id}` : "/admin/servicos/novo")}`}
+                className="font-bold text-benja-verde underline underline-offset-4"
+              >
+                Enviar imagem para a biblioteca
+              </Link>
+            </p>
             <CheckboxField
               name="featured"
               errors={errors("featured")}

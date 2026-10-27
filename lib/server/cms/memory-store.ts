@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
+ 26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -135,6 +136,22 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
 
     async listMedia() {
       return tables.media_assets.map((row) => toMediaAsset(row, "https://projeto.supabase.co"));
+    },
+
+    async insertMedia(values) {
+      if (tables.media_assets.some((row) => row.path === values.path)) {
+        throw new AppError("CONFLICT", { message: "Arquivo já registrado." });
+      }
+      const row = { ...values, id: crypto.randomUUID() };
+      tables.media_assets.push(row);
+      return toMediaAsset(row, "https://projeto.supabase.co");
+    },
+
+    async syncGallery(caseId, mediaIds) {
+      tables.case_media = [
+        ...tables.case_media.filter((link) => link.case_id !== caseId),
+        ...mediaIds.map((mediaId, index) => ({ case_id: caseId, media_id: mediaId, sort_order: index })),
+      ];
     },
 
     async insert(table, values) {

@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 26/10/2026 Vinícius Nishimura Reis  Mensagem de arquivo enviado (ADM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -46,6 +47,7 @@ export const CMS_FLASH = {
   arquivado: "Arquivado: saiu do site e da lista principal.",
   restaurado: "Restaurado como rascunho.",
   excluido: "Excluído definitivamente.",
+  enviado: "Arquivo enviado para a biblioteca. Ele já pode ser escolhido nos formulários.",
 } as const;
 
 export type CmsFlash = keyof typeof CMS_FLASH;

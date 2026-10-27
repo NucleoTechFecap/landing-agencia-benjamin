@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Entidade de serviço e regras já cobertas (ADM-06).
+ 26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -105,12 +106,16 @@ export function publishProblems<I extends { slug: string }, T extends CmsItem>(
   snapshot: ContentSnapshot,
   now: Date,
 ): string[] {
+  // Primeiro o que falta no próprio item; as regras entre conteúdos (categoria publicada,
+  // serviço publicado…) só fazem sentido — e só aparecem — depois disso.
+  const own = def.validateForPublish(item);
+  if (own.length) return own;
   const published = { ...item, status: "published" as const, publishedAt: item.publishedAt ?? now.toISOString() };
   const integrity = findIntegrityIssues(withItem(snapshot, def, published), now)
     .filter((issue) => issue.severity === "error" && issue.entity.type === def.type && issue.entity.id === item.id)
     .filter((issue) => !def.coveredRules?.includes(issue.code))
     .map((issue) => issue.message);
-  return [...def.validateForPublish(item), ...integrity];
+  return integrity;
 }
 
 function publicationError(error: PublicationError): AppError {
@@ -190,6 +195,8 @@ export async function saveContent<I extends { slug: string }, T extends CmsItem>
       next: def.links.from(input),
     });
   }
+
+  if (def.afterSave) await def.afterSave(deps.store, saved.id, input);
 
   await deps.audit({
     event: current ? "content.updated" : "content.created",

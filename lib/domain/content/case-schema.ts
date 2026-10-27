@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (CASE-11).
+ 26/10/2026 Vinícius Nishimura Reis  Mensagens para campos ausentes na publicação (ADM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -100,15 +101,16 @@ export const caseDraftSchema = z.object({
  */
 export const casePublishSchema = (now: Date = new Date()) =>
   caseDraftSchema.extend({
-    client: z.string().trim().min(2, "Informe o cliente.").max(CASE_LIMITS.client),
-    categoryId: z.string().min(1, "Escolha a categoria."),
+    // `error` cobre o campo ausente (Zod 4 diria "expected string, received undefined").
+    client: z.string({ error: "Informe o cliente." }).trim().min(2, "Informe o cliente.").max(CASE_LIMITS.client),
+    categoryId: z.string({ error: "Escolha a categoria." }).min(1, "Escolha a categoria."),
     serviceIds: z.array(z.string()).min(1, "Relacione ao menos um serviço.").max(9),
     summary: z
-      .string()
+      .string({ error: `Escreva o resumo (mínimo de ${CASE_LIMITS.summary.min} caracteres).` })
       .trim()
       .min(CASE_LIMITS.summary.min, `Resumo com pelo menos ${CASE_LIMITS.summary.min} caracteres.`)
       .max(CASE_LIMITS.summary.max),
-    cover: media,
+    cover: z.object(media.shape, { error: "Escolha a imagem de capa." }),
     gallery: z.array(media).max(CASE_LIMITS.gallery).default([]),
     date: referenceMonth(now).optional(),
   });

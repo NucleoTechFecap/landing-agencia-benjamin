@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 26/10/2026 Vinícius Nishimura Reis  Sugestão a partir do campo de origem (título do case) (ADM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,10 +35,13 @@ export function SlugField({
   locked,
   errors,
   defaultValue,
+  source = "name",
 }: {
   locked: boolean;
   errors?: string[];
   defaultValue?: string;
+  /** Campo de onde vem a sugestão (nome ou título). */
+  source?: string;
 }) {
   if (locked) {
     return (
@@ -57,7 +61,7 @@ export function SlugField({
         // Ao entrar no campo vazio, sugere o endereço a partir do nome já digitado.
         const input = event.target;
         if (!(input instanceof HTMLInputElement) || input.name !== "slug" || input.value) return;
-        const name = input.form?.elements.namedItem("name");
+        const name = input.form?.elements.namedItem(source);
         if (name instanceof HTMLInputElement) input.value = slugify(name.value);
       }}
     >
