@@ -64,6 +64,7 @@ Todos foram encontrados durante a execução, corrigidos e retestados nos PRs in
 | B-05 | Primeira visita ao detalhe de serviço/case após salvar vinha com a versão anterior | Salvar um serviço publicado → abrir `/servicos/<slug>` imediatamente | Média | `c77c7f0` (PR #282) | ✅ 2/2 rodadas |
 | B-06 | Mensagens de campo ausente do case eram técnicas ("expected string, received undefined") | Criar case só com título → olhar "Para publicar, falta" | Baixa | `08751d2` (PR #281) | ✅ |
 | B-07 | `SelectField` ignorava a dica (`hint`) | Formulário de serviço → campo Imagem | Baixa | `f2c6bda` (PR #280) | ✅ |
+| B-09 | Sugestão de slug feita no foco do campo se juntava ao texto colado ou digitado | Novo case → digitar o título → colar o endereço no campo slug → salvar | Média | Slug gerado no servidor quando em branco (TECH-12) | ✅ E2E J2.5 |
 | B-08 | Login: o formulário de *fallback* do `Suspense` é trocado pelo definitivo e o que foi digitado antes da troca se perde | Abrir `/admin/login` em rede lenta e digitar antes da página terminar de carregar | Média | Branch própria do ADM-02 | ⏳ ver ADM-02 |
 
 ## 5. Pendências
