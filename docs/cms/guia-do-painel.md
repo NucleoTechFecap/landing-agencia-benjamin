@@ -28,8 +28,9 @@ stateDiagram-v2
   completo e o site já mostra a versão nova.
 - **Item arquivado** não é editável: restaure como rascunho primeiro.
 - **Excluir** é definitivo e só existe para itens arquivados, feito por administrador.
-- **Endereço (slug)** é a parte final do link (ex.: `/servicos/social-media`). Ele é sugerido a
-  partir do nome e **não muda depois da primeira publicação**, porque o link já circulou.
+- **Endereço (slug)** é a parte final do link (ex.: `/servicos/social-media`). Deixe em branco
+  para o painel gerar a partir do nome (ou título, no case); ele **não muda depois da primeira
+  publicação**, porque o link já circulou.
 
 ## O que cada papel pode fazer
 

@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
+ 26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -82,7 +83,7 @@ export function CaseForm({
                 defaultValue={value("title", item?.title)}
               />
               <SlugField
-                source="title"
+                source="título"
                 locked={Boolean(item?.publishedAt)}
                 errors={errors("slug")}
                 defaultValue={value("slug", item?.slug)}

@@ -4,8 +4,8 @@
 | ------------ | ------------------------------------------------------------------------ |
 | Issue        | TECH-12 (#176)                                                           |
 | Responsável  | Vinícius Nishimura Reis (`@Vinishireis`)                                 |
-| Versão       | 1.0.0                                                                    |
-| Data         | 13/10/2026                                                               |
+| Versão       | 1.1.0                                                                    |
+| Data         | 13/10/2026 (J2 com o CMS real em 27/10/2026)                             |
 | Depende de   | [TECH-05](../negocio/integridade-de-conteudo.md), [TECH-06](../formularios/captacao-e-roteamento.md), [TECH-04](../negocio/maquina-de-estados-publicacao.md) |
 | Código       | `tests/e2e/*.spec.ts` (Playwright), `tests/integration/*.test.ts` (Vitest), `playwright.config.ts` |
 
@@ -13,6 +13,8 @@
 
 ```bash
 npm run build && npm run test:e2e        # Playwright com o Chrome do sistema (desktop + mobile)
+npx supabase start && npx supabase db reset
+npm run test:e2e:cms                      # J2 com o CMS real: build contra o Supabase local + specs @cms
 E2E_BASE_URL=https://hml-... npm run test:e2e   # contra homologação
 npm run test                              # inclui os testes integrados (Vitest)
 ```
@@ -39,7 +41,8 @@ Legenda de tipo: **E2E** navegador real · **INT** teste integrado de domínio/s
 | J2.2 | Viewer não publica; case incompleto não publica | Neg | INT | Coordenação | ✅ automatizado |
 | J2.3 | Arquivar case → some do site e CTA usa fallback | Pos | INT | CMS | ✅ automatizado |
 | J2.4 | Painel sem sessão redireciona ao login com `next` | Neg | E2E | Coordenação | ✅ automatizado |
-| J2.5 | Login → editar case no CMS → publicar → página atualizada em ≤ 5 s | Pos | E2E/MAN em homologação | CMS | ⛔ **gap**: telas do CMS ainda não existem (ADM-08, ADM-13) |
+| J2.5 | Login → novo case (slug gerado) → rascunho invisível (404) → completar → publicar → página no ar em ≤ 5 s → editar → página atualizada → arquivar → 404 | Pos | E2E `@cms` (Supabase local) + MAN em homologação | CMS (Murilo) + coordenação | ✅ automatizado (`jornada-editor-cms.spec.ts`) |
+| J2.6 | Leitor (`viewer`) vê o CMS sem "Novo case" e `/admin/cases/novo` → "sem permissão" | Neg | E2E `@cms` | Coordenação | ✅ automatizado |
 
 ### J3 — Envio → persistência → notificação → consulta interna
 
@@ -54,10 +57,15 @@ Legenda de tipo: **E2E** navegador real · **INT** teste integrado de domínio/s
 
 | Gap | Impacto | Issue que resolve | Bloqueia go-live? |
 | --- | ------- | ----------------- | ----------------- |
-| Telas de edição/publicação do CMS | J2.5 sem E2E real | ADM-04, ADM-08, ADM-13 | Sim (CA-20, CA-21) |
+| ~~Telas de edição/publicação do CMS~~ | ~~J2.5 sem E2E real~~ | Resolvido: ADM-06/07/08 + INT-02 (E2E `@cms`) | — |
+| J2.5 em homologação | Mesma jornada contra o Supabase de homologação | GO-02 | Sim |
 | Consulta de leads no painel | J3.4 | FORM-09 | Sim (CA-23) |
 | Ambiente de homologação com Supabase/Resend | J3.3, roteiros MAN | GO-02, ARC-07 | Sim |
 | Destinatários institucionais | J3.3 | CON-10 | Sim (CA-15) |
+
+A E2E da J2.5 já encontrou um defeito: a sugestão automática de slug, feita no foco do campo,
+se juntava ao texto colado ou digitado (slug salvo como `case-x` + `case-x`). Agora o campo fica
+opcional na criação e o servidor gera o endereço a partir do nome/título, único entre os itens.
 
 Quando um teste desta matriz falhar durante a homologação, abrir issue com o prefixo `[BUG]`,
 label `agencia-benjamin`, referência ao cenário (ex.: `J1.1`) e evidência (trace do Playwright).

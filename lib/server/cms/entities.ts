@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Entidade de serviço e regras já cobertas (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
+ 26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -55,6 +56,8 @@ export interface EntityDefinition<I extends { slug: string }, T extends CmsItem>
   type: ContentEntityType;
   resource: Resource;
   table: EntityTable;
+  /** Campo do formulário usado para gerar o slug quando ele vem em branco. */
+  slugSource: "name" | "title";
   /** Coleção correspondente no snapshot de conteúdo. */
   key: Exclude<keyof ContentSnapshot, "ctas">;
   /** Para mensagens: "a área", "o serviço". */
@@ -98,6 +101,7 @@ export const AREA: EntityDefinition<AreaInput, Area> = {
   type: "area",
   resource: "area",
   table: "areas",
+  slugSource: "name",
   key: "areas",
   noun: { singular: "área", article: "a" },
   adminPath: "/admin/areas",
@@ -130,6 +134,7 @@ export const SERVICE: EntityDefinition<ServiceInput, Service> = {
   type: "service",
   resource: "service",
   table: "services",
+  slugSource: "name",
   key: "services",
   noun: { singular: "serviço", article: "o" },
   adminPath: "/admin/servicos",
@@ -175,6 +180,7 @@ export const CATEGORY: EntityDefinition<CategoryInput, CaseCategory> = {
   type: "category",
   resource: "category",
   table: "case_categories",
+  slugSource: "name",
   key: "categories",
   noun: { singular: "categoria", article: "a" },
   adminPath: "/admin/categorias",
@@ -230,6 +236,7 @@ export const CASE: EntityDefinition<CaseInput, CaseStudy> = {
   type: "case",
   resource: "case",
   table: "cases",
+  slugSource: "title",
   key: "cases",
   noun: { singular: "case", article: "o" },
   adminPath: "/admin/cases",
