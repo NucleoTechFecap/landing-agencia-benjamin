@@ -18,6 +18,7 @@
     "verify": "npm run check:headers && npm run format:check && npm run typecheck && npm run lint && npm run test && npm run build",
     "check:release-content": "RELEASE_GATE=1 vitest run content",
     "test:e2e": "playwright test",
+    "test:e2e:cms": "node scripts/e2e-cms.mjs",
     "release:check": "npm run verify && npm run check:release-content"
   },
   "dependencies": {
