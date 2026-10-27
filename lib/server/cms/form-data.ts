@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 27/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -41,8 +42,10 @@ export const lines = (form: FormData, name: string): string[] =>
 export const checked = (form: FormData, name: string): boolean => form.get(name) === "on";
 
 /** Grupo de checkboxes com o mesmo `name` (ex.: áreas do serviço). */
-export const many = (form: FormData, name: string): string[] =>
-  form.getAll(name).filter((value): value is string => typeof value === "string" && value !== "");
+/** Valores de um campo múltiplo, sem vazios nem repetidos (um id repetido quebraria o vínculo N:M). */
+export const many = (form: FormData, name: string): string[] => [
+  ...new Set(form.getAll(name).filter((value): value is string => typeof value === "string" && value !== "")),
+];
 
 /** Item em edição: id + versão lida (campos ocultos). Ausente = criação. */
 export function itemRef(form: FormData): ItemRef | undefined {
