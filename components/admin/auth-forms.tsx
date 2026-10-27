@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,13 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
+ 26/10/2026 Vinícius Nishimura Reis  Formulário único no shell; next por promessa (B-08) (ADM-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { Suspense, use, useActionState } from "react";
 import type { AuthFormState } from "@/lib/domain/auth/redirect";
 
 type AuthAction = (state: AuthFormState, formData: FormData) => Promise<AuthFormState>;
@@ -52,11 +53,21 @@ function Feedback({ state }: { state: AuthFormState }) {
   return null;
 }
 
-export function LoginForm({ action, next }: { action: AuthAction; next?: string }) {
+/**
+ * Formulário de login. Fica no shell estático da página e não é trocado depois: o destino de
+ * retorno (`next`) chega como promessa e só o campo oculto espera por ele. Antes, o fallback
+ * do Suspense era outro formulário, substituído ao carregar — o que já tinha sido digitado se
+ * perdia (B-08, QA-04).
+ */
+export function LoginForm({ action, next }: { action: AuthAction; next?: Promise<string | undefined> }) {
   const [state, formAction, pending] = useActionState(action, {});
   return (
     <form action={formAction} className="space-y-4" noValidate>
-      <input type="hidden" name="next" value={next ?? ""} />
+      {next ? (
+        <Suspense fallback={null}>
+          <NextField next={next} />
+        </Suspense>
+      ) : null}
       <div className="space-y-1">
         <label htmlFor="email" className="text-sm font-semibold">
           E-mail
@@ -95,6 +106,10 @@ export function LoginForm({ action, next }: { action: AuthAction; next?: string 
       </p>
     </form>
   );
+}
+
+function NextField({ next }: { next: Promise<string | undefined> }) {
+  return <input type="hidden" name="next" value={use(next) ?? ""} />;
 }
 
 export function ResetRequestForm({ action }: { action: AuthAction }) {
