@@ -26,13 +26,15 @@
  26/10/2026 Vinícius Nishimura Reis  Item Audiovisual (SERV-09).
  26/10/2026 Vinícius Nishimura Reis  Item Assessoria de Imprensa / PR (SERV-10).
  26/10/2026 Vinícius Nishimura Reis  Item Comunicação Interna (SERV-11).
+ 26/10/2026 Vinícius Nishimura Reis  Item Copywriting (CASE-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { validateServiceForPublish } from "../lib/domain/content/service-schema";
-import { resolveCtaHref } from "../lib/domain/content/integrity";
+import { isValidExternalUrl, resolveCtaHref } from "../lib/domain/content/integrity";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
+import { categoryInputSchema } from "../lib/domain/content/category-schema";
 import { describe, expect, it } from "vitest";
 import { validateAreaForPublish } from "../lib/domain/content/area-schema";
 import { isBrandIcon } from "../lib/domain/content/icons";
@@ -47,7 +49,7 @@ import { seedSnapshot } from "./index";
  * sem link quebrado. O texto é provisório até a aprovação da Benjamin (CON-05) e as fichas
  * em docs/conteudo dizem o que falta aprovar.
  */
-const { areas, services, cases } = seedSnapshot;
+const { areas, services, categories, cases } = seedSnapshot;
 
 /** Ids do conteúdo versionado não são UUID: as relações são conferidas à parte. */
 const withoutIds = <T extends { areaIds?: string[] }>(item: T) => ({ ...item, areaIds: undefined });
@@ -137,6 +139,26 @@ function checkService(
   });
 }
 
+function checkCategory(slug: string, expected: { cases: string[] }) {
+  describe(`categoria ${slug}`, () => {
+    const category = categories.find((item) => item.slug === slug)!;
+
+    it("existe, está publicada e é cadastrável no painel (ADM-08)", () => {
+      expect(category).toBeDefined();
+      expect(isPubliclyVisible(category)).toBe(true);
+      expect(categoryInputSchema.safeParse({ ...category, order: category.order }).success).toBe(true);
+    });
+
+    it("agrupa os cases combinados, com links externos válidos", () => {
+      const inCategory = cases.filter((item) => item.categoryId === category.id && isPubliclyVisible(item));
+      expect(inCategory.map((item) => item.slug)).toEqual(expected.cases);
+      for (const item of inCategory) {
+        expect(item.externalLinks.every((link) => isValidExternalUrl(link.url))).toBe(true);
+      }
+    });
+  });
+}
+
 describe("itens de conteúdo do MVP", () => {
   checkArea("copywriting", {
     order: 4,
@@ -190,4 +212,5 @@ describe("itens de conteúdo do MVP", () => {
     featured: false,
     provisional: true,
   });
+  checkCategory("copywriting", { cases: ["aventura-de-construir"] });
 });
