@@ -78,6 +78,7 @@
 | Documento | Issue |
 | --------- | ----- |
 | [Jornadas críticas e testes E2E](qualidade/jornadas-e2e.md) | TECH-12 |
+| [Testes de CRUD e estados de publicação do CMS](qualidade/qa-04-cms.md) | QA-04 |
 | [Revisão e aprovação de PRs críticos](qualidade/revisao-de-prs.md) | TECH-13 |
 | [Checklist de release e plano de rollback](operacao/release-e-rollback.md) | GO-01 |
 | [Decisão técnica de go/no-go](operacao/go-no-go.md) | TECH-14 |
