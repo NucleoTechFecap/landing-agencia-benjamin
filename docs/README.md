@@ -37,6 +37,8 @@
 
 ## Regras de negócio e conteúdo
 
+- [Guia do painel (CMS) para a equipe da Benjamin](cms/guia-do-painel.md) — ADM-07 (áreas; serviços e cases em ADM-06/ADM-08)
+
 | Documento | Issue |
 | --------- | ----- |
 | [Fluxo mínimo de rascunho e publicação](negocio/fluxo-de-publicacao.md) | ADM-12 |
