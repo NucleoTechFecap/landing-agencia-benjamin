@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
+ 26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,6 +38,17 @@ export interface SavedRow {
   id: string;
   /** Versão otimista: o próximo save precisa devolver este valor (TECH-04 §5). */
   updatedAt: string;
+}
+
+/** Colunas gravadas ao registrar um arquivo na biblioteca (public.media_assets). */
+export interface MediaRow {
+  path: string;
+  mime_type: string;
+  size_bytes: number;
+  width: number | null;
+  height: number | null;
+  alt_text: string | null;
+  decorative: boolean;
 }
 
 /** Arquivo da biblioteca de mídia, como o painel lista para escolha. */
@@ -70,6 +82,10 @@ export interface CmsStore {
   /** Grava só se `updated_at` ainda for `expectedUpdatedAt` (concorrência otimista). */
   update(table: EntityTable, id: string, values: Row, expectedUpdatedAt: string): Promise<SavedRow>;
   remove(table: EntityTable, id: string): Promise<void>;
+  /** Registra um arquivo já enviado ao Storage na biblioteca de mídia. */
+  insertMedia(values: MediaRow): Promise<MediaAsset>;
+  /** Galeria do case na ordem dada (reordena, inclui e remove). */
+  syncGallery(caseId: string, mediaIds: readonly string[]): Promise<void>;
   /**
    * Ajusta os vínculos de um item. Inclui os novos antes de remover os antigos: se a segunda
    * etapa falhar, sobra um vínculo a mais (corrigido no próximo save), nunca um a menos.

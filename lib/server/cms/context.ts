@@ -19,12 +19,15 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
+ 26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { publicEnv } from "@/lib/config/public-env";
+import { safeAdminRedirect } from "@/lib/domain/auth/redirect";
+import { MEDIA_BUCKET } from "@/lib/domain/media/policy";
 import type { Action, Resource } from "@/lib/domain/auth/rbac";
 import type { CmsFlash, CmsFormState } from "@/lib/domain/content/cms-form";
 import { COMMAND_PERMISSION, type PublicationCommand } from "@/lib/domain/content/publication";
@@ -33,11 +36,12 @@ import { recordAuditEvent } from "../audit";
 import { requirePermission } from "../auth/guards";
 import type { SessionUser } from "../auth/session";
 import { invalidateContentFromAction } from "../content/invalidate";
-import { newRequestId, toPublicError } from "../errors";
+import { AppError, newRequestId, toPublicError } from "../errors";
 import { createSessionClient } from "../supabase/server";
 import { runContentCommand, saveContent, type CmsDeps } from "./content-service";
 import type { CmsItem, EntityDefinition } from "./entities";
-import { command, itemRef, text, typedValues } from "./form-data";
+import { checked, command, itemRef, text, typedValues } from "./form-data";
+import { uploadMedia, type MediaStorage } from "./media-service";
 import { createSupabaseCmsStore } from "./supabase-store";
 
 /** Store do CMS com a sessão de quem está logado: toda leitura e gravação passa pela RLS. */
@@ -95,7 +99,7 @@ export async function cmsFormAction(
 export function withFlash(path: string, flash: string, warnings: string[] = []): string {
   const params = new URLSearchParams({ ok: flash });
   if (warnings.length) params.set("aviso", warnings.join(" "));
-  return `${path}?${params}`;
+  return `${path}${path.includes("?") ? "&" : "?"}${params}`;
 }
 
 const FLASH_BY_COMMAND: Record<Exclude<PublicationCommand, "save" | "delete">, CmsFlash> = {
@@ -144,4 +148,50 @@ export async function cmsCommandAction<I extends { slug: string }, T extends Cms
       result.warnings,
     );
   });
+}
+
+/** Bucket "media" do Supabase Storage, com a sessão de quem envia (políticas media:*). */
+function supabaseStorage(client: Awaited<ReturnType<typeof createSessionClient>>): MediaStorage {
+  const bucket = client.storage.from(MEDIA_BUCKET);
+  return {
+    async upload(path, bytes, contentType) {
+      const { error } = await bucket.upload(path, bytes, { contentType, upsert: false, cacheControl: "31536000" });
+      if (error)
+        throw new AppError("SERVICE_UNAVAILABLE", {
+          message: "Não foi possível enviar o arquivo. Tente de novo.",
+          cause: error,
+        });
+    },
+    async remove(path) {
+      await bucket.remove([path]);
+    },
+  };
+}
+
+/**
+ * Server Action de envio para a biblioteca de mídia (ADR-0005). Volta para `voltar` quando é
+ * um caminho seguro do painel (ex.: o case que pediu a imagem) ou para a própria biblioteca.
+ */
+export async function cmsUploadAction(form: FormData): Promise<CmsFormState> {
+  const back = safeAdminRedirect(form.get("voltar"));
+  const destination = back === "/admin" ? "/admin/midia" : back;
+  return cmsFormAction(
+    "media",
+    "create",
+    async (user, deps) => {
+      const file = form.get("file");
+      if (!(file instanceof File) || file.size === 0) {
+        throw new AppError("VALIDATION_FAILED", { fieldErrors: { file: ["Escolha um arquivo."] } });
+      }
+      const client = await createSessionClient();
+      await uploadMedia(
+        { ...deps, storage: supabaseStorage(client), newId: () => crypto.randomUUID() },
+        user,
+        { name: file.name, type: file.type, bytes: new Uint8Array(await file.arrayBuffer()) },
+        { alt: text(form, "alt"), decorative: checked(form, "decorative") },
+      );
+      return withFlash(destination, "enviado");
+    },
+    { alt: text(form, "alt"), decorative: checked(form, "decorative") ? "on" : "" },
+  );
 }

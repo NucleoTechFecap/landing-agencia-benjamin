@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-03).
  13/10/2026 Vinícius Nishimura Reis  Otimização de imagens e bucket de mídia do Supabase (ARC-10).
  13/10/2026 Vinícius Nishimura Reis  Cabeçalhos de segurança e X-Robots-Tag por ambiente (SEO da landing).
+ 26/10/2026 Vinícius Nishimura Reis  Limite de envio das Server Actions para mídia (ADM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -57,6 +58,9 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     agentFeedback: true,
+    // Envio para a biblioteca de mídia por Server Action: imagens até 5 MB e PDFs até 10 MB
+    // (ADR-0005) + folga do multipart. O padrão do Next é 1 MB (ADM-08).
+    serverActions: { bodySizeLimit: "11mb" },
   },
   cacheComponents: true,
   partialPrefetching: true,

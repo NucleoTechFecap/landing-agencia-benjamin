@@ -21,6 +21,7 @@
  13/10/2026 Vinícius Nishimura Reis  Guarda de página e menu filtrado pelo papel (ADM-03).
  26/10/2026 Vinícius Nishimura Reis  Link para o CMS de áreas (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Link para o CMS de serviços (ADM-06).
+ 26/10/2026 Vinícius Nishimura Reis  Links para cases e biblioteca de mídia (ADM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -35,8 +36,8 @@ const MODULES: { name: string; issue: string; resource: Resource; action: Action
   { name: "Páginas e textos institucionais", issue: "ADM-05", resource: "page", action: "view" },
   { name: "Serviços", issue: "ADM-06", resource: "service", action: "view", href: "/admin/servicos" },
   { name: "Áreas de atuação", issue: "ADM-07", resource: "area", action: "view", href: "/admin/areas" },
-  { name: "Cases e categorias", issue: "ADM-08", resource: "case", action: "view" },
-  { name: "Biblioteca de mídia", issue: "ADM-09", resource: "media", action: "view" },
+  { name: "Cases e categorias", issue: "ADM-08", resource: "case", action: "view", href: "/admin/cases" },
+  { name: "Biblioteca de mídia", issue: "ADM-09", resource: "media", action: "view", href: "/admin/midia" },
   { name: "Contato, links e redes sociais", issue: "ADM-10", resource: "settings", action: "view" },
   { name: "CTAs e destaques da Home", issue: "ADM-11", resource: "cta", action: "view" },
   { name: "Leads e feedbacks", issue: "FORM-09", resource: "lead", action: "view" },

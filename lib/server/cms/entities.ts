@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Entidade de serviço e regras já cobertas (ADM-06).
+ 26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,16 +27,21 @@ import "server-only";
 import type { z } from "zod";
 import type { Resource } from "@/lib/domain/auth/rbac";
 import { areaInputSchema, validateAreaForPublish, type AreaInput } from "@/lib/domain/content/area-schema";
+import { caseInputSchema, type CaseInput } from "@/lib/domain/content/case-input-schema";
+import { validateCaseForPublish } from "@/lib/domain/content/case-schema";
+import { categoryInputSchema, type CategoryInput } from "@/lib/domain/content/category-schema";
 import { serviceInputSchema, validateServiceForPublish, type ServiceInput } from "@/lib/domain/content/service-schema";
 import type {
   Area,
+  CaseCategory,
+  CaseStudy,
   ContentEntityType,
   ContentSnapshot,
   MediaRef,
   Publishable,
   Service,
 } from "@/lib/domain/content/types";
-import type { EntityTable, LinkTable, Row } from "./store";
+import type { CmsStore, EntityTable, LinkTable, Row } from "./store";
 
 /** Item editável: publicável e com endereço próprio. */
 export type CmsItem = Publishable & { id: string; slug: string };
@@ -79,6 +85,8 @@ export interface EntityDefinition<I extends { slug: string }, T extends CmsItem>
   };
   /** Impede a exclusão definitiva quando o banco recusaria (FK restrict), com mensagem clara. */
   deleteBlockers?(item: T, snapshot: ContentSnapshot): string[];
+  /** Relações gravadas depois do item (ex.: galeria ordenada do case). */
+  afterSave?(store: CmsStore, id: string, input: I): Promise<void>;
 }
 
 const draftControl = { status: "draft" as const, publishedAt: null, archivedAt: null, updatedAt: "" };
@@ -161,4 +169,125 @@ export const SERVICE: EntityDefinition<ServiceInput, Service> = {
     of: (service) => service.areaIds,
     from: (input) => input.areaIds,
   },
+};
+
+export const CATEGORY: EntityDefinition<CategoryInput, CaseCategory> = {
+  type: "category",
+  resource: "category",
+  table: "case_categories",
+  key: "categories",
+  noun: { singular: "categoria", article: "a" },
+  adminPath: "/admin/categorias",
+  publicPath: (category) => `/cases?categoria=${category.slug}`,
+  inputSchema: categoryInputSchema,
+  list: (snapshot) => snapshot.categories,
+  toValues: (input) => ({
+    slug: input.slug,
+    name: input.name,
+    description: input.description ?? null,
+    sort_order: input.order,
+  }),
+  merge: (current, input, id) => ({
+    ...(current ?? { ...draftControl, id }),
+    slug: input.slug,
+    name: input.name,
+    description: input.description ?? "",
+    order: input.order,
+  }),
+  // Nome e slug já são exigidos pelo próprio formulário (TECH-05 §5).
+  validateForPublish: () => [],
+  deleteBlockers: (category, snapshot) => {
+    const using = snapshot.cases.filter((item) => item.categoryId === category.id);
+    return using.length
+      ? [
+          `${using.length} case(s) usam esta categoria (inclusive rascunhos e arquivados): ${using.map((item) => item.title).join(", ")}.`,
+        ]
+      : [];
+  },
+};
+
+const CASE_FIELD_LABELS: Record<string, string> = {
+  client: "Cliente",
+  categoryId: "Categoria",
+  serviceIds: "Serviços",
+  summary: "Resumo",
+  cover: "Capa",
+  "cover.alt": "Capa",
+  gallery: "Galeria",
+  date: "Mês de referência",
+};
+
+/** Mensagens do CASE-11 ("campo: problema") com o nome do campo como aparece no painel. */
+function labeled(problems: string[]): string[] {
+  return problems.map((problem) => {
+    const [field, ...rest] = problem.split(": ");
+    const label = CASE_FIELD_LABELS[field] ?? (field.startsWith("gallery") ? "Galeria" : undefined);
+    return label && rest.length ? `${label}: ${rest.join(": ")}` : problem;
+  });
+}
+
+export const CASE: EntityDefinition<CaseInput, CaseStudy> = {
+  type: "case",
+  resource: "case",
+  table: "cases",
+  key: "cases",
+  noun: { singular: "case", article: "o" },
+  adminPath: "/admin/cases",
+  publicPath: (item) => `/cases/${item.slug}`,
+  inputSchema: caseInputSchema,
+  list: (snapshot) => snapshot.cases,
+  toValues: (input) => ({
+    slug: input.slug,
+    title: input.title,
+    client_name: input.client ?? null,
+    category_id: input.categoryId ?? null,
+    delivery_type: input.deliveryType ?? null,
+    summary: input.summary ?? null,
+    challenge: input.challenge ?? null,
+    solution: input.solution ?? null,
+    results: input.results ?? null,
+    cover_media_id: input.coverId ?? null,
+    external_links: input.externalLinks,
+    reference_month: input.date ? `${input.date}-01` : null,
+    team: input.team,
+    featured: input.featured,
+    sort_order: input.order,
+  }),
+  merge: (current, input, id, media) => ({
+    ...(current ?? { ...draftControl, id }),
+    slug: input.slug,
+    title: input.title,
+    client: input.client ?? "",
+    categoryId: input.categoryId ?? "",
+    serviceIds: input.serviceIds,
+    deliveryType: input.deliveryType,
+    summary: input.summary ?? "",
+    challenge: input.challenge,
+    solution: input.solution,
+    results: input.results,
+    cover: input.coverId ? media.get(input.coverId) : undefined,
+    gallery: input.galleryIds.map((mediaId) => media.get(mediaId)).filter((item): item is MediaRef => Boolean(item)),
+    externalLinks: input.externalLinks,
+    date: input.date,
+    team: input.team,
+    featured: input.featured,
+    order: input.order,
+  }),
+  validateForPublish: (item) =>
+    labeled(
+      validateCaseForPublish({
+        ...item,
+        client: item.client || undefined,
+        categoryId: item.categoryId || undefined,
+        summary: item.summary || undefined,
+      }),
+    ),
+  links: {
+    table: "case_services",
+    ownerColumn: "case_id",
+    otherColumn: "service_id",
+    of: (item) => item.serviceIds,
+    from: (input) => input.serviceIds,
+  },
+  afterSave: (store, id, input) => store.syncGallery(id, input.galleryIds),
 };

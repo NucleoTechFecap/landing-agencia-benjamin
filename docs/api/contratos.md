@@ -158,6 +158,10 @@ antes da gravação, com registro de falha) → gravação pelo store → `updat
 produção (`supabase-store.ts`) usa a sessão do usuário, então a RLS do banco é a segunda barreira;
 o de memória (`memory-store.ts`) cobre as regras nos testes. As Server Actions de cada tela usam
 `cmsSaveAction`/`cmsCommandAction` (`context.ts`) e redirecionam com `?ok=` no sucesso.
+O envio de mídia (ADM-08) é `cmsUploadAction` → `media-service.ts`: `media:create`, texto
+alternativo, tipo real pela assinatura dos bytes, tamanho e dimensões (`readImageDimensions`),
+`buildStoragePath`, upload ao bucket com a sessão do usuário e registro em `media_assets`; se o
+registro falhar, o objeto é apagado. `serverActions.bodySizeLimit` = 11 MB (`next.config.ts`).
 
 ## 7. Códigos de erro
 

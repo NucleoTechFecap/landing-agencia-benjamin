@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 26/10/2026 Vinícius Nishimura Reis  Campos remontados após erro preservam seleções (ADM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -69,7 +70,13 @@ export function CmsFormShell({
           <input type="hidden" name="expectedUpdatedAt" value={item.updatedAt} />
         </>
       ) : null}
-      <fieldset disabled={readOnly || pending} className="space-y-5 disabled:opacity-80">
+      {/* Remonta os campos a cada erro: o React ignora defaultValue novo em <select> já
+          montado, e o reset pós-action voltaria à opção original, perdendo a escolha. */}
+      <fieldset
+        key={state.status === "error" ? state.requestId : "inicial"}
+        disabled={readOnly || pending}
+        className="space-y-5 disabled:opacity-80"
+      >
         {children(fields)}
       </fieldset>
       {readOnly ? null : (

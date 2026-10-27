@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
+ 26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -46,7 +47,7 @@ import {
 } from "../content/supabase/rows";
 import { AppError } from "../errors";
 import { logger } from "../logger";
-import type { CmsStore, EntityTable, LinkSync, MediaAsset, Row, SavedRow } from "./store";
+import type { CmsStore, EntityTable, LinkSync, MediaAsset, MediaRow, Row, SavedRow } from "./store";
 
 interface PostgrestError {
   message: string;
@@ -147,6 +148,32 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
           { table: "media_assets", operation: "select" },
         )) ?? [];
       return rows.map((row) => toMediaAsset(row, supabaseUrl));
+    },
+
+    async insertMedia(values: MediaRow): Promise<MediaAsset> {
+      const row = await run<MediaAssetRow>(
+        client.from("media_assets").insert(values).select(COLUMNS.media_assets).single(),
+        { table: "media_assets", operation: "insert" },
+      );
+      return toMediaAsset(row!, supabaseUrl);
+    },
+
+    async syncGallery(caseId, mediaIds) {
+      if (mediaIds.length) {
+        await run(
+          client.from("case_media").upsert(
+            mediaIds.map((mediaId, index) => ({ case_id: caseId, media_id: mediaId, sort_order: index })),
+            { onConflict: "case_id,media_id" },
+          ),
+          { table: "case_media", operation: "upsert" },
+        );
+      }
+      // Depois de gravar a nova ordem, remove o que saiu da galeria (falha parcial não perde imagem).
+      const removal = client.from("case_media").delete().eq("case_id", caseId);
+      await run(mediaIds.length ? removal.not("media_id", "in", `(${mediaIds.join(",")})`) : removal, {
+        table: "case_media",
+        operation: "delete",
+      });
     },
 
     async insert(table, values) {
