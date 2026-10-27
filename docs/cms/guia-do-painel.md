@@ -76,6 +76,48 @@ A página pública do serviço já traz o botão de contato com o serviço pré-
 formulário. Um serviço **não pode ser arquivado nem despublicado** se for o único serviço de algum
 case publicado — o painel lista quais cases.
 
+## Biblioteca de mídia (`/admin/midia`)
+
+Envie aqui as imagens antes de usá-las em cases e serviços. Nos formulários, o link **Enviar imagem
+para a biblioteca** abre esta tela e, depois do envio, volta para o item que você estava editando
+(salve o que já digitou antes de sair).
+
+| Regra | Valor |
+| ----- | ----- |
+| Formatos | JPG, PNG, WebP, AVIF (até 5 MB) e PDF (até 10 MB). SVG não é aceito |
+| Tamanho da imagem | Até 4000 px no maior lado; recomendado 2400 px de largura |
+| Texto alternativo | Obrigatório (3 a 160 caracteres), exceto se a imagem for marcada como decorativa |
+
+O arquivo é conferido pelo conteúdo, não só pela extensão: um arquivo renomeado é recusado.
+Excluir arquivo e editar o texto alternativo ficam para o gerenciador completo (ADM-09).
+
+## Categorias de cases (`/admin/categorias`)
+
+Nome e endereço bastam para publicar. Uma categoria **não pode ser despublicada nem arquivada**
+enquanto houver case publicado nela, e **não pode ser excluída** enquanto qualquer case (até
+rascunho ou arquivado) a usar — o painel lista quais.
+
+## Cases (`/admin/cases`)
+
+| Campo | Obrigatório para | Observação |
+| ----- | ---------------- | ---------- |
+| Título e endereço (slug) | salvar | O link fica `/cases/<slug>` |
+| Cliente | publicar | |
+| Categoria | publicar | Precisa estar publicada |
+| Serviços envolvidos | publicar | Ao menos um serviço publicado |
+| Resumo | publicar | 30 a 280 caracteres |
+| Capa | publicar | Imagem da biblioteca com texto alternativo |
+| Galeria | — | Até 20 imagens, na ordem de envio |
+| Desafio, solução, resultados | — | Resultados só reais e autorizados |
+| Links externos | — | Um por linha: `Rótulo \| https://endereço` (até 10) |
+| Mês de referência | — | Não pode estar no futuro |
+| Equipe | — | Um nome por linha, só com autorização |
+| Destaque na Home | — | Até 6 cases em destaque |
+
+Dá para salvar o case aos poucos, enquanto o material da Benjamin chega: a lista "Para publicar,
+falta" mostra primeiro os campos vazios e, depois de completos, as regras que dependem de outros
+conteúdos (como a categoria estar publicada).
+
 ## Mensagens comuns
 
 | Mensagem | O que fazer |
