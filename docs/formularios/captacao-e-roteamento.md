@@ -87,3 +87,6 @@ A categoria permite filtros no painel (FORM-09) e métricas futuras sem antecipa
 
 - Aprovação dos fluxos e do mapa de campos com a Benjamin (FORM-01).
 - Destinatários reais (CON-10).
+- Pedido de aprovação preparado em 27/10/2026 ([página para enviar à agência](https://claude.ai/artifact/4TJ8vhTDLW6PYfSfCAqLti), decisão 2):
+  separação dos fluxos, etapas de atendimento e a proposta de não enviar e-mail automático ao
+  visitante (§5).
