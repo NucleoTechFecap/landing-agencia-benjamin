@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -373,5 +374,32 @@ describe("CMS de áreas — publicação (ADM-07)", () => {
       ),
     ).rejects.toThrow(/auditoria/);
     expect(env.tables.areas[0].status).toBe("draft");
+  });
+});
+
+describe("endereço gerado pelo servidor (TECH-12)", () => {
+  it("slug em branco na criação vira o nome normalizado e único", async () => {
+    const env = setup();
+    await createArea(env, { name: "Criação", slug: "criacao" });
+    const saved = await createArea(env, { name: "Criação", slug: "" });
+    expect(env.tables.areas.find((row) => row.id === saved.id)?.slug).toBe("criacao-2");
+  });
+
+  it("slug apagado na edição mantém o atual", async () => {
+    const env = setup();
+    const { id, updatedAt } = await createArea(env, { name: "Copywriting", slug: "copywriting" });
+    await saveContent(
+      env.deps,
+      env.actor("editor"),
+      AREA,
+      { name: "Copy", slug: "" },
+      { id, expectedUpdatedAt: updatedAt },
+    );
+    expect(env.tables.areas[0]).toMatchObject({ slug: "copywriting", name: "Copy" });
+  });
+
+  it("sem slug e sem nome continua apontando o erro no formulário", async () => {
+    const env = setup();
+    await expect(createArea(env, { name: "", slug: "" })).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
   });
 });

@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Entidade de serviço e regras já cobertas (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
+ 26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -28,6 +29,7 @@ import { can, type Role } from "@/lib/domain/auth/rbac";
 import { AUDIT_EVENTS, type AuditEventName } from "@/lib/domain/audit/events";
 import { fieldErrorsOf } from "@/lib/domain/content/cms-schema";
 import { assessRemovalImpact, findIntegrityIssues } from "@/lib/domain/content/integrity";
+import { uniqueSlug } from "@/lib/domain/content/slug";
 import {
   transition,
   type PublicationCommand,
@@ -127,6 +129,33 @@ function publicationError(error: PublicationError): AppError {
   });
 }
 
+/**
+ * Slug em branco: na criação vira o nome/título normalizado e único entre os itens da
+ * entidade; na edição mantém o atual (apagar o campo não apaga o endereço).
+ */
+function withSlug<I extends { slug: string }, T extends CmsItem>(
+  def: EntityDefinition<I, T>,
+  raw: unknown,
+  snapshot: ContentSnapshot,
+  ref?: ItemRef,
+): unknown {
+  if (typeof raw !== "object" || raw === null) return raw;
+  const values = raw as Record<string, unknown>;
+  if (typeof values.slug === "string" && values.slug.trim()) return raw;
+  const items = def.list(snapshot);
+  const current = ref ? items.find((item) => item.id === ref.id) : undefined;
+  if (current) return { ...values, slug: current.slug };
+  const source = typeof values[def.slugSource] === "string" ? (values[def.slugSource] as string) : "";
+  if (!source.trim()) return raw;
+  return {
+    ...values,
+    slug: uniqueSlug(
+      source,
+      items.map((item) => item.slug),
+    ),
+  };
+}
+
 const stateOf = (item: CmsItem): PublicationState => ({
   status: item.status,
   publishedAt: item.publishedAt,
@@ -147,12 +176,12 @@ export async function saveContent<I extends { slug: string }, T extends CmsItem>
   ref?: ItemRef,
 ): Promise<SaveResult> {
   if (!can(actor.role, def.resource, ref ? "edit" : "create")) throw new AppError("FORBIDDEN");
-  const parsed = def.inputSchema.safeParse(raw);
+  const snapshot = await deps.store.snapshot();
+  const parsed = def.inputSchema.safeParse(withSlug(def, raw, snapshot, ref));
   if (!parsed.success) throw new AppError("VALIDATION_FAILED", { fieldErrors: fieldErrorsOf(parsed.error) });
   const input = parsed.data;
 
   const now = deps.now();
-  const snapshot = await deps.store.snapshot();
   const items = def.list(snapshot);
   const current = ref ? items.find((item) => item.id === ref.id) : undefined;
   if (ref && !current) throw new AppError("NOT_FOUND");

@@ -19,28 +19,30 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Sugestão a partir do campo de origem (título do case) (ADM-08).
+ 26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
 import { TextField } from "@/components/forms/fields";
-import { slugify } from "@/lib/domain/content/slug";
 
 /**
- * Endereço (slug). Ao entrar no campo vazio, sugere um a partir do nome.
- * Depois da primeira publicação o campo fica só leitura: os links já circulam.
+ * Endereço (slug). Em branco, o servidor gera a partir do nome ou título (único entre os
+ * itens). Não há preenchimento automático no navegador: ele se misturava com o que a pessoa
+ * colava ou digitava no campo (achado do E2E do TECH-12). Depois da primeira publicação o
+ * campo fica só leitura — os links já circulam.
  */
 export function SlugField({
   locked,
   errors,
   defaultValue,
-  source = "name",
+  source = "nome",
 }: {
   locked: boolean;
   errors?: string[];
   defaultValue?: string;
-  /** Campo de onde vem a sugestão (nome ou título). */
+  /** Como o campo de origem aparece na dica ("nome" ou "título"). */
   source?: string;
 }) {
   if (locked) {
@@ -56,24 +58,13 @@ export function SlugField({
     );
   }
   return (
-    <div
-      onFocus={(event) => {
-        // Ao entrar no campo vazio, sugere o endereço a partir do nome já digitado.
-        const input = event.target;
-        if (!(input instanceof HTMLInputElement) || input.name !== "slug" || input.value) return;
-        const name = input.form?.elements.namedItem(source);
-        if (name instanceof HTMLInputElement) input.value = slugify(name.value);
-      }}
-    >
-      <TextField
-        name="slug"
-        label="Endereço (slug)"
-        required
-        maxLength={80}
-        hint="Minúsculas, números e hífens. Ex.: social-media."
-        errors={errors}
-        defaultValue={defaultValue}
-      />
-    </div>
+    <TextField
+      name="slug"
+      label="Endereço (slug)"
+      maxLength={80}
+      hint={`Minúsculas, números e hífens (ex.: social-media). Em branco, é gerado a partir do ${source}.`}
+      errors={errors}
+      defaultValue={defaultValue}
+    />
   );
 }
