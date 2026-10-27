@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (SOB-08).
+ 26/10/2026 Vinícius Nishimura Reis  Item Criação (SOB-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -79,6 +80,11 @@ describe("itens de conteúdo do MVP", () => {
     order: 4,
     // Na ordem em que aparecem em /areas (campo "ordem" do serviço).
     services: ["estrategia-digital", "producao-de-conteudo", "copywriting"],
+    provisional: true,
+  });
+  checkArea("criacao", {
+    order: 5,
+    services: ["producao-de-conteudo", "design-e-identidade-visual", "audiovisual"],
     provisional: true,
   });
 });
