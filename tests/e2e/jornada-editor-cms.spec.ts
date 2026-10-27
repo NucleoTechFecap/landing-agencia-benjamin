@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 27/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-12).
+ 27/10/2026 Vinícius Nishimura Reis  Jornadas em série: a massa do beforeAll é compartilhada (TECH-12).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -42,6 +43,9 @@ const PUBLISH_BUDGET_MS = 5_000; // ADR-0006: publicação reflete no site em at
 const visible = (locator: Locator) => locator.filter({ visible: true });
 
 test.describe("J2 · editor publica no CMS e o site mostra @cms", () => {
+  // Em série: com fullyParallel, cada worker rodaria o próprio beforeAll. Os dois criariam a
+  // mesma mídia (caminho único no banco), e o afterAll de um apagaria a capa que o outro usa.
+  test.describe.configure({ mode: "serial" });
   test.skip(!SUPABASE_URL || !SERVICE_KEY, "Requer o Supabase local: npm run test:e2e:cms");
   test.skip(({ isMobile }) => isMobile, "Painel no celular é avaliado em ADM-16.");
 
