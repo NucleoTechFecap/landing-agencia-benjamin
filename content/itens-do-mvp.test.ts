@@ -24,6 +24,7 @@
  26/10/2026 Vinícius Nishimura Reis  Item Copywriting (SERV-07).
  26/10/2026 Vinícius Nishimura Reis  Item Design e Identidade Visual (SERV-08).
  26/10/2026 Vinícius Nishimura Reis  Item Audiovisual (SERV-09).
+ 26/10/2026 Vinícius Nishimura Reis  Item Assessoria de Imprensa / PR (SERV-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -173,6 +174,12 @@ describe("itens de conteúdo do MVP", () => {
   checkService("audiovisual", {
     areas: ["criacao"],
     cases: [],
+    featured: true,
+    provisional: true,
+  });
+  checkService("assessoria-de-imprensa", {
+    areas: ["assessoria-de-imprensa"],
+    cases: ["fecap"],
     featured: true,
     provisional: true,
   });
