@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Item Criação (SOB-09).
  26/10/2026 Vinícius Nishimura Reis  Item Assessoria de Imprensa (SOB-10).
  26/10/2026 Vinícius Nishimura Reis  Item Produção de Conteúdo (SERV-06).
+ 26/10/2026 Vinícius Nishimura Reis  Item Copywriting (SERV-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -153,6 +154,12 @@ describe("itens de conteúdo do MVP", () => {
     areas: ["copywriting", "social-media", "criacao"],
     cases: ["aventura-de-construir"],
     featured: true,
+    provisional: true,
+  });
+  checkService("copywriting", {
+    areas: ["copywriting"],
+    cases: ["aventura-de-construir"],
+    featured: false,
     provisional: true,
   });
 });
