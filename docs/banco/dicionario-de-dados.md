@@ -306,6 +306,7 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | ----------- | --------- |
 | `npx supabase db reset` (stack local, Postgres 17.11): migrations 0100 → 20261025000100 em base limpa | Aplicadas sem erro |
 | `npx supabase test db`: 84 testes pgTAP. Cobrem dados inválidos (slug, estados, campos de publicação, links, CTA, mídia), integridade referencial (restrict/cascade/set null) e RLS por papel (`anon`, `pending`, `viewer`, `editor`, `admin`) | `Files=1, Tests=84, Result: PASS` |
+| `supabase/tests/database/audit_log.test.sql` (TECH-13, 27/10/2026): 9 testes. UPDATE e DELETE diretos na auditoria continuam recusados, inclusive anular ou trocar o ator; excluir a conta anonimiza só os eventos dela | `Files=2, Tests=93, Result: PASS` |
 | Reversão: o `.down.sql` é bloqueado se houver conteúdo; confirmado, deixa só as 4 tabelas de 13/10; `migration repair` + `migration up` reaplicam; testes passam de novo | Ciclo completo sem erro |
 | `content-sql.test.ts`: enum × `PUBLICATION_STATUSES`, `is_valid_slug` × `validateSlug`, mídia × `MEDIA_RULES`, RLS em toda tabela | Passa no `npm test` |
 | `rows.test.ts` (DB-03): toda coluna que o site seleciona existe na migration | Passa no `npm test` |

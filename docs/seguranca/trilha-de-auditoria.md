@@ -8,7 +8,7 @@
 | Versão          | 1.0.0                                                                  |
 | Data            | 13/10/2026                                                             |
 | Depende de      | [TECH-03](matriz-rbac.md), [TECH-04](../negocio/maquina-de-estados-publicacao.md) |
-| Código          | `lib/domain/audit/events.ts`, `lib/server/audit.ts`, `supabase/migrations/20261013000300_audit_log.sql` + testes |
+| Código          | `lib/domain/audit/events.ts`, `lib/server/audit.ts`, `supabase/migrations/20261013000300_audit_log.sql`, `20261027000100_audit_log_anonimiza_ator.sql` + testes |
 
 ## 1. Objetivo
 
@@ -22,7 +22,7 @@ pessoais dos visitantes.
 | ----- | ------- | ------ |
 | `id` | 1042 | Sequência |
 | `occurred_at` | `2026-10-20T14:03:11Z` | Banco (`now()`) |
-| `actor_id` | UUID do usuário | Sessão (`auth.uid()`) — não vem do cliente |
+| `actor_id` | UUID do usuário | Sessão (`auth.uid()`) — não vem do cliente. Fica nulo se a conta for excluída |
 | `actor_role` | `editor` | `current_app_role()` |
 | `event` | `content.published` | Catálogo fechado (check no banco = `AUDIT_EVENTS`) |
 | `resource_type` / `resource_id` | `content` / UUID do case | Aplicação |
@@ -65,7 +65,7 @@ estruturado (`auth.login.failed`, sem e-mail) e nos *Auth logs* do Supabase.
 | Exclusão definitiva | Só de itens **arquivados**, um por vez, máx. 20/hora por usuário | TECH-04 + `CRITICAL_LIMITS` (aplicado nas actions de ADM-06/07/08) |
 | Exportação de leads | Só `admin`, máx. 1 000 linhas e 5 exportações/hora | `CRITICAL_LIMITS` (aplicado na exportação de FORM-09) + TECH-08 |
 | Operações em lote (publicar/excluir vários) | Fora do MVP | — |
-| Alteração da trilha de auditoria | Proibida (append-only por trigger, inclusive para `service_role`) | `audit_log_append_only` |
+| Alteração da trilha de auditoria | Proibida (append-only por trigger, inclusive para `service_role`). Única exceção: ao excluir uma conta, a chave estrangeira anula o `actor_id` dos eventos dela; evento, papel, recurso e metadados ficam intactos (TECH-13) | `audit_log_append_only` + `supabase/tests/database/audit_log.test.sql` |
 
 ## 5. Acesso à trilha
 
