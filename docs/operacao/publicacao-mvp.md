@@ -13,7 +13,9 @@
 
 - [ ] Go/no-go técnico = **GO** (TECH-14) e aceite institucional encaminhado (GO-07).
 - [ ] Produção provisionada e isolada (GO-02) com migrations e seed autorizado (GO-04).
-- [ ] Domínio com HTTPS (GO-03) — ou decisão registrada de publicar na URL da Vercel até o domínio sair.
+- [x] Domínio com HTTPS (GO-03) — ou decisão registrada de publicar na URL da Vercel até o domínio sair.
+      Decisão registrada em 27/10/2026 ([GO-03 §0](dominio-dns-https.md#0-decisão-de-27102026-publicar-em-vercelapp-até-o-domínio-sair));
+      o remetente dos formulários segue pendente.
 - [ ] Conteúdo final revisado (QA-12, CON-14) e `npm run check:release-content` verde.
 - [ ] Administradores da Benjamin convidados em produção (INT-08).
 
