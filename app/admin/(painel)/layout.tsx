@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,10 +19,12 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
  13/10/2026 Vinícius Nishimura Reis  Bloqueio de contas pendentes (ADM-03).
+ 26/10/2026 Vinícius Nishimura Reis  Páginas do painel só por requisição (connection) (ADM-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense, type ReactNode } from "react";
 import { ROLE_LABELS } from "@/lib/domain/auth/rbac";
 import { PENDING_ACCESS_PATH } from "@/lib/server/auth/guards";
@@ -42,6 +44,8 @@ export default function PanelLayout({ children }: LayoutProps<"/admin">) {
 }
 
 async function PanelGate({ children }: { children: ReactNode }) {
+  // Sessão só existe na requisição: o pré-render para aqui (ver requirePageAccess).
+  await connection();
   const user = await getSessionUser();
   if (!user) redirect("/admin/login?erro=sessao");
   // Conta sem papel liberado nunca vê a casca do painel (RBAC N03).

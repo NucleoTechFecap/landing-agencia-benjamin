@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Áreas, serviços, vínculos e mídia do CMS (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
+ 26/10/2026 Vinícius Nishimura Reis  Montagem do snapshot compartilhada com o painel (ADM-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,7 +38,14 @@ import type {
 } from "@/lib/domain/content/types";
 import { AppError } from "../../errors";
 import { logger } from "../../logger";
-import { toArea, toCase, toCategory, toCta, toMediaRef, toPage, toService, toSiteSettings } from "./mappers";
+import {
+  assembleAreasAndServices,
+  assembleCasesAndCategories,
+  toCta,
+  toMediaMap,
+  toPage,
+  toSiteSettings,
+} from "./mappers";
 import {
   COLUMNS,
   type AreaRow,
@@ -89,7 +97,7 @@ export async function fetchMedia(
     "media_assets",
     client.from("media_assets").select(COLUMNS.media_assets).in("id", unique),
   );
-  return new Map(data.map((row) => [row.id, toMediaRef(row, supabaseUrl)]));
+  return toMediaMap(data, supabaseUrl);
 }
 
 /**
@@ -100,30 +108,17 @@ export async function fetchAreasAndServices(
   client: SupabaseClient,
   supabaseUrl: string,
 ): Promise<{ areas: Area[]; services: Service[] }> {
-  const [areaRows, serviceRows, links] = await Promise.all([
+  const [areas, services, serviceAreas] = await Promise.all([
     rows<AreaRow>("areas", client.from("areas").select(COLUMNS.areas).eq("status", "published")),
     rows<ServiceRow>("services", client.from("services").select(COLUMNS.services).eq("status", "published")),
     rows<ServiceAreaRow>("service_areas", client.from("service_areas").select(COLUMNS.service_areas)),
   ]);
-  const images = await fetchMedia(
+  const media = await fetchMedia(
     client,
-    serviceRows.map((row) => row.image_media_id),
+    services.map((row) => row.image_media_id),
     supabaseUrl,
   );
-  const areaIdsByService = new Map<string, string[]>();
-  for (const link of links) {
-    areaIdsByService.set(link.service_id, [...(areaIdsByService.get(link.service_id) ?? []), link.area_id]);
-  }
-  return {
-    areas: areaRows.map(toArea),
-    services: serviceRows.map((row) =>
-      toService(
-        row,
-        areaIdsByService.get(row.id) ?? [],
-        row.image_media_id ? images.get(row.image_media_id) : undefined,
-      ),
-    ),
-  };
+  return assembleAreasAndServices({ areas, services, service_areas: serviceAreas }, media);
 }
 
 /**
@@ -135,7 +130,7 @@ export async function fetchCasesAndCategories(
   client: SupabaseClient,
   supabaseUrl: string,
 ): Promise<{ categories: CaseCategory[]; cases: CaseStudy[] }> {
-  const [categoryRows, caseRows, serviceLinks, galleryLinks] = await Promise.all([
+  const [categories, cases, caseServices, caseMedia] = await Promise.all([
     rows<CategoryRow>(
       "case_categories",
       client.from("case_categories").select(COLUMNS.case_categories).eq("status", "published"),
@@ -146,28 +141,13 @@ export async function fetchCasesAndCategories(
   ]);
   const media = await fetchMedia(
     client,
-    [...caseRows.map((row) => row.cover_media_id), ...galleryLinks.map((link) => link.media_id)],
+    [...cases.map((row) => row.cover_media_id), ...caseMedia.map((link) => link.media_id)],
     supabaseUrl,
   );
-  const group = <T extends { case_id: string }>(links: T[]) => {
-    const byCase = new Map<string, T[]>();
-    for (const link of links) byCase.set(link.case_id, [...(byCase.get(link.case_id) ?? []), link]);
-    return byCase;
-  };
-  const servicesByCase = group(serviceLinks);
-  const galleryByCase = group([...galleryLinks].sort((a, b) => a.sort_order - b.sort_order));
-  return {
-    categories: categoryRows.map(toCategory),
-    cases: caseRows.map((row) =>
-      toCase(row, {
-        serviceIds: (servicesByCase.get(row.id) ?? []).map((link) => link.service_id),
-        cover: row.cover_media_id ? media.get(row.cover_media_id) : undefined,
-        gallery: (galleryByCase.get(row.id) ?? [])
-          .map((link) => media.get(link.media_id))
-          .filter((item): item is MediaRef => Boolean(item)),
-      }),
-    ),
-  };
+  return assembleCasesAndCategories(
+    { case_categories: categories, cases, case_services: caseServices, case_media: caseMedia },
+    media,
+  );
 }
 
 /**

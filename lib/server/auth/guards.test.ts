@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-03).
  13/10/2026 Vinícius Nishimura Reis  Teste do registro de acesso negado (TECH-10).
+ 26/10/2026 Vinícius Nishimura Reis  Mock de connection() (ADM-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -27,6 +28,8 @@ import type { SessionUser } from "./session";
 
 let currentUser: SessionUser | null = null;
 vi.mock("./session", () => ({ getSessionUser: async () => currentUser }));
+// Fora de uma requisição do Next, connection() lança; aqui só importa a ordem das checagens.
+vi.mock("next/server", () => ({ connection: async () => {} }));
 const { recordAuditEvent } = vi.hoisted(() => ({ recordAuditEvent: vi.fn(async () => {}) }));
 vi.mock("../audit", () => ({ recordAuditEvent }));
 vi.mock("next/navigation", () => ({

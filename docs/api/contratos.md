@@ -150,6 +150,15 @@ export async function publishCase(input: { id: string; expectedUpdatedAt: string
 Entidades com Zod próprio: case (`case-schema.ts` — CASE-11); serviço, área, categoria, CTA e
 página seguem o mesmo padrão rascunho/publicação, com campos obrigatórios de TECH-05 §5.
 
+**Implementação (ADM-07).** `lib/server/cms/content-service.ts` aplica, para toda entidade
+descrita em `lib/server/cms/entities.ts`: permissão → Zod da entidade → versão otimista
+(`updated_at`) → slug único e fixo após a primeira publicação → `transition()` (inclusive no save
+de item publicado) → `assessRemovalImpact` ao despublicar/arquivar/excluir → auditoria (crítica
+antes da gravação, com registro de falha) → gravação pelo store → `updateTag`. O store de
+produção (`supabase-store.ts`) usa a sessão do usuário, então a RLS do banco é a segunda barreira;
+o de memória (`memory-store.ts`) cobre as regras nos testes. As Server Actions de cada tela usam
+`cmsSaveAction`/`cmsCommandAction` (`context.ts`) e redirecionam com `?ok=` no sucesso.
+
 ## 7. Códigos de erro
 
 | Código | HTTP | Quando |

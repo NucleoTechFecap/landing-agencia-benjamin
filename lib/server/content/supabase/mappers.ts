@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Áreas, serviços, vínculos e mídia do CMS (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
+ 26/10/2026 Vinícius Nishimura Reis  Montagem do snapshot compartilhada com o painel (ADM-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -42,12 +43,15 @@ import { publicMediaUrl } from "@/lib/domain/media/policy";
 import type {
   AreaRow,
   BlockRow,
+  CaseMediaRow,
   CaseRow,
+  CaseServiceRow,
   CategoryRow,
   CtaRow,
   MediaAssetRow,
   PageRow,
   PublishableRow,
+  ServiceAreaRow,
   ServiceRow,
   SiteSettingsRow,
 } from "./rows";
@@ -242,5 +246,62 @@ export function toSiteSettings(
       keywords: row.keywords ?? [],
     },
     problems,
+  };
+}
+
+/* ─── Montagem do snapshot a partir das linhas (site e painel usam o mesmo código) ─── */
+
+export function toMediaMap(rows: readonly MediaAssetRow[], supabaseUrl: string): Map<string, MediaRef> {
+  return new Map(rows.map((row) => [row.id, toMediaRef(row, supabaseUrl)]));
+}
+
+function groupBy<T, K extends keyof T>(items: readonly T[], key: K): Map<T[K], T[]> {
+  const groups = new Map<T[K], T[]>();
+  for (const item of items) groups.set(item[key], [...(groups.get(item[key]) ?? []), item]);
+  return groups;
+}
+
+export function assembleAreasAndServices(
+  rows: { areas: AreaRow[]; services: ServiceRow[]; service_areas: ServiceAreaRow[] },
+  media: Map<string, MediaRef>,
+): { areas: Area[]; services: Service[] } {
+  const links = groupBy(rows.service_areas, "service_id");
+  return {
+    areas: rows.areas.map(toArea),
+    services: rows.services.map((row) =>
+      toService(
+        row,
+        (links.get(row.id) ?? []).map((link) => link.area_id),
+        row.image_media_id ? media.get(row.image_media_id) : undefined,
+      ),
+    ),
+  };
+}
+
+export function assembleCasesAndCategories(
+  rows: {
+    case_categories: CategoryRow[];
+    cases: CaseRow[];
+    case_services: CaseServiceRow[];
+    case_media: CaseMediaRow[];
+  },
+  media: Map<string, MediaRef>,
+): { categories: CaseCategory[]; cases: CaseStudy[] } {
+  const services = groupBy(rows.case_services, "case_id");
+  const gallery = groupBy(
+    [...rows.case_media].sort((a, b) => a.sort_order - b.sort_order),
+    "case_id",
+  );
+  return {
+    categories: rows.case_categories.map(toCategory),
+    cases: rows.cases.map((row) =>
+      toCase(row, {
+        serviceIds: (services.get(row.id) ?? []).map((link) => link.service_id),
+        cover: row.cover_media_id ? media.get(row.cover_media_id) : undefined,
+        gallery: (gallery.get(row.id) ?? [])
+          .map((link) => media.get(link.media_id))
+          .filter((item): item is MediaRef => Boolean(item)),
+      }),
+    ),
   };
 }
