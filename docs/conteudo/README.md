@@ -19,3 +19,4 @@ painel exige para publicar.
 | Copywriting | Serviço | SERV-07 | [servicos/copywriting.md](servicos/copywriting.md) | Provisório — aguardando texto aprovado |
 | Design e Identidade Visual | Serviço | SERV-08 | [servicos/design-e-identidade-visual.md](servicos/design-e-identidade-visual.md) | Provisório — aguardando texto aprovado |
 | Audiovisual | Serviço | SERV-09 | [servicos/audiovisual.md](servicos/audiovisual.md) | Provisório — aguardando texto aprovado |
+| Assessoria de Imprensa / PR | Serviço | SERV-10 | [servicos/assessoria-de-imprensa.md](servicos/assessoria-de-imprensa.md) | Provisório — aguardando texto aprovado |
