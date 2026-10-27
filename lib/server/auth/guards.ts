@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,11 +19,13 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-03).
  13/10/2026 Vinícius Nishimura Reis  Registro de acesso negado na auditoria (TECH-10).
+ 26/10/2026 Vinícius Nishimura Reis  Páginas do painel só por requisição (connection) (ADM-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import { redirect, unstable_rethrow } from "next/navigation";
+import { connection } from "next/server";
 import { LOGIN_PATH } from "@/lib/domain/auth/redirect";
 import { can, type Action, type Resource } from "@/lib/domain/auth/rbac";
 import { recordAuditEvent } from "../audit";
@@ -60,6 +62,10 @@ export async function requirePermission(resource: Resource, action: Action): Pro
  * Sem sessão → login (com retorno); conta pendente → aviso; sem permissão → 403 amigável.
  */
 export async function requirePageAccess(resource: Resource, action: Action, currentPath: string): Promise<SessionUser> {
+  // Páginas do painel são sempre por requisição. Sem isto, o pré-render do shell (Cache
+  // Components) chega à criação do cliente Supabase, que lê Date.now() e gera erro de
+  // "unstable value" no log a cada revalidação (ADM-07).
+  await connection();
   const user = await getSessionUser();
   if (!user) redirect(`${LOGIN_PATH}?next=${encodeURIComponent(currentPath)}`);
   if (user.role === "pending") redirect(PENDING_ACCESS_PATH);
