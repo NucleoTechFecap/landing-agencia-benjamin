@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Testes dos DTOs de página e CTA (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Id da mídia no mapeamento e fora do DTO (ADM-06).
+ 26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -32,6 +33,7 @@ import {
   paginate,
   toAreaDetailDTO,
   toCaseCardDTO,
+  toCaseDetailDTO,
   toCtaDTO,
   toPageDTO,
   toServiceDTO,
@@ -140,5 +142,21 @@ describe("mídia nos DTOs (ADM-06)", () => {
       [],
     );
     expect(dto.image).toEqual({ src: "/brand/x.webp", alt: "Imagem", width: undefined, height: undefined });
+  });
+});
+
+describe("links de imprensa no DTO do case (CASE-10)", () => {
+  it("veículo e data saem na API quando existem (mudança compatível — TECH-11)", () => {
+    const item = caseStudy("k1", "c1", ["s1"], {
+      externalLinks: [
+        { label: "Matéria", url: "https://g1.globo.com/x", source: "G1", date: "2026-09-15" },
+        { label: "Post", url: "https://instagram.com/p/1" },
+      ],
+    });
+    const dto = toCaseDetailDTO({ item, category: null, services: [], areas: [] });
+    expect(dto.externalLinks).toEqual([
+      { label: "Matéria", url: "https://g1.globo.com/x", source: "G1", date: "2026-09-15" },
+      { label: "Post", url: "https://instagram.com/p/1" },
+    ]);
   });
 });
