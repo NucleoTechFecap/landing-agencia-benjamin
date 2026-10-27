@@ -85,7 +85,7 @@ para a biblioteca** abre esta tela e, depois do envio, volta para o item que voc
 
 | Regra | Valor |
 | ----- | ----- |
-| Formatos | JPG, PNG, WebP, AVIF (até 5 MB) e PDF (até 10 MB). SVG não é aceito |
+| Formatos | JPG, PNG, WebP, AVIF e PDF, até 4 MB cada. Arquivo maior é recusado antes do envio: reduza (para imagens, exporte em WebP). SVG não é aceito |
 | Tamanho da imagem | Até 4000 px no maior lado; recomendado 2400 px de largura |
 | Texto alternativo | Obrigatório (3 a 160 caracteres), exceto se a imagem for marcada como decorativa |
 
