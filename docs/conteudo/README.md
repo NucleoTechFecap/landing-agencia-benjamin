@@ -21,3 +21,4 @@ painel exige para publicar.
 | Audiovisual | Serviço | SERV-09 | [servicos/audiovisual.md](servicos/audiovisual.md) | Provisório — aguardando texto aprovado |
 | Assessoria de Imprensa / PR | Serviço | SERV-10 | [servicos/assessoria-de-imprensa.md](servicos/assessoria-de-imprensa.md) | Provisório — aguardando texto aprovado |
 | Comunicação Interna | Serviço | SERV-11 | [servicos/comunicacao-interna.md](servicos/comunicacao-interna.md) | Provisório — aguardando texto aprovado |
+| Copywriting | Categoria de cases | CASE-08 | [categorias/copywriting.md](categorias/copywriting.md) | Aprovada (PRJ §12) — materiais dos cases pendentes |
