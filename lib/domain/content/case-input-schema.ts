@@ -18,12 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
+ 26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { z } from "zod";
-import { CASE_LIMITS } from "./case-schema";
+import { CASE_LIMITS, externalLinkSchema } from "./case-schema";
 import { optionalText, orderField, slugField } from "./cms-schema";
+import type { ExternalLink } from "./types";
 
 const uuid = z.string().uuid("Seleção inválida.");
 const optionalUuid = uuid.optional().or(z.literal("").transform(() => undefined));
@@ -51,12 +53,7 @@ export const caseInputSchema = z.object({
   coverId: optionalUuid,
   galleryIds: z.array(uuid).max(CASE_LIMITS.gallery, `No máximo ${CASE_LIMITS.gallery} imagens.`).default([]),
   externalLinks: z
-    .array(
-      z.object({
-        label: z.string().trim().min(2, "Dê um nome ao link.").max(80),
-        url: z.url({ protocol: /^https$/, error: "Use um link https." }),
-      }),
-    )
+    .array(externalLinkSchema)
     .max(CASE_LIMITS.links, `No máximo ${CASE_LIMITS.links} links.`)
     .default([]),
   date: z
@@ -75,24 +72,31 @@ export const caseInputSchema = z.object({
 export type CaseInput = z.output<typeof caseInputSchema>;
 
 export interface ParsedLinks {
-  links: { label: string; url: string }[];
-  /** Linhas que não seguem "Rótulo | https://…". */
+  links: ExternalLink[];
+  /** Linhas sem rótulo ou sem endereço. */
   invalid: string[];
 }
 
-/** Uma linha por link, no formato "Rótulo | https://endereço". */
+/**
+ * Uma linha por link: "Rótulo | https://endereço", com veículo e data opcionais para
+ * clippings — "Rótulo | https://endereço | Veículo | AAAA-MM-DD" (CASE-10).
+ */
 export function parseLinkLines(lines: readonly string[]): ParsedLinks {
-  const links: ParsedLinks["links"] = [];
+  const links: ExternalLink[] = [];
   const invalid: string[] = [];
   for (const line of lines) {
-    const [label, ...rest] = line.split("|");
-    const url = rest.join("|").trim();
-    if (label?.trim() && url) links.push({ label: label.trim(), url });
-    else invalid.push(line);
+    const [label = "", url = "", source = "", date = ""] = line.split("|").map((part) => part.trim());
+    if (!label || !url) {
+      invalid.push(line);
+      continue;
+    }
+    links.push({ label, url, ...(source ? { source } : {}), ...(date ? { date } : {}) });
   }
   return { links, invalid };
 }
 
-export function formatLinkLines(links: readonly { label: string; url: string }[]): string {
-  return links.map((link) => `${link.label} | ${link.url}`).join("\n");
+export function formatLinkLines(links: readonly ExternalLink[]): string {
+  return links
+    .map((link) => [link.label, link.url, link.source ?? "", link.date ?? ""].join(" | ").replace(/( \| )+$/, ""))
+    .join("\n");
 }

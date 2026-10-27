@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Testes de categorias, cases e galeria (DB-05).
  26/10/2026 Vinícius Nishimura Reis  Id da mídia no mapeamento e fora do DTO (ADM-06).
+ 26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -243,5 +244,19 @@ describe("categorias e cases (DB-05)", () => {
     expect(
       toCategory({ ...control, id: "c1", slug: "copywriting", name: "Copywriting", description: null, sort_order: 1 }),
     ).toMatchObject({ slug: "copywriting", description: "", order: 1 });
+  });
+});
+
+describe("links com metadados de publicação (CASE-10)", () => {
+  it("mantém veículo e data válidos e descarta data fora do formato", () => {
+    expect(
+      toExternalLinks([
+        { label: "Matéria", url: "https://g1.globo.com/x", source: " G1 ", date: "2026-09-15" },
+        { label: "Nota", url: "https://x.com.br", source: "", date: "15/09/2026" },
+      ]),
+    ).toEqual([
+      { label: "Matéria", url: "https://g1.globo.com/x", source: "G1", date: "2026-09-15" },
+      { label: "Nota", url: "https://x.com.br" },
+    ]);
   });
 });

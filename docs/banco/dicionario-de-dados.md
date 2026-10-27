@@ -178,7 +178,7 @@ Campos de controle **comuns** às entidades publicáveis (`areas`, `services`, `
 | `summary` | `text` | Sim | ≤ 280; ≥ 30 para publicar | `summary` |
 | `challenge`, `solution`, `results` | `text` | Sim | ≤ 4000 cada | `challenge`, `solution`, `results` |
 | `cover_media_id` | `uuid` | Sim | FK `media_assets` `restrict`; obrigatório para publicar | `cover` |
-| `external_links` | `jsonb` | Não | `[]`; até 10 `{label, url}` com `https://` | `externalLinks` |
+| `external_links` | `jsonb` | Não | `[]`; até 10 `{label, url}` com `https://`, com `source` (veículo) e `date` (`AAAA-MM-DD`) opcionais para clipping (CASE-10) | `externalLinks` |
 | `reference_month` | `date` | Sim | Dia 1 do mês (AAAA-MM-01) | `date` (AAAA-MM) |
 | `team` | `text[]` | Não | `{}`; até 20 | `team` |
 | `featured` | `boolean` | Não | `false`; até 6 na Home (R11, aviso) | `featured` |

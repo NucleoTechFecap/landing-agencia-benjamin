@@ -110,7 +110,7 @@ rascunho ou arquivado) a usar — o painel lista quais.
 | Capa | publicar | Imagem da biblioteca com texto alternativo |
 | Galeria | — | Até 20 imagens, na ordem de envio |
 | Desafio, solução, resultados | — | Resultados só reais e autorizados |
-| Links externos | — | Um por linha: `Rótulo \| https://endereço` (até 10) |
+| Links externos | — | Um por linha: `Rótulo \| https://endereço` (até 10). Para clipping de imprensa, acrescente veículo e data: `Matéria \| https://… \| Estadão \| 2026-09-15` |
 | Mês de referência | — | Não pode estar no futuro |
 | Equipe | — | Um nome por linha, só com autorização |
 | Destaque na Home | — | Até 6 cases em destaque |

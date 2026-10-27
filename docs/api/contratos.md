@@ -69,7 +69,7 @@ AreaDetailDTO  AreaDTO & { services: { slug, name, summary, url }[] }
 ServiceDTO     { slug, name, summary, description, examples[], areas[] (slugs), featured, icon?, image?: MediaDTO, url }
 CategoryDTO    { slug, name, description }
 CaseCardDTO    { slug, title, client, category: {slug,name}|null, deliveryType?, summary, cover?: MediaDTO, date?, featured, url }
-CaseDetailDTO  CaseCardDTO & { challenge?, solution?, results?, gallery: MediaDTO[], externalLinks: {label,url}[],
+CaseDetailDTO  CaseCardDTO & { challenge?, solution?, results?, gallery: MediaDTO[], externalLinks: {label,url,source?,date?}[],
                  team[], services: {slug,name,url}[], areas: {slug,name}[], publishedAt }
 MediaDTO       { src, alt, width?, height? }
 SiteSettingsDTO { name, tagline, description, contact: {email?, phone?, address?, mapsUrl?}, socials: {instagram?, tiktok?, linkedin?} }

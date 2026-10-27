@@ -28,17 +28,18 @@
  26/10/2026 Vinícius Nishimura Reis  Item Comunicação Interna (SERV-11).
  26/10/2026 Vinícius Nishimura Reis  Item Copywriting (CASE-08).
  26/10/2026 Vinícius Nishimura Reis  Item Social Media & Criação (CASE-09).
+ 26/10/2026 Vinícius Nishimura Reis  Categoria Assessoria de Imprensa e imports organizados (CASE-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
-import { validateServiceForPublish } from "../lib/domain/content/service-schema";
-import { isValidExternalUrl, resolveCtaHref } from "../lib/domain/content/integrity";
-import { join } from "node:path";
 import { existsSync } from "node:fs";
-import { categoryInputSchema } from "../lib/domain/content/category-schema";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { validateAreaForPublish } from "../lib/domain/content/area-schema";
+import { categoryInputSchema } from "../lib/domain/content/category-schema";
 import { isBrandIcon } from "../lib/domain/content/icons";
+import { isValidExternalUrl, resolveCtaHref } from "../lib/domain/content/integrity";
+import { validateServiceForPublish } from "../lib/domain/content/service-schema";
 import { isValidSlug } from "../lib/domain/content/slug";
 import { isPubliclyVisible, visibleSorted } from "../lib/domain/content/visibility";
 import { seedSnapshot } from "./index";
@@ -215,4 +216,5 @@ describe("itens de conteúdo do MVP", () => {
   });
   checkCategory("copywriting", { cases: ["aventura-de-construir"] });
   checkCategory("social-media-e-criacao", { cases: ["meridiano"] });
+  checkCategory("assessoria-de-imprensa", { cases: ["fecap"] });
 });

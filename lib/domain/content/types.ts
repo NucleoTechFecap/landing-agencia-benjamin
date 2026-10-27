@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-05).
  26/10/2026 Vinícius Nishimura Reis  Página editável e entidade page (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Id da mídia na referência, só para o painel (ADM-06).
+ 26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -51,6 +52,10 @@ export interface MediaRef {
 export interface ExternalLink {
   label: string;
   url: string;
+  /** Veículo ou portal onde saiu a publicação (clipping de imprensa — CASE-10). */
+  source?: string;
+  /** Data da publicação, AAAA-MM-DD (CASE-10). */
+  date?: string;
 }
 
 /** Áreas de atuação da agência (PRJ §9). */

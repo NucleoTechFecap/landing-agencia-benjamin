@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-02).
  26/10/2026 Vinícius Nishimura Reis  DTOs de página e CTA (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Detalhe de área com serviços (DB-04).
+ 26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -180,7 +181,8 @@ export interface CaseDetailDTO extends CaseCardDTO {
   solution?: string;
   results?: string;
   gallery: MediaDTO[];
-  externalLinks: { label: string; url: string }[];
+  /** `source` (veículo) e `date` (AAAA-MM-DD) só nos links que os têm — clippings (CASE-10). */
+  externalLinks: { label: string; url: string; source?: string; date?: string }[];
   team: string[];
   services: { slug: string; name: string; url: string }[];
   areas: { slug: string; name: string }[];

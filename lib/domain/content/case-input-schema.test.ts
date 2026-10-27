@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
+ 26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -76,5 +77,42 @@ describe("categoria no CMS (ADM-08)", () => {
       description: undefined,
       order: 0,
     });
+  });
+});
+
+describe("links de imprensa com veículo e data (CASE-10)", () => {
+  it("lê veículo e data opcionais e formata de volta sem perder nada", () => {
+    const lines = [
+      "Matéria no portal | https://exemplo.com.br/materia | Estadão | 2026-09-15",
+      "Release no site | https://www.fecap.br/release",
+      "Nota | https://exemplo.com.br/nota | | 2026-08-01",
+    ];
+    const { links, invalid } = parseLinkLines(lines);
+    expect(invalid).toEqual([]);
+    expect(links).toEqual([
+      { label: "Matéria no portal", url: "https://exemplo.com.br/materia", source: "Estadão", date: "2026-09-15" },
+      { label: "Release no site", url: "https://www.fecap.br/release" },
+      { label: "Nota", url: "https://exemplo.com.br/nota", date: "2026-08-01" },
+    ]);
+    expect(formatLinkLines(links)).toBe(
+      [
+        "Matéria no portal | https://exemplo.com.br/materia | Estadão | 2026-09-15",
+        "Release no site | https://www.fecap.br/release",
+        "Nota | https://exemplo.com.br/nota |  | 2026-08-01",
+      ].join("\n"),
+    );
+  });
+
+  it("valida a data de calendário e o tamanho do veículo", () => {
+    const parse = (link: object) =>
+      caseInputSchema.safeParse({
+        title: "FECAP",
+        slug: "fecap",
+        externalLinks: [{ label: "Matéria", url: "https://x.com.br", ...link }],
+      });
+    expect(parse({ source: "Folha", date: "2026-09-15" }).success).toBe(true);
+    expect(parse({ date: "2026-02-30" }).success).toBe(false);
+    expect(parse({ date: "15/09/2026" }).success).toBe(false);
+    expect(parse({ source: "F" }).success).toBe(false);
   });
 });
