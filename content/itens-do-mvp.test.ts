@@ -23,6 +23,7 @@
  26/10/2026 Vinícius Nishimura Reis  Item Produção de Conteúdo (SERV-06).
  26/10/2026 Vinícius Nishimura Reis  Item Copywriting (SERV-07).
  26/10/2026 Vinícius Nishimura Reis  Item Design e Identidade Visual (SERV-08).
+ 26/10/2026 Vinícius Nishimura Reis  Item Audiovisual (SERV-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -166,6 +167,12 @@ describe("itens de conteúdo do MVP", () => {
   checkService("design-e-identidade-visual", {
     areas: ["criacao"],
     cases: ["meridiano"],
+    featured: true,
+    provisional: true,
+  });
+  checkService("audiovisual", {
+    areas: ["criacao"],
+    cases: [],
     featured: true,
     provisional: true,
   });
