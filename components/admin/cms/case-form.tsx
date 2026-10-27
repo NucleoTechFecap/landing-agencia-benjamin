@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
+ 26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -201,7 +202,7 @@ export function CaseForm({
               name="externalLinks"
               label="Links externos"
               rows={3}
-              hint={`Um por linha: Rótulo | https://endereço (até ${CASE_LIMITS.links}). Ex.: Matéria no jornal | https://…`}
+              hint={`Um por linha: Rótulo | https://endereço (até ${CASE_LIMITS.links}). Para clipping, acrescente veículo e data: Matéria | https://… | Estadão | 2026-09-15`}
               errors={errors("externalLinks")}
               defaultValue={value("externalLinks", formatLinkLines(item?.externalLinks ?? []))}
             />

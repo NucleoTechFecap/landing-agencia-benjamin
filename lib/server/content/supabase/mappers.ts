@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
  26/10/2026 Vinícius Nishimura Reis  Montagem do snapshot compartilhada com o painel (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Id da mídia na referência, só para o painel (ADM-06).
+ 26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -130,17 +131,25 @@ export function toCategory(row: CategoryRow): CaseCategory {
   };
 }
 
-/** Links externos válidos (label + url https); qualquer outra coisa no jsonb é ignorada. */
+/**
+ * Links externos válidos (label + url https), com veículo e data quando presentes e no
+ * formato certo (CASE-10). Qualquer outra coisa no jsonb é ignorada.
+ */
 export function toExternalLinks(value: unknown): ExternalLink[] {
   if (!Array.isArray(value)) return [];
-  return value.filter(
-    (link): link is ExternalLink =>
-      typeof link === "object" &&
-      link !== null &&
-      typeof link.label === "string" &&
-      typeof link.url === "string" &&
-      link.url.startsWith("https://"),
-  );
+  return value.flatMap((link): ExternalLink[] => {
+    if (typeof link !== "object" || link === null) return [];
+    const { label, url, source, date } = link as Record<string, unknown>;
+    if (typeof label !== "string" || typeof url !== "string" || !url.startsWith("https://")) return [];
+    return [
+      {
+        label,
+        url,
+        ...(typeof source === "string" && source.trim() ? { source: source.trim() } : {}),
+        ...(typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date) ? { date } : {}),
+      },
+    ];
+  });
 }
 
 /**

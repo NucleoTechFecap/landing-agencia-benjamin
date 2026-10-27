@@ -21,6 +21,7 @@
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  25/10/2026 Caio Moraes              Permite navegação bloqueante (instant = false) (LAY-01).
  26/10/2026 Vinícius Nishimura Reis  Parâmetro estático para banco vazio (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -84,6 +85,13 @@ const formatMonth = (value?: string) => {
   if (!value) return undefined;
   const [year, month] = value.split("-").map(Number);
   return `${MONTHS[month - 1]} de ${year}`;
+};
+
+/** Data de publicação de um clipping (AAAA-MM-DD) por extenso: "15 de setembro de 2026" (CASE-10). */
+const formatDay = (value?: string) => {
+  if (!value) return undefined;
+  const [year, month, day] = value.split("-").map(Number);
+  return `${day} de ${MONTHS[month - 1]} de ${year}`;
 };
 
 /** Detalhe do case: desafio, solução, resultados, galeria, links e serviços (CASE-02, CASE-04). */
@@ -216,6 +224,11 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
                         {link.label}
                         <span className="sr-only"> (abre em nova aba)</span>
                       </a>
+                      {link.source || link.date ? (
+                        <span className="block text-xs text-benja-grafite/80">
+                          {[link.source, formatDay(link.date)].filter(Boolean).join(" · ")}
+                        </span>
+                      ) : null}
                     </li>
                   ))}
                 </ul>

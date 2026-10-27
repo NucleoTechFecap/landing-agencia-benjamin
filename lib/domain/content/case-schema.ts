@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (CASE-11).
  26/10/2026 Vinícius Nishimura Reis  Mensagens para campos ausentes na publicação (ADM-08).
+ 26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -55,9 +56,25 @@ const media = z.object({
   height: z.number().int().positive().optional(),
 });
 
-const externalLink = z.object({
+/** Data de calendário AAAA-MM-DD que existe de fato (recusa 2026-02-30). */
+const isoDay = z
+  .string()
+  .regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, "Use a data no formato AAAA-MM-DD.")
+  // O Zod 4 roda o refine mesmo quando o regex falha: a data pode ser inválida aqui.
+  .refine((value) => {
+    const day = new Date(`${value}T00:00:00Z`);
+    return !Number.isNaN(day.getTime()) && day.toISOString().startsWith(value);
+  }, "Data inexistente.");
+
+/**
+ * Link para publicação externa (artigo, post, matéria). Veículo e data são opcionais e servem
+ * aos clippings de imprensa (CASE-10): "Matéria no Estadão · 15 de setembro de 2026".
+ */
+export const externalLinkSchema = z.object({
   label: z.string().trim().min(2).max(80),
   url: z.url({ protocol: /^https$/, error: "Use um link https." }),
+  source: z.string().trim().min(2, "Veículo com ao menos 2 caracteres.").max(80).optional(),
+  date: isoDay.optional(),
 });
 
 /** Mês de referência AAAA-MM, não futuro. */
@@ -87,7 +104,7 @@ export const caseDraftSchema = z.object({
     .array(media.partial({ alt: true }))
     .max(CASE_LIMITS.gallery)
     .default([]),
-  externalLinks: z.array(externalLink).max(CASE_LIMITS.links).default([]),
+  externalLinks: z.array(externalLinkSchema).max(CASE_LIMITS.links).default([]),
   date: z.string().optional(),
   team: z.array(z.string().trim().min(2).max(80)).max(CASE_LIMITS.team).default([]),
   featured: z.boolean().default(false),
