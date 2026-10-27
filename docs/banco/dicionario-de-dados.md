@@ -311,6 +311,8 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | `rows.test.ts` (DB-03): toda coluna que o site seleciona existe na migration | Passa no `npm test` |
 | `npm run test:supabase` (DB-03): leitura pública de configuração, páginas e CTAs com a RLS real — rascunho, página agendada e blocos de rascunho não vazam; visitante não grava | 6 testes, `PASS` |
 | `npm run test:supabase` (DB-04): serviços publicados com imagem e só vínculos com área publicada; área e serviço em rascunho fora; mídia usada só por rascunho invisível; checagem de slug do proxy | 4 testes, `PASS` |
+| `npm run test:supabase` (DB-05): case publicado com capa, galeria em ordem, link externo e mês; vínculo com serviço em rascunho oculto; categoria e galeria de rascunho invisíveis; slug do proxy | 4 testes, `PASS` |
+| `repository.supabase.test.ts` (DB-05): repositório público inteiro sobre a fonte Supabase — banco vazio (listas vazias, detalhes inexistentes) e populado (filtro por categoria, detalhe com galeria, agendado para o futuro oculto) | Passa no `npm test` |
 
 ## 9. Como aplicar, testar e reverter
 
