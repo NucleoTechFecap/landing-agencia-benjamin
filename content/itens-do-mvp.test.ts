@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (SOB-08).
  26/10/2026 Vinícius Nishimura Reis  Item Criação (SOB-09).
+ 26/10/2026 Vinícius Nishimura Reis  Item Assessoria de Imprensa (SOB-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -85,6 +86,11 @@ describe("itens de conteúdo do MVP", () => {
   checkArea("criacao", {
     order: 5,
     services: ["producao-de-conteudo", "design-e-identidade-visual", "audiovisual"],
+    provisional: true,
+  });
+  checkArea("assessoria-de-imprensa", {
+    order: 6,
+    services: ["assessoria-de-imprensa"],
     provisional: true,
   });
 });
