@@ -37,7 +37,7 @@
 
 ## Regras de negócio e conteúdo
 
-- [Guia do painel (CMS) para a equipe da Benjamin](cms/guia-do-painel.md) — ADM-07 (áreas; serviços e cases em ADM-06/ADM-08)
+- [Guia do painel (CMS) para a equipe da Benjamin](cms/guia-do-painel.md) — ADM-07 (áreas), ADM-06 (serviços); cases em ADM-08
 
 | Documento | Issue |
 | --------- | ----- |
