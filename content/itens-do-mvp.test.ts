@@ -20,9 +20,14 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (SOB-08).
  26/10/2026 Vinícius Nishimura Reis  Item Criação (SOB-09).
  26/10/2026 Vinícius Nishimura Reis  Item Assessoria de Imprensa (SOB-10).
+ 26/10/2026 Vinícius Nishimura Reis  Item Produção de Conteúdo (SERV-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
+import { validateServiceForPublish } from "../lib/domain/content/service-schema";
+import { resolveCtaHref } from "../lib/domain/content/integrity";
+import { join } from "node:path";
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { validateAreaForPublish } from "../lib/domain/content/area-schema";
 import { isBrandIcon } from "../lib/domain/content/icons";
@@ -37,7 +42,10 @@ import { seedSnapshot } from "./index";
  * sem link quebrado. O texto é provisório até a aprovação da Benjamin (CON-05) e as fichas
  * em docs/conteudo dizem o que falta aprovar.
  */
-const { areas, services } = seedSnapshot;
+const { areas, services, cases } = seedSnapshot;
+
+/** Ids do conteúdo versionado não são UUID: as relações são conferidas à parte. */
+const withoutIds = <T extends { areaIds?: string[] }>(item: T) => ({ ...item, areaIds: undefined });
 
 function checkArea(slug: string, expected: { order: number; services: string[]; provisional: boolean }) {
   describe(`área ${slug}`, () => {
@@ -76,6 +84,54 @@ function checkArea(slug: string, expected: { order: number; services: string[]; 
   });
 }
 
+function checkService(
+  slug: string,
+  expected: { areas: string[]; cases: string[]; featured: boolean; provisional: boolean },
+) {
+  describe(`serviço ${slug}`, () => {
+    const service = services.find((item) => item.slug === slug)!;
+
+    it("existe, está publicado e cumpre as regras de publicação do painel (ADM-06)", () => {
+      expect(service).toBeDefined();
+      expect(isPubliclyVisible(service)).toBe(true);
+      expect(validateServiceForPublish(withoutIds(service)).filter((problem) => !problem.startsWith("Áreas"))).toEqual(
+        [],
+      );
+      expect(isBrandIcon(service.icon)).toBe(true);
+      expect(service.featured).toBe(expected.featured);
+    });
+
+    it("pertence às áreas combinadas, todas publicadas", () => {
+      const linked = areas.filter((area) => service.areaIds.includes(area.id));
+      expect(linked.map((area) => area.slug).sort()).toEqual([...expected.areas].sort());
+      expect(linked.every((area) => isPubliclyVisible(area))).toBe(true);
+    });
+
+    it("o CTA de contato leva ao formulário com o serviço pré-selecionado", () => {
+      expect(resolveCtaHref({ kind: "contact", serviceId: service.id }, seedSnapshot)).toEqual({
+        href: `/contato?servico=${slug}#formulario`,
+        external: false,
+        isTargetVisible: true,
+      });
+    });
+
+    it("mostra os cases relacionados", () => {
+      const related = cases.filter((item) => item.serviceIds.includes(service.id) && isPubliclyVisible(item));
+      expect(related.map((item) => item.slug)).toEqual(expected.cases);
+    });
+
+    it("não tem mídia quebrada", () => {
+      if (!service.image) return;
+      expect(service.image.alt.trim()).not.toBe("");
+      expect(existsSync(join(process.cwd(), "public", service.image.src))).toBe(true);
+    });
+
+    it(expected.provisional ? "segue provisório até a aprovação (CON-05)" : "está aprovado", () => {
+      expect(Boolean(service.provisional)).toBe(expected.provisional);
+    });
+  });
+}
+
 describe("itens de conteúdo do MVP", () => {
   checkArea("copywriting", {
     order: 4,
@@ -91,6 +147,12 @@ describe("itens de conteúdo do MVP", () => {
   checkArea("assessoria-de-imprensa", {
     order: 6,
     services: ["assessoria-de-imprensa"],
+    provisional: true,
+  });
+  checkService("producao-de-conteudo", {
+    areas: ["copywriting", "social-media", "criacao"],
+    cases: ["aventura-de-construir"],
+    featured: true,
     provisional: true,
   });
 });
