@@ -4,8 +4,8 @@
 | ------------ | ----------------------------------------------------------------------- |
 | Issue        | GO-09 (#199)                                                            |
 | Responsável  | Vinícius Nishimura Reis (`@Vinishireis`)                                |
-| Versão       | 1.0.0 — será revisada após a publicação (GO-06)                         |
-| Data         | 13/10/2026                                                              |
+| Versão       | 1.1.0 — revisada após a entrega do CMS; nova revisão após a publicação (GO-06) |
+| Data         | 13/10/2026 · revisão 27/10/2026                                         |
 | Depende de   | [ARC-12](../arquitetura/documentacao-tecnica.md), GO-06                 |
 | Público      | Quem assume a manutenção técnica no NúcleoTech                          |
 
@@ -41,27 +41,54 @@
 | Retenção de dados pessoais | Mensal | Rotina de DBX-05 com `planRetention` (TECH-08) |
 | Revisar logs de erro | Semanal | Vercel → Logs filtrando `level=error` (ADR-0004) |
 | Revisar contas ativas e papéis | Mensal | `profiles` + trilha `user.*` na auditoria |
-| Atualizar dependências | Mensal | `npm outdated`, `npm audit`, PR com `npm run verify` e `test:e2e` |
+| Atualizar dependências | Mensal | `npm outdated`, `npm audit`, PR com `npm run verify`, `test:e2e`, `test:supabase` e `test:e2e:cms` |
 | Atualizar Next.js | A cada minor | Ler `node_modules/next/dist/docs/` da nova versão (AGENTS.md) |
 | Rotacionar segredos | Semestral e ao desligar alguém com acesso | [ARC-05 §4](../ambientes/variaveis-de-ambiente.md) |
 | Testar restauração de backup | Trimestral | DB-10 |
 | Invalidar cache manualmente | Em incidente | `POST /api/internal/revalidate` (ADR-0006) |
 
+As rotinas com frequência fixa já são issues no Project 4, com a label `manutencao`: #302 a #309
+(MANUT-01 a MANUT-08). Cada execução é registrada num comentário da issue correspondente.
+
 ## 4. Tarefas de manutenção visíveis à equipe
 
-Criar no GitHub Project, com label `manutencao`, as recorrências da seção 3 (uma issue por
-rotina, com checklist e responsável) logo após a publicação. Pendências conhecidas no momento do
-handoff:
+As rotinas recorrentes da seção 3 estão nas issues #302 a #309 (label `manutencao`, uma por
+rotina, com checklist e responsável). Começam a valer com a publicação (GO-06).
 
-- Trocar a fonte do repositório público do seed para o Supabase (DB-03/04/05) e `publishedSlugExists`.
-- Atualizar `eslint-config-next` quando houver correção das vulnerabilidades de desenvolvimento (TECH-14 §3).
-- Ativar o ruleset da `main` (CONTRIBUTING §6) e "Require review from Code Owners".
-- Evoluções planejadas: histórico de versões (FUT-04), CRM (FUT-01), integrações (FUT-07).
+Pendências conhecidas em 27/10/2026:
 
-## 5. Checklist de handoff (concluir após GO-06)
+- Produção (GO-02) nas contas institucionais da Vercel e do Supabase, publicando no endereço
+  `*.vercel.app` até o domínio oficial (GO-03) existir.
+- Merge do #301 (exclusão de conta com eventos auditados), depois da revisão de quem responde pelo
+  banco.
+- Ativar o ruleset da `main` (CONTRIBUTING §6) e "Require review from Code Owners". Hoje a `main`
+  não tem proteção.
+- Evoluções planejadas, todas fora do MVP e à espera de aprovação: CRM
+  ([FUT-01](../roadmap/evolucao-crm.md)), histórico de versões
+  ([FUT-04](../roadmap/historico-de-versoes.md)), integrações
+  ([FUT-07](../roadmap/integracoes-externas.md)) e módulos internos
+  ([FUT-08](../roadmap/modulos-internos.md)).
+
+Resolvidas na entrega do CMS (27/10/2026): o site lê o conteúdo publicado no Supabase
+(DB-03/04/05, INT-02), e `publishedSlugExists` consulta a fonte ativa. Com o Next.js 16.4.3 (#300),
+`npm audit` não acusa mais vulnerabilidades, nem nas dependências de desenvolvimento.
+
+## 5. Reprodutibilidade (verificada em 27/10/2026)
+
+A partir de um checkout limpo da `main`, com o Node 22 do `.nvmrc`:
+
+| Passo | Resultado |
+| ----- | --------- |
+| `npm ci` e `npm run verify` (cabeçalhos, formatação, tipos, lint, testes e build) | 625 testes; build com 63 páginas |
+| `npx supabase start`, `npx supabase db reset` e `npx supabase test db` | 93 testes pgTAP (com o #301) |
+| `npm run test:supabase` (RLS, Storage e visibilidade pública) | 40/40 |
+| `npm run test:e2e` (jornadas do site com o conteúdo versionado) | 8/8 |
+| `npm run test:e2e:cms` (jornada do editor contra o Supabase local) | 2/2 |
+
+## 6. Checklist de handoff (concluir após GO-06)
 
 - [ ] Acessos de produção transferidos/confirmados (Vercel, Supabase, Resend, domínio) — nominais.
 - [ ] Segredos guardados no cofre institucional; ninguém com cópia pessoal.
 - [ ] Sessão de passagem de conhecimento (1 h) gravada ou com ata.
-- [ ] Issues de manutenção recorrente criadas no Project.
+- [x] Issues de manutenção recorrente criadas no Project (#302 a #309).
 - [ ] Este documento revisado com a versão publicada (`v1.0.0`) e datas reais.
