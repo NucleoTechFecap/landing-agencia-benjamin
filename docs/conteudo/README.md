@@ -22,3 +22,4 @@ painel exige para publicar.
 | Assessoria de Imprensa / PR | Serviço | SERV-10 | [servicos/assessoria-de-imprensa.md](servicos/assessoria-de-imprensa.md) | Provisório — aguardando texto aprovado |
 | Comunicação Interna | Serviço | SERV-11 | [servicos/comunicacao-interna.md](servicos/comunicacao-interna.md) | Provisório — aguardando texto aprovado |
 | Copywriting | Categoria de cases | CASE-08 | [categorias/copywriting.md](categorias/copywriting.md) | Aprovada (PRJ §12) — materiais dos cases pendentes |
+| Social Media & Criação | Categoria de cases | CASE-09 | [categorias/social-media-e-criacao.md](categorias/social-media-e-criacao.md) | Aprovada (PRJ §12) — materiais dos cases pendentes |

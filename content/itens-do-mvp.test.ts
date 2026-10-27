@@ -27,6 +27,7 @@
  26/10/2026 Vinícius Nishimura Reis  Item Assessoria de Imprensa / PR (SERV-10).
  26/10/2026 Vinícius Nishimura Reis  Item Comunicação Interna (SERV-11).
  26/10/2026 Vinícius Nishimura Reis  Item Copywriting (CASE-08).
+ 26/10/2026 Vinícius Nishimura Reis  Item Social Media & Criação (CASE-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -213,4 +214,5 @@ describe("itens de conteúdo do MVP", () => {
     provisional: true,
   });
   checkCategory("copywriting", { cases: ["aventura-de-construir"] });
+  checkCategory("social-media-e-criacao", { cases: ["meridiano"] });
 });
