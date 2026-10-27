@@ -50,5 +50,9 @@ categorias, CTAs, configurações) e o histórico não é critério de aceite da
 ## Consequências
 
 - ADM-17 concluída com decisão registrada; FUT-04 recebe a especificação acima como ponto de partida.
+- **27/10/2026:** a especificação da FUT-04 ([`historico-de-versoes.md`](../roadmap/historico-de-versoes.md))
+  revisa duas premissas acima com o CMS já construído: a versão é gravada a cada gravação, não só ao
+  publicar, porque editar um item publicado já o publica; e usar uma versão preenche o formulário
+  em vez de criar um rascunho separado, porque cada item é uma linha só.
 - A Benjamin deve ser informada no checkpoint (GOV-08): no MVP, recuperar conteúdo sobrescrito
   exige pedido ao NúcleoTech (restauração via backup).

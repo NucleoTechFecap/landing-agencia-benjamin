@@ -90,4 +90,5 @@
 | Documento | Issue |
 | --------- | ----- |
 | [Evolução do módulo de leads para CRM](roadmap/evolucao-crm.md) | FUT-01 |
+| [Histórico e restauração de versões do CMS](roadmap/historico-de-versoes.md) | FUT-04 |
 | [Planejamento de integrações externas](roadmap/integracoes-externas.md) | FUT-07 |
