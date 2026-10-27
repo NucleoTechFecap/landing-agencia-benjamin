@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,6 +38,7 @@ import type {
 } from "../content/supabase/rows";
 import { AppError } from "../errors";
 import type { CmsStore, EntityTable, Row } from "./store";
+import { toMediaAsset } from "./supabase-store";
 
 /** Valores padrão das colunas, como no banco (default da migration). */
 const DEFAULTS: Record<EntityTable, Row> = {
@@ -129,6 +131,10 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
         ...assembleCasesAndCategories(tables, media),
         ctas: tables.ctas.map(toCta),
       });
+    },
+
+    async listMedia() {
+      return tables.media_assets.map((row) => toMediaAsset(row, "https://projeto.supabase.co"));
     },
 
     async insert(table, values) {

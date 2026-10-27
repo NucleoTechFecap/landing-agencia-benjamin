@@ -18,18 +18,18 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 26/10/2026 Vinícius Nishimura Reis  Dependências do CMS compartilhadas entre testes (ADM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type { AuditInput } from "@/lib/server/audit";
-import { runContentCommand, saveContent, type CmsDeps } from "@/lib/server/cms/content-service";
+import { runContentCommand, saveContent } from "@/lib/server/cms/content-service";
 import { AREA } from "@/lib/server/cms/entities";
 import { createSupabaseCmsStore } from "@/lib/server/cms/supabase-store";
 import { fetchAreasAndServices } from "@/lib/server/content/supabase/queries";
 import {
   anonClient,
+  cmsDepsFor,
   createTestUser,
   deleteTestUsers,
   hasSupabaseTestEnv,
@@ -42,24 +42,7 @@ import {
 vi.spyOn(console, "log").mockImplementation(() => {});
 vi.spyOn(console, "warn").mockImplementation(() => {});
 
-/** Mesmas dependências da produção, mas com o cliente do usuário de teste (sem cookies). */
-function depsFor(client: SupabaseClient): CmsDeps {
-  return {
-    store: createSupabaseCmsStore(client, supabaseTestEnv.url!),
-    audit: async (input: AuditInput) => {
-      const { error } = await client.rpc("record_audit_event", {
-        p_event: input.event,
-        p_resource_type: "content",
-        p_resource_id: input.resourceId ?? null,
-        p_outcome: input.outcome ?? "success",
-        p_metadata: input.metadata ?? {},
-      });
-      if (error) throw new Error(error.message);
-    },
-    invalidate: () => {},
-    now: () => new Date(),
-  };
-}
+const depsFor = cmsDepsFor;
 
 describe.runIf(hasSupabaseTestEnv)("CMS de áreas no Supabase (ADM-07)", () => {
   const suffix = testSuffix();

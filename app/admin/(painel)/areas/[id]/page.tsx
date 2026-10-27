@@ -18,10 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 26/10/2026 Vinícius Nishimura Reis  Link para os serviços da área (ADM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AreaForm } from "@/components/admin/cms/area-form";
 import { CmsHeader } from "@/components/admin/cms/cms-header";
@@ -85,7 +87,12 @@ export default async function EditAreaPage({ params, searchParams }: PageProps<"
               <ul className="mt-2 space-y-2">
                 {services.map((service) => (
                   <li key={service.id} className="flex flex-wrap items-center justify-between gap-2">
-                    <span>{service.name}</span>
+                    <Link
+                      href={`/admin/servicos/${service.id}`}
+                      className="text-benja-verde underline-offset-4 hover:underline"
+                    >
+                      {service.name}
+                    </Link>
                     <StatusBadge status={service.status} />
                   </li>
                 ))}

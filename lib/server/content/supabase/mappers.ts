@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Áreas, serviços, vínculos e mídia do CMS (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
  26/10/2026 Vinícius Nishimura Reis  Montagem do snapshot compartilhada com o painel (ADM-07).
+ 26/10/2026 Vinícius Nishimura Reis  Id da mídia na referência, só para o painel (ADM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -74,6 +75,7 @@ export function toPublishable(row: PublishableRow): Publishable {
  */
 export function toMediaRef(row: MediaAssetRow, supabaseUrl: string): MediaRef {
   return {
+    id: row.id,
     src: row.path.startsWith("/") ? row.path : publicMediaUrl(supabaseUrl, row.path),
     alt: row.decorative ? "" : (row.alt_text ?? ""),
     width: row.width ?? undefined,

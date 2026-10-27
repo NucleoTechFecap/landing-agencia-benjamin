@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -53,6 +54,17 @@ export async function cmsDeps(): Promise<CmsDeps> {
 /** Snapshot do painel (todos os estados) para as páginas de listagem e edição. */
 export async function loadCmsSnapshot(): Promise<ContentSnapshot> {
   return (await cmsDeps()).store.snapshot();
+}
+
+/** Imagens da biblioteca de mídia para os campos de escolha (rótulo = texto alternativo). */
+export async function loadImageOptions(): Promise<{ id: string; label: string }[]> {
+  const media = await (await cmsDeps()).store.listMedia();
+  return media
+    .filter((asset) => asset.mimeType.startsWith("image/"))
+    .map((asset) => ({
+      id: asset.id,
+      label: asset.decorative ? `Decorativa — ${asset.src.split("/").pop()}` : asset.alt || asset.src.split("/").pop()!,
+    }));
 }
 
 /**

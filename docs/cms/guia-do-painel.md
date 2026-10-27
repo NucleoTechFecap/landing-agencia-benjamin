@@ -57,6 +57,25 @@ O vínculo entre área e serviço é feito no cadastro do serviço. Uma área **
 nem despublicada** se algum serviço publicado ficaria sem nenhuma área publicada — o painel lista
 quais são.
 
+## Serviços (`/admin/servicos`)
+
+| Campo | Obrigatório para | Observação |
+| ----- | ---------------- | ---------- |
+| Nome | salvar | Até 120 caracteres |
+| Endereço (slug) | salvar | Vira o link `/servicos/<slug>`; único entre os serviços |
+| Resumo | publicar | 10 a 200 caracteres; aparece no card |
+| Descrição | publicar | Mínimo de 20 caracteres; texto da página do serviço |
+| Exemplos de entregas | — | Um por linha, até 12 |
+| Áreas de atuação | publicar | Ao menos uma; áreas em rascunho não aparecem no site |
+| Ícone | — | Um dos 14 ícones oficiais |
+| Imagem | — | Escolhida na biblioteca de mídia; precisa de texto alternativo |
+| Destaque na Home | — | Até 6 serviços publicados em destaque (acima disso o painel avisa) |
+| Ordem | — | Menor aparece primeiro |
+
+A página pública do serviço já traz o botão de contato com o serviço pré-selecionado no
+formulário. Um serviço **não pode ser arquivado nem despublicado** se for o único serviço de algum
+case publicado — o painel lista quais cases.
+
 ## Mensagens comuns
 
 | Mensagem | O que fazer |

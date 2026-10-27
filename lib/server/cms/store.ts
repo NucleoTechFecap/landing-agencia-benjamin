@@ -18,11 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
-import type { ContentSnapshot } from "@/lib/domain/content/types";
+import type { ContentSnapshot, MediaRef } from "@/lib/domain/content/types";
 
 /** Tabelas de itens editáveis no painel. */
 export type EntityTable = "areas" | "services" | "case_categories" | "cases" | "ctas";
@@ -36,6 +37,13 @@ export interface SavedRow {
   id: string;
   /** Versão otimista: o próximo save precisa devolver este valor (TECH-04 §5). */
   updatedAt: string;
+}
+
+/** Arquivo da biblioteca de mídia, como o painel lista para escolha. */
+export interface MediaAsset extends MediaRef {
+  id: string;
+  mimeType: string;
+  decorative: boolean;
 }
 
 export interface LinkSync {
@@ -56,6 +64,8 @@ export interface LinkSync {
 export interface CmsStore {
   /** Conteúdo em qualquer estado: base das listagens do painel e das regras de integridade. */
   snapshot(): Promise<ContentSnapshot>;
+  /** Biblioteca de mídia inteira (imagens e PDFs), mais recentes primeiro. */
+  listMedia(): Promise<MediaAsset[]>;
   insert(table: EntityTable, values: Row): Promise<SavedRow>;
   /** Grava só se `updated_at` ainda for `expectedUpdatedAt` (concorrência otimista). */
   update(table: EntityTable, id: string, values: Row, expectedUpdatedAt: string): Promise<SavedRow>;
