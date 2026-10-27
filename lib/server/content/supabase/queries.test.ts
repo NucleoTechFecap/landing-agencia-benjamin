@@ -18,13 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { describe, expect, it, vi } from "vitest";
 import { siteSettings } from "@/content";
 import { fakeSupabase } from "@/tests/stubs/fake-supabase";
-import { fetchCtas, fetchPage, fetchSiteSettings } from "./queries";
+import { fetchAreasAndServices, fetchCtas, fetchPage, fetchSiteSettings, isSlugPublished } from "./queries";
 
 vi.spyOn(console, "log").mockImplementation(() => {});
 vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -103,5 +104,75 @@ describe("consultas públicas do CMS (DB-03)", () => {
       code: "SERVICE_UNAVAILABLE",
       message: expect.not.stringContaining("connection"),
     });
+  });
+});
+
+describe("áreas e serviços (DB-04)", () => {
+  const area = (id: string, status: string) => ({
+    ...control,
+    id,
+    status,
+    slug: id,
+    name: id,
+    summary: "s",
+    description: "d",
+    highlights: [],
+    icon: null,
+    sort_order: 1,
+  });
+  const service = (id: string, status: string, image: string | null = null) => ({
+    ...control,
+    id,
+    status,
+    slug: id,
+    name: id,
+    summary: "s",
+    description: "d",
+    examples: [],
+    icon: null,
+    image_media_id: image,
+    featured: false,
+    sort_order: 1,
+  });
+
+  it("monta serviços com áreas vinculadas e imagem; rascunhos ficam de fora", async () => {
+    const { client } = fakeSupabase({
+      areas: { data: [area("social-media", "published"), area("criacao-rascunho", "draft")] },
+      services: { data: [service("social", "published", "m1"), service("eventos", "draft")] },
+      service_areas: { data: [{ service_id: "social", area_id: "social-media" }] },
+      media_assets: {
+        data: [
+          {
+            id: "m1",
+            path: "/brand/x.webp",
+            mime_type: "image/webp",
+            width: 10,
+            height: 10,
+            alt_text: "X",
+            decorative: false,
+          },
+        ],
+      },
+    });
+    const { areas, services } = await fetchAreasAndServices(client, "https://x.supabase.co");
+    expect(areas.map((item) => item.id)).toEqual(["social-media"]);
+    expect(services).toHaveLength(1);
+    expect(services[0]).toMatchObject({ id: "social", areaIds: ["social-media"], image: { src: "/brand/x.webp" } });
+  });
+
+  it("não consulta a mídia quando nenhum serviço tem imagem", async () => {
+    const { client, calls } = fakeSupabase({ services: { data: [service("social", "published")] } });
+    await fetchAreasAndServices(client, "https://x.supabase.co");
+    expect(calls.map((call) => call.table)).not.toContain("media_assets");
+  });
+
+  it("slug publicado: consulta só publicados e libera a requisição se o banco falhar", async () => {
+    const { client } = fakeSupabase({
+      services: { data: [service("social", "published"), service("eventos", "draft")] },
+    });
+    expect(await isSlugPublished(client, "services", "social")).toBe(true);
+    expect(await isSlugPublished(client, "services", "eventos")).toBe(false);
+    const broken = fakeSupabase({ cases: { error: { message: "timeout" } } });
+    expect(await isSlugPublished(broken.client, "cases", "meridiano")).toBe(true);
   });
 });

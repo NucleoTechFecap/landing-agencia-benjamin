@@ -310,6 +310,7 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | `content-sql.test.ts`: enum × `PUBLICATION_STATUSES`, `is_valid_slug` × `validateSlug`, mídia × `MEDIA_RULES`, RLS em toda tabela | Passa no `npm test` |
 | `rows.test.ts` (DB-03): toda coluna que o site seleciona existe na migration | Passa no `npm test` |
 | `npm run test:supabase` (DB-03): leitura pública de configuração, páginas e CTAs com a RLS real — rascunho, página agendada e blocos de rascunho não vazam; visitante não grava | 6 testes, `PASS` |
+| `npm run test:supabase` (DB-04): serviços publicados com imagem e só vínculos com área publicada; área e serviço em rascunho fora; mídia usada só por rascunho invisível; checagem de slug do proxy | 4 testes, `PASS` |
 
 ## 9. Como aplicar, testar e reverter
 

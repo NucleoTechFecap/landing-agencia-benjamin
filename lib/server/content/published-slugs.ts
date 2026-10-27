@@ -19,14 +19,14 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  26/10/2026 Vinícius Nishimura Reis  Parâmetro estático para banco vazio (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Áreas e serviços do Supabase e checagem de slug do proxy (DB-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
-import { seedSnapshot } from "@/content";
 import { isValidSlug } from "@/lib/domain/content/slug";
-import { isPubliclyVisible } from "@/lib/domain/content/visibility";
+import { getContentSource, type DetailRoute } from "./sources";
 
-export type DetailRoute = "servicos" | "cases";
+export type { DetailRoute };
 
 /**
  * Slug impossível (falha em isValidSlug) usado quando não há nada publicado: com Cache
@@ -41,12 +41,10 @@ export function toStaticParams(slugs: readonly string[]): { slug: string }[] {
 
 /**
  * Verificação leve usada pelo proxy para responder 404 de verdade (RF-18) antes do
- * streaming começar — depois dele o status já foi enviado como 200.
- * Fonte atual: conteúdo versionado. Ao ligar o CMS (DB-04/DB-05), trocar por consulta
- * anônima ao Supabase (`select slug ... where status = 'published'`).
+ * streaming começar — depois dele o status já foi enviado como 200. Consulta a fonte ativa:
+ * content/ ou o Supabase (`select slug ... where status = 'published'`, com RLS) — DB-04.
  */
 export async function publishedSlugExists(route: DetailRoute, slug: string, now: Date = new Date()): Promise<boolean> {
   if (!isValidSlug(slug)) return false;
-  const items = route === "servicos" ? seedSnapshot.services : seedSnapshot.cases;
-  return items.some((item) => item.slug === slug && isPubliclyVisible(item, now));
+  return getContentSource().slugExists(route, slug, now);
 }

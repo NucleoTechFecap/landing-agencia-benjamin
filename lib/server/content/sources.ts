@@ -18,18 +18,23 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Áreas e serviços do Supabase e checagem de slug do proxy (DB-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import { seedSnapshot, siteSettings } from "@/content";
-import { isSupabaseConfigured } from "@/lib/config/public-env";
+import { isSupabaseConfigured, publicEnv } from "@/lib/config/public-env";
 import { getServerEnv } from "@/lib/config/server-env";
 import type { ContentSnapshot, Page, SiteSettings } from "@/lib/domain/content/types";
+import { isPubliclyVisible } from "@/lib/domain/content/visibility";
 import { createPublicClient } from "../supabase/server";
-import { fetchCtas, fetchPage, fetchSiteSettings } from "./supabase/queries";
+import { fetchAreasAndServices, fetchCtas, fetchPage, fetchSiteSettings, isSlugPublished } from "./supabase/queries";
 
 export type ContentSourceName = "local" | "supabase";
+
+/** Rotas de detalhe protegidas pelo proxy com 404 real. */
+export type DetailRoute = "servicos" | "cases";
 
 /** Operações de leitura que toda fonte de conteúdo oferece ao repositório público. */
 export interface ContentSource {
@@ -37,6 +42,8 @@ export interface ContentSource {
   snapshot(): Promise<ContentSnapshot>;
   settings(): Promise<SiteSettings>;
   page(slug: string): Promise<Page | null>;
+  /** Existe item publicado com este slug? (proxy — 404 real antes do streaming). */
+  slugExists(route: DetailRoute, slug: string, now?: Date): Promise<boolean>;
 }
 
 /** Conteúdo provisório versionado em content/ (desenvolvimento, testes e fallback). */
@@ -46,20 +53,29 @@ export const localSource: ContentSource = {
   settings: async () => siteSettings,
   // Páginas só existem no CMS: sem banco, as rotas exibem apenas as seções fixas.
   page: async () => null,
+  async slugExists(route, slug, now = new Date()) {
+    const items = route === "servicos" ? seedSnapshot.services : seedSnapshot.cases;
+    return items.some((item) => item.slug === slug && isPubliclyVisible(item, now));
+  },
 };
 
 /**
- * Tabelas do CMS lidas com a chave anônima. Nesta etapa (DB-03) o snapshot traz os CTAs;
- * áreas e serviços entram no DB-04 e categorias e cases no DB-05.
+ * Tabelas do CMS lidas com a chave anônima. O snapshot traz áreas, serviços (DB-04) e CTAs
+ * (DB-03); categorias e cases entram no DB-05.
  */
 export const supabaseSource: ContentSource = {
   name: "supabase",
   async snapshot() {
-    const ctas = await fetchCtas(createPublicClient());
-    return { areas: [], services: [], categories: [], cases: [], ctas };
+    const client = createPublicClient();
+    const [{ areas, services }, ctas] = await Promise.all([
+      fetchAreasAndServices(client, publicEnv.NEXT_PUBLIC_SUPABASE_URL!),
+      fetchCtas(client),
+    ]);
+    return { areas, services, categories: [], cases: [], ctas };
   },
   settings: () => fetchSiteSettings(createPublicClient(), siteSettings),
   page: (slug) => fetchPage(createPublicClient(), slug),
+  slugExists: (route, slug) => isSlugPublished(createPublicClient(), route === "servicos" ? "services" : "cases", slug),
 };
 
 /**

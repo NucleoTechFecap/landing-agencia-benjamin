@@ -18,13 +18,33 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Áreas, serviços, vínculos e mídia do CMS (DB-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { parseBlock, type PageBlock } from "@/lib/domain/content/blocks";
 import { parseSettingsSections } from "@/lib/domain/content/settings-schema";
-import type { Cta, CtaTarget, Page, Publishable, SiteSettings } from "@/lib/domain/content/types";
-import type { BlockRow, CtaRow, PageRow, PublishableRow, SiteSettingsRow } from "./rows";
+import type {
+  Area,
+  Cta,
+  CtaTarget,
+  MediaRef,
+  Page,
+  Publishable,
+  Service,
+  SiteSettings,
+} from "@/lib/domain/content/types";
+import { publicMediaUrl } from "@/lib/domain/media/policy";
+import type {
+  AreaRow,
+  BlockRow,
+  CtaRow,
+  MediaAssetRow,
+  PageRow,
+  PublishableRow,
+  ServiceRow,
+  SiteSettingsRow,
+} from "./rows";
 
 /** Funções puras (sem I/O): testadas sem banco em mappers.test.ts. */
 
@@ -35,6 +55,55 @@ export function toPublishable(row: PublishableRow): Publishable {
     archivedAt: row.archived_at,
     updatedAt: row.updated_at,
     provisional: row.provisional,
+  };
+}
+
+/**
+ * Mídia da biblioteca: arquivo versionado em /public (caminho começando com "/") ou objeto
+ * do bucket "media", que vira URL pública do Storage. Imagem decorativa tem alt vazio.
+ */
+export function toMediaRef(row: MediaAssetRow, supabaseUrl: string): MediaRef {
+  return {
+    src: row.path.startsWith("/") ? row.path : publicMediaUrl(supabaseUrl, row.path),
+    alt: row.decorative ? "" : (row.alt_text ?? ""),
+    width: row.width ?? undefined,
+    height: row.height ?? undefined,
+  };
+}
+
+/*
+ * summary/description são opcionais no banco para o rascunho poder ser salvo aos poucos; a
+ * constraint *_publish_fields garante que item publicado os tenha. Por isso o `?? ""` só
+ * entra em ação para o painel, nunca no que o visitante vê.
+ */
+export function toArea(row: AreaRow): Area {
+  return {
+    ...toPublishable(row),
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    summary: row.summary ?? "",
+    description: row.description ?? "",
+    highlights: row.highlights,
+    icon: row.icon ?? undefined,
+    order: row.sort_order,
+  };
+}
+
+export function toService(row: ServiceRow, areaIds: string[], image?: MediaRef): Service {
+  return {
+    ...toPublishable(row),
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    summary: row.summary ?? "",
+    description: row.description ?? "",
+    areaIds,
+    examples: row.examples,
+    icon: row.icon ?? undefined,
+    image,
+    featured: row.featured,
+    order: row.sort_order,
   };
 }
 

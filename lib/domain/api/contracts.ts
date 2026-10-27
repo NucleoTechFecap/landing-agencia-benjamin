@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-02).
  26/10/2026 Vinícius Nishimura Reis  DTOs de página e CTA (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Detalhe de área com serviços (DB-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -138,6 +139,10 @@ export interface AreaDTO {
   url: string;
 }
 
+export interface AreaDetailDTO extends AreaDTO {
+  services: { slug: string; name: string; summary: string; url: string }[];
+}
+
 export interface ServiceDTO {
   slug: string;
   name: string;
@@ -220,6 +225,18 @@ export function toAreaDTO(area: Area): AreaDTO {
     highlights: area.highlights,
     icon: area.icon,
     url: `/areas#${area.slug}`,
+  };
+}
+
+export function toAreaDetailDTO(detail: { area: Area; services: Service[] }): AreaDetailDTO {
+  return {
+    ...toAreaDTO(detail.area),
+    services: detail.services.map((service) => ({
+      slug: service.slug,
+      name: service.name,
+      summary: service.summary,
+      url: `/servicos/${service.slug}`,
+    })),
   };
 }
 

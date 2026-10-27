@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-02).
  26/10/2026 Vinícius Nishimura Reis  Testes dos DTOs de página e CTA (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -28,6 +29,7 @@ import {
   caseQuerySchema,
   ctaQuerySchema,
   paginate,
+  toAreaDetailDTO,
   toCaseCardDTO,
   toCtaDTO,
   toPageDTO,
@@ -114,5 +116,18 @@ describe("páginas e CTAs (DB-03)", () => {
     expect(ctaQuerySchema.safeParse({ placement: "home-hero" }).success).toBe(true);
     expect(ctaQuerySchema.safeParse({}).success).toBe(false);
     expect(ctaQuerySchema.safeParse({ placement: "rodape" }).success).toBe(false);
+  });
+});
+
+describe("detalhe de área (DB-04)", () => {
+  it("AreaDetailDTO lista serviços com link, sem ids internos", () => {
+    const criacao = area("area-uuid-1", { slug: "criacao", name: "Criação" });
+    const audiovisual = service("service-uuid-2", [criacao.id], { slug: "audiovisual", name: "Audiovisual" });
+    const dto = toAreaDetailDTO({ area: criacao, services: [audiovisual] });
+    expect(dto.url).toBe("/areas#criacao");
+    expect(dto.services).toEqual([
+      { slug: "audiovisual", name: "Audiovisual", summary: "s", url: "/servicos/audiovisual" },
+    ]);
+    expect(JSON.stringify(dto)).not.toMatch(/uuid/);
   });
 });

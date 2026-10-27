@@ -18,11 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { describe, expect, it } from "vitest";
-import { resolveContentSource } from "./sources";
+import { localSource, resolveContentSource } from "./sources";
 
 describe("resolveContentSource (DB-03)", () => {
   it("sem configuração usa o conteúdo versionado", () => {
@@ -37,5 +38,12 @@ describe("resolveContentSource (DB-03)", () => {
 
   it("pedir Supabase sem o projeto configurado é erro, não fallback silencioso", () => {
     expect(() => resolveContentSource("supabase", false)).toThrow(/NEXT_PUBLIC_SUPABASE_URL/);
+  });
+});
+
+describe("localSource.slugExists (DB-04)", () => {
+  it("reconhece serviço e case publicados no conteúdo versionado", async () => {
+    expect(await localSource.slugExists("servicos", "audiovisual")).toBe(true);
+    expect(await localSource.slugExists("cases", "audiovisual")).toBe(false);
   });
 });
