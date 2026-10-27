@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-05).
+ 26/10/2026 Vinícius Nishimura Reis  Ambiente no mock da configuração pública (INT-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -35,6 +36,7 @@ vi.mock("next/cache", () => ({ cacheTag: () => {}, cacheLife: () => {} }));
 vi.mock("@/lib/config/server-env", () => ({ getServerEnv: () => ({ CONTENT_SOURCE: "supabase" }) }));
 vi.mock("@/lib/config/public-env", () => ({
   isSupabaseConfigured: true,
+  siteEnvironment: "development",
   publicEnv: { NEXT_PUBLIC_SUPABASE_URL: "https://projeto.supabase.co" },
 }));
 vi.mock("../supabase/server", () => ({ createPublicClient: () => fakeSupabase(tables).client }));

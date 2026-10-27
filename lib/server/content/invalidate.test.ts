@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-09).
  26/10/2026 Vinícius Nishimura Reis  Tags e invalidação de páginas do CMS (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Aquecimento da página de detalhe após invalidar (INT-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,8 +27,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const { updateTag, revalidateTag } = vi.hoisted(() => ({ updateTag: vi.fn(), revalidateTag: vi.fn() }));
 vi.mock("next/cache", () => ({ updateTag, revalidateTag }));
+const { after } = vi.hoisted(() => ({ after: vi.fn() }));
+vi.mock("next/server", () => ({ after }));
 
-const { invalidateContentFromAction, invalidateContentFromRoute, tagsForChange } = await import("./invalidate");
+const { detailPathsForChange, invalidateContentFromAction, invalidateContentFromRoute, tagsForChange } =
+  await import("./invalidate");
 
 describe("tagsForChange", () => {
   it("case publicado invalida lista, detalhe e listas relacionadas", () => {
@@ -76,5 +80,23 @@ describe("invalidação", () => {
     invalidateContentFromRoute({ entity: "category" });
     expect(revalidateTag).toHaveBeenCalledWith("content:categories", { expire: 0 });
     expect(updateTag).not.toHaveBeenCalled();
+  });
+});
+
+describe("aquecimento das páginas de detalhe (INT-02)", () => {
+  it("serviço e case com slug aquecem a página de detalhe; demais entidades não", () => {
+    expect(detailPathsForChange({ entity: "service", slug: "audiovisual" })).toEqual(["/servicos/audiovisual"]);
+    expect(detailPathsForChange({ entity: "case", slug: "meridiano" })).toEqual(["/cases/meridiano"]);
+    expect(detailPathsForChange({ entity: "area", slug: "criacao" })).toEqual([]);
+    expect(detailPathsForChange({ entity: "service" })).toEqual([]);
+  });
+
+  it("a requisição de aquecimento roda depois da resposta (after)", () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    after.mockReset();
+    invalidateContentFromAction({ entity: "case", slug: "meridiano" });
+    expect(after).toHaveBeenCalledTimes(1);
+    invalidateContentFromAction({ entity: "settings" });
+    expect(after).toHaveBeenCalledTimes(1);
   });
 });

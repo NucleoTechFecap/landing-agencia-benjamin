@@ -21,6 +21,7 @@
  13/10/2026 Vinícius Nishimura Reis  Segredo do endpoint de invalidação de cache (TECH-09).
  13/10/2026 Vinícius Nishimura Reis  Segredo dos jobs agendados (GO-02).
  26/10/2026 Vinícius Nishimura Reis  Variável CONTENT_SOURCE (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  CMS como fonte padrão com Supabase; provisório recusado em hml/prd (INT-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -51,8 +52,8 @@ export const serverEnvSchema = z.object({
   CONTACT_NOTIFICATION_TO: emailList,
   FEEDBACK_NOTIFICATION_TO: emailList,
   LOG_LEVEL: z.preprocess(emptyToUndefined, z.enum(["debug", "info", "warn", "error"]).default("info")),
-  // De onde o site lê o conteúdo público: "local" (content/, provisório) ou "supabase"
-  // (tabelas do CMS, só itens publicados). Ausente = "local" (DB-03).
+  // Força a fonte do conteúdo público: "local" (content/, provisório) ou "supabase" (CMS,
+  // só publicados). Ausente = CMS se o Supabase estiver configurado (INT-02).
   CONTENT_SOURCE: z.preprocess(emptyToUndefined, z.enum(["local", "supabase"]).optional()),
   // Segredo do endpoint de invalidação de cache chamado por webhook/rotina (TECH-09).
   CONTENT_REVALIDATE_SECRET: z.preprocess(
