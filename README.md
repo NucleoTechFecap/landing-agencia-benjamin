@@ -85,9 +85,11 @@ plataforma é a vitrine da agência e também a ferramenta de trabalho da equipe
 | **Documentos de origem** | Ata NT-ATA-2026-003 e relatório de projeto NT-PRJ-2026-001 |
 
 > [!NOTE]
-> O site público funciona **sem banco configurado**. Nesse caso ele usa o conteúdo provisório
-> versionado em [`content/`](content/), marcado com o selo "Conteúdo provisório". O gate de
-> release (`npm run release:check`) impede a publicação enquanto existir conteúdo provisório.
+> Com o Supabase configurado, o site mostra o que foi **publicado no painel** (CMS) e cada
+> publicação aparece na hora, sem novo deploy. **Sem banco configurado** (desenvolvimento), ele usa
+> o conteúdo provisório versionado em [`content/`](content/), marcado com o selo "Conteúdo
+> provisório" — homologação e produção sempre leem o CMS. O gate de release
+> (`npm run release:check`) impede a publicação enquanto existir conteúdo provisório.
 
 ---
 
@@ -371,7 +373,7 @@ A matriz por ambiente (local, preview, homologação e produção) e as regras d
 │   ├── forms/                   # Campos e formulários de lead, contato e feedback
 │   ├── seo/                     # JSON-LD e card OG
 │   └── admin/                   # Formulários de autenticação do painel
-├── content/                     # Conteúdo provisório versionado (fallback até o CMS)
+├── content/                     # Conteúdo provisório versionado (desenvolvimento sem banco)
 ├── lib/
 │   ├── config/                  # Ambiente público/servidor validado e navegação
 │   ├── domain/                  # content · auth (RBAC) · forms · media · api · audit · seo
