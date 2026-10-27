@@ -378,6 +378,7 @@ A matriz por ambiente (local, preview, homologação e produção) e as regras d
 │   └── server/                  # content · forms · auth · supabase · logger · errors · http · og · llms
 ├── public/brand/                # Logos, símbolo, ícones (14 × 6 cores), stickers e capas
 ├── assets/fonts/                # Poppins (OFL) para as imagens OG
+├── assets/brand/                # Pacote oficial da marca: brandbook, .ai, .psd e exportações (fora do deploy)
 ├── supabase/migrations/         # Perfis, RBAC, auditoria e envios de formulário
 ├── scripts/                     # Cabeçalhos, seed RBAC e provisionamento do administrador
 ├── tests/                       # Integração (jornadas) e E2E (Playwright)
@@ -387,8 +388,9 @@ A matriz por ambiente (local, preview, homologação e produção) e as regras d
 ```
 
 As pastas [`components/`](components/README.md), [`lib/`](lib/README.md),
-[`content/`](content/README.md), [`scripts/`](scripts/README.md) e
-[`supabase/`](supabase/README.md) têm README próprio com as convenções locais.
+[`content/`](content/README.md), [`scripts/`](scripts/README.md),
+[`supabase/`](supabase/README.md) e [`assets/brand/`](assets/brand/README.md) têm README próprio
+com as convenções locais.
 
 ---
 

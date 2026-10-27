@@ -2,3 +2,18 @@
 # Sem isso, o Git no Windows (core.autocrlf=true) converte os arquivos para CRLF e o
 # format:check do Prettier falha no projeto inteiro (ARC-04). Alinhado ao .editorconfig.
 * text=auto eol=lf
+
+# Arquivos da marca e mídia são sempre binários: o Git nunca deve converter quebras de linha
+# nem tentar gerar diff de texto deles (pacote de identidade visual em assets/brand, CON-01).
+*.ai   binary
+*.psd  binary
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.ico  binary
+*.ttf  binary
+*.woff binary
+*.woff2 binary
