@@ -51,6 +51,8 @@ visibilidade é única (TECH-04, invariante I1).
 | -------- | --------------- | ----- |
 | `/api/v1/health` | `{ status: "ok", service, apiVersion }` | — |
 | `/api/v1/settings` | `SiteSettingsDTO` | — |
+| `/api/v1/pages/{slug}` | `PageDTO` (página publicada e blocos válidos) | 404 |
+| `/api/v1/ctas?placement=` | `CtaDTO[]` (link já resolvido, com fallback) | 400 |
 | `/api/v1/areas` | `AreaDTO[]` | — |
 | `/api/v1/services?featured=` | `ServiceDTO[]` | 400 |
 | `/api/v1/services/{slug}` | `ServiceDTO & { cases: CaseCardDTO[] }` | 404 |
@@ -69,6 +71,8 @@ CaseDetailDTO  CaseCardDTO & { challenge?, solution?, results?, gallery: MediaDT
                  team[], services: {slug,name,url}[], areas: {slug,name}[], publishedAt }
 MediaDTO       { src, alt, width?, height? }
 SiteSettingsDTO { name, tagline, description, contact: {email?, phone?, address?, mapsUrl?}, socials: {instagram?, tiktok?, linkedin?} }
+PageDTO        { slug, title, description?, path: string|null (rota fixa — PAGE_ROUTES), blocks: { type, content }[] }
+CtaDTO         { label, href, external }   // placement: home-hero | home-highlight | footer | service-detail | case-detail
 ```
 
 Exemplo (`GET /api/v1/cases?category=assessoria-de-imprensa`):

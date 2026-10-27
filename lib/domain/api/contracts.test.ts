@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,12 +18,21 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-02).
+ 26/10/2026 Vinícius Nishimura Reis  Testes dos DTOs de página e CTA (DB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { describe, expect, it } from "vitest";
 import { area, caseStudy, service } from "../content/__fixtures__/snapshot";
-import { caseQuerySchema, paginate, toCaseCardDTO, toServiceDTO } from "./contracts";
+import {
+  caseQuerySchema,
+  ctaQuerySchema,
+  paginate,
+  toCaseCardDTO,
+  toCtaDTO,
+  toPageDTO,
+  toServiceDTO,
+} from "./contracts";
 
 describe("paginação", () => {
   it("calcula meta e fatia os itens", () => {
@@ -68,5 +77,42 @@ describe("DTOs públicos", () => {
     });
     expect(dto.category).toEqual({ slug: "assessoria", name: "Assessoria" });
     expect(dto.url).toBe("/cases/fecap");
+  });
+});
+
+describe("páginas e CTAs (DB-03)", () => {
+  const page = {
+    id: "p1",
+    slug: "sobre",
+    title: "Sobre",
+    status: "published" as const,
+    publishedAt: "2026-10-20T00:00:00.000Z",
+    updatedAt: "2026-10-20T00:00:00.000Z",
+    blocks: [{ id: "b1", type: "rich-text" as const, content: { paragraphs: ["Olá."] }, order: 1 }],
+  };
+
+  it("PageDTO traz a rota da página e os blocos sem id nem ordem", () => {
+    expect(toPageDTO(page)).toEqual({
+      slug: "sobre",
+      title: "Sobre",
+      description: undefined,
+      path: "/sobre",
+      blocks: [{ type: "rich-text", content: { paragraphs: ["Olá."] } }],
+    });
+    expect(toPageDTO({ ...page, slug: "campanha-2026" }).path).toBeNull();
+  });
+
+  it("CtaDTO expõe só rótulo e link resolvido", () => {
+    expect(toCtaDTO({ label: "Ver cases", link: { href: "/cases", external: false } })).toEqual({
+      label: "Ver cases",
+      href: "/cases",
+      external: false,
+    });
+  });
+
+  it("placement de CTA é obrigatório e fechado", () => {
+    expect(ctaQuerySchema.safeParse({ placement: "home-hero" }).success).toBe(true);
+    expect(ctaQuerySchema.safeParse({}).success).toBe(false);
+    expect(ctaQuerySchema.safeParse({ placement: "rodape" }).success).toBe(false);
   });
 });

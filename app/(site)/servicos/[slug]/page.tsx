@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  25/10/2026 Caio Moraes              Permite navegação bloqueante (instant = false) (LAY-01).
+ 26/10/2026 Vinícius Nishimura Reis  Parâmetro estático para banco vazio (DB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,12 +38,13 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { siteUrl } from "@/lib/config/public-env";
 import { serviceSchema } from "@/lib/domain/seo/structured-data";
 import { getServiceDetail, getSiteSettings, listPublishedSlugs, listServices } from "@/lib/server/content/repository";
+import { toStaticParams } from "@/lib/server/content/published-slugs";
 import { buildMetadata } from "@/lib/server/seo";
 
 /** Prerenderiza os serviços publicados; novos slugs entram por ISR com App Shell. */
 export async function generateStaticParams() {
   const { services } = await listPublishedSlugs();
-  return services.map((slug) => ({ slug }));
+  return toStaticParams(services);
 }
 
 /** Pode bloquear na navegação: os slugs publicados já são pré-gerados e o proxy.ts responde 404 aos inexistentes (LAY-01). */

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,12 +18,23 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-02).
+ 26/10/2026 Vinícius Nishimura Reis  DTOs de página e CTA (DB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { z } from "zod";
+import { pagePath, type PageBlock } from "../content/blocks";
 import { SLUG_PATTERN } from "../content/slug";
-import type { Area, CaseCategory, CaseStudy, MediaRef, Service, SiteSettings } from "../content/types";
+import type {
+  Area,
+  CaseCategory,
+  CaseStudy,
+  CtaPlacement,
+  MediaRef,
+  Page,
+  Service,
+  SiteSettings,
+} from "../content/types";
 
 /** Versão do contrato público. Mudança incompatível = nova versão (/api/v2) — TECH-11. */
 export const API_VERSION = "v1";
@@ -51,6 +62,18 @@ export const caseQuerySchema = paginationSchema.extend({
 
 export const serviceQuerySchema = z.object({
   featured: z.enum(["true", "false"]).optional(),
+});
+
+export const CTA_PLACEMENTS = [
+  "home-hero",
+  "home-highlight",
+  "footer",
+  "service-detail",
+  "case-detail",
+] as const satisfies readonly CtaPlacement[];
+
+export const ctaQuerySchema = z.object({
+  placement: z.enum(CTA_PLACEMENTS, { error: "placement desconhecido." }),
 });
 
 export type CaseQuery = z.infer<typeof caseQuerySchema>;
@@ -159,6 +182,24 @@ export interface CaseDetailDTO extends CaseCardDTO {
   publishedAt: string | null;
 }
 
+/** Bloco de página: o mesmo conteúdo validado pelo catálogo (lib/domain/content/blocks.ts). */
+export type PageBlockDTO = Omit<PageBlock, "id" | "order">;
+
+export interface PageDTO {
+  slug: string;
+  title: string;
+  description?: string;
+  /** Rota pública em que os blocos aparecem; `null` quando a página ainda não tem rota. */
+  path: string | null;
+  blocks: PageBlockDTO[];
+}
+
+export interface CtaDTO {
+  label: string;
+  href: string;
+  external: boolean;
+}
+
 export interface SiteSettingsDTO {
   name: string;
   tagline: string;
@@ -239,6 +280,20 @@ export function toCaseDetailDTO(detail: {
     areas: detail.areas.map((area) => ({ slug: area.slug, name: area.name })),
     publishedAt: item.publishedAt,
   };
+}
+
+export function toPageDTO(page: Page): PageDTO {
+  return {
+    slug: page.slug,
+    title: page.title,
+    description: page.description,
+    path: pagePath(page.slug),
+    blocks: page.blocks.map(({ type, content }) => ({ type, content }) as PageBlockDTO),
+  };
+}
+
+export function toCtaDTO(cta: { label: string; link: { href: string; external: boolean } }): CtaDTO {
+  return { label: cta.label, href: cta.link.href, external: cta.link.external };
 }
 
 export function toSiteSettingsDTO(settings: SiteSettings): SiteSettingsDTO {

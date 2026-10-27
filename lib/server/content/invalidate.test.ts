@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-09).
+ 26/10/2026 Vinícius Nishimura Reis  Tags e invalidação de páginas do CMS (DB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -43,6 +44,12 @@ describe("tagsForChange", () => {
 
   it("área afeta serviços (que exibem áreas) e CTAs (fallback)", () => {
     expect(tagsForChange({ entity: "area" })).toEqual(["content:areas", "content:services", "content:ctas"]);
+  });
+
+  it("página invalida a lista de páginas e o slug atual e anterior", () => {
+    expect(tagsForChange({ entity: "page", slug: "sobre-nos", previousSlug: "sobre" }).sort()).toEqual(
+      ["content:page:sobre", "content:page:sobre-nos", "content:pages"].sort(),
+    );
   });
 
   it("configurações institucionais invalidam só settings", () => {

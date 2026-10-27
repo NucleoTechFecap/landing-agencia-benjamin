@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-05).
  13/10/2026 Vinícius Nishimura Reis  Segredo do endpoint de invalidação de cache (TECH-09).
  13/10/2026 Vinícius Nishimura Reis  Segredo dos jobs agendados (GO-02).
+ 26/10/2026 Vinícius Nishimura Reis  Variável CONTENT_SOURCE (DB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -50,6 +51,9 @@ export const serverEnvSchema = z.object({
   CONTACT_NOTIFICATION_TO: emailList,
   FEEDBACK_NOTIFICATION_TO: emailList,
   LOG_LEVEL: z.preprocess(emptyToUndefined, z.enum(["debug", "info", "warn", "error"]).default("info")),
+  // De onde o site lê o conteúdo público: "local" (content/, provisório) ou "supabase"
+  // (tabelas do CMS, só itens publicados). Ausente = "local" (DB-03).
+  CONTENT_SOURCE: z.preprocess(emptyToUndefined, z.enum(["local", "supabase"]).optional()),
   // Segredo do endpoint de invalidação de cache chamado por webhook/rotina (TECH-09).
   CONTENT_REVALIDATE_SECRET: z.preprocess(
     emptyToUndefined,

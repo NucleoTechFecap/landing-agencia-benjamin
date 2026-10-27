@@ -17,4 +17,8 @@ Regras: toda tabela nova habilita RLS na mesma migration; nada de `drop` sem pla
 | `rollbacks/` | `<migration>.down.sql`: reversão manual, em ordem inversa e após backup; depois `supabase migration repair --status reverted <versão>` |
 | `tests/` | Testes pgTAP (`npx supabase db reset && npx supabase test db`) |
 
+Integração do código com a RLS real: `npm run test:supabase` roda `tests/integration/supabase`
+com as chaves do stack local (`npx supabase status`). Sem o stack no ar, esses testes são pulados
+no `npm test`.
+
 Modelo, convenções e procedimento completo: [dicionário de dados](../docs/banco/dicionario-de-dados.md) §9.

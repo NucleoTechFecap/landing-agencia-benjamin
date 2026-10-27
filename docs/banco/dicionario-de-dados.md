@@ -243,6 +243,23 @@ código.
 | `blocks` | `sort_order` | `integer` | Não | ≥ 0 |
 | `blocks` | `created_at`, `updated_at`, `updated_by` | — | — | Controle |
 
+**Catálogo de blocos (DB-03).** `type` aceito pelo site e formato de `content`, validados em
+[`lib/domain/content/blocks.ts`](../../lib/domain/content/blocks.ts). Só texto puro e listas: o
+site nunca renderiza HTML vindo do banco. Bloco de tipo desconhecido ou com conteúdo inválido é
+descartado na leitura (o restante da página continua no ar) e registrado em log.
+
+| `type` | `content` |
+| ------ | --------- |
+| `rich-text` | `{ title?, paragraphs: string[1..12] }` |
+| `list` | `{ title?, items: { title, text? }[1..12] }` |
+| `team` | `{ title?, members: { name, role?, photo?: { src, alt } }[1..40] }` — foto exige autorização de imagem |
+| `cta` | `{ title, text?, label, href }` — `href` é rota pública conhecida (R10) ou `https` |
+
+**Páginas × rotas fixas.** No MVP as rotas do site são fixas. Uma página cujo slug coincide com uma
+rota pública (`sobre`, `areas`, `servicos`, `cases`, `contato`, `privacidade` — `PAGE_ROUTES`)
+acrescenta seus blocos depois das seções fixas daquela rota (renderização: INT-03). Páginas com
+outro slug ficam salvas, mas sem rota pública até uma decisão de produto sobre páginas livres.
+
 ### `site_settings` — configuração institucional (ADM-10)
 
 Linha única (`id boolean primary key default true check (id)`).
@@ -275,8 +292,8 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 
 ## 7. Pendências para decisão
 
-- [ ] **Catálogo de tipos de bloco** e como `pages` se relaciona com as rotas fixas (`/sobre` etc.).
-  Define o schema Zod de `blocks.content` (DB-03).
+- [x] **Catálogo de tipos de bloco** e relação de `pages` com as rotas fixas — definido no DB-03
+  (§5, `pages` e `blocks`).
 - [ ] **Depoimentos públicos:** fora do MVP até a Benjamin decidir (exige consentimento).
 - [ ] **Redirecionamento de slug** alterado após publicar: tabela própria em DB-08.
 - [ ] **Índices de listagem e filtros** do portfólio: DBX-03 (esta migration só indexa as FKs).
@@ -291,6 +308,8 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | `npx supabase test db`: 84 testes pgTAP. Cobrem dados inválidos (slug, estados, campos de publicação, links, CTA, mídia), integridade referencial (restrict/cascade/set null) e RLS por papel (`anon`, `pending`, `viewer`, `editor`, `admin`) | `Files=1, Tests=84, Result: PASS` |
 | Reversão: o `.down.sql` é bloqueado se houver conteúdo; confirmado, deixa só as 4 tabelas de 13/10; `migration repair` + `migration up` reaplicam; testes passam de novo | Ciclo completo sem erro |
 | `content-sql.test.ts`: enum × `PUBLICATION_STATUSES`, `is_valid_slug` × `validateSlug`, mídia × `MEDIA_RULES`, RLS em toda tabela | Passa no `npm test` |
+| `rows.test.ts` (DB-03): toda coluna que o site seleciona existe na migration | Passa no `npm test` |
+| `npm run test:supabase` (DB-03): leitura pública de configuração, páginas e CTAs com a RLS real — rascunho, página agendada e blocos de rascunho não vazam; visitante não grava | 6 testes, `PASS` |
 
 ## 9. Como aplicar, testar e reverter
 
@@ -299,6 +318,7 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 npx supabase start
 npx supabase db reset
 npx supabase test db          # testes pgTAP de supabase/tests/
+npm run test:supabase         # integração do código com a RLS real (tests/integration/supabase)
 
 # Ambiente remoto (dev/hml/prd): só migrations, nunca o seed
 npx supabase link --project-ref <ref>

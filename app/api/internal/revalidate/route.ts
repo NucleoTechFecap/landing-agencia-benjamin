@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-09).
  13/10/2026 Vinícius Nishimura Reis  Autenticação compartilhada das rotas internas (GO-02).
+ 26/10/2026 Vinícius Nishimura Reis  Tags e invalidação de páginas do CMS (DB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -32,7 +33,7 @@ import { hasBearerSecret } from "@/lib/server/internal-auth";
 
 const slug = z.string().regex(SLUG_PATTERN).max(80).optional();
 const bodySchema = z.object({
-  entity: z.enum(["settings", "area", "service", "category", "case", "cta"]),
+  entity: z.enum(["settings", "area", "service", "category", "case", "cta", "page"]),
   slug,
   previousSlug: slug,
 });
