@@ -20,7 +20,7 @@
 | `robots.txt` | `app/robots.ts` | Produção: permite tudo exceto `/admin` e `/api/internal`; demais ambientes: `Disallow: /` |
 | `llms.txt` e `llms-full.txt` | `app/llms.txt`, `app/llms-full.txt`, `lib/server/llms.ts` | Padrão llmstxt.org: resumo e conteúdo completo publicado para assistentes de IA |
 | Manifest web | `app/manifest.ts` | Nome, cores da marca, ícones |
-| Ícones | `app/icon.png`, `app/apple-icon.png`, `app/favicon.ico` | Símbolo do logotipo |
+| Ícones | `app/icon.png`, `app/apple-icon.png`, `app/favicon.ico` | Símbolo do logotipo, gerado do vetor oficial (`public/brand/logos/simbolo.svg`) |
 | `X-Robots-Tag` | `next.config.ts` | `noindex, nofollow` fora de produção e sempre em `/admin` |
 | 404 real | `proxy.ts` | Slug inexistente/arquivado responde HTTP 404 (evita *soft 404*) |
 | HTML semântico | Páginas | Um `h1` por página, `lang="pt-BR"`, `alt` em imagens informativas, breadcrumbs |

@@ -26,7 +26,7 @@ pesados (exports do Illustrator/Photoshop), e o site precisa continuar rápido e
 | Exclusão | Somente `media:delete` (`admin`, `super_admin`); bloqueada se o arquivo estiver em uso |
 | Conteúdo proibido | Documentos com dados pessoais, contratos, planilhas de leads — o bucket é público |
 | Vídeo | Não armazenado: entra como link externo (YouTube, Vimeo, Instagram, TikTok) |
-| Assets da marca | Logos, ícones e stickers oficiais ficam versionados em `public/brand` (não no bucket) |
+| Assets da marca | Logos (SVG), ícones e stickers oficiais ficam versionados em `public/brand` (não no bucket); o pacote original da agência fica em `assets/brand`, fora do deploy |
 
 ### Formatos e limites
 

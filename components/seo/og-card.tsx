@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
+ 26/10/2026 Vinícius Nishimura Reis  Proporção do logotipo gerado do vetor oficial (UX-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -76,7 +77,7 @@ export function OgCard({
             {eyebrow}
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse não usa next/image */}
-          <img src={logoSrc} alt="" width={210} height={134} />
+          <img src={logoSrc} alt="" width={210} height={137} />
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: title.length > 48 ? 64 : 80, fontWeight: 900, lineHeight: 1.02, letterSpacing: -2 }}>

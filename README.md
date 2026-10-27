@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="public/brand/logo-horizontal.png" alt="Agência Benjamin" width="340" />
+<img src="public/brand/logos/logo-horizontal.svg" alt="Agência Benjamin" width="340" />
 
 # Plataforma Institucional — Agência Benjamin
 
@@ -376,7 +376,7 @@ A matriz por ambiente (local, preview, homologação e produção) e as regras d
 │   ├── config/                  # Ambiente público/servidor validado e navegação
 │   ├── domain/                  # content · auth (RBAC) · forms · media · api · audit · seo
 │   └── server/                  # content · forms · auth · supabase · logger · errors · http · og · llms
-├── public/brand/                # Logos, símbolo, ícones (14 × 6 cores), stickers e capas
+├── public/brand/                # Logos em SVG (e PNG para OG/JSON-LD), ícones (14 × 6 cores), stickers e capas
 ├── assets/fonts/                # Poppins (OFL) para as imagens OG
 ├── assets/brand/                # Pacote oficial da marca: brandbook, .ai, .psd e exportações (fora do deploy)
 ├── supabase/migrations/         # Perfis, RBAC, auditoria e envios de formulário
@@ -678,7 +678,7 @@ visual pertencem à **Agência Benjamin / FECAP** e são de uso restrito ao proj
 
 <br />
 
-<img src="public/brand/simbolo.png" alt="Símbolo da Agência Benjamin" width="72" />
+<img src="public/brand/logos/simbolo.svg" alt="Símbolo da Agência Benjamin" width="72" />
 
 **Agência Benjamin · FECAP** — *somando diferenças*
 

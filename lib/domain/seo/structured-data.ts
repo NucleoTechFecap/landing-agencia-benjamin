@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
+ 26/10/2026 Vinícius Nishimura Reis  Logotipos em /brand/logos (UX-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -35,8 +36,8 @@ export function organizationSchema(settings: SiteSettings, siteUrl: string) {
     slogan: settings.tagline,
     description: settings.description,
     url: siteUrl,
-    logo: `${siteUrl}/brand/logo-horizontal.png`,
-    image: `${siteUrl}/brand/logo-vertical.png`,
+    logo: `${siteUrl}/brand/logos/logo-horizontal.png`,
+    image: `${siteUrl}/brand/logos/logo-vertical.png`,
     sameAs: Object.values(settings.socials).filter(Boolean),
     ...(settings.contact.email ? { email: settings.contact.email } : {}),
     address: {

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
+ 26/10/2026 Vinícius Nishimura Reis  Logotipo horizontal em SVG (UX-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,10 +31,10 @@ export function AuthCard({ title, subtitle, children }: { title: string; subtitl
     <main className="flex min-h-dvh items-center justify-center px-4 py-12">
       <div className="w-full max-w-md rounded-3xl border-2 border-[#004a1b] bg-[#f1fcd0] p-8 shadow-[8px_8px_0_#004a1b]">
         <Image
-          src="/brand/logo-horizontal.webp"
+          src="/brand/logos/logo-horizontal.svg"
           alt="Agência Benjamin"
           width={180}
-          height={115}
+          height={117}
           className="mx-auto mb-6 h-auto w-44"
           priority
         />

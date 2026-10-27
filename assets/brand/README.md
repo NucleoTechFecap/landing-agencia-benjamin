@@ -121,10 +121,44 @@ O site não usa estes arquivos diretamente. As versões otimizadas ficam em `pub
 
 | Pasta | Conteúdo |
 | ----- | -------- |
+| `public/brand/logos/` | `logo-horizontal`, `logo-vertical` e `simbolo` em **SVG** (usados no site) e em PNG (imagens Open Graph, JSON-LD e README) |
+| `public/brand/logos/comemorativo/` | `logo-vertical-<cor>.svg` e `simbolo-<cor>.svg` nas cores `rosa`, `azul`, `amarelo` e `arco-iris` |
 | `public/brand/icons/` | 14 ícones × 6 cores em WebP 160 px (`BrandIcon`) |
 | `public/brand/stickers/` | 8 stickers × 5 cores em WebP (`Sticker`) |
-| `public/brand/` | Logos horizontal e vertical (PNG/WebP) e símbolo (PNG) |
+
+Os ícones do app (`app/icon.png`, `app/apple-icon.png` e `app/favicon.ico`) também saem do
+`simbolo.svg`.
 
 Para usar um ícone ou sticker que ainda não está no site (por exemplo `exclamacao`,
 `interrogacao`, `pp-galo-v1` ou `estrela-8-pontas`), gere o WebP a partir do PNG daqui com
 o mesmo padrão de nome e tamanho dos que já existem em `public/brand/`.
+
+### Como os logotipos foram gerados
+
+Os SVGs vêm dos PDFs vetoriais de `logos/pdf/` (símbolo, horizontal e vertical) e da
+prancheta `logo-agencia-benjamin-comemorativo.ai`, separada em oito arquivos. São só
+caminhos vetoriais, sem texto, script ou referência externa — a versão `arco-iris` embute as
+faixas do arco-íris como imagem, porque é assim que estão no arquivo original. O upload de
+SVG continua recusado no painel ([ADR-0005](../../docs/adr/0005-armazenamento-de-midia.md)):
+estes arquivos são gerados pela equipe e versionados, não enviados por usuários.
+
+Para refazer depois de uma atualização do pacote (requer Inkscape, ImageMagick e o módulo
+Python `scour`):
+
+```bash
+# PDF vetorial → SVG otimizado (repita para simbolo, logo-horizontal e logo-vertical)
+inkscape --pdf-poppler assets/brand/logos/pdf/simbolo.pdf \
+  --export-type=svg --export-plain-svg --export-filename=/tmp/simbolo.svg
+python3 -m scour.scour -i /tmp/simbolo.svg -o public/brand/logos/simbolo.svg \
+  --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids \
+  --remove-metadata --strip-xml-prolog --set-precision=5 --create-groups --no-line-breaks
+
+# SVG → PNG (600 px de largura para o horizontal, 480 px para o vertical)
+inkscape public/brand/logos/logo-horizontal.svg --export-type=png --export-width=2048 \
+  --export-filename=/tmp/logo-horizontal.png
+magick /tmp/logo-horizontal.png -filter Lanczos -resize 600x -strip \
+  public/brand/logos/logo-horizontal.png
+```
+
+Depois de gerar, confira o resultado renderizado contra o PDF de origem e ajuste os
+`width`/`height` dos componentes se a proporção do logotipo mudar.
