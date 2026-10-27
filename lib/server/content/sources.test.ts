@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
+ 26/10/2026 Vinícius Nishimura Reis  CMS como fonte padrão com Supabase; provisório recusado em hml/prd (INT-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,9 +27,16 @@ import { describe, expect, it } from "vitest";
 import { localSource, resolveContentSource } from "./sources";
 
 describe("resolveContentSource (DB-03)", () => {
-  it("sem configuração usa o conteúdo versionado", () => {
+  it("sem escolha explícita: CMS quando o Supabase está configurado, senão o versionado (INT-02)", () => {
     expect(resolveContentSource(undefined, false)).toBe("local");
-    expect(resolveContentSource(undefined, true)).toBe("local");
+    expect(resolveContentSource(undefined, true)).toBe("supabase");
+  });
+
+  it("homologação e produção nunca usam o conteúdo provisório (INT-02)", () => {
+    expect(resolveContentSource(undefined, true, "production")).toBe("supabase");
+    expect(() => resolveContentSource(undefined, false, "production")).toThrow(/vem do CMS/);
+    expect(() => resolveContentSource("local", true, "homologation")).toThrow(/vem do CMS/);
+    expect(resolveContentSource("local", true, "preview")).toBe("local");
   });
 
   it("respeita a escolha explícita", () => {

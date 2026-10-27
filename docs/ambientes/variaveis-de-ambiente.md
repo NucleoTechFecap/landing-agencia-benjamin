@@ -38,7 +38,7 @@ Legenda: **O** obrigatória · **R** recomendada · **—** não usar · *públi
 | `LEAD_NOTIFICATION_TO` | servidor | — | — | O (equipe) | O (CON-10) | Destinatários de pedidos comerciais |
 | `CONTACT_NOTIFICATION_TO` | servidor | — | — | R | R | Destinatários de contato geral (fallback: `LEAD_NOTIFICATION_TO`) |
 | `FEEDBACK_NOTIFICATION_TO` | servidor | — | — | R | R | Destinatários de feedback (fallback: `LEAD_NOTIFICATION_TO`) |
-| `CONTENT_SOURCE` | servidor | `local` | `supabase` | `supabase` | `supabase` | Fonte do conteúdo público: `local` (content/, provisório) ou `supabase` (tabelas do CMS, só publicados). Ausente = `local`; `supabase` exige as variáveis do Supabase (DB-03) |
+| `CONTENT_SOURCE` | servidor | — | — | — | — | Força a fonte do conteúdo público: `local` (content/, provisório) ou `supabase` (CMS, só publicados). Ausente = CMS quando o Supabase está configurado, senão `local` (INT-02). Em homologação e produção `local` é recusado |
 | `CONTENT_REVALIDATE_SECRET` | servidor | — | — | R | R | Bearer do `POST /api/internal/revalidate` (TECH-09); ≥ 32 caracteres |
 | `CRON_SECRET` | servidor | — | — | R | O | Bearer dos jobs internos (`/api/internal/jobs/*`) chamados pelo Vercel Cron |
 | `LOG_LEVEL` | servidor | `debug` | `info` | `info` | `info` | Nível mínimo dos logs (ARC-09) |

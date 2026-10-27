@@ -69,6 +69,15 @@ sequenceDiagram
 `tagsForChange()` define quais tags cada alteração afeta, inclusive **listas relacionadas**
 (case altera serviços e CTAs) e **slug antigo** quando o slug muda.
 
+**Comportamento medido no INT-02 (Next 16.4, `next start` + Supabase local).** Listas, Home e API
+refletem a alteração já na primeira requisição. Nas páginas de detalhe (`/servicos/[slug]`,
+`/cases/[slug]`, pré-render parcial) a **primeira** requisição após a invalidação ainda era
+montada a partir do pré-render anterior; a segunda (~300 ms depois) já vinha nova. Para quem
+publica ver a versão nova ao abrir o site, `invalidateContentFrom*()` faz essa primeira requisição
+do lado do servidor, depois da resposta (`after()` → `detailPathsForChange()`). Com isso, a
+primeira visita depois de salvar já veio atualizada nas duas rodadas medidas. O fetch do
+supabase-js usa `cache: "no-store"` (DB-05): o único cache é o `use cache` com tags.
+
 ### 4. Latência-alvo
 
 | Situação | Meta |

@@ -77,7 +77,7 @@ flowchart LR
 | ----- | ---------------- | ------ |
 | `app/` | Rotas, páginas, Server Actions, Route Handlers, metadados | Pode usar todas as camadas |
 | `components/` | UI (ui, layout, sections, cards, forms, seo, admin) | Sem acesso a `lib/server` (ESLint) |
-| `content/` | Conteúdo provisório versionado (fallback até o CMS) | Itens `provisional` bloqueiam o go-live |
+| `content/` | Conteúdo provisório versionado (desenvolvimento sem banco; com Supabase o site lê o CMS — INT-02) | Itens `provisional` bloqueiam o go-live |
 | `lib/config/` | Variáveis validadas (`public-env`, `server-env`), navegação | — |
 | `lib/domain/` | Regras puras: conteúdo, publicação, integridade, RBAC, formulários, mídia, auditoria, SEO | Sem framework/I/O (ESLint) |
 | `lib/server/` | Repositórios, Supabase, auth, logs, erros, auditoria, cache, HTTP | `import "server-only"` |

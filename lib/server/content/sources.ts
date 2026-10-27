@@ -20,12 +20,13 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Áreas e serviços do Supabase e checagem de slug do proxy (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
+ 26/10/2026 Vinícius Nishimura Reis  CMS como fonte padrão com Supabase; provisório recusado em hml/prd (INT-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import { seedSnapshot, siteSettings } from "@/content";
-import { isSupabaseConfigured, publicEnv } from "@/lib/config/public-env";
+import { isSupabaseConfigured, publicEnv, siteEnvironment, type SiteEnvironment } from "@/lib/config/public-env";
 import { getServerEnv } from "@/lib/config/server-env";
 import type { ContentSnapshot, Page, SiteSettings } from "@/lib/domain/content/types";
 import { isPubliclyVisible } from "@/lib/domain/content/visibility";
@@ -89,22 +90,29 @@ export const supabaseSource: ContentSource = {
 };
 
 /**
- * Decide a fonte. Sem CONTENT_SOURCE vale "local". Pedir "supabase" sem o projeto
- * configurado é erro de configuração: o site não pode cair em silêncio no conteúdo
- * provisório achando que lê o CMS.
+ * Decide a fonte (INT-02): com o Supabase configurado o site mostra o que foi publicado no
+ * CMS; sem ele, o conteúdo provisório de content/. CONTENT_SOURCE força uma das duas em
+ * desenvolvimento. Pedir "supabase" sem o projeto configurado é erro, e em homologação e
+ * produção o conteúdo só pode vir do CMS: o site nunca cai em silêncio no provisório.
  */
 export function resolveContentSource(
   requested: ContentSourceName | undefined,
   supabaseConfigured: boolean,
+  environment: SiteEnvironment = "development",
 ): ContentSourceName {
-  const source = requested ?? "local";
+  const source = requested ?? (supabaseConfigured ? "supabase" : "local");
   if (source === "supabase" && !supabaseConfigured) {
     throw new Error("CONTENT_SOURCE=supabase exige NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+  }
+  if (source === "local" && (environment === "production" || environment === "homologation")) {
+    throw new Error(
+      `Em ${environment} o conteúdo público vem do CMS: configure o Supabase e não use CONTENT_SOURCE=local.`,
+    );
   }
   return source;
 }
 
 export function getContentSource(): ContentSource {
-  const name = resolveContentSource(getServerEnv().CONTENT_SOURCE, isSupabaseConfigured);
+  const name = resolveContentSource(getServerEnv().CONTENT_SOURCE, isSupabaseConfigured, siteEnvironment);
   return name === "supabase" ? supabaseSource : localSource;
 }
