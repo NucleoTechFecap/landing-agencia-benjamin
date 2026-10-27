@@ -13,3 +13,4 @@ painel exige para publicar.
 | Item | Tipo | Task | Ficha | Situação |
 | ---- | ---- | ---- | ----- | -------- |
 | Copywriting | Área | SOB-08 | [areas/copywriting.md](areas/copywriting.md) | Provisório — aguardando texto aprovado |
+| Criação | Área | SOB-09 | [areas/criacao.md](areas/criacao.md) | Provisório — aguardando texto aprovado |
