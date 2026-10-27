@@ -18,13 +18,20 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ContentSnapshot } from "@/lib/domain/content/types";
-import { assembleAreasAndServices, assembleCasesAndCategories, toCta, toMediaMap } from "../content/supabase/mappers";
+import {
+  assembleAreasAndServices,
+  assembleCasesAndCategories,
+  toCta,
+  toMediaMap,
+  toMediaRef,
+} from "../content/supabase/mappers";
 import {
   COLUMNS,
   type AreaRow,
@@ -39,7 +46,7 @@ import {
 } from "../content/supabase/rows";
 import { AppError } from "../errors";
 import { logger } from "../logger";
-import type { CmsStore, EntityTable, LinkSync, Row, SavedRow } from "./store";
+import type { CmsStore, EntityTable, LinkSync, MediaAsset, Row, SavedRow } from "./store";
 
 interface PostgrestError {
   message: string;
@@ -84,6 +91,10 @@ async function run<T>(query: Result<T>, context: { table: string; operation: str
 
 const saved = (row: { id: string; updated_at: string }): SavedRow => ({ id: row.id, updatedAt: row.updated_at });
 
+export function toMediaAsset(row: MediaAssetRow, supabaseUrl: string): MediaAsset {
+  return { ...toMediaRef(row, supabaseUrl), id: row.id, mimeType: row.mime_type, decorative: row.decorative };
+}
+
 /**
  * Store do CMS sobre o Supabase. Recebe o cliente com a sessão do usuário (createSessionClient):
  * as políticas "painel lê/cria rascunho/edita/exclui arquivados" do banco valem para cada
@@ -124,6 +135,18 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
         ),
         ctas: ctas.map(toCta),
       };
+    },
+
+    async listMedia(): Promise<MediaAsset[]> {
+      const rows =
+        (await run<(MediaAssetRow & { created_at: string })[]>(
+          client
+            .from("media_assets")
+            .select(`${COLUMNS.media_assets}, created_at`)
+            .order("created_at", { ascending: false }),
+          { table: "media_assets", operation: "select" },
+        )) ?? [];
+      return rows.map((row) => toMediaAsset(row, supabaseUrl));
     },
 
     async insert(table, values) {

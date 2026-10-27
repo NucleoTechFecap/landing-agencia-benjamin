@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 26/10/2026 Vinícius Nishimura Reis  Entidade de serviço e regras já cobertas (ADM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -107,6 +108,7 @@ export function publishProblems<I extends { slug: string }, T extends CmsItem>(
   const published = { ...item, status: "published" as const, publishedAt: item.publishedAt ?? now.toISOString() };
   const integrity = findIntegrityIssues(withItem(snapshot, def, published), now)
     .filter((issue) => issue.severity === "error" && issue.entity.type === def.type && issue.entity.id === item.id)
+    .filter((issue) => !def.coveredRules?.includes(issue.code))
     .map((issue) => issue.message);
   return [...def.validateForPublish(item), ...integrity];
 }
@@ -163,7 +165,8 @@ export async function saveContent<I extends { slug: string }, T extends CmsItem>
     });
   }
 
-  const merged = def.merge(current, input, current?.id ?? "novo");
+  const media = new Map((await deps.store.listMedia()).map((asset) => [asset.id, asset]));
+  const merged = def.merge(current, input, current?.id ?? "novo", media);
   if (current) {
     const check = transition(stateOf(current), "save", {
       role: actor.role,

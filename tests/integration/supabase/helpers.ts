@@ -19,10 +19,14 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Usuários de teste por papel (ADM-07).
+ 26/10/2026 Vinícius Nishimura Reis  Dependências do CMS compartilhadas entre testes (ADM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { AuditInput } from "@/lib/server/audit";
+import type { CmsDeps } from "@/lib/server/cms/content-service";
+import { createSupabaseCmsStore } from "@/lib/server/cms/supabase-store";
 
 /*
  * Os testes desta pasta rodam contra o Supabase local (`npx supabase start`), com a RLS
@@ -87,4 +91,23 @@ export async function createTestUser(role: TestRole, suffix: string): Promise<Te
 export async function deleteTestUsers(users: readonly (TestUser | undefined)[]): Promise<void> {
   const admin = serviceClient();
   for (const user of users) if (user) await admin.auth.admin.deleteUser(user.id);
+}
+
+/** Dependências do CMS com o cliente do usuário de teste (sem cookies do Next). */
+export function cmsDepsFor(client: SupabaseClient): CmsDeps {
+  return {
+    store: createSupabaseCmsStore(client, supabaseTestEnv.url!),
+    audit: async (input: AuditInput) => {
+      const { error } = await client.rpc("record_audit_event", {
+        p_event: input.event,
+        p_resource_type: "content",
+        p_resource_id: input.resourceId ?? null,
+        p_outcome: input.outcome ?? "success",
+        p_metadata: input.metadata ?? {},
+      });
+      if (error) throw new Error(error.message);
+    },
+    invalidate: () => {},
+    now: () => new Date(),
+  };
 }

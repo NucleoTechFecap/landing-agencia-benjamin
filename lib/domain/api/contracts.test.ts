@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-02).
  26/10/2026 Vinícius Nishimura Reis  Testes dos DTOs de página e CTA (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
+ 26/10/2026 Vinícius Nishimura Reis  Id da mídia no mapeamento e fora do DTO (ADM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -129,5 +130,15 @@ describe("detalhe de área (DB-04)", () => {
       { slug: "audiovisual", name: "Audiovisual", summary: "s", url: "/servicos/audiovisual" },
     ]);
     expect(JSON.stringify(dto)).not.toMatch(/uuid/);
+  });
+});
+
+describe("mídia nos DTOs (ADM-06)", () => {
+  it("o id interno da biblioteca de mídia nunca sai na API pública", () => {
+    const dto = toServiceDTO(
+      service("s1", [], { image: { id: "media-uuid-9", src: "/brand/x.webp", alt: "Imagem" } }),
+      [],
+    );
+    expect(dto.image).toEqual({ src: "/brand/x.webp", alt: "Imagem", width: undefined, height: undefined });
   });
 });

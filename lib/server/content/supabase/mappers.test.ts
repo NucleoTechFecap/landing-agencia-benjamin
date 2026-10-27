@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Testes de categorias, cases e galeria (DB-05).
+ 26/10/2026 Vinícius Nishimura Reis  Id da mídia no mapeamento e fora do DTO (ADM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -145,6 +146,7 @@ describe("áreas, serviços e mídia (DB-04)", () => {
       "/brand/cases/fecap.webp",
     );
     expect(toMediaRef({ ...media, path: "2026/10/abc-capa.webp" }, "https://x.supabase.co/")).toEqual({
+      id: "m1",
       src: "https://x.supabase.co/storage/v1/object/public/media/2026/10/abc-capa.webp",
       alt: "Capa",
       width: 1200,

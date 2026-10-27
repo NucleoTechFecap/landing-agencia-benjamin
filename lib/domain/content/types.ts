@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-05).
  26/10/2026 Vinícius Nishimura Reis  Página editável e entidade page (DB-03).
+ 26/10/2026 Vinícius Nishimura Reis  Id da mídia na referência, só para o painel (ADM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,6 +38,8 @@ export interface Publishable {
 }
 
 export interface MediaRef {
+  /** Id na biblioteca de mídia (só no painel; nunca vai para os DTOs públicos). */
+  id?: string;
   /** Caminho em /public ou URL do bucket de mídia (ARC-10). */
   src: string;
   /** Texto alternativo obrigatório para imagens informativas (RNF-03). */

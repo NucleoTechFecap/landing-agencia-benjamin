@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 26/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  25/10/2026 Caio Moraes              Cores de erro via tokens do tema (LAY-04).
+ 26/10/2026 Vinícius Nishimura Reis  SelectField exibe a dica do campo (ADM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -148,7 +149,7 @@ export function SelectField({
         required={props.required}
         defaultValue={props.defaultValue ?? ""}
         aria-invalid={invalid || undefined}
-        aria-describedby={describedBy(props.name, props.errors)}
+        aria-describedby={describedBy(props.name, props.errors, props.hint)}
         className={`${control} ${invalid ? "border-benja-erro" : "border-benja-noite"}`}
       >
         {placeholder ? <option value="">{placeholder}</option> : null}
@@ -158,6 +159,11 @@ export function SelectField({
           </option>
         ))}
       </select>
+      {props.hint ? (
+        <p id={`${props.name}-dica`} className="mt-1 text-xs text-benja-grafite/80">
+          {props.hint}
+        </p>
+      ) : null}
       <FieldError name={props.name} errors={props.errors} />
     </div>
   );
