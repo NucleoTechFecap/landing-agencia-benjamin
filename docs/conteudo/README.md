@@ -16,3 +16,4 @@ painel exige para publicar.
 | Criação | Área | SOB-09 | [areas/criacao.md](areas/criacao.md) | Provisório — aguardando texto aprovado |
 | Assessoria de Imprensa | Área | SOB-10 | [areas/assessoria-de-imprensa.md](areas/assessoria-de-imprensa.md) | Provisório — aguardando texto aprovado |
 | Produção de Conteúdo | Serviço | SERV-06 | [servicos/producao-de-conteudo.md](servicos/producao-de-conteudo.md) | Provisório — aguardando texto aprovado |
+| Copywriting | Serviço | SERV-07 | [servicos/copywriting.md](servicos/copywriting.md) | Provisório — aguardando texto aprovado |
