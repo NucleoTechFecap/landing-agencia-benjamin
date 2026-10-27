@@ -21,8 +21,9 @@ pesados (exports do Illustrator/Photoshop), e o site precisa continuar rápido e
 | Item | Decisão |
 | ---- | ------- |
 | Serviço | **Supabase Storage**, bucket `media` por ambiente (dev/hml/prd) |
-| Leitura | Bucket **público** para leitura; caminhos com UUID (não enumeráveis) |
+| Leitura | Bucket **público**: cada arquivo abre pela URL pública, com caminho que leva UUID. **Listar** o bucket exige `media:view` (só o painel); com a chave anon a listagem vem vazia (TECH-13) |
 | Escrita | Somente usuários com `media:create` (RLS em `storage.objects` usando `has_permission`) |
+| Limpeza | Quem enviou pode apagar o próprio arquivo enquanto ele não estiver registrado na biblioteca (envio que falhou no meio). Arquivo registrado exige `media:delete` (TECH-13) |
 | Exclusão | Somente `media:delete` (`admin`, `super_admin`); bloqueada se o arquivo estiver em uso |
 | Conteúdo proibido | Documentos com dados pessoais, contratos, planilhas de leads — o bucket é público |
 | Vídeo | Não armazenado: entra como link externo (YouTube, Vimeo, Instagram, TikTok) |
