@@ -1,0 +1,84 @@
+Issue,ID,Título,Dono sugerido,GitHub,Backup,Observação
+15,CON-02,Solicitar e receber manifesto definitivo,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
+16,CON-03,Solicitar e receber apresentação institucional e Sobre,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
+17,CON-04,Validar textos finais das seis áreas de atuação,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
+18,CON-05,Receber descrição final dos nove serviços,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
+19,CON-06,Receber materiais do case Aventura de Construir,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
+20,CON-07,Receber materiais do case Meridiano,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
+21,CON-08,Receber materiais do case FECAP,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
+22,CON-09,Definir apresentação e informações do time da Benjamin,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
+23,CON-10,Validar dados de contato e destinatários institucionais,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
+24,CON-11,Definir domínio oficial e encaminhar dados para configuração,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
+27,CON-14,Concluir revisão editorial de todo conteúdo público,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
+104,SEG-10,Verificar disponibilidade e conteúdo da página de privacidade,Agência Benjamin — Melissa Namie / Renan Hida,—,Vinícius Nishimura Reis,Externo — acompanhamento por Flávio Santos
+211,FUT-10,"Planejar novas seções, conteúdos e cases futuros",Agência Benjamin — Melissa Namie / Renan Hida,—,Vinícius Nishimura Reis,Externo — acompanhamento por Flávio Santos
+92,ADM-16,Revisar responsividade e usabilidade completa do admin,Caio Moraes,caiomorhaes,Vinícius Binda,Nunca atribuída (ficou de fora da atribuição de 14/10)
+1,GOV-01,Revisar ata e relatório de projeto,Flávio Santos,—,Vinícius Nishimura Reis,Sem usuário GitHub informado
+3,GOV-03,Validar escopo e prioridades do MVP com a Benjamin,Flávio Santos,—,Vinícius Nishimura Reis,Sem usuário GitHub informado
+4,GOV-04,"Definir fluxo de comunicação, aprovações e responsáveis",Flávio Santos,—,Vinícius Nishimura Reis,Sem usuário GitHub informado
+5,GOV-05,Organizar GitHub Project e catálogo de issues,Flávio Santos,—,Vinícius Nishimura Reis,Sem usuário GitHub informado
+6,GOV-06,Verificar convites de colaboradores pendentes no GitHub,Flávio Santos,—,Vinícius Nishimura Reis,Sem usuário GitHub informado
+8,GOV-08,Planejar checkpoints de acompanhamento com a Benjamin,Flávio Santos,—,Vinícius Nishimura Reis,Sem usuário GitHub informado
+9,GOV-09,Criar matriz de riscos e bloqueios,Flávio Santos,—,Vinícius Nishimura Reis,Sem usuário GitHub informado
+11,GOV-11,Validar requisitos de publicação com a Agência Benjamin,Flávio Santos,—,Vinícius Nishimura Reis,Sem usuário GitHub informado
+12,GOV-12,Controlar mudanças de escopo e novas solicitações,Flávio Santos,—,Vinícius Nishimura Reis,Sem usuário GitHub informado
+39,UX-12,Validar protótipos principais com a Agência Benjamin,Flávio Santos,—,Caio Moraes,Sem usuário GitHub informado
+96,SEG-02,Validar aviso/política de privacidade com responsáveis institucionais,Flávio Santos,—,Vinícius Nishimura Reis,Sem usuário GitHub informado
+186,QA-08,Preparar ambiente e checklist de homologação da Benjamin,Flávio Santos,—,Julia Damásio,Sem usuário GitHub informado
+187,QA-09,Conduzir homologação conjunta com Melissa e Renan,Flávio Santos,—,Julia Damásio,Sem usuário GitHub informado
+197,GO-07,Realizar verificação final e aceite institucional,Flávio Santos,—,Vinícius Binda,Sem usuário GitHub informado
+200,GO-10,Atualizar vitrine pública do projeto no NúcleoTech,Flávio Santos,—,Vinícius Binda,Sem usuário GitHub informado
+201,GO-11,"Planejar suporte, correções e evolução após lançamento",Flávio Santos,—,Vinícius Binda,Sem usuário GitHub informado
+62,DB-06,Implementar criação e consulta segura de leads,Gustavo Duarte Güering,gueringg (a confirmar),Murilo Ribeiro Vasconcellos,"Convite enviado, ainda não aceito"
+63,DB-07,Implementar criação e consulta segura de feedbacks,Gustavo Duarte Güering,gueringg (a confirmar),Murilo Ribeiro Vasconcellos,"Convite enviado, ainda não aceito"
+69,FORM-03,Implementar formulário de novos clientes e projetos,Gustavo Duarte Güering,gueringg (a confirmar),Vinícius Nishimura Reis,"Convite enviado, ainda não aceito"
+70,FORM-04,Implementar formulário institucional de contato,Gustavo Duarte Güering,gueringg (a confirmar),Vinícius Nishimura Reis,"Convite enviado, ainda não aceito"
+71,FORM-05,Implementar formulário de feedback,Gustavo Duarte Güering,gueringg (a confirmar),Vinícius Nishimura Reis,"Convite enviado, ainda não aceito"
+72,FORM-06,Conectar mensagens ao destinatário institucional definido,Gustavo Duarte Güering,gueringg (a confirmar),Vinícius Nishimura Reis,"Convite enviado, ainda não aceito"
+74,FORM-08,"Implementar estados de sucesso, erro e reenvio seguro",Gustavo Duarte Güering,gueringg (a confirmar),Vinícius Nishimura Reis,"Convite enviado, ainda não aceito"
+76,FORM-10,Realizar teste completo de entrega de contatos,Gustavo Duarte Güering,gueringg (a confirmar),Vinícius Nishimura Reis,"Convite enviado, ainda não aceito"
+97,SEG-03,Implementar aviso e consentimento quando aplicável,Gustavo Duarte Güering,gueringg (a confirmar),Vinícius Nishimura Reis,"Convite enviado, ainda não aceito"
+138,SOB-05,Inserir área Eventos e Parcerias,Gustavo Duarte Güering,gueringg (a confirmar),Caio Moraes,"Convite enviado, ainda não aceito"
+139,SOB-06,Inserir área Social Media,Gustavo Duarte Güering,gueringg (a confirmar),Caio Moraes,"Convite enviado, ainda não aceito"
+140,SOB-07,Inserir área Comunicação Interna,Gustavo Duarte Güering,gueringg (a confirmar),Caio Moraes,"Convite enviado, ainda não aceito"
+146,SERV-03,Cadastrar serviço Estratégia Digital,Gustavo Duarte Güering,gueringg (a confirmar),Caio Moraes,"Convite enviado, ainda não aceito"
+147,SERV-04,Cadastrar serviço Social Media,Gustavo Duarte Güering,gueringg (a confirmar),Caio Moraes,"Convite enviado, ainda não aceito"
+148,SERV-05,Cadastrar serviço Eventos,Gustavo Duarte Güering,gueringg (a confirmar),Caio Moraes,"Convite enviado, ainda não aceito"
+183,QA-05,"Testar formulários, validações e notificações",Gustavo Duarte Güering,gueringg (a confirmar),Julia Damásio,"Convite enviado, ainda não aceito"
+195,GO-05,Validar formulários e links no domínio de produção,Gustavo Duarte Güering,gueringg (a confirmar),Vinícius Binda,"Convite enviado, ainda não aceito"
+203,FUT-02,Implementar newsletter com gestão de assinantes,Gustavo Duarte Güering,gueringg (a confirmar),Vinícius Nishimura Reis,"Convite enviado, ainda não aceito"
+204,FUT-03,Criar automações de comunicação e campanhas,Gustavo Duarte Güering,gueringg (a confirmar),Vinícius Nishimura Reis,"Convite enviado, ainda não aceito"
+89,ADM-13,"Implementar estados rascunho, publicado e arquivado",Murilo Ribeiro Vasconcellos,murilovasconcellos,Caio Moraes,Nunca atribuída; parece coberta pelos estados de publicação já entregues no CMS (ADM-06/07/08) — confirmar e fechar
+94,ADM-18,Criar tela de gerenciamento de conteúdos publicados,Murilo Ribeiro Vasconcellos,murilovasconcellos,Caio Moraes,Nunca atribuída (ficou de fora da atribuição de 14/10)
+48,ARC-07,Configurar deploy automático para prévia de PR,Rafael Morais Rocha,rm-rafael,Vinícius Binda,Atribuir após o aceite no checkpoint
+49,ARC-08,Configurar pipeline de integração contínua,Rafael Morais Rocha,rm-rafael,Vinícius Binda,Atribuir após o aceite no checkpoint
+65,DB-09,Implementar validação de schemas na borda de API,Rafael Morais Rocha,rm-rafael,Murilo Ribeiro Vasconcellos,Atribuir após o aceite no checkpoint
+73,FORM-07,Criar proteções antispam e limites de envio,Rafael Morais Rocha,rm-rafael,Vinícius Nishimura Reis,Atribuir após o aceite no checkpoint
+75,FORM-09,Criar visualização administrativa de leads e feedbacks,Rafael Morais Rocha,rm-rafael,Vinícius Nishimura Reis,Atribuir após o aceite no checkpoint
+85,ADM-09,Implementar gerenciador de biblioteca de mídia,Rafael Morais Rocha,rm-rafael,Caio Moraes,Atribuir após o aceite no checkpoint
+90,ADM-14,Implementar visualização prévia de conteúdo antes de publicar,Rafael Morais Rocha,rm-rafael,Caio Moraes,Atribuir após o aceite no checkpoint
+91,ADM-15,"Criar validações administrativas para links, mídia e campos",Rafael Morais Rocha,rm-rafael,Caio Moraes,Atribuir após o aceite no checkpoint
+98,SEG-04,Testar autorização de leitura de dados pessoais no admin,Rafael Morais Rocha,rm-rafael,Vinícius Nishimura Reis,Atribuir após o aceite no checkpoint
+99,SEG-05,Revisar segurança de uploads e sanitização de entradas,Rafael Morais Rocha,rm-rafael,Vinícius Nishimura Reis,Atribuir após o aceite no checkpoint
+100,SEG-06,"Aplicar políticas de headers, TLS e proteção de sessão",Rafael Morais Rocha,rm-rafael,Vinícius Nishimura Reis,Atribuir após o aceite no checkpoint
+173,INT-07,Integrar painel de leads com entrega operacional,Rafael Morais Rocha,rm-rafael,Vinícius Nishimura Reis,Atribuir após o aceite no checkpoint
+179,QA-01,Escrever matriz de testes alinhada aos critérios de aceite,Rafael Morais Rocha,rm-rafael,Julia Damásio,Atribuir após o aceite no checkpoint
+184,QA-06,Executar testes de acesso indevido e proteção de dados,Rafael Morais Rocha,rm-rafael,Julia Damásio,Atribuir após o aceite no checkpoint
+188,QA-10,Corrigir bugs bloqueantes encontrados na homologação,Rafael Morais Rocha,rm-rafael,Julia Damásio,Atribuir após o aceite no checkpoint
+189,QA-11,Reexecutar smoke test e checklist pós-correções,Rafael Morais Rocha,rm-rafael,Julia Damásio,Atribuir após o aceite no checkpoint
+207,FUT-06,Construir analytics avançado para desempenho do site,Rafael Morais Rocha,rm-rafael,Vinícius Nishimura Reis,Atribuir após o aceite no checkpoint
+28,UX-01,Auditar o brandbook e levantar tokens visuais,Vinícius Cardoso de Lima,—,Caio Moraes,Sem usuário GitHub informado
+29,UX-02,"Analisar Grupo In Press, Edelman, Ogilvy e Ginga",Vinícius Cardoso de Lima,—,Caio Moraes,Sem usuário GitHub informado
+30,UX-03,Definir mapa do site e hierarquia de navegação,Vinícius Cardoso de Lima,—,Caio Moraes,Sem usuário GitHub informado
+31,UX-04,Desenhar wireframes mobile e desktop,Vinícius Cardoso de Lima,—,Caio Moraes,Sem usuário GitHub informado
+32,UX-05,Definir sistema de seções com cores variadas,Vinícius Cardoso de Lima,—,Caio Moraes,Sem usuário GitHub informado
+33,UX-06,"Criar direção visual de mockups, halftone e texturas",Vinícius Cardoso de Lima,—,Caio Moraes,Sem usuário GitHub informado
+34,UX-07,Montar design system com componentes no Figma,Vinícius Cardoso de Lima,—,Caio Moraes,Sem usuário GitHub informado
+35,UX-08,Prototipar Home completa no Figma,Vinícius Cardoso de Lima,—,Caio Moraes,Sem usuário GitHub informado
+36,UX-09,"Prototipar páginas Sobre, Áreas e Serviços",Vinícius Cardoso de Lima,—,Caio Moraes,Sem usuário GitHub informado
+37,UX-10,"Prototipar Portfólio, case interno e formulários",Vinícius Cardoso de Lima,—,Caio Moraes,Sem usuário GitHub informado
+38,UX-11,Prototipar dashboard e fluxo básico do CMS,Vinícius Cardoso de Lima,—,Caio Moraes,Sem usuário GitHub informado
+40,UX-13,Incorporar ajustes de design da validação,Vinícius Cardoso de Lima,—,Caio Moraes,Sem usuário GitHub informado
+101,SEG-07,"Revisar acessibilidade de menus, formulários e contraste",Vinícius Cardoso de Lima,—,Vinícius Nishimura Reis,Sem usuário GitHub informado
+181,QA-03,"Testar responsividade em mobile, tablet e desktop",Vinícius Cardoso de Lima,—,Julia Damásio,Sem usuário GitHub informado
+190,QA-12,Revisar conteúdo e identidade visual antes da publicação,Vinícius Cardoso de Lima,—,Julia Damásio,Sem usuário GitHub informado

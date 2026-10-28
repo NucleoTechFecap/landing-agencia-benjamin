@@ -4,8 +4,8 @@
 | ------------ | ------------------------------------------------------------------ |
 | Issue        | GOV-07 (#7)                                                        |
 | Responsável  | Vinícius Nishimura Reis (`@Vinishireis`)                           |
-| Versão       | 1.0.0 — **proposta para consenso da equipe**                       |
-| Data         | 13/10/2026                                                         |
+| Versão       | 1.0.1 — **proposta para consenso da equipe** (situação de 27/10/2026) |
+| Data         | 13/10/2026 · atualização 27/10/2026                                |
 | Fonte        | `Agencia_Benjamin_Backlog_Redistribuido.csv` (211 tarefas) + capacidade informada por integrante |
 
 ## 1. Princípios
@@ -45,14 +45,28 @@
 | Julia Damasio | `Juliadamassio` | 24 | Atribuídas |
 | Murilo Ribeiro Vasconcellos | `murilovasconcellos` | 24 | Atribuídas |
 | Vinícius Binda | `VinnizzZ` | 12 | Atribuídas |
-| Gustavo Duarte Güering | — | 19 | **Sem usuário GitHub / convite pendente** |
-| Rafael Morais Rocha | — | 17 | **Sem usuário GitHub / convite pendente** |
+| Gustavo Duarte Güering | `gueringg` (a confirmar) | 19 | **Convite enviado, ainda não aceito** (27/10) |
+| Rafael Morais Rocha | `rm-rafael` | 17 | Já é colaborador do repositório; **atribuir após o aceite** |
 | Vinícius Cardoso de Lima | — | 17 | **Sem usuário GitHub informado** |
 | Flávio Santos | — | 16 | **Sem usuário GitHub informado** |
 | Agência Benjamin | — | 13 | Externo — acompanhamento por Flávio |
+| David de Oliveira Lemes | `dolemes` | 0 | Colaborador do repositório, **sem frente na matriz** — definir no checkpoint |
 
-**69 issues** (33%) não têm responsável atribuível no GitHub hoje. A lista completa, com dono e
-backup por issue, está em [`ownership-por-issue.csv`](ownership-por-issue.csv).
+Em 13/10, **69 issues** (33%) não tinham responsável atribuível no GitHub. Em 27/10 são **83 issues
+abertas sem responsável**, listadas com dono sugerido, login e backup em
+[`atribuicoes-pendentes.csv`](atribuicoes-pendentes.csv):
+
+| Dono sugerido | Issues | O que falta |
+| ------------- | -----: | ----------- |
+| Gustavo Duarte Güering | 19 | Aceitar o convite (`gueringg`) e o aceite da frente |
+| Rafael Morais Rocha | 17 | Aceite da frente (`rm-rafael` já é colaborador) |
+| Flávio Santos | 16 | Usuário GitHub |
+| Vinícius Cardoso de Lima | 15 | Usuário GitHub |
+| Agência Benjamin | 13 | Externo: acompanhadas por Flávio Santos |
+| Murilo Vasconcellos / Caio Moraes | 3 | ADM-13, ADM-16 e ADM-18 nunca foram atribuídas; a ADM-13 parece coberta pelo CMS já entregue |
+
+A proposta original, com dono e backup de todas as 211 tarefas, continua em
+[`ownership-por-issue.csv`](ownership-por-issue.csv).
 
 ## 4. Riscos de concentração
 
@@ -66,6 +80,15 @@ backup por issue, está em [`ownership-por-issue.csv`](ownership-por-issue.csv).
 ## 5. Próximos passos para concluir a GOV-07
 
 - [ ] Apresentar esta matriz no checkpoint semanal (GOV-08) e registrar o aceite de cada integrante.
-- [ ] Obter os usuários GitHub de Gustavo, Rafael, Vinícius Cardoso e Flávio e aceitar convites (GOV-06).
-- [ ] Atribuir as 69 issues pendentes conforme `ownership-por-issue.csv`.
+- [ ] Usuários GitHub (GOV-06): ~~Rafael~~ (`rm-rafael`); Gustavo aceitar o convite (`gueringg`);
+      Vinícius Cardoso e Flávio informarem o usuário; definir a frente de David (`dolemes`).
+- [ ] Atribuir as issues de [`atribuicoes-pendentes.csv`](atribuicoes-pendentes.csv) de quem deu o
+      aceite (comando abaixo).
 - [ ] Atualizar este documento para versão 1.1.0 com o status "Confirmado".
+
+Depois do aceite, para atribuir as issues de uma pessoa (exemplo com o Rafael):
+
+```bash
+awk -F, '$5 == "rm-rafael" {print $1}' docs/gestao/atribuicoes-pendentes.csv |
+  xargs -I{} gh issue edit {} --add-assignee rm-rafael
+```
