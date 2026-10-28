@@ -4,7 +4,7 @@
 | ------------ | ------------------------------------------------------------------------ |
 | Issue        | GO-06 (#196)                                                             |
 | Responsável  | Vinícius Nishimura Reis (`@Vinishireis`)                                 |
-| Versão       | 1.0.0                                                                    |
+| Versão       | 1.1.0 — situação das pré-condições em 27/10/2026                          |
 | Data-alvo    | 04/11/2026                                                               |
 | Depende de   | QA-11, QA-12, GO-03, GO-05, [TECH-14](go-no-go.md) (GO), [GO-01](release-e-rollback.md) |
 | Situação     | Roteiro pronto · aguardando dependências                                 |
@@ -16,6 +16,18 @@
 - [ ] Domínio com HTTPS (GO-03) — ou decisão registrada de publicar na URL da Vercel até o domínio sair.
 - [ ] Conteúdo final revisado (QA-12, CON-14) e `npm run check:release-content` verde.
 - [ ] Administradores da Benjamin convidados em produção (INT-08).
+
+### Situação em 27/10/2026
+
+Recomendação técnica nesta data: **NO-GO** ([TECH-14 §5](go-no-go.md)). A data-alvo de 04/11 depende de:
+
+| Pré-condição | Situação | Próximo passo |
+| ------------ | -------- | ------------- |
+| Go/no-go técnico | NO-GO em 27/10; bloqueantes E1, E2, E4, E9, E10 e E13 | Nova avaliação em 03–04/11 |
+| Produção provisionada | Decidido: contas institucionais do NúcleoTech ([GO-02](provisionamento-producao.md)) | Acesso às contas; merge de #301 e #312 antes do `db push` |
+| Domínio | Decidido: publicar em `*.vercel.app` até o domínio sair ([GO-03](dominio-dns-https.md)) | Definir o remetente dos formulários |
+| Conteúdo final | 20 itens provisórios publicados (`check:release-content` falhando) | Aprovações e textos da Benjamin (CON-05, CON-08) |
+| Administradores | Convite ensaiado de ponta a ponta no ambiente local (#324) | Nomes e e-mails dos representantes (CON-10) |
 
 ## 2. Linha do tempo do dia
 
