@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 28/10/2026 Caio Moraes              Categorias mantêm os outros filtros ativos (CASE-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,6 +35,17 @@ export interface ActiveFilters {
   servico?: string;
   area?: string;
   cliente?: string;
+}
+
+/** Monta a URL do portfólio trocando só a categoria e mantendo os outros filtros ativos. */
+function categoryHref(active: ActiveFilters, categoria?: string) {
+  const params = new URLSearchParams();
+  if (categoria) params.set("categoria", categoria);
+  if (active.servico) params.set("servico", active.servico);
+  if (active.area) params.set("area", active.area);
+  if (active.cliente) params.set("cliente", active.cliente);
+  const query = params.toString();
+  return query ? `/cases?${query}` : "/cases";
 }
 
 const selectClass =
@@ -63,7 +75,7 @@ export function CaseFilters({
         <ul className="flex flex-wrap gap-2">
           <li>
             <Link
-              href="/cases"
+              href={categoryHref(active)}
               aria-current={!active.categoria ? "true" : undefined}
               className={`inline-block rounded-full border-2 border-benja-noite px-4 py-1.5 text-sm font-bold ${!active.categoria ? "bg-benja-verde text-benja-nyanza" : "bg-white"}`}
             >
@@ -75,7 +87,7 @@ export function CaseFilters({
             return (
               <li key={category.slug}>
                 <Link
-                  href={`/cases?categoria=${category.slug}`}
+                  href={categoryHref(active, category.slug)}
                   aria-current={current ? "true" : undefined}
                   className={`inline-block rounded-full border-2 border-benja-noite px-4 py-1.5 text-sm font-bold ${current ? "bg-benja-verde text-benja-nyanza" : "bg-white"}`}
                 >
