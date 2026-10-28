@@ -70,5 +70,9 @@
 | Editor pode publicar sem aprovação de um `admin`? (proposta: **sim**, conforme PRJ §23) | Pendente |
 | Leads/feedbacks visíveis apenas para `admin` | Pendente |
 
+**27/10/2026:** pedido de aprovação preparado para a coordenação da Benjamin com estes quatro itens e
+o nome e o e-mail de cada pessoa que vai usar o painel, necessários para os convites (INT-08)
+([página para enviar à agência](https://claude.ai/artifact/4TJ8vhTDLW6PYfSfCAqLti), decisão 3).
+
 Registro da aprovação: comentário na issue ADM-01 com data, aprovadores e eventuais ajustes;
 mudanças alteram esta matriz e a matriz granular de TECH-03 na mesma PR.
