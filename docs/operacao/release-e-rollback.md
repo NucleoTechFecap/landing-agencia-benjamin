@@ -29,6 +29,7 @@
 
 ### Código e testes
 - [ ] PRs do escopo mesclados na `main` com revisão (TECH-13 para críticos).
+- [ ] PR `main → production` aprovado e checks obrigatórios do GitHub Actions verdes (`verify`, `release-source` e `release-content`).
 - [ ] `npm run release:check` verde no commit a publicar (cabeçalhos, tipos, lint, testes, build, **sem conteúdo provisório**).
 - [ ] `npm run test:e2e` verde contra homologação (`E2E_BASE_URL=<hml>`).
 - [ ] Changelog no PR `main → production` (o que muda, issues, riscos).
