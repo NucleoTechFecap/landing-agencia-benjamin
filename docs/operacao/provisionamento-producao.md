@@ -4,23 +4,30 @@
 | ------------ | ------------------------------------------------------------------------ |
 | Issue        | GO-02 (#192)                                                             |
 | Responsável  | Vinícius Nishimura Reis (`@Vinishireis`) · backup: Vinícius Binda (`@VinnizzZ`) |
-| Versão       | 1.0.0                                                                    |
-| Data         | 13/10/2026                                                               |
+| Versão       | 1.1.0 — decisão de contas e estado em 27/10/2026                         |
+| Data         | 13/10/2026 · atualizado em 27/10/2026                                    |
 | Depende de   | ARC-06 (ambientes), DB-02 (migrations de conteúdo), decisão de plano/conta (ADR-0002) |
 | Arquivos     | `vercel.json` (região `gru1` — São Paulo), `app/api/internal/jobs/notificacoes` |
 
 ## 1. Pré-requisitos (decisões)
 
-- [ ] Conta/plano institucional da **Vercel** para produção (uso comercial; crons frequentes exigem plano pago).
-- [ ] Organização/plano do **Supabase** para produção (sem pausa por inatividade; backups diários).
-- [ ] Conta **Resend** com domínio do remetente verificado (depende do domínio — GO-03).
+- [x] Conta/plano institucional da **Vercel** para produção (uso comercial; crons frequentes exigem plano pago).
+      **Decisão de 27/10/2026:** contas institucionais do NúcleoTech, não contas pessoais (o plano
+      Hobby da Vercel não permite uso comercial).
+- [x] Organização/plano do **Supabase** para produção (sem pausa por inatividade; backups diários).
+      **Decisão de 27/10/2026:** organização institucional do NúcleoTech.
+- [ ] Acesso às duas contas na máquina de quem provisiona (`vercel login` e `npx supabase login`).
+- [ ] Conta **Resend** com domínio do remetente verificado. Sem o domínio da Benjamin, ver a
+      pendência do remetente em [GO-03 §0](dominio-dns-https.md#0-decisão-de-27102026-publicar-em-vercelapp-até-o-domínio-sair).
 - [ ] Quem tem acesso de produção (ARC-06 §3) — nominal.
 
 ## 2. Supabase (`benjamin-prd`)
 
 1. Criar o projeto na região **South America (São Paulo)** — `sa-east-1`, mesma região da Vercel (`gru1`).
 2. Senha do banco gerada e guardada no cofre da equipe (nunca em chat/issue).
-3. Aplicar as migrations já validadas em homologação:
+3. Aplicar as migrations já validadas em homologação. Antes, conferir o merge de #301 (exclusão de
+   conta com eventos auditados) e #312 (bucket de mídia sem listagem anônima), que trazem as
+   migrations `20261027000100` e `20261027000200`:
    ```bash
    supabase link --project-ref <ref-prd>
    supabase db push
@@ -34,6 +41,8 @@
 
 1. Importar o repositório `NucleoTechFecap/landing-agencia-benjamin` no time do NúcleoTech.
 2. **Production Branch:** `production` (Settings → Git). `main` gera deployments de homologação.
+   A branch `production` ainda não existe: ela nasce da tag `v1.0.0` no dia da publicação (GO-06,
+   T0), para que nada chegue à produção antes do go/no-go.
 3. Região de funções: `gru1` (definida em `vercel.json`).
 4. Variáveis **Production** (ARC-05), todas distintas de homologação:
 
@@ -73,5 +82,17 @@
 - [ ] `GET /api/internal/jobs/notificacoes` sem token = 401; com token = 200.
 - [ ] `robots.txt` indexável apenas em produção.
 
-**Situação:** arquivos e roteiro prontos; o provisionamento depende da decisão de conta/plano
-(ADR-0002) e das migrations de conteúdo (DB-02).
+## 6. Estado em 27/10/2026
+
+| Item | Situação |
+| ---- | -------- |
+| Decisão de conta e plano | ✅ Contas institucionais do NúcleoTech (Vercel e Supabase) |
+| Migrations de conteúdo (DB-02) | ✅ Na `main`; validadas em banco recriado do zero (84 testes pgTAP) |
+| Migrations da revisão TECH-13 | ⏳ #301 e #312 aguardando revisão do banco |
+| Aplicação | ✅ Next.js 16.4.3, `npm audit` sem vulnerabilidades, `vercel.json` em `gru1` |
+| Acesso às contas institucionais | ⏳ Falta o login de quem provisiona |
+| Remetente dos formulários (`NOTIFICATION_FROM`) | ⏳ Depende de um domínio verificado no Resend ([GO-03 §0](dominio-dns-https.md#0-decisão-de-27102026-publicar-em-vercelapp-até-o-domínio-sair)) |
+| Destinatários (`*_NOTIFICATION_TO`) | ⏳ No pedido de aprovação preparado para a Benjamin (CON-10) |
+
+Com o acesso liberado, a ordem é: homologação (`benjamin-hml`) pelo mesmo roteiro → QA em
+homologação → produção (§2 e §3) → verificação de isolamento (§5).
