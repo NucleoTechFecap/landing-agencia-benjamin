@@ -556,6 +556,11 @@ GitHub → Vercel, na região `gru1`:
 - o merge na `main` atualiza a **homologação**;
 - a **produção** só recebe uma *tag* aprovada, por PR `main → production`.
 
+O GitHub Actions executa a suíte `npm run verify` em PRs para `main` e `production`, valida a
+origem `main` e bloqueia conteúdo provisório em releases para `production`. As regrasets limitam
+quem pode atualizar as branches protegidas e exigem PR, revisão e checks. Veja
+[CI, publicação e regras de branch](docs/operacao/ci-cd-github-actions.md).
+
 Para fazer rollback, promova um deploy anterior na Vercel (*Instant Rollback*). Não é preciso
 gerar um novo build.
 
