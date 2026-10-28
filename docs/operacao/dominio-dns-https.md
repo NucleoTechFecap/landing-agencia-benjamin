@@ -4,10 +4,26 @@
 | ------------ | ----------------------------------------------------------------------- |
 | Issue        | GO-03 (#193)                                                            |
 | Responsável  | Vinícius Nishimura Reis (`@Vinishireis`)                                |
-| Versão       | 1.0.0                                                                   |
+| Versão       | 1.1.0 — decisão de publicar em `*.vercel.app` (27/10/2026)              |
 | Data         | 13/10/2026                                                              |
 | Depende de   | **CON-11** (Agência Benjamin define/adquire o domínio — ATA §4.9), GO-02 |
-| Situação     | Roteiro pronto · **bloqueado** até o domínio ser informado              |
+| Situação     | Roteiro pronto · domínio ainda não informado · publicação em `*.vercel.app` decidida (§0) |
+
+## 0. Decisão de 27/10/2026: publicar em `*.vercel.app` até o domínio sair
+
+A Agência Benjamin ainda não tem o domínio oficial. Para não travar a primeira versão (04/11), a
+coordenação técnica decidiu publicar no endereço `*.vercel.app` do projeto de produção, que já tem
+HTTPS válido emitido pela Vercel. O item E11 do [go/no-go](go-no-go.md) passa a ser atendido com
+ressalva. A GO-03 continua aberta até o domínio oficial apontar para a produção.
+
+| Tema | Como fica até o domínio sair |
+| ---- | ---------------------------- |
+| Endereço | URL de produção da Vercel, definida ao criar o projeto (GO-02) |
+| `NEXT_PUBLIC_SITE_URL` | A URL `*.vercel.app` de produção: canonical, sitemap e `robots.txt` usam esse endereço |
+| Indexação | Liberada só em produção, como já é hoje. Ao trocar de endereço, o passo 8 da §3 avisa o Google da mudança |
+| Supabase Auth | Site URL e Redirect URLs com a URL `*.vercel.app`, para login e redefinição de senha do painel. Ao trocar, passo 7 da §3 |
+| **E-mail dos formulários** | **Pendente.** Em produção a aplicação exige `NOTIFICATION_FROM` num domínio verificado no Resend, e sem ele o envio do formulário falha. Opções: (a) verificar um domínio que o NúcleoTech ou a FECAP já administre e usar um remetente nele; (b) adiar os formulários até o domínio da Benjamin. Decidir antes do GO-02 |
+| Quando o domínio chegar | Seguir a §3, sem mudança de código, e depois redirecionar o endereço `*.vercel.app` para o domínio |
 
 ## 1. O que a Agência Benjamin precisa enviar (CON-11)
 
