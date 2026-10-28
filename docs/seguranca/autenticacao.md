@@ -44,7 +44,7 @@
 | JWT expiry | 3600 s |
 | Refresh token rotation | Ligado, reuse interval 10 s |
 | Rate limits (Auth) | Padrões do Supabase (limitam tentativas de login por IP) |
-| E-mail templates (convite e recuperação) | Link `{{ .SiteURL }}/admin/auth/callback?token_hash={{ .TokenHash }}&type=invite` (ou `recovery`) `&next=/admin/nova-senha` |
+| E-mail templates (convite e recuperação) | Link `{{ .SiteURL }}/admin/auth/callback?token_hash={{ .TokenHash }}&type=invite` (ou `recovery`) `&next=/admin/nova-senha`. HTML e assunto versionados em `supabase/templates/` e no `config.toml` (local); em homologação e produção, copiar em Authentication → Email Templates (INT-08) |
 | SMTP | Domínio da Benjamin via Resend quando o domínio existir (GO-03); até lá, SMTP padrão do Supabase |
 
 Migration: `supabase db push` aplica `20261013000100_auth_profiles.sql` (enum de papéis, `profiles`,
