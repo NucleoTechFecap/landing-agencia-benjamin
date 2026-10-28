@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,11 +19,13 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
+ 28/10/2026 Caio Moraes              Estado vazio com link para limpar os filtros (CASE-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/server/seo";
+import Link from "next/link";
 import { Suspense } from "react";
 import { CaseCard } from "@/components/cards/case-card";
 import { CaseFilters, type ActiveFilters } from "@/components/sections/case-filters";
@@ -143,9 +145,12 @@ async function FilteredCases({ searchParams }: Pick<PageProps<"/cases">, "search
           ))}
         </ul>
       ) : (
-        <p className="mt-4 rounded-3xl border-2 border-dashed border-benja-verde/50 bg-benja-nyanza p-8 text-center">
-          Nenhum case com esses filtros por enquanto. Tente outra combinação.
-        </p>
+        <div className="mt-4 rounded-3xl border-2 border-dashed border-benja-verde/50 bg-benja-nyanza p-8 text-center">
+          <p>Nenhum case com esses filtros por enquanto. Tente outra combinação.</p>
+          <Link href="/cases" className="mt-3 inline-block font-bold underline underline-offset-4">
+            Limpar filtros e ver todos os cases
+          </Link>
+        </div>
       )}
     </>
   );
