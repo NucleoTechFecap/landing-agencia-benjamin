@@ -1,3 +1,24 @@
+# ════════════════════════════════════════════════════════════════════════════════
+# Sistema      : Agência Benjamin Landing Page
+# Módulo       : Workflows
+# Arquivo      : ci.yml
+# Descrição    : Executa verificações de CI e validações antes de publicar releases.
+#
+# Desenvolvedor: Vinícius Nishimura Reis
+#
+# Projeto      : Agência Benjamin Landing Page
+# Versão       : 1.0.0
+# Criado em    : 28/10/2026
+# Modificado em: 28/10/2026
+# ════════════════════════════════════════════════════════════════════════════════
+#
+# Histórico
+# ──────────────────────────────────────────────────────────────────────────────
+# Data        Autor                     Descrição
+# ──────────────────────────────────────────────────────────────────────────────
+# 28/10/2026 Vinícius Nishimura Reis  Criação do workflow de CI e release.
+# ──────────────────────────────────────────────────────────────────────────────
+
 name: CI
 
 on:
