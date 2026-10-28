@@ -40,6 +40,12 @@ pesados (exports do Illustrator/Photoshop), e o site precisa continuar rápido e
 | PDF | `application/pdf` | 10 MB | Releases e clippings |
 | SVG | — | **recusado** | Pode conter script (XSS) |
 
+**Envio pelo painel: até 4 MB por arquivo (TECH-13).** Os limites acima valem para o banco e o
+Storage. Pelo painel, porém, o arquivo viaja no corpo da Server Action, e a Vercel recusa corpo
+acima de 4,5 MB antes de a action rodar, sem a mensagem de validação. Por isso o painel aceita até
+4 MB (`PANEL_UPLOAD_MAX_BYTES`) e confere o tamanho no navegador antes de enviar. O envio direto do
+navegador ao Storage por URL assinada, que devolve os 5 MB e 10 MB, está em #313.
+
 - Maior lado da imagem ≤ **4000 px**; exportação recomendada: **2400 px** de largura (UX-14).
 - O tipo real é conferido pela **assinatura dos bytes** (`sniffMimeType`), não pela extensão.
 - Texto alternativo é obrigatório para publicar (regra R12 de TECH-05).
@@ -85,7 +91,7 @@ O critério de aceite exige upload e recuperação demonstrados em homologação
 projeto Supabase `benjamin-hml` (GO-02), bucket/políticas (migration de ADM-03) e tela de
 upload do CMS (ADM-09). Roteiro de verificação:
 
-1. Entrar como `editor` em homologação e enviar `capa.webp` (≤ 5 MB) com texto alternativo.
+1. Entrar como `editor` em homologação e enviar `capa.webp` (≤ 4 MB) com texto alternativo.
 2. Confirmar a URL pública e a exibição otimizada (`/_next/image?...`) em um case de teste.
 3. Tentar enviar `logo.svg` e um `.png` renomeado como `.jpg` → ambos recusados.
 4. Como `editor`, tentar excluir a mídia → negado; como `admin` → permitido se não estiver em uso.

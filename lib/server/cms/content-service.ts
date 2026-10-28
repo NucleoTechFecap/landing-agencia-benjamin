@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 27/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Entidade de serviço e regras já cobertas (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
  26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
+ 27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -84,6 +85,22 @@ const COMMAND_EVENTS: Record<PublicationCommand, AuditEventName> = {
   restore: "content.restored",
   delete: "content.deleted",
 };
+
+/**
+ * Alteração para o cache: a entidade, o slug e as outras páginas que exibem o item. Em edição,
+ * vale a união das relações de antes e de depois (o case que saiu de um serviço também some da
+ * página dele).
+ */
+function contentChange<I extends { slug: string }, T extends CmsItem>(
+  def: EntityDefinition<I, T>,
+  slug: string,
+  items: T[],
+  snapshot: ContentSnapshot,
+  now: Date,
+): ContentChange {
+  const relatedPaths = [...new Set(items.flatMap((item) => def.relatedPaths?.(item, snapshot, now) ?? []))];
+  return { entity: def.type, slug, ...(relatedPaths.length ? { relatedPaths } : {}) };
+}
 
 /** Snapshot com o item substituído pela versão nova (para checar integridade antes de gravar). */
 function withItem<I extends { slug: string }, T extends CmsItem>(
@@ -214,25 +231,50 @@ export async function saveContent<I extends { slug: string }, T extends CmsItem>
   const saved = current
     ? await deps.store.update(def.table, current.id, def.toValues(input), current.updatedAt)
     : await deps.store.insert(def.table, { ...def.toValues(input), status: "draft" });
-  if (def.links) {
-    await deps.store.syncLinks({
-      table: def.links.table,
-      ownerColumn: def.links.ownerColumn,
-      ownerId: saved.id,
-      otherColumn: def.links.otherColumn,
-      current: current ? def.links.of(current) : [],
-      next: def.links.from(input),
+  const auditSave = (outcome: "success" | "failure", reason?: string) =>
+    deps.audit({
+      event: current ? "content.updated" : "content.created",
+      resourceId: saved.id,
+      outcome,
+      metadata: {
+        entity: def.type,
+        slug: input.slug,
+        ...(current ? { fromStatus: current.status } : {}),
+        ...(reason ? { reason } : {}),
+      },
+    });
+  const refreshSite = () => {
+    if (current?.status === "published")
+      deps.invalidate(contentChange(def, input.slug, [merged, current], snapshot, now));
+  };
+
+  try {
+    if (def.links) {
+      await deps.store.syncLinks({
+        table: def.links.table,
+        ownerColumn: def.links.ownerColumn,
+        ownerId: saved.id,
+        otherColumn: def.links.otherColumn,
+        current: current ? def.links.of(current) : [],
+        next: def.links.from(input),
+      });
+    }
+    if (def.afterSave) await def.afterSave(deps.store, saved.id, input);
+  } catch (error) {
+    // Sem transação entre as chamadas: o item já foi gravado e os vínculos não. Registra a
+    // gravação parcial e atualiza o site antes de devolver o erro (TECH-13).
+    await auditSave("failure", "vinculos").catch(() => undefined);
+    refreshSite();
+    throw new AppError(error instanceof AppError ? error.code : "INTERNAL_ERROR", {
+      message: current
+        ? "O texto foi salvo, mas os vínculos (áreas, serviços ou galeria) não. Recarregue a página, confira e salve de novo."
+        : "O rascunho foi criado, mas os vínculos (áreas, serviços ou galeria) não. Abra-o na lista, confira e salve de novo.",
+      cause: error,
     });
   }
 
-  if (def.afterSave) await def.afterSave(deps.store, saved.id, input);
-
-  await deps.audit({
-    event: current ? "content.updated" : "content.created",
-    resourceId: saved.id,
-    metadata: { entity: def.type, slug: input.slug, ...(current ? { fromStatus: current.status } : {}) },
-  });
-  if (current?.status === "published") deps.invalidate({ entity: def.type, slug: input.slug });
+  await auditSave("success");
+  refreshSite();
   return { id: saved.id, updatedAt: saved.updatedAt, status: current?.status ?? "draft", created: !current };
 }
 
@@ -313,7 +355,7 @@ export async function runContentCommand<I extends { slug: string }, T extends Cm
   if (!critical) await audit("success");
 
   if (item.status === "published" || next.status === "published") {
-    deps.invalidate({ entity: def.type, slug: item.slug });
+    deps.invalidate(contentChange(def, item.slug, [item], snapshot, now));
   }
   return { status: next.status, warnings };
 }

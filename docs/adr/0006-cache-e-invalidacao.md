@@ -78,6 +78,13 @@ do lado do servidor, depois da resposta (`after()` → `detailPathsForChange()`)
 primeira visita depois de salvar já veio atualizada nas duas rodadas medidas. O fetch do
 supabase-js usa `cache: "no-store"` (DB-05): o único cache é o `use cache` com tags.
 
+**Páginas relacionadas (TECH-13).** O mesmo atraso vale para as outras páginas de detalhe que
+exibem o item: a página do serviço lista os cases dele, e a do case mostra os relacionados da mesma
+categoria. Ao despublicar ou arquivar um case, a página dele já dá 404, mas a do serviço ainda
+mostraria o card na primeira visita. Por isso cada entidade declara `relatedPaths`
+(`lib/server/cms/entities.ts`), e o aquecimento cobre também essas páginas: só as publicadas, no
+máximo 12 por alteração. Em edição, entram as relações de antes e de depois.
+
 ### 4. Latência-alvo
 
 | Situação | Meta |

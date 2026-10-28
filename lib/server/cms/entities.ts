@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 27/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Entidade de serviço e regras já cobertas (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
  26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
+ 27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -32,6 +33,7 @@ import { caseInputSchema, type CaseInput } from "@/lib/domain/content/case-input
 import { validateCaseForPublish } from "@/lib/domain/content/case-schema";
 import { categoryInputSchema, type CategoryInput } from "@/lib/domain/content/category-schema";
 import { serviceInputSchema, validateServiceForPublish, type ServiceInput } from "@/lib/domain/content/service-schema";
+import { isPubliclyVisible } from "@/lib/domain/content/visibility";
 import type {
   Area,
   CaseCategory,
@@ -90,7 +92,15 @@ export interface EntityDefinition<I extends { slug: string }, T extends CmsItem>
   deleteBlockers?(item: T, snapshot: ContentSnapshot): string[];
   /** Relações gravadas depois do item (ex.: galeria ordenada do case). */
   afterSave?(store: CmsStore, id: string, input: I): Promise<void>;
+  /**
+   * Outras páginas de detalhe do site que exibem o item (ex.: o case aparece na página dos
+   * serviços dele). São aquecidas junto depois de invalidar o cache (ADR-0006, TECH-13).
+   */
+  relatedPaths?(item: T, snapshot: ContentSnapshot, now: Date): string[];
 }
+
+/** Itens que o visitante vê agora: só eles têm página pública para aquecer. */
+const live = <U extends Publishable>(items: U[], now: Date) => items.filter((entry) => isPubliclyVisible(entry, now));
 
 const draftControl = { status: "draft" as const, publishedAt: null, archivedAt: null, updatedAt: "" };
 
@@ -128,6 +138,10 @@ export const AREA: EntityDefinition<AreaInput, Area> = {
     order: input.order,
   }),
   validateForPublish: (area) => validateAreaForPublish(area),
+  relatedPaths: (area, snapshot, now) =>
+    live(snapshot.services, now)
+      .filter((service) => service.areaIds.includes(area.id))
+      .map((service) => `/servicos/${service.slug}`),
 };
 
 export const SERVICE: EntityDefinition<ServiceInput, Service> = {
@@ -174,6 +188,10 @@ export const SERVICE: EntityDefinition<ServiceInput, Service> = {
     of: (service) => service.areaIds,
     from: (input) => input.areaIds,
   },
+  relatedPaths: (service, snapshot, now) =>
+    live(snapshot.cases, now)
+      .filter((item) => item.serviceIds.includes(service.id))
+      .map((item) => `/cases/${item.slug}`),
 };
 
 export const CATEGORY: EntityDefinition<CategoryInput, CaseCategory> = {
@@ -210,6 +228,10 @@ export const CATEGORY: EntityDefinition<CategoryInput, CaseCategory> = {
         ]
       : [];
   },
+  relatedPaths: (category, snapshot, now) =>
+    live(snapshot.cases, now)
+      .filter((item) => item.categoryId === category.id)
+      .map((item) => `/cases/${item.slug}`),
 };
 
 const CASE_FIELD_LABELS: Record<string, string> = {
@@ -297,4 +319,13 @@ export const CASE: EntityDefinition<CaseInput, CaseStudy> = {
     from: (input) => input.serviceIds,
   },
   afterSave: (store, id, input) => store.syncGallery(id, input.galleryIds),
+  // A página do serviço lista os cases dele; a do case mostra os relacionados da mesma categoria.
+  relatedPaths: (item, snapshot, now) => [
+    ...live(snapshot.services, now)
+      .filter((service) => item.serviceIds.includes(service.id))
+      .map((service) => `/servicos/${service.slug}`),
+    ...live(snapshot.cases, now)
+      .filter((other) => other.id !== item.id && other.categoryId === item.categoryId)
+      .map((other) => `/cases/${other.slug}`),
+  ],
 };

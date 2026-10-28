@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 27/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-09).
  26/10/2026 Vinícius Nishimura Reis  Tags e invalidação de páginas do CMS (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Aquecimento da página de detalhe após invalidar (INT-02).
+ 27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -40,7 +41,15 @@ export interface ContentChange {
   slug?: string;
   /** Slug anterior quando o slug mudou: a URL antiga também precisa sair do cache. */
   previousSlug?: string;
+  /**
+   * Outras páginas de detalhe que exibem o item (ex.: o case aparece na página dos serviços dele).
+   * Entram no aquecimento, para ninguém ver o item antigo nelas (TECH-13).
+   */
+  relatedPaths?: string[];
 }
+
+/** Teto de páginas aquecidas por alteração, para uma edição não disparar dezenas de requisições. */
+export const MAX_WARMED_PATHS = 12;
 
 /**
  * Tags afetadas por uma alteração. Como listas e detalhes cruzam entidades (case mostra
@@ -88,10 +97,13 @@ export function tagsForChange(change: ContentChange): string[] {
  * atualizam na hora.
  */
 export function detailPathsForChange(change: ContentChange): string[] {
-  if (!change.slug) return [];
-  if (change.entity === "service") return [`/servicos/${change.slug}`];
-  if (change.entity === "case") return [`/cases/${change.slug}`];
-  return [];
+  const own =
+    change.slug && change.entity === "service"
+      ? [`/servicos/${change.slug}`]
+      : change.slug && change.entity === "case"
+        ? [`/cases/${change.slug}`]
+        : [];
+  return [...new Set([...own, ...(change.relatedPaths ?? [])])].slice(0, MAX_WARMED_PATHS);
 }
 
 /**

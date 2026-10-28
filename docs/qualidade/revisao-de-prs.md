@@ -4,7 +4,7 @@
 | ------------ | ----------------------------------------------------------------------- |
 | Issue        | TECH-13 (#177)                                                          |
 | Responsável  | Vinícius Nishimura Reis (`@Vinishireis`)                                |
-| Versão       | 1.0.0                                                                   |
+| Versão       | 1.1.0 — revisão de segurança da entrega do CMS (27/10/2026)             |
 | Data         | 13/10/2026                                                              |
 | Depende de   | INT-02 (#168), INT-03 (#169), ADM-03 (#79)                              |
 | Automação    | `.github/CODEOWNERS` (revisão solicitada automaticamente em caminhos críticos) |
@@ -73,8 +73,34 @@ Qualquer PR que altere ao menos um dos itens abaixo (os caminhos estão no `CODE
 
 | PR | Escopo | Revisor | Resultado | Riscos aceitos |
 | -- | ------ | ------- | --------- | -------------- |
-| INT-02 (#168) | Serviços e cases na base publicada | — | Pendente | — |
-| INT-03 (#169) | Home e institucional editáveis | — | Pendente | — |
+| INT-02 (#282) e pilha do CMS #276–#285 | Leitura do Supabase, CMS de áreas, serviços, cases e mídia, site na base publicada, login | Revisão independente de segurança (27/10/2026), ver §5 | Sem achado alto; 4 médios e 3 baixos, corrigidos em #301, #312 e #316 | Gravação não atômica (#314), envio limitado a 4 MB (#313), baixos (#315) |
+| INT-03 (#169) | Home e institucional editáveis | — | Pendente (PR ainda não aberto) | — |
 | ADM-03 (#237) | Proteção de rotas e RBAC no banco | Vinícius Binda (solicitada) | Pendente | — |
+| #301 e #312 (migrations da TECH-13) | Auditoria e Storage | Vinícius Binda (solicitada) | Pendente | — |
+
+## 5. Revisão de segurança da entrega do CMS (27/10/2026)
+
+Escopo: `git diff 862e02e..main` (PRs #274–#299), com foco em RLS e funções do banco, Server
+Actions do painel, upload de mídia, autenticação, API pública, cache e `next.config.ts`. A revisão
+leu o código, rodou os testes e consultou o Supabase local como `anon`, `viewer`, `editor` e
+`admin`, dentro de transações desfeitas.
+
+| # | Achado | Severidade | Situação |
+| - | ------ | ---------- | -------- |
+| 1 | Bucket `media` listável com a chave anon: expunha arquivos de cases em rascunho | Média | Corrigido em #312 (listagem exige `media:view`) |
+| 2 | Envio que falhava no registro deixava o arquivo órfão (o editor não podia apagá-lo) | Média | Corrigido em #312 (quem enviou apaga o próprio arquivo sem registro) |
+| 3 | Salvar não é atômico: falha nos vínculos gravava só o texto, sem auditoria nem cache | Média | Mitigado em #316 (ids sem repetição, auditoria da falha, cache e mensagem clara); transação em #314 |
+| 4 | `bodySizeLimit` de 11 MB não vale na Vercel (teto de 4,5 MB) | Média | Corrigido em #316 (limite de 4 MB conferido no navegador e no servidor); envio direto em #313 |
+| 5 | Páginas relacionadas mostravam o item arquivado na primeira visita | Média | Corrigido em #316 (`relatedPaths` no aquecimento) |
+| 6 | Conta com evento auditado não podia ser excluída (achado na validação integrada) | Média | Corrigido em #301 |
+| 7 | `record_audit_event` aceita evento de qualquer papel; `?aviso=` com texto livre; `revoke from anon` sem efeito | Baixa | `revoke` corrigido em #312; os outros dois em #315 |
+
+Verificado e correto: anônimo não lê rascunho, arquivado nem agendado (nem pelos vínculos N:M);
+`viewer` não grava; ninguém escala o próprio papel; toda Server Action checa permissão antes de
+ler o banco; não há IDOR nem atribuição em massa de campos de controle; a concorrência otimista
+vale no serviço e no `UPDATE`; o upload confere a assinatura dos bytes; o `next` do login não
+redireciona para fora (10 tentativas de bypass); a leitura pública tem três barreiras (RLS,
+filtro de status e data); os cabeçalhos de segurança estão ativos. A CSP continua prevista em
+SEG-06.
 
 Atualizar esta tabela a cada PR crítico revisado (data e link do comentário de revisão).
