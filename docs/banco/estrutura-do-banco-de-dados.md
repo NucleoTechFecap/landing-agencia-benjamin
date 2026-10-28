@@ -3,7 +3,7 @@
 | Campo        | Valor |
 | ------------ | ----- |
 | Issues       | DB-01 (#57), DB-02 (#58), DB-08 (#64), DB-10 (#66), ARC-11 (#52), DBX-01 a DBX-06 (#112–#117) |
-| Responsável  | Vinícius Binda (`@VinnizzZ`) |
+| Responsável  | Vinicius Binda (`@VinnizzZ`) |
 | Revisão      | Vinícius Nishimura Reis (`@Vinishireis`) |
 | Versão       | 0.1 — proposta para revisão |
 | Data         | 14/10/2026 |
@@ -608,6 +608,11 @@ institucional (⏳ SEG-02).
 ---
 
 ## 10. Migrations, rollback e seeds (DB-02 · DBX-02 · ARC-11)
+
+> **Superado em 28/10/2026 (DBX-02).** As migrations `20261014…` desta proposta não foram
+> adotadas: o conteúdo entrou em `20261025000100_cms_content.sql`. O procedimento em vigor
+> (ordem, rollback de todas as migrations, seed gerado de `content/` com trava de produção e
+> `npm run test:migrations`) está no [dicionário de dados](dicionario-de-dados.md) §9.
 
 ### 10.1 Arquivos (continuação da sequência da `main`)
 

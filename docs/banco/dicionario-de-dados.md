@@ -2,13 +2,14 @@
 
 | Campo           | Valor                                                                        |
 | --------------- | ---------------------------------------------------------------------------- |
-| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58)                                      |
-| Responsável     | Vinícius Binda (`@VinnizzZ`)                                                 |
+| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58), DBX-02 (#113)                       |
+| Responsável     | Vinicius Binda (`@VinnizzZ`)                                                 |
 | Revisão técnica | Vinícius Nishimura Reis (`@Vinishireis`)                                     |
 | Versão          | 1.0.0                                                                        |
 | Data            | 25/10/2026                                                                   |
 | Migration       | `supabase/migrations/20261025000100_cms_content.sql`                         |
-| Reversão        | `supabase/rollbacks/20261025000100_cms_content.down.sql`                     |
+| Reversão        | `supabase/rollbacks/<migration>.down.sql` (uma por migration, §9)            |
+| Seed            | `supabase/seed.sql`, gerado por `scripts/content-seed.mjs` (só banco local, §9) |
 | Testes          | `supabase/tests/database/cms_content.test.sql` (pgTAP, 84 testes) e `lib/server/content/content-sql.test.ts` (SQL × regras de domínio) |
 | Insumos         | [integridade](../negocio/integridade-de-conteudo.md), [campos do case](../negocio/campos-do-case.md), [fluxo de publicação](../negocio/fluxo-de-publicacao.md), [proteção de rotas](../seguranca/protecao-de-rotas.md), [ADR-0005](../adr/0005-armazenamento-de-midia.md) |
 
@@ -297,8 +298,8 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 - [ ] **Depoimentos públicos:** fora do MVP até a Benjamin decidir (exige consentimento).
 - [ ] **Redirecionamento de slug** alterado após publicar: tabela própria em DB-08.
 - [ ] **Índices de listagem e filtros** do portfólio: DBX-03 (esta migration só indexa as FKs).
-- [ ] **Seeds** do conteúdo provisório de `content/`: DBX-02. Os ids textuais viram UUID, e as capas
-  de `public/brand` entram em `media_assets` com o caminho público.
+- [x] **Seeds** do conteúdo provisório de `content/`: DBX-02 (`supabase/seed.sql`, §9). Os ids
+  textuais viram UUID, e as capas de `public/brand` entram em `media_assets` com o caminho público.
 
 ## 8. Evidências de validação
 
@@ -308,6 +309,9 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | `npx supabase test db`: 84 testes pgTAP. Cobrem dados inválidos (slug, estados, campos de publicação, links, CTA, mídia), integridade referencial (restrict/cascade/set null) e RLS por papel (`anon`, `pending`, `viewer`, `editor`, `admin`) | `Files=1, Tests=84, Result: PASS` |
 | `supabase/tests/database/audit_log.test.sql` (TECH-13, 27/10/2026): 9 testes. UPDATE e DELETE diretos na auditoria continuam recusados, inclusive anular ou trocar o ator; excluir a conta anonimiza só os eventos dela | `Files=2, Tests=93, Result: PASS` |
 | Reversão: o `.down.sql` é bloqueado se houver conteúdo; confirmado, deixa só as 4 tabelas de 13/10; `migration repair` + `migration up` reaplicam; testes passam de novo | Ciclo completo sem erro |
+| `npm run test:migrations` (DBX-02, 28/10/2026, CLI 2.122.0, Postgres 17.11 local, mesma versão de produção): `db reset` com seed (6 áreas, 10 serviços, 4 cases, 5 CTAs, 4 mídias, 1 configuração) + pgTAP; seed recusado com `app.ambiente = 'producao'` e reexecutado sem duplicar; upgrade de `20261027000100` para a última versão sem perder dados; rollback do CMS bloqueado com conteúdo; os 7 `.down.sql` em ordem inversa, cada um duas vezes, deixam o schema sem objetos do projeto; `migration repair` + `migration up` + seed reaplicam e o pgTAP passa | `Files=3, Tests=104, Result: PASS` em cada etapa |
+| `tests/integration/supabase` com o seed carregado | 8 arquivos, 40 testes, `PASS` |
+| `scripts/content-seed.test.mjs`: seed em dia com `content/`, trava antes de qualquer insert, todo insert com `on conflict do nothing`, sem contas nem dados pessoais | Passa no `npm test` |
 | `content-sql.test.ts`: enum × `PUBLICATION_STATUSES`, `is_valid_slug` × `validateSlug`, mídia × `MEDIA_RULES`, RLS em toda tabela | Passa no `npm test` |
 | `rows.test.ts` (DB-03): toda coluna que o site seleciona existe na migration | Passa no `npm test` |
 | `npm run test:supabase` (DB-03): leitura pública de configuração, páginas e CTAs com a RLS real — rascunho, página agendada e blocos de rascunho não vazam; visitante não grava | 6 testes, `PASS` |
@@ -318,25 +322,47 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 ## 9. Como aplicar, testar e reverter
 
 ```bash
-# Banco local limpo (Docker): aplica todas as migrations em ordem
+# Banco local limpo (Docker): aplica todas as migrations em ordem e roda supabase/seed.sql
 npx supabase start
 npx supabase db reset
 npx supabase test db          # testes pgTAP de supabase/tests/
 npm run test:supabase         # integração do código com a RLS real (tests/integration/supabase)
+npm run test:migrations       # instalação limpa, seed, upgrade e reversão completa (DBX-02)
 
-# Ambiente remoto (dev/hml/prd): só migrations, nunca o seed
+# Ambiente remoto (hoje só produção): só migrations, nunca o seed
 npx supabase link --project-ref <ref>
 npx supabase db push --dry-run
 npx supabase db push
 ```
 
-**Reversão.** O Supabase CLI não executa reversões. Cada migration de conteúdo tem um
+**Ordem das migrations.** Sequência por timestamp, sem pular: perfis e papéis (0100) → matriz
+RBAC e bucket (0200) → auditoria (0300) → formulários (0400) → conteúdo do CMS (20261025000100)
+→ ajustes da TECH-13 (20261027000100/0200). Cada uma depende só das anteriores. Mudança
+destrutiva em banco com dados é feita em duas releases: primeiro a coluna nova, depois a remoção
+da antiga.
+
+**Reversão.** O Supabase CLI não executa reversões. **Toda** migration tem um
 `supabase/rollbacks/<migration>.down.sql`, aplicado à mão (SQL Editor ou `psql`) em ordem inversa
-e só depois de backup (GO-01). Se houver conteúdo cadastrado, o script para. Para descartar o
-conteúdo de propósito, rode antes, na mesma sessão, `set benjamin.confirmar_rollback = 'sim';`.
-Depois, registre a reversão no histórico:
+e só depois de backup (GO-01). Os scripts que apagam dados (perfis, auditoria, formulários,
+conteúdo, arquivos do bucket) param se houver linhas. Para descartá-las de propósito, rode antes,
+na mesma sessão, `set benjamin.confirmar_rollback = 'sim';`. Cada script pode rodar de novo sem
+erro se cair no meio. O bucket `media` não é apagado por SQL (o Storage não permite); reaplicar a
+0200 o reaproveita. Depois, registre a reversão no histórico:
 
 ```bash
 npx supabase migration repair --status reverted 20261025000100      # remoto (projeto linkado)
 npx supabase migration repair --status reverted 20261025000100 --local
 ```
+
+**Seed de desenvolvimento.** `supabase/seed.sql` é gerado de `content/` por
+`scripts/content-seed.mjs` (`npm run seed:write`; o `npm test` falha se estiver desatualizado). Traz
+o conteúdo provisório do site, mais um case em rascunho, um serviço arquivado e uma mídia sem uso.
+Não cria contas, senhas nem dados pessoais. Os ids textuais viram `md5(id)::uuid`, e todo insert
+usa `on conflict do nothing`: rodar de novo não duplica nada. Três barreiras impedem que chegue à
+produção:
+
+1. Só o `db reset` local executa o seed; o `db push` não executa.
+2. O primeiro comando do arquivo recusa banco marcado com `app.ambiente = 'producao'`
+   ([provisionamento](../operacao/provisionamento-producao.md) §2), mesmo com
+   `db push --include-seed` ou colado no SQL Editor.
+3. `supabase db reset --linked` é proibido: apagaria o banco remoto antes do seed.
