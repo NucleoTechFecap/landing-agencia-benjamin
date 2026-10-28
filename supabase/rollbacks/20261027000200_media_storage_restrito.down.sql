@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 27/10/2026
- Modificado em: 27/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  27/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-13).
+ 28/10/2026 Vinicius Binda             Pode rodar de novo sem erro (DBX-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,9 +27,10 @@
 --   npx supabase migration repair --status reverted 20261027000200
 --
 -- Efeito: o bucket volta a poder ser listado com a chave anon (expõe arquivos de rascunho).
-drop policy "media: quem enviou apaga arquivo sem registro" on storage.objects;
-drop policy "media: painel lista arquivos" on storage.objects;
+drop policy if exists "media: quem enviou apaga arquivo sem registro" on storage.objects;
+drop policy if exists "media: painel lista arquivos" on storage.objects;
 
+drop policy if exists "media: leitura pública" on storage.objects;
 create policy "media: leitura pública"
   on storage.objects for select to anon, authenticated
   using (bucket_id = 'media');
