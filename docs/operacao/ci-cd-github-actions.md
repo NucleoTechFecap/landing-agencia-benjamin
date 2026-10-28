@@ -12,7 +12,7 @@
 As regras protegem `main` e `production`:
 
 1. **Acesso de atualização:** somente `Vinishireis`, `VinnizzZ` e `NucleoTechFecap` podem atualizar as branches protegidas. Essa regra é separada dos requisitos de PR para que os usuários autorizados também continuem obrigados a usar PR.
-2. **Pull request e CI:** exige PR, uma aprovação, aprovação de CODEOWNER, histórico linear, sem force push ou exclusão, e checks `verify`, `release-source` e `release-content`.
+2. **Pull request e CI:** exige PR, uma aprovação independente, aprovação da última atualização, histórico linear, sem force push ou exclusão, e checks `verify`, `release-source` e `release-content`.
 
 `release-source` só valida PRs com destino `production`; `release-content` só executa para releases em `production`. Para outras execuções, esses jobs informam que não se aplicam. Assim os nomes dos checks permanecem estáveis nas duas branches.
 
