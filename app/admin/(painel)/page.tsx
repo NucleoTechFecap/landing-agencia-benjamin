@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Link para o CMS de áreas (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Link para o CMS de serviços (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Links para cases e biblioteca de mídia (ADM-08).
+ 29/10/2026 Caio Moraes              Cores via tokens do tema (ADM-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -54,22 +55,22 @@ export default async function AdminHomePage() {
   const modules = MODULES.filter((module) => can(user.role, module.resource, module.action));
   return (
     <section>
-      <h1 className="text-3xl font-black text-[#004a1b]">Bem-vindo(a) ao painel</h1>
-      <p className="mt-2 max-w-2xl text-[#231f20]/80">
+      <h1 className="text-3xl font-black text-benja-verde">Bem-vindo(a) ao painel</h1>
+      <p className="mt-2 max-w-2xl text-benja-grafite/80">
         Aqui a equipe da Agência Benjamin atualiza o site sem depender do NúcleoTech. Os módulos com link já funcionam;
         os demais estão em construção.
       </p>
       <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {modules.map((module) => (
-          <li key={module.issue} className="rounded-2xl border-2 border-[#004a1b]/15 bg-white p-5">
+          <li key={module.issue} className="rounded-2xl border-2 border-benja-verde/15 bg-white p-5">
             {module.href ? (
-              <Link href={module.href} className="font-bold text-[#004a1b] underline-offset-4 hover:underline">
+              <Link href={module.href} className="font-bold text-benja-verde underline-offset-4 hover:underline">
                 {module.name}
               </Link>
             ) : (
               <p className="font-bold">{module.name}</p>
             )}
-            <p className="mt-1 text-xs text-[#231f20]/60">
+            <p className="mt-1 text-xs text-benja-grafite/60">
               {module.href ? "Disponível" : "Em construção"} · {module.issue}
             </p>
           </li>

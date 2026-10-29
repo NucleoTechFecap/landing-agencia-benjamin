@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
  13/10/2026 Vinícius Nishimura Reis  Bloqueio de contas pendentes (ADM-03).
  26/10/2026 Vinícius Nishimura Reis  Páginas do painel só por requisição (connection) (ADM-07).
+ 29/10/2026 Caio Moraes              Cores via tokens do tema (ADM-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -53,7 +54,7 @@ async function PanelGate({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-dvh">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-[#004a1b] bg-[#004a1b] px-6 py-4 text-[#f1fcd0]">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-benja-verde bg-benja-verde px-6 py-4 text-benja-nyanza">
         <p className="text-lg font-black">Painel · Agência Benjamin</p>
         <div className="flex items-center gap-4 text-sm">
           <span>
@@ -62,7 +63,7 @@ async function PanelGate({ children }: { children: ReactNode }) {
           <form action={signOut}>
             <button
               type="submit"
-              className="rounded-full border-2 border-[#f1fcd0] px-4 py-1.5 font-semibold hover:bg-[#f1fcd0] hover:text-[#004a1b]"
+              className="rounded-full border-2 border-benja-nyanza px-4 py-1.5 font-semibold hover:bg-benja-nyanza hover:text-benja-verde"
             >
               Sair
             </button>
