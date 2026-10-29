@@ -22,6 +22,7 @@
 */
 
 import { validateSlug } from "./slug";
+import type { CmsWarning } from "./cms-form";
 import type { ContentEntityType, ContentSnapshot, CtaTarget, MediaRef, Publishable } from "./types";
 import { isPubliclyVisible } from "./visibility";
 
@@ -260,7 +261,7 @@ export interface ImpactReport {
   /** Impedem a operação. */
   blockers: string[];
   /** Exibidos para confirmação; o site segue íntegro via fallback. */
-  warnings: string[];
+  warnings: CmsWarning[];
 }
 
 /**
@@ -312,12 +313,12 @@ export function assessRemovalImpact(
         `${wouldOrphan.length} case(s) publicado(s) ficariam sem serviço: ${wouldOrphan.map((c) => c.title).join(", ")}.`,
       );
     } else if (dependentCases.length) {
-      report.warnings.push(`O vínculo com ${dependentCases.length} case(s) deixará de aparecer no site.`);
+      report.warnings.push("case-services-hidden");
     }
   }
 
   if (ctasPointing.length) {
-    report.warnings.push(`${ctasPointing.length} CTA(s) passarão a usar o link de fallback.`);
+    report.warnings.push("ctas-fallback");
   }
   return report;
 }

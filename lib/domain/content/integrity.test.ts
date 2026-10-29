@@ -140,10 +140,10 @@ describe("assessRemovalImpact", () => {
   it("apenas avisa quando o case mantém outro serviço publicado", () => {
     const report = assessRemovalImpact("service", "producao-de-conteudo", mvpSnapshot(), NOW);
     expect(report.blockers).toEqual([]);
-    expect(report.warnings[0]).toMatch(/1 case/);
+    expect(report.warnings).toEqual(["case-services-hidden"]);
   });
 
   it("avisa quando CTAs publicados apontam para o item", () => {
-    expect(assessRemovalImpact("case", "meridiano", mvpSnapshot(), NOW).warnings[0]).toMatch(/CTA/);
+    expect(assessRemovalImpact("case", "meridiano", mvpSnapshot(), NOW).warnings).toEqual(["ctas-fallback"]);
   });
 });

@@ -330,7 +330,7 @@ describe("CMS de áreas — publicação (ADM-07)", () => {
       "unpublish",
     );
     expect(result.status).toBe("draft");
-    expect(result.warnings).toEqual(["1 CTA(s) passarão a usar o link de fallback."]);
+    expect(result.warnings).toEqual(["ctas-fallback"]);
   });
 
   it("excluir só a partir de arquivado e só com permissão de exclusão", async () => {

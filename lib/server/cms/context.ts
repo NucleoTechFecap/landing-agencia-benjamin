@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
+28/10/2026 Codex                     Usa códigos de aviso fechados (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,7 +30,7 @@ import { publicEnv } from "@/lib/config/public-env";
 import { safeAdminRedirect } from "@/lib/domain/auth/redirect";
 import { MEDIA_BUCKET } from "@/lib/domain/media/policy";
 import type { Action, Resource } from "@/lib/domain/auth/rbac";
-import type { CmsFlash, CmsFormState } from "@/lib/domain/content/cms-form";
+import type { CmsFlash, CmsFormState, CmsWarning } from "@/lib/domain/content/cms-form";
 import { COMMAND_PERMISSION, type PublicationCommand } from "@/lib/domain/content/publication";
 import type { ContentSnapshot } from "@/lib/domain/content/types";
 import { recordAuditEvent } from "../audit";
@@ -96,9 +97,9 @@ export async function cmsFormAction(
 }
 
 /** Caminho com mensagem de sucesso (?ok=) e avisos de impacto (?aviso=). */
-export function withFlash(path: string, flash: string, warnings: string[] = []): string {
+export function withFlash(path: string, flash: CmsFlash, warnings: CmsWarning[] = []): string {
   const params = new URLSearchParams({ ok: flash });
-  if (warnings.length) params.set("aviso", warnings.join(" "));
+  if (warnings.length) params.set("aviso", warnings.join(","));
   return `${path}${path.includes("?") ? "&" : "?"}${params}`;
 }
 
