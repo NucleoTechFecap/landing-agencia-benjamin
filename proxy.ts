@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,13 +20,14 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
  13/10/2026 Vinícius Nishimura Reis  Barreira de autenticação para rotas não públicas do painel (ADM-03).
  13/10/2026 Vinícius Nishimura Reis  404 real para serviços e cases inexistentes (estrutura da landing).
+ 29/10/2026 Vinicius Binda             301 de endereço antigo ou com maiúsculas para o atual (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { LOGIN_PATH, isPublicAdminPath } from "@/lib/domain/auth/redirect";
-import { publishedSlugExists, type DetailRoute } from "@/lib/server/content/published-slugs";
+import { resolveDetailSlug, type DetailRoute } from "@/lib/server/content/published-slugs";
 
 /**
  * Primeira barreira do painel (ADM-03) e renovação de sessão (ADM-02):
@@ -68,13 +69,19 @@ export async function proxy(request: NextRequest) {
 
 /**
  * Detalhes de serviço/case: slug inexistente, rascunho ou arquivado responde 404 real
- * (RF-18). Feito aqui porque, com Partial Prerendering, `notFound()` dentro da página
+ * (RF-18); endereço antigo ou com maiúsculas responde 301 para o atual (DB-08), mantendo a
+ * query string. Feito aqui porque, com Partial Prerendering, `notFound()` dentro da página
  * só consegue status 200 + noindex (o shell já começou a ser enviado).
  */
 async function guardDetailRoute(request: NextRequest, pathname: string) {
   const [, route, slug] = pathname.split("/") as [string, DetailRoute, string];
-  if (slug && !(await publishedSlugExists(route, slug))) {
+  if (!slug) return NextResponse.next();
+  const resolution = await resolveDetailSlug(route, slug);
+  if (resolution.status === "missing") {
     return NextResponse.rewrite(new URL("/_conteudo-inexistente", request.url), { status: 404 });
+  }
+  if (resolution.status === "moved") {
+    return NextResponse.redirect(new URL(`/${route}/${resolution.slug}${request.nextUrl.search}`, request.url), 301);
   }
   return NextResponse.next();
 }

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
+ 29/10/2026 Vinicius Binda             Imita o trigger track_slug: endereços antigos e reservados (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -38,7 +39,7 @@ import type {
   ServiceRow,
 } from "../content/supabase/rows";
 import { AppError } from "../errors";
-import type { CmsStore, EntityTable, Row } from "./store";
+import type { CmsStore, EntityTable, RedirectEntity, Row } from "./store";
 import { toMediaAsset } from "./supabase-store";
 
 /** Valores padrão das colunas, como no banco (default da migration). */
@@ -89,12 +90,22 @@ export interface MemoryTables {
   case_media: CaseMediaRow[];
   media_assets: MediaAssetRow[];
   ctas: CtaRow[];
+  slug_redirects: SlugRedirectRow[];
 }
 
+export interface SlugRedirectRow {
+  entity_type: RedirectEntity;
+  old_slug: string;
+  entity_id: string | null;
+}
+
+const REDIRECT_ENTITY: Partial<Record<EntityTable, RedirectEntity>> = { services: "service", cases: "case" };
+
 /**
- * Imita o banco no que importa para as regras do CMS: slug único por tabela, versão otimista
- * por `updated_at`, vínculos em cascata e categoria em uso bloqueando a exclusão. Não simula
- * RLS — isso é coberto pelos testes pgTAP e de integração com o Supabase local.
+ * Imita o banco no que importa para as regras do CMS: slug único por tabela, endereços antigos
+ * e reservados (trigger track_slug, DB-08), versão otimista por `updated_at`, vínculos em
+ * cascata e categoria em uso bloqueando a exclusão. Não simula RLS — isso é coberto pelos
+ * testes pgTAP e de integração com o Supabase local.
  */
 export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
   const tables: MemoryTables = {
@@ -107,6 +118,7 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
     case_media: [],
     media_assets: [],
     ctas: [],
+    slug_redirects: [],
     ...structuredClone(seed),
   };
   let clock = Date.parse("2026-10-26T12:00:00.000Z");
@@ -122,6 +134,39 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
         fieldErrors: { slug: ["Já existe um item com este endereço. Escolha outro."] },
       });
     }
+  }
+
+  /** Mesmas regras do trigger track_slug: endereço de outro item é recusado; o antigo fica registrado. */
+  function trackSlug(table: EntityTable, values: Row, id: string, current?: Row) {
+    const entity = REDIRECT_ENTITY[table];
+    if (!entity || !("slug" in values) || values.slug === current?.slug) return;
+    const redirects = tables.slug_redirects;
+    if (redirects.some((row) => row.entity_type === entity && row.old_slug === values.slug && row.entity_id !== id)) {
+      throw new AppError("VALIDATION_FAILED", {
+        message: "Já existe um item com este endereço (slug).",
+        fieldErrors: { slug: ["Já existe um item com este endereço. Escolha outro."] },
+      });
+    }
+    tables.slug_redirects = redirects.filter((row) => !(row.entity_type === entity && row.old_slug === values.slug));
+    if (current?.published_at) {
+      tables.slug_redirects.push({ entity_type: entity, old_slug: current.slug as string, entity_id: id });
+    }
+  }
+
+  /** Item excluído que já foi ao ar: o endereço atual e os antigos ficam reservados. */
+  function reserveSlugs(table: EntityTable, row: Row) {
+    const entity = REDIRECT_ENTITY[table];
+    if (!entity || !row.published_at) return;
+    tables.slug_redirects = [
+      ...tables.slug_redirects
+        .filter((redirect) => !(redirect.entity_type === entity && redirect.old_slug === row.slug))
+        .map((redirect) =>
+          redirect.entity_type === entity && redirect.entity_id === row.id
+            ? { ...redirect, entity_id: null }
+            : redirect,
+        ),
+      { entity_type: entity, old_slug: row.slug as string, entity_id: null },
+    ];
   }
 
   const store: CmsStore = {
@@ -154,8 +199,16 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
       ];
     },
 
+    async retiredSlugs(entity) {
+      return tables.slug_redirects
+        .filter((row) => row.entity_type === entity)
+        .map((row) => ({ slug: row.old_slug, itemId: row.entity_id }));
+    },
+
     async insert(table, values) {
       assertUniqueSlug(table, values);
+      const id = crypto.randomUUID();
+      trackSlug(table, values, id);
       const now = tick();
       const row: Row = {
         ...DEFAULTS[table],
@@ -164,7 +217,7 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
         published_at: null,
         archived_at: null,
         ...values,
-        id: crypto.randomUUID(),
+        id,
         created_at: now,
         updated_at: now,
       };
@@ -177,17 +230,20 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
       if (!row) throw new AppError("NOT_FOUND");
       if (row.updated_at !== expectedUpdatedAt) throw new AppError("CONFLICT");
       assertUniqueSlug(table, values, id);
+      trackSlug(table, values, id, row);
       Object.assign(row, values, { updated_at: tick() });
       return { id, updatedAt: row.updated_at as string };
     },
 
     async remove(table, id) {
-      if (!find(table, id)) throw new AppError("NOT_FOUND");
+      const row = find(table, id);
+      if (!row) throw new AppError("NOT_FOUND");
       if (table === "case_categories" && tables.cases.some((item) => item.category_id === id)) {
         throw new AppError("CONFLICT", {
           message: "Este item está em uso por outro conteúdo e não pode ser excluído.",
         });
       }
+      reserveSlugs(table, row);
       (tables[table] as unknown as Row[]).splice(
         rowsOf(table).findIndex((row) => row.id === id),
         1,

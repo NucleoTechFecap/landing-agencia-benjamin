@@ -454,6 +454,11 @@ quando for chamada pelo painel.
 
 ## 7. Slugs e URLs (DB-08)
 
+> **Superado em 29/10/2026 (DB-08).** Implementado em `20261029000100_db08_slugs_e_urls.sql` com
+> duas diferenças: endereço antigo **não** é liberado para outro item (o item vivo não "vence"), e o
+> de item excluído fica reservado em vez de apagado. Área, categoria e página ficam com slug fixo.
+> Regras em vigor: [dicionário de dados](dicionario-de-dados.md) §10.
+
 | Situação | Comportamento |
 | -------- | ------------- |
 | Item em rascunho que **nunca** foi publicado | Slug livre: trocar não gera redirecionamento |

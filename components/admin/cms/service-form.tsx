@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Atalho para enviar imagem (ADM-08).
+ 29/10/2026 Vinicius Binda             Endereço editável depois de publicado, com aviso (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -78,7 +79,8 @@ export function ServiceForm({
                 defaultValue={value("name", service?.name)}
               />
               <SlugField
-                locked={Boolean(service?.publishedAt)}
+                locked={false}
+                redirects={Boolean(service?.publishedAt)}
                 errors={errors("slug")}
                 defaultValue={value("slug", service?.slug)}
               />

@@ -43,10 +43,10 @@ pelo teste "aceita a estrutura do MVP" (`integrity.test.ts`).
 | ----- | ----- |
 | Formato | `^[a-z0-9]+(?:-[a-z0-9]+)*$` (kebab-case, sem acento) |
 | Tamanho | 3 a 80 caracteres |
-| Unicidade | Por tipo de entidade (serviço e case podem ter o mesmo slug) |
+| Unicidade | Por tipo de entidade (serviço e case podem ter o mesmo slug). Endereço antigo de outro item ou de item excluído também conta como usado (DB-08) |
 | Reservados | `admin`, `api`, `novo`, `nova`, `editar`, `new`, `edit`, `preview`, `rascunho`, `todos`, `filtro`, `pagina` |
 | Geração | `slugify(título)`; colisão recebe sufixo `-2`, `-3`… (`uniqueSlug`) |
-| Alteração | Livre enquanto rascunho; após a primeira publicação, mudar slug exige redirecionamento 301 do antigo (DB-08) |
+| Alteração | Livre enquanto rascunho. Após a primeira publicação: serviço e case podem mudar, e o antigo responde 301 para o atual; área e categoria ficam fixas ([dicionário §10](../banco/dicionario-de-dados.md#10-slugs-e-urls-db-08)) |
 
 ## 4. Ordenação e destaques
 

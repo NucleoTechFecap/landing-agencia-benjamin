@@ -13,7 +13,7 @@
 | Campo | Texto atual (provisório) | Regra para publicar |
 | ----- | ------------------------ | ------------------- |
 | Nome | Assessoria de Imprensa / PR | 2 a 120 caracteres |
-| Endereço (slug) | `assessoria-de-imprensa` | Fixo depois da primeira publicação |
+| Endereço (slug) | `assessoria-de-imprensa` | Pode mudar depois de publicado; o antigo leva ao novo (301) |
 | Resumo | Relacionamento com a imprensa e reputação. | 10 a 200 caracteres (atual: 42) |
 | Descrição | Elaboração de pautas e releases, relacionamento com veículos, preparação de porta-vozes e acompanhamento de publicações (clipping). | Mínimo de 20 caracteres (atual: 131) |
 | Exemplos de entregas | Pautas e releases · Media training · Clipping | Até 12, um por linha |

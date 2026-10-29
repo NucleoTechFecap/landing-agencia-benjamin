@@ -13,7 +13,7 @@
 | Campo | Texto atual (provisório) | Regra para publicar |
 | ----- | ------------------------ | ------------------- |
 | Nome | Comunicação Interna | 2 a 120 caracteres |
-| Endereço (slug) | `comunicacao-interna` | Fixo depois da primeira publicação |
+| Endereço (slug) | `comunicacao-interna` | Pode mudar depois de publicado; o antigo leva ao novo (301) |
 | Resumo | Engajamento e alinhamento de times. | 10 a 200 caracteres (atual: 35) |
 | Descrição | Diagnóstico de comunicação interna, campanhas para colaboradores, canais internos e ações de clima e engajamento. | Mínimo de 20 caracteres (atual: 113) |
 | Exemplos de entregas | Campanhas internas · Canais e rituais · Ações de engajamento | Até 12, um por linha |

@@ -2,15 +2,15 @@
 
 | Campo           | Valor                                                                        |
 | --------------- | ---------------------------------------------------------------------------- |
-| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58), DBX-02 (#113)                       |
+| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58), DBX-02 (#113), DB-08 (#64)          |
 | Responsável     | Vinicius Binda (`@VinnizzZ`)                                                 |
 | Revisão técnica | Vinícius Nishimura Reis (`@Vinishireis`)                                     |
 | Versão          | 1.0.0                                                                        |
 | Data            | 25/10/2026                                                                   |
-| Migration       | `supabase/migrations/20261025000100_cms_content.sql`                         |
+| Migration       | `supabase/migrations/20261025000100_cms_content.sql` e `20261029000100_db08_slugs_e_urls.sql` (§10) |
 | Reversão        | `supabase/rollbacks/<migration>.down.sql` (uma por migration, §9)            |
 | Seed            | `supabase/seed.sql`, gerado por `scripts/content-seed.mjs` (só banco local, §9) |
-| Testes          | `supabase/tests/database/cms_content.test.sql` (pgTAP, 84 testes) e `lib/server/content/content-sql.test.ts` (SQL × regras de domínio) |
+| Testes          | `supabase/tests/database/cms_content.test.sql` (pgTAP, 84 testes), `slugs_e_urls.test.sql` (pgTAP, 33 testes) e `lib/server/content/content-sql.test.ts` (SQL × regras de domínio) |
 | Insumos         | [integridade](../negocio/integridade-de-conteudo.md), [campos do case](../negocio/campos-do-case.md), [fluxo de publicação](../negocio/fluxo-de-publicacao.md), [proteção de rotas](../seguranca/protecao-de-rotas.md), [ADR-0005](../adr/0005-armazenamento-de-midia.md) |
 
 ## 1. Visão geral
@@ -22,6 +22,7 @@ O banco tem três grupos de tabelas. Este documento cobre o grupo de conteúdo e
 | Usuários e acesso | `profiles`, `role_permissions`, `audit_log` | 0100, 0200, 0300 |
 | Formulários (leads, contatos, feedbacks) | `form_submissions` | 0400 |
 | **Conteúdo do CMS** | `pages`, `blocks`, `areas`, `services`, `service_areas`, `case_categories`, `cases`, `case_services`, `case_media`, `ctas`, `media_assets`, `site_settings` | **20261025000100** |
+| Endereços antigos (DB-08) | `slug_redirects` | 20261029000100 |
 
 Decisões que orientaram o modelo:
 
@@ -71,6 +72,7 @@ erDiagram
 | CTA × Destino | N:0..1 | `ctas.target_*_id` | `set null` (órfão usa fallback e o CMS sinaliza R04) | Coluna coerente com `target_kind` (constraint) |
 | Usuário × Perfil | 1:1 | `profiles.id` → `auth.users` | `cascade` | Criado por trigger |
 | Conteúdo × Editor | N:0..1 | `updated_by` → `auth.users` | `set null` (o histórico fica no `audit_log`) | Preenchido por trigger |
+| Endereço antigo × Serviço/Case | N:0..1, polimórfica | `slug_redirects.entity_id` (sem FK) | Excluir o item anula `entity_id`: o endereço fica reservado | Gravado só pelo trigger `track_slug` (§10) |
 
 ## 4. Convenções de integridade
 
@@ -79,7 +81,7 @@ erDiagram
 | Nomes | `snake_case`, tabelas no plural; FK = `<entidade>_id`; mídia = `<uso>_media_id` | Padrão do Postgres e das migrations existentes |
 | PK | `uuid default gen_random_uuid()`; junções com PK composta | Ids não enumeráveis em URLs/API; junção sem duplicata |
 | Texto | `text` com `check (char_length(...))` em vez de `varchar(n)` | Limite explícito e alterável sem reescrever a coluna; mesmo padrão de `profiles` |
-| Slug | `not null unique check (public.is_valid_slug(slug))` | Mesma regra de `validateSlug()`: kebab-case, 3–80 caracteres, sem palavras reservadas; único por tipo |
+| Slug | `not null unique check (public.is_valid_slug(slug))` | Mesma regra de `validateSlug()`: kebab-case, 3–80 caracteres, sem palavras reservadas; único por tipo. Troca depois de publicar: §10 |
 | Estados | enum `publish_status` (`draft`, `published`, `archived`), padrão `draft` | Fonte única em `publication-status.ts`; o teste falha se divergirem |
 | Publicação | `check (status <> 'published' or published_at is not null)` | Invariante de `checkInvariants()` (TECH-04) |
 | Arquivamento | `check ((status = 'archived') = (archived_at is not null))` | Arquivado tem data; restaurar limpa a data |
@@ -261,6 +263,18 @@ rota pública (`sobre`, `areas`, `servicos`, `cases`, `contato`, `privacidade` �
 acrescenta seus blocos depois das seções fixas daquela rota (renderização: INT-03). Páginas com
 outro slug ficam salvas, mas sem rota pública até uma decisão de produto sobre páginas livres.
 
+### `slug_redirects` — endereços antigos e reservados (DB-08)
+
+| Coluna | Tipo | Nulo | Regra |
+| ------ | ---- | ---- | ----- |
+| `entity_type` | `text` | Não | `service` ou `case`; PK composta com `old_slug` |
+| `old_slug` | `text` | Não | `is_valid_slug`; único por tipo |
+| `entity_id` | `uuid` | Sim | Item que responde pelo endereço (sem FK: atende dois tipos). `null` = item excluído, endereço reservado |
+| `created_at` | `timestamptz` | Não | Data do registro |
+
+Gravada **só** pelo trigger `track_slug` (`security definer`); ninguém tem `insert`/`update`/`delete`.
+Leitura: o visitante vê só endereços de item no ar; o painel vê os do tipo que o papel pode ver.
+
 ### `site_settings` — configuração institucional (ADM-10)
 
 Linha única (`id boolean primary key default true check (id)`).
@@ -296,7 +310,8 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 - [x] **Catálogo de tipos de bloco** e relação de `pages` com as rotas fixas — definido no DB-03
   (§5, `pages` e `blocks`).
 - [ ] **Depoimentos públicos:** fora do MVP até a Benjamin decidir (exige consentimento).
-- [ ] **Redirecionamento de slug** alterado após publicar: tabela própria em DB-08.
+- [x] **Redirecionamento de slug** alterado após publicar: `slug_redirects` e 301 no proxy e na API
+  (DB-08, §10).
 - [ ] **Índices de listagem e filtros** do portfólio: DBX-03 (esta migration só indexa as FKs).
 - [x] **Seeds** do conteúdo provisório de `content/`: DBX-02 (`supabase/seed.sql`, §9). Os ids
   textuais viram UUID, e as capas de `public/brand` entram em `media_assets` com o caminho público.
@@ -319,6 +334,11 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | `npm run test:supabase` (DB-05): case publicado com capa, galeria em ordem, link externo e mês; vínculo com serviço em rascunho oculto; categoria e galeria de rascunho invisíveis; slug do proxy | 4 testes, `PASS` |
 | `repository.supabase.test.ts` (DB-05): repositório público inteiro sobre a fonte Supabase — banco vazio (listas vazias, detalhes inexistentes) e populado (filtro por categoria, detalhe com galeria, agendado para o futuro oculto) | Passa no `npm test` |
 
+| `npx supabase test db` (DB-08, 29/10/2026): `slugs_e_urls.test.sql`, 33 testes. Endereço atual, antigo (inclusive após trocas seguidas) e de outro tipo; rascunho, arquivado e despublicado não resolvem; outro item não assume endereço antigo nem reservado; exclusão reserva os endereços; rascunho nunca publicado troca e é excluído livremente; slug fixo em área, categoria e página publicadas; editor não grava na tabela, mas o trigger registra a troca feita por ele | `Files=5, Tests=148, Result: PASS` |
+| `tests/integration/supabase/slugs-e-urls.test.ts` (DB-08): pelo painel, com a RLS do editor e do admin — publicar e trocar o endereço, o antigo resolver para o novo com a chave anônima, outro serviço recusado (painel e banco), despublicado deixa de resolver, excluído fica reservado | 4 testes, `PASS` (9 arquivos, 44 testes no total) |
+| `next start` sobre o Supabase local, case renomeado de `meridiano` para `meridiano-2026` (DB-08): `/cases/meridiano?utm=x` → 301 com a query; `/cases/Meridiano` → 301 direto ao atual; `/cases/meridiano-2026` → 200; rascunho e inexistente → 404; `/servicos/Audiovisual` → 301; `/api/v1/cases/meridiano` → 301; `/api/v1/cases/nao-existe` → 404 | Conferido com `curl` |
+| `npm run test:migrations` (DB-08, 29/10/2026): 9 migrations, todas com rollback; upgrade de `20261028000100` com dados; os 9 `.down.sql` em ordem inversa, duas vezes cada; reaplicação e pgTAP. À parte: com endereço antigo registrado, `20261029000100_db08_slugs_e_urls.down.sql` para sem `benjamin.confirmar_rollback` e mantém a tabela; com a confirmação, remove tabela, triggers e funções | `Files=5, Tests=148, Result: PASS` em cada etapa |
+
 ## 9. Como aplicar, testar e reverter
 
 ```bash
@@ -337,7 +357,8 @@ npx supabase db push
 
 **Ordem das migrations.** Sequência por timestamp, sem pular: perfis e papéis (0100) → matriz
 RBAC e bucket (0200) → auditoria (0300) → formulários (0400) → conteúdo do CMS (20261025000100)
-→ ajustes da TECH-13 (20261027000100/0200). Cada uma depende só das anteriores. Mudança
+→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08). Cada uma
+depende só das anteriores. Mudança
 destrutiva em banco com dados é feita em duas releases: primeiro a coluna nova, depois a remoção
 da antiga.
 
@@ -366,3 +387,41 @@ produção:
    ([provisionamento](../operacao/provisionamento-producao.md) §2), mesmo com
    `db push --include-seed` ou colado no SQL Editor.
 3. `supabase db reset --linked` é proibido: apagaria o banco remoto antes do seed.
+
+## 10. Slugs e URLs (DB-08)
+
+**Decisão.** Serviço e case têm página própria (`/servicos/<slug>`, `/cases/<slug>`). Depois da
+primeira publicação o endereço **pode mudar**, e o antigo responde **301** para o atual. Área,
+categoria e página não têm página própria (a área é âncora de `/areas`, a categoria é filtro de
+`/cases`, a página é a chave de uma rota fixa): o slug fica **fixo** depois de publicado. Endereço
+de item que já foi ao ar **nunca** passa a abrir outro conteúdo.
+
+| Situação | Comportamento | Onde |
+| -------- | ------------- | ---- |
+| Rascunho que nunca foi publicado troca de slug | Livre, sem registro (ninguém tem o link) | `track_slug` |
+| Serviço/case que já foi publicado troca de slug | O antigo vai para `slug_redirects` apontando para o **id** do item | `track_slug` |
+| Endereço antigo acessado, item no ar | **301** para o slug atual, mantendo a query string. Trocas seguidas (a → b → c) levam direto ao atual, sem cadeia | `resolve_public_slug`, `proxy.ts`, API |
+| Endereço com maiúsculas (`/cases/Meridiano`) | **301** para as minúsculas, já no slug atual (um só redirecionamento) | `resolveDetailSlug` |
+| Item despublicado, arquivado, agendado ou excluído | **404** no endereço atual e nos antigos | `resolve_public_slug` (RLS) |
+| O próprio item volta a um endereço antigo | Permitido: o registro daquele endereço sai e o abandonado passa a redirecionar | `track_slug` |
+| Outro item tenta usar endereço antigo ou reservado | Recusado (`23505`); o painel avisa antes de gravar | `track_slug`, `content-service.ts` |
+| Item já publicado é excluído | O endereço atual e os antigos ficam **reservados** (`entity_id = null`) e respondem 404 para sempre | `track_slug` |
+| Slug gerado pelo servidor (campo em branco) | Pula endereços em uso, antigos e reservados (`-2`, `-3`…) | `withSlug()` |
+| Área, categoria ou página publicada troca de slug | Recusado na aplicação e no banco (`23514`), inclusive pelo SQL Editor | `lock_published_slug` |
+
+**Consulta.** `resolve_public_slug(p_entity, p_slug)` devolve o slug atual do item publicado que
+responde pelo endereço, ou `null`. Roda com a RLS de quem chama (`security invoker`), pela PK de
+`slug_redirects` e pelo índice único do slug. O proxy chama uma vez por acesso a uma página de
+detalhe. A API só consulta quando o detalhe não existe (endereço antigo ou com maiúsculas). Se o
+banco não responder, a requisição segue com o próprio slug (*fail open*), e a página ainda chama
+`notFound()`.
+
+**Painel.** O campo de endereço de serviço e case continua editável depois de publicado, com o aviso
+de que o antigo passa a levar ao novo. A troca é auditada (`content.updated` com `previousSlug`) e
+invalida o cache do endereço novo e do antigo (`tagsForChange`). Sitemap e `llms.txt` listam só o
+atual. Troca feita direto no banco não passa pela invalidação: use `POST /api/internal/revalidate`
+(ADR-0006). Até lá, o endereço antigo no sitemap continua funcionando, porque responde 301.
+
+**Reversão.** `supabase/rollbacks/20261029000100_db08_slugs_e_urls.down.sql` para se houver
+endereços registrados (confirmação `benjamin.confirmar_rollback`). Antes, volte o site para uma
+versão sem DB-08: o proxy desta versão chama `resolve_public_slug`.

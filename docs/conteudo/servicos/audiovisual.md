@@ -13,7 +13,7 @@
 | Campo | Texto atual (provisório) | Regra para publicar |
 | ----- | ------------------------ | ------------------- |
 | Nome | Audiovisual | 2 a 120 caracteres |
-| Endereço (slug) | `audiovisual` | Fixo depois da primeira publicação |
+| Endereço (slug) | `audiovisual` | Pode mudar depois de publicado; o antigo leva ao novo (301) |
 | Resumo | Vídeos, fotos e coberturas para contar histórias. | 10 a 200 caracteres (atual: 49) |
 | Descrição | Roteiro, captação e edição de vídeos institucionais, conteúdos para redes e cobertura fotográfica e audiovisual de eventos. | Mínimo de 20 caracteres (atual: 123) |
 | Exemplos de entregas | Vídeos institucionais · Vídeos para redes · Cobertura de eventos | Até 12, um por linha |

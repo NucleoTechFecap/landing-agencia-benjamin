@@ -13,7 +13,7 @@
 | Campo | Texto atual (provisório) | Regra para publicar |
 | ----- | ------------------------ | ------------------- |
 | Nome | Copywriting | 2 a 120 caracteres |
-| Endereço (slug) | `copywriting` | Fixo depois da primeira publicação |
+| Endereço (slug) | `copywriting` | Pode mudar depois de publicado; o antigo leva ao novo (301) |
 | Resumo | Textos que vendem a ideia certa, do jeito certo. | 10 a 200 caracteres (atual: 48) |
 | Descrição | Criação de textos estratégicos, narrativas de marca, copys para campanhas e artigos, com tom de voz definido para cada cliente. | Mínimo de 20 caracteres (atual: 127) |
 | Exemplos de entregas | Copys de campanha · Artigos para blog · Narrativa e tom de voz | Até 12, um por linha |

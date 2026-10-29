@@ -13,7 +13,7 @@
 | Campo | Texto atual (provisório) | Regra para publicar |
 | ----- | ------------------------ | ------------------- |
 | Nome | Produção de Conteúdo | 2 a 120 caracteres |
-| Endereço (slug) | `producao-de-conteudo` | Fixo depois da primeira publicação |
+| Endereço (slug) | `producao-de-conteudo` | Pode mudar depois de publicado; o antigo leva ao novo (301) |
 | Resumo | Conteúdos em texto, imagem e vídeo alinhados à estratégia. | 10 a 200 caracteres (atual: 58) |
 | Descrição | Pautas, roteiros, textos, imagens e vídeos produzidos para informar, engajar e gerar relacionamento com o público da marca. | Mínimo de 20 caracteres (atual: 123) |
 | Exemplos de entregas | Pautas e roteiros · Conteúdo para blog e redes · Séries editoriais | Até 12, um por linha |
