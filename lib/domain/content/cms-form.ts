@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Mensagem de arquivo enviado (ADM-08).
+ 28/10/2026 Vinícius Nishimura Reis  Códigos seguros para avisos de impacto (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -54,4 +55,16 @@ export type CmsFlash = keyof typeof CMS_FLASH;
 
 export function isCmsFlash(value: unknown): value is CmsFlash {
   return typeof value === "string" && Object.hasOwn(CMS_FLASH, value);
+}
+
+/** Avisos fixos: conteúdo da query string nunca vira texto livre no painel. */
+export const CMS_WARNING = {
+  vinculos: "Um ou mais cases deixarão de exibir este vínculo.",
+  ctas: "Uma ou mais chamadas para ação passarão a usar o link de fallback.",
+} as const;
+
+export type CmsWarning = keyof typeof CMS_WARNING;
+
+export function isCmsWarning(value: unknown): value is CmsWarning {
+  return typeof value === "string" && Object.hasOwn(CMS_WARNING, value);
 }

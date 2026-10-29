@@ -8,7 +8,7 @@
 | Versão          | 1.0.0                                                                  |
 | Data            | 13/10/2026                                                             |
 | Depende de      | [TECH-03](matriz-rbac.md), [TECH-04](../negocio/maquina-de-estados-publicacao.md) |
-| Código          | `lib/domain/audit/events.ts`, `lib/server/audit.ts`, `supabase/migrations/20261013000300_audit_log.sql`, `20261027000100_audit_log_anonimiza_ator.sql` + testes |
+| Código          | `lib/domain/audit/events.ts`, `lib/server/audit.ts`, `supabase/migrations/20261013000300_audit_log.sql`, `20261027000100_audit_log_anonimiza_ator.sql`, `20261028000100_audit_event_authorization.sql` + testes |
 
 ## 1. Objetivo
 
@@ -72,7 +72,10 @@ estruturado (`auth.login.failed`, sem e-mail) e nos *Auth logs* do Supabase.
 - Leitura: somente `audit:view` (`super_admin`, `admin`) via RLS. **Leitura anônima: impossível**
   (`revoke all ... from anon` + policy).
 - Escrita: somente pela função `record_audit_event` (sessão obrigatória) e pelas funções SQL de
-  gestão de acesso.
+  gestão de acesso. Eventos `content.*` e `media.*` exigem papel `editor` ou superior; eventos
+  `lead.*`, `feedback.*`, `retention.*`, `settings.*` e `user.*` exigem `admin` ou `super_admin`.
+  Eventos `auth.*` e `access.denied` podem ser gravados por qualquer sessão autenticada; eventos
+  fora dessas famílias são recusados.
 - Retenção proposta: 24 meses (⏳ aprovação institucional junto a TECH-08).
 
 ## 6. Política de erro e rastreabilidade

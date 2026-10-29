@@ -21,6 +21,11 @@
 5. Mudança nesta matriz = PR alterando `rbac.ts`, o seed SQL de `role_permissions` e este documento
    juntos (o teste de consistência falha se divergirem — ADM-03).
 
+O registro da trilha também valida o papel por família do evento: `content.*` e `media.*` exigem
+`editor` ou superior; `lead.*`, `feedback.*`, `retention.*`, `settings.*` e `user.*` exigem
+`admin` ou `super_admin`. A função `record_audit_event` aplica a regra no banco, inclusive para
+chamadas diretas ao RPC.
+
 ## 2. Matriz
 
 Legenda: **V** visualizar · **C** criar · **E** editar · **P** publicar · **A** arquivar ·

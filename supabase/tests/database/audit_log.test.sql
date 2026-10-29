@@ -3,14 +3,14 @@
  Sistema      : Agência Benjamin Landing Page
  Módulo       : Supabase
  Arquivo      : audit_log.test.sql
- Descrição    : Testes pgTAP da trilha de auditoria: append-only e anonimização do ator ao excluir a conta.
+ Descrição    : Testes pgTAP da auditoria: append-only, anonimização do ator e autorização de eventos.
 
  Desenvolvedor: Vinícius Nishimura Reis
 
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 27/10/2026
- Modificado em: 27/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  27/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-13).
+ 28/10/2026 Vinícius Nishimura Reis  Testa autorização por papel em record_audit_event (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -28,18 +29,38 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(9);
+select plan(11);
 
 insert into auth.users (id, email) values
   ('00000000-0000-4000-8000-0000000000c1', 'ator-auditado@teste.invalid'),
   ('00000000-0000-4000-8000-0000000000c2', 'outro-ator@teste.invalid');
 update public.profiles set role = 'editor' where id = '00000000-0000-4000-8000-0000000000c1';
+update public.profiles set role = 'viewer' where id = '00000000-0000-4000-8000-0000000000c2';
 
 insert into public.audit_log (actor_id, actor_role, event, resource_type, resource_id, metadata, request_id) values
   ('00000000-0000-4000-8000-0000000000c1', 'editor', 'content.published', 'content', 'item-1',
    '{"entity": "case", "slug": "fecap"}', 'req-1'),
   ('00000000-0000-4000-8000-0000000000c1', 'editor', 'auth.logout', 'session', null, '{}', 'req-2'),
   ('00000000-0000-4000-8000-0000000000c2', 'viewer', 'auth.logout', 'session', null, '{}', 'req-3');
+
+-- ─── Famílias de eventos exigem o papel que pode executar a operação ────────
+
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-4000-8000-0000000000c2';
+select throws_ok(
+  $$select public.record_audit_event('content.published', 'content', 'item-2')$$,
+  '42501', 'Papel insuficiente para registrar este evento.',
+  'viewer não consegue forjar um evento de publicação'
+);
+reset role;
+
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-4000-8000-0000000000c1';
+select lives_ok(
+  $$select public.record_audit_event('content.published', 'content', 'item-3')$$,
+  'editor pode registrar um evento de publicação'
+);
+reset role;
 
 -- ─── Append-only continua valendo para qualquer alteração direta ─────────────
 

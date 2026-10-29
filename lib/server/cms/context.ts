@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
+ 28/10/2026 Vinícius Nishimura Reis  Passa códigos, não texto livre, nos avisos do CMS (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -98,7 +99,12 @@ export async function cmsFormAction(
 /** Caminho com mensagem de sucesso (?ok=) e avisos de impacto (?aviso=). */
 export function withFlash(path: string, flash: string, warnings: string[] = []): string {
   const params = new URLSearchParams({ ok: flash });
-  if (warnings.length) params.set("aviso", warnings.join(" "));
+  const warningCodes = new Set<string>();
+  for (const warning of warnings) {
+    if (warning.startsWith("O vínculo com ")) warningCodes.add("vinculos");
+    if (warning.includes("CTA(s) passarão a usar o link de fallback.")) warningCodes.add("ctas");
+  }
+  for (const code of warningCodes) params.append("aviso", code);
   return `${path}${path.includes("?") ? "&" : "?"}${params}`;
 }
 
