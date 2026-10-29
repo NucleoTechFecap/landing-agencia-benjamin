@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Mensagem de arquivo enviado (ADM-08).
+28/10/2026 Codex                     Adiciona catálogo fechado de avisos (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -54,4 +55,16 @@ export type CmsFlash = keyof typeof CMS_FLASH;
 
 export function isCmsFlash(value: unknown): value is CmsFlash {
   return typeof value === "string" && Object.hasOwn(CMS_FLASH, value);
+}
+
+/** Avisos fixos exibidos depois de comandos do CMS; query strings não fornecem texto. */
+export const CMS_WARNING = {
+  "case-services-hidden": "Os vínculos com cases publicados deixarão de aparecer no site.",
+  "ctas-fallback": "CTAs publicados passarão a usar o link de fallback.",
+} as const;
+
+export type CmsWarning = keyof typeof CMS_WARNING;
+
+export function isCmsWarning(value: unknown): value is CmsWarning {
+  return typeof value === "string" && Object.hasOwn(CMS_WARNING, value);
 }

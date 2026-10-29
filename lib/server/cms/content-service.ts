@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 27/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
  26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
+28/10/2026 Codex                     Propaga códigos fechados de impacto (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,6 +30,7 @@ import "server-only";
 import { can, type Role } from "@/lib/domain/auth/rbac";
 import { AUDIT_EVENTS, type AuditEventName } from "@/lib/domain/audit/events";
 import { fieldErrorsOf } from "@/lib/domain/content/cms-schema";
+import type { CmsWarning } from "@/lib/domain/content/cms-form";
 import { assessRemovalImpact, findIntegrityIssues } from "@/lib/domain/content/integrity";
 import { uniqueSlug } from "@/lib/domain/content/slug";
 import {
@@ -74,7 +76,7 @@ export interface SaveResult {
 export interface CommandResult {
   status: PublicationStatus | "deleted";
   /** Avisos de impacto (ex.: CTAs que passam a usar fallback) para mostrar após a operação. */
-  warnings: string[];
+  warnings: CmsWarning[];
 }
 
 const COMMAND_EVENTS: Record<PublicationCommand, AuditEventName> = {
@@ -304,7 +306,7 @@ export async function runContentCommand<I extends { slug: string }, T extends Cm
   });
   if (!result.ok) throw publicationError(result.error);
 
-  let warnings: string[] = [];
+  let warnings: CmsWarning[] = [];
   const leavesSite = item.status === "published" && (command === "unpublish" || command === "archive");
   if (leavesSite || command === "delete") {
     const impact = assessRemovalImpact(def.type, item.id, snapshot, now);

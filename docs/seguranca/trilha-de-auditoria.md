@@ -72,8 +72,21 @@ estruturado (`auth.login.failed`, sem e-mail) e nos *Auth logs* do Supabase.
 - Leitura: somente `audit:view` (`super_admin`, `admin`) via RLS. **Leitura anônima: impossível**
   (`revoke all ... from anon` + policy).
 - Escrita: somente pela função `record_audit_event` (sessão obrigatória) e pelas funções SQL de
-  gestão de acesso.
+  gestão de acesso. A função valida o papel e a família do evento no banco; o cliente não escolhe
+  uma categoria de auditoria acima das permissões da sessão.
 - Retenção proposta: 24 meses (⏳ aprovação institucional junto a TECH-08).
+
+### Autorização de eventos (TECH-13)
+
+| Eventos | Papéis que podem registrar |
+| ------- | --------------------------- |
+| `auth.*` e `access.denied` | Qualquer sessão autenticada |
+| `content.*` e `media.*` | `editor`, `admin` e `super_admin` |
+| `lead.*`, `feedback.*` e `retention.*` | Somente `admin` (mantém a minimização de dados pessoais do `super_admin`) |
+| `settings.*` e `user.*` | `admin` e `super_admin` |
+
+Eventos fora do catálogo fechado ou incompatíveis com o papel são recusados por
+`record_audit_event` com `42501` antes de inserir a linha.
 
 ## 6. Política de erro e rastreabilidade
 
