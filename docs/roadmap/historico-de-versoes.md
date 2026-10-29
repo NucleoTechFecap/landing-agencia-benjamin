@@ -135,7 +135,7 @@ Regras ao usar uma versão:
 
 | Situação | Comportamento |
 | -------- | ------------- |
-| Item já publicado alguma vez e slug da versão diferente | Mantém o slug atual (travado após a primeira publicação) e avisa |
+| Item já publicado alguma vez e slug da versão diferente | Mantém o slug atual e avisa: restaurar não troca o endereço (a troca é feita no campo, com 301 em serviço e case, DB-08) |
 | Item arquivado | Pede "Restaurar" do arquivo antes, como na edição de hoje |
 | Mídia ou serviço citado na versão foi excluído | Sai do preenchimento, e o aviso lista o que saiu |
 | Serviço ou categoria citado está arquivado ou em rascunho | Preenche; se o item estiver publicado, a validação de publicação de sempre bloqueia o salvar ([R06](../negocio/integridade-de-conteudo.md)) |

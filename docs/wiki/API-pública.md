@@ -7,7 +7,8 @@ regra de visibilidade do site: o que não aparece no site não aparece na API.
 
 - Sucesso: `{ "data": ..., "meta"?: {...} }`. Erro: `{ "error": { code, message, requestId, fieldErrors? } }`.
 - Campos em `camelCase`, datas ISO 8601 em UTC, mês de referência `AAAA-MM`.
-- O identificador público é o **slug**; UUIDs internos não são expostos.
+- O identificador público é o **slug**; UUIDs internos não são expostos. Endereço antigo ou com
+  maiúsculas de serviço e case responde `301` para o atual (DB-08).
 - Toda resposta traz `X-Request-Id`, o mesmo que aparece no log.
 - Cache: `public, s-maxage=300, stale-while-revalidate=3600` nas leituras.
 - Listas paginadas aceitam `page` (≥ 1) e `pageSize` (1–50, padrão 12).
