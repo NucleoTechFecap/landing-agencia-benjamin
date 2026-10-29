@@ -51,7 +51,7 @@ Situação em **27/10/2026**, no commit `b105cdb` da `main` (✅ atendido · �
 | Sem domínio oficial na data | Alta | Médio (marca, SEO) | Publicar em `*.vercel.app` e migrar quando o domínio sair (GO-03) | Agência Benjamin / coordenação técnica |
 | `main` sem proteção: merge possível sem revisão | Média | Médio | Ativar o ruleset (CONTRIBUTING §6) antes do GO | Coordenação técnica |
 | Gravação do CMS não é atômica (item, vínculos e galeria) | Baixa | Médio | Falha registrada e explicada (#316); transação em #314 | Coordenação técnica |
-| Envio de mídia pelo painel limitado a 4 MB (teto da Vercel) | Média | Baixo | Mensagem antes do envio (#316); envio direto ao Storage em #313 | Coordenação técnica |
+| Envio de mídia direta ainda sem comprovação em homologação | Média | Baixo | Implementação por URL assinada em #313; demonstrar PDF de 8 MB, imagem de 5 MB e rejeição/limpeza de assinatura falsa antes do GO | Coordenação técnica |
 | Sem histórico de versões no MVP | Baixa | Médio | Arquivar antes de excluir + auditoria + backup (ADR-0007); proposta em FUT-04 | Coordenação técnica |
 
 ## 4. Registro preliminar — 13/10/2026 (fim da fundação técnica)

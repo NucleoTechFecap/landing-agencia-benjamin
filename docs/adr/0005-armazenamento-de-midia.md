@@ -40,11 +40,11 @@ pesados (exports do Illustrator/Photoshop), e o site precisa continuar rápido e
 | PDF | `application/pdf` | 10 MB | Releases e clippings |
 | SVG | — | **recusado** | Pode conter script (XSS) |
 
-**Envio pelo painel: até 4 MB por arquivo (TECH-13).** Os limites acima valem para o banco e o
-Storage. Pelo painel, porém, o arquivo viaja no corpo da Server Action, e a Vercel recusa corpo
-acima de 4,5 MB antes de a action rodar, sem a mensagem de validação. Por isso o painel aceita até
-4 MB (`PANEL_UPLOAD_MAX_BYTES`) e confere o tamanho no navegador antes de enviar. O envio direto do
-navegador ao Storage por URL assinada, que devolve os 5 MB e 10 MB, está em #313.
+**O painel envia diretamente ao Storage por URL assinada (TECH-13 #313).** As Server Actions
+autorizam `media:create`, validam os metadados e emitem um caminho/token de uso único. O navegador
+transfere os bytes com `uploadToSignedUrl`; uma segunda action baixa os primeiros 256 KiB, valida
+assinatura, tamanho total e dimensões, registra `media_assets` e audita. Arquivos inválidos ou cujo
+registro falha são removidos. Assim o corpo da Server Action não contém os bytes da mídia.
 
 - Maior lado da imagem ≤ **4000 px**; exportação recomendada: **2400 px** de largura (UX-14).
 - O tipo real é conferido pela **assinatura dos bytes** (`sniffMimeType`), não pela extensão.
@@ -73,14 +73,19 @@ https://<projeto>.supabase.co/storage/v1/object/public/media/2026/10/6f1c…-cap
 ```mermaid
 sequenceDiagram
   participant E as Editor (painel)
-  participant A as Server Action uploadMedia
+  participant A as Server Actions do painel
   participant S as Supabase Storage
   participant D as Banco (media_assets)
-  E->>A: arquivo + alt
+  E->>A: metadados + alt
   A->>A: requirePermission(media, create)
-  A->>A: validateUpload (tipo real, tamanho, dimensões)
-  A->>S: put(buildStoragePath(...))
-  S-->>A: ok
+  A->>S: createSignedUploadUrl(path)
+  S-->>E: path + token temporário
+  E->>S: uploadToSignedUrl(arquivo)
+  S-->>E: ok
+  E->>A: path + metadados
+  A->>S: GET Range (início do objeto)
+  S-->>A: cabeçalho + tamanho total
+  A->>A: validateUpload (assinatura, tamanho, dimensões)
   A->>D: insert {path, mime, size, width, height, alt, uploaded_by}
   A-->>E: URL pública + id
 ```
@@ -91,7 +96,7 @@ O critério de aceite exige upload e recuperação demonstrados em homologação
 projeto Supabase `benjamin-hml` (GO-02), bucket/políticas (migration de ADM-03) e tela de
 upload do CMS (ADM-09). Roteiro de verificação:
 
-1. Entrar como `editor` em homologação e enviar `capa.webp` (≤ 4 MB) com texto alternativo.
+1. Entrar como `editor` em homologação e enviar PDF de 8 MB e imagem de 5 MB com texto alternativo.
 2. Confirmar a URL pública e a exibição otimizada (`/_next/image?...`) em um case de teste.
-3. Tentar enviar `logo.svg` e um `.png` renomeado como `.jpg` → ambos recusados.
+3. Tentar enviar `logo.svg` e um `.png` renomeado como `.jpg` → ambos recusados e sem objeto órfão.
 4. Como `editor`, tentar excluir a mídia → negado; como `admin` → permitido se não estiver em uso.

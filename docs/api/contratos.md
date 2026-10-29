@@ -143,7 +143,7 @@ export async function publishCase(input: { id: string; expectedUpdatedAt: string
 | `publish` / `unpublish` | `{ id, expectedUpdatedAt }` | `publish` | 401, 403, 404, 409 (`INVALID_TRANSITION`/`CONFLICT`), 422 |
 | `archive` / `restore` | `{ id, expectedUpdatedAt }` | `archive` | + `assessRemovalImpact` (409 com bloqueios) |
 | `delete` | `{ id }` (somente arquivado) | `delete` | 403, 409 |
-| `uploadMedia` | `FormData { file, alt }` | `media:create` | 413, 415, 422 (ARC-10) |
+| `createMediaUpload` / `finalizeMediaUpload` | metadados + path/token assinado; os bytes vão direto ao Storage | `media:create` em ambas | 413, 415, 422 (ARC-10 / TECH-13) |
 | `listLeads` | `{ kind?, category?, status?, page, pageSize }` | `lead:view` | 401, 403 |
 | `exportLeads` | filtros | `lead:export` | 401, 403 |
 
@@ -158,10 +158,12 @@ antes da gravação, com registro de falha) → gravação pelo store → `updat
 produção (`supabase-store.ts`) usa a sessão do usuário, então a RLS do banco é a segunda barreira;
 o de memória (`memory-store.ts`) cobre as regras nos testes. As Server Actions de cada tela usam
 `cmsSaveAction`/`cmsCommandAction` (`context.ts`) e redirecionam com `?ok=` no sucesso.
-O envio de mídia (ADM-08) é `cmsUploadAction` → `media-service.ts`: `media:create`, texto
-alternativo, tipo real pela assinatura dos bytes, tamanho e dimensões (`readImageDimensions`),
-`buildStoragePath`, upload ao bucket com a sessão do usuário e registro em `media_assets`; se o
-registro falhar, o objeto é apagado. `serverActions.bodySizeLimit` = 11 MB (`next.config.ts`).
+O envio de mídia (ADM-08 / TECH-13) usa duas actions. `createMediaUpload` exige `media:create`,
+valida metadados e emite um caminho/token temporário para `uploadToSignedUrl`; os bytes não passam
+pela Server Action. `finalizeMediaUpload` exige novamente a permissão, baixa até 256 KiB e confere
+assinatura, tamanho total e dimensões antes de registrar em `media_assets`. Objeto inválido ou falha ao
+registrar é removido. A configuração `serverActions.bodySizeLimit` fica no padrão do Next, pois
+nenhum arquivo é enviado no corpo da action.
 
 ## 7. Códigos de erro
 

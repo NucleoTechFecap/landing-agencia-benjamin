@@ -24,8 +24,12 @@
 "use server";
 
 import type { CmsFormState } from "@/lib/domain/content/cms-form";
-import { cmsUploadAction } from "@/lib/server/cms/context";
+import { cmsCreateMediaUpload, cmsFinalizeMediaUpload, type MediaUploadTicket } from "@/lib/server/cms/context";
 
-export async function uploadMediaFile(_state: CmsFormState, form: FormData): Promise<CmsFormState> {
-  return cmsUploadAction(form);
+export async function createMediaUpload(form: FormData): Promise<MediaUploadTicket> {
+  return cmsCreateMediaUpload(form);
+}
+
+export async function finalizeMediaUpload(form: FormData): Promise<CmsFormState> {
+  return cmsFinalizeMediaUpload(form);
 }

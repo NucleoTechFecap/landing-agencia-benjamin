@@ -73,7 +73,7 @@ Qualquer PR que altere ao menos um dos itens abaixo (os caminhos estão no `CODE
 
 | PR | Escopo | Revisor | Resultado | Riscos aceitos |
 | -- | ------ | ------- | --------- | -------------- |
-| INT-02 (#282) e pilha do CMS #276–#285 | Leitura do Supabase, CMS de áreas, serviços, cases e mídia, site na base publicada, login | Revisão independente de segurança (27/10/2026), ver §5 | Sem achado alto; 4 médios e 3 baixos, corrigidos em #301, #312 e #316 | Gravação não atômica (#314), envio limitado a 4 MB (#313), baixos (#315) |
+| INT-02 (#282) e pilha do CMS #276–#285 | Leitura do Supabase, CMS de áreas, serviços, cases e mídia, site na base publicada, login | Revisão independente de segurança (27/10/2026), ver §5 | Sem achado alto; 4 médios e 3 baixos, corrigidos em #301, #312 e #316 | Integração atômica (#314), URL assinada de mídia (#313), baixos (#315) |
 | INT-03 (#169) | Home e institucional editáveis | — | Pendente (PR ainda não aberto) | — |
 | ADM-03 (#237) | Proteção de rotas e RBAC no banco | Vinícius Binda (solicitada) | Pendente | — |
 | #301 e #312 (migrations da TECH-13) | Auditoria e Storage | Vinícius Binda (solicitada) | Pendente | — |
@@ -90,7 +90,7 @@ leu o código, rodou os testes e consultou o Supabase local como `anon`, `viewer
 | 1 | Bucket `media` listável com a chave anon: expunha arquivos de cases em rascunho | Média | Corrigido em #312 (listagem exige `media:view`) |
 | 2 | Envio que falhava no registro deixava o arquivo órfão (o editor não podia apagá-lo) | Média | Corrigido em #312 (quem enviou apaga o próprio arquivo sem registro) |
 | 3 | Salvar não é atômico: falha nos vínculos gravava só o texto, sem auditoria nem cache | Média | Mitigado em #316 (ids sem repetição, auditoria da falha, cache e mensagem clara); transação em #314 |
-| 4 | `bodySizeLimit` de 11 MB não vale na Vercel (teto de 4,5 MB) | Média | Corrigido em #316 (limite de 4 MB conferido no navegador e no servidor); envio direto em #313 |
+| 4 | `bodySizeLimit` de 11 MB não vale na Vercel (teto de 4,5 MB) | Média | Resolvido em #313: bytes enviados direto ao Storage por URL assinada; action volta ao padrão do Next |
 | 5 | Páginas relacionadas mostravam o item arquivado na primeira visita | Média | Corrigido em #316 (`relatedPaths` no aquecimento) |
 | 6 | Conta com evento auditado não podia ser excluída (achado na validação integrada) | Média | Corrigido em #301 |
 | 7 | `record_audit_event` aceita evento de qualquer papel; `?aviso=` com texto livre; `revoke from anon` sem efeito | Baixa | `revoke` corrigido em #312; os outros dois em #315 |

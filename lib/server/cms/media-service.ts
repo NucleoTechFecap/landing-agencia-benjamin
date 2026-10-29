@@ -40,6 +40,8 @@ export interface UploadFile {
   /** Tipo declarado pelo navegador — conferido contra a assinatura dos bytes. */
   type: string;
   bytes: Uint8Array;
+  /** Tamanho real do objeto quando `bytes` contém apenas o cabeçalho baixado. */
+  size?: number;
 }
 
 export interface UploadMeta {
@@ -77,7 +79,7 @@ export async function uploadMedia(
   const problems = validateUpload({
     fileName: file.name,
     declaredType: file.type,
-    size: file.bytes.length,
+    size: file.size ?? file.bytes.length,
     head: file.bytes.slice(0, 32),
     width: dimensions?.width,
     height: dimensions?.height,
@@ -97,25 +99,74 @@ export async function uploadMedia(
 
   const path = buildStoragePath(file.name, file.type, deps.newId(), deps.now());
   await deps.storage.upload(path, file.bytes, file.type);
+  return registerUploadedMedia(deps, actor, path, file, meta);
+}
+
+/** Valida e registra um objeto enviado ao Storage por URL assinada. */
+export async function registerUploadedMedia(
+  deps: CmsDeps & { storage: MediaStorage },
+  actor: CmsActor,
+  path: string,
+  file: UploadFile,
+  meta: UploadMeta,
+): Promise<MediaAsset> {
+  if (!can(actor.role, "media", "create")) throw new AppError("FORBIDDEN");
+  const isImage = MEDIA_RULES[file.type]?.kind === "image";
+  const alt = meta.alt.trim();
+  if (isImage && !meta.decorative && (alt.length < ALT_LIMITS.min || alt.length > ALT_LIMITS.max)) {
+    throw new AppError("VALIDATION_FAILED", {
+      fieldErrors: {
+        alt: [`Descreva a imagem em ${ALT_LIMITS.min} a ${ALT_LIMITS.max} caracteres (texto alternativo).`],
+      },
+    });
+  }
+  const dimensions = isImage ? readImageDimensions(file.bytes, file.type) : null;
+  const problems = validateUpload({
+    fileName: file.name,
+    declaredType: file.type,
+    size: file.size ?? file.bytes.length,
+    head: file.bytes.slice(0, 32),
+    width: dimensions?.width,
+    height: dimensions?.height,
+  });
+  if (problems.length) {
+    const code =
+      problems[0].code === "UNSUPPORTED_MEDIA_TYPE" || problems[0].code === "TYPE_MISMATCH"
+        ? "UNSUPPORTED_MEDIA_TYPE"
+        : problems[0].code === "PAYLOAD_TOO_LARGE"
+          ? "PAYLOAD_TOO_LARGE"
+          : "VALIDATION_FAILED";
+    await deps.storage.remove(path).catch(() => undefined);
+    throw new AppError(code, {
+      message: problems.map((problem) => problem.message).join(" "),
+      fieldErrors: { file: problems.map((problem) => problem.message) },
+    });
+  }
+  const alreadyRegistered = (await deps.store.listMedia()).find((asset) => asset.src.endsWith(path));
+  if (alreadyRegistered) return alreadyRegistered;
   let asset: MediaAsset;
   try {
     asset = await deps.store.insertMedia({
       path,
       mime_type: file.type,
-      size_bytes: file.bytes.length,
+      size_bytes: file.size ?? file.bytes.length,
       width: dimensions?.width ?? null,
       height: dimensions?.height ?? null,
       alt_text: isImage && meta.decorative ? null : alt || null,
       decorative: isImage && meta.decorative,
     });
   } catch (error) {
+    const concurrentlyRegistered = (await deps.store.listMedia().catch(() => [])).find((item) =>
+      item.src.endsWith(path),
+    );
+    if (concurrentlyRegistered) return concurrentlyRegistered;
     await deps.storage.remove(path).catch(() => undefined);
     throw error;
   }
   await deps.audit({
     event: "media.uploaded",
     resourceId: asset.id,
-    metadata: { mimeType: file.type, size: file.bytes.length },
+    metadata: { mimeType: file.type, size: file.size ?? file.bytes.length },
   });
   return asset;
 }

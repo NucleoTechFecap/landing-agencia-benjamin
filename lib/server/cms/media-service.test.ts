@@ -26,10 +26,11 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { Role } from "@/lib/domain/auth/rbac";
 import type { AuditInput } from "../audit";
-import { uploadMedia, type MediaStorage } from "./media-service";
+import { registerUploadedMedia, uploadMedia, type MediaStorage } from "./media-service";
 import { createMemoryCmsStore } from "./memory-store";
 
 const webp = new Uint8Array(readFileSync(join(process.cwd(), "public/brand/cases/fecap.webp")));
+const pdf = new TextEncoder().encode("%PDF-1.7\n");
 
 function setup(options: { failInsert?: boolean } = {}) {
   const { store, tables } = createMemoryCmsStore();
@@ -94,6 +95,36 @@ describe("envio de mídia (ADM-08 / ARC-10)", () => {
       uploadMedia(env.deps, env.actor("editor"), file({ type: "image/svg+xml" }), { alt: "Imagem", decorative: false }),
     ).rejects.toMatchObject({ code: "UNSUPPORTED_MEDIA_TYPE" });
     expect(env.objects.size).toBe(0);
+  });
+
+  it("remove do Storage um objeto assinado cuja assinatura real é inválida", async () => {
+    const env = setup();
+    const path = "2026/10/11111111-2222-4333-8444-555555555555-capa.webp";
+    env.objects.set(path, 24);
+    await expect(
+      registerUploadedMedia(
+        env.deps,
+        env.actor("editor"),
+        path,
+        file({ bytes: new TextEncoder().encode("<script>fake</script>") }),
+        { alt: "Imagem falsa", decorative: false },
+      ),
+    ).rejects.toMatchObject({ code: "UNSUPPORTED_MEDIA_TYPE" });
+    expect(env.objects.has(path)).toBe(false);
+  });
+
+  it("registra o tamanho total usando apenas os bytes de cabeçalho baixados", async () => {
+    const env = setup();
+    const path = "2026/10/11111111-2222-4333-8444-555555555555-release.pdf";
+    env.objects.set(path, 8 * 1024 * 1024);
+    await registerUploadedMedia(
+      env.deps,
+      env.actor("editor"),
+      path,
+      { name: "release.pdf", type: "application/pdf", bytes: pdf, size: 8 * 1024 * 1024 },
+      { alt: "", decorative: false },
+    );
+    expect(env.tables.media_assets[0]).toMatchObject({ path, size_bytes: 8 * 1024 * 1024 });
   });
 
   it("leitor não envia", async () => {

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 27/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -26,7 +26,6 @@ import { describe, expect, it } from "vitest";
 import {
   buildStoragePath,
   MEDIA_RULES,
-  PANEL_UPLOAD_MAX_BYTES,
   publicMediaUrl,
   sniffMimeType,
   validateUpload,
@@ -79,16 +78,12 @@ describe("validateUpload", () => {
     );
   });
 
-  it("aplica o limite do envio pelo painel, abaixo do teto de 4,5 MB da Vercel (TECH-13)", () => {
+  it("aplica os limites por formato no Storage (TECH-13)", () => {
     const pdf = (size: number) => validateUpload(candidate({ declaredType: "application/pdf", head: PDF, size }));
     expect(validateUpload(candidate({ size: 6 * 1024 * 1024 }))[0].code).toBe("PAYLOAD_TOO_LARGE");
-    expect(validateUpload(candidate({ size: 4.5 * 1024 * 1024 }))[0]).toMatchObject({
-      code: "PAYLOAD_TOO_LARGE",
-      message: expect.stringContaining("4 MB"),
-    });
-    expect(pdf(8 * 1024 * 1024)[0].code).toBe("PAYLOAD_TOO_LARGE");
-    expect(pdf(PANEL_UPLOAD_MAX_BYTES)).toEqual([]);
-    // O limite do banco continua o de armazenamento (10 MB para PDF); o do painel é o do transporte.
+    expect(pdf(8 * 1024 * 1024)).toEqual([]);
+    expect(pdf(11 * 1024 * 1024)[0].code).toBe("PAYLOAD_TOO_LARGE");
+    // O envio direto ao Storage permite o limite completo definido para cada formato.
     expect(MEDIA_RULES["application/pdf"].maxBytes).toBe(10 * 1024 * 1024);
   });
 

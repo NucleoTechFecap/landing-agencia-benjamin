@@ -27,7 +27,13 @@ import "server-only";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { publicEnv } from "@/lib/config/public-env";
 import { safeAdminRedirect } from "@/lib/domain/auth/redirect";
-import { MEDIA_BUCKET } from "@/lib/domain/media/policy";
+import {
+  MEDIA_BUCKET,
+  MEDIA_RULES,
+  buildStoragePath,
+  MAX_MEDIA_UPLOAD_BYTES,
+  publicMediaUrl,
+} from "@/lib/domain/media/policy";
 import type { Action, Resource } from "@/lib/domain/auth/rbac";
 import type { CmsFlash, CmsFormState } from "@/lib/domain/content/cms-form";
 import { COMMAND_PERMISSION, type PublicationCommand } from "@/lib/domain/content/publication";
@@ -41,7 +47,7 @@ import { createSessionClient } from "../supabase/server";
 import { runContentCommand, saveContent, type CmsDeps } from "./content-service";
 import type { CmsItem, EntityDefinition } from "./entities";
 import { checked, command, itemRef, text, typedValues } from "./form-data";
-import { uploadMedia, type MediaStorage } from "./media-service";
+import { registerUploadedMedia, type MediaStorage } from "./media-service";
 import { createSupabaseCmsStore } from "./supabase-store";
 
 /** Store do CMS com a sessão de quem está logado: toda leitura e gravação passa pela RLS. */
@@ -168,26 +174,118 @@ function supabaseStorage(client: Awaited<ReturnType<typeof createSessionClient>>
   };
 }
 
-/**
- * Server Action de envio para a biblioteca de mídia (ADR-0005). Volta para `voltar` quando é
- * um caminho seguro do painel (ex.: o case que pediu a imagem) ou para a própria biblioteca.
- */
-export async function cmsUploadAction(form: FormData): Promise<CmsFormState> {
+export type MediaUploadTicket =
+  | { status: "error"; code: string; message: string; requestId: string; fieldErrors?: Record<string, string[]> }
+  | { status: "ready"; path: string; token: string };
+
+const MEDIA_VALIDATION_HEAD_BYTES = 256 * 1024;
+
+/** Baixa somente o início do objeto, suficiente para assinatura e dimensões, preservando o tamanho total. */
+async function downloadMediaHead(url: string): Promise<{ head: Uint8Array; size: number }> {
+  const response = await fetch(url, {
+    headers: { Range: `bytes=0-${MEDIA_VALIDATION_HEAD_BYTES - 1}` },
+    cache: "no-store",
+  });
+  if (!response.ok || !response.body) throw new AppError("SERVICE_UNAVAILABLE");
+  const contentRange = response.headers.get("content-range");
+  if (response.status === 206 && !contentRange) {
+    await response.body.cancel();
+    throw new AppError("SERVICE_UNAVAILABLE");
+  }
+  const total =
+    response.status === 206
+      ? Number(contentRange?.match(/\/(\d+)$/)?.[1])
+      : Number(response.headers.get("content-length"));
+  if (!Number.isSafeInteger(total) || total <= 0) {
+    await response.body.cancel();
+    throw new AppError("SERVICE_UNAVAILABLE");
+  }
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let length = 0;
+  try {
+    while (length < MEDIA_VALIDATION_HEAD_BYTES) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      if (value) {
+        const chunk = value.subarray(0, MEDIA_VALIDATION_HEAD_BYTES - length);
+        chunks.push(chunk);
+        length += chunk.length;
+      }
+    }
+  } finally {
+    await reader.cancel().catch(() => undefined);
+  }
+  const head = new Uint8Array(length);
+  let offset = 0;
+  for (const chunk of chunks) {
+    head.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return { head, size: total };
+}
+
+/** Emite uma URL assinada depois de autorizar a pessoa e validar o tamanho/tipo declarados. */
+export async function cmsCreateMediaUpload(form: FormData): Promise<MediaUploadTicket> {
+  const requestId = newRequestId();
+  try {
+    await requirePermission("media", "create");
+    const name = text(form, "name");
+    const type = text(form, "type");
+    const size = Number(text(form, "size"));
+    const alt = text(form, "alt").trim();
+    const decorative = checked(form, "decorative");
+    const rule = MEDIA_RULES[type];
+    if (!rule) throw new AppError("UNSUPPORTED_MEDIA_TYPE", { fieldErrors: { file: ["Formato não aceito."] } });
+    if (!Number.isSafeInteger(size) || size <= 0 || size > Math.min(rule.maxBytes, MAX_MEDIA_UPLOAD_BYTES)) {
+      throw new AppError("PAYLOAD_TOO_LARGE", {
+        fieldErrors: { file: ["Arquivo vazio ou acima do limite permitido."] },
+      });
+    }
+    if (rule.kind === "image" && !decorative && (alt.length < 3 || alt.length > 160)) {
+      throw new AppError("VALIDATION_FAILED", { fieldErrors: { alt: ["Descreva a imagem em 3 a 160 caracteres."] } });
+    }
+    const client = await createSessionClient();
+    const path = buildStoragePath(name, type, crypto.randomUUID());
+    const { data, error } = await client.storage.from(MEDIA_BUCKET).createSignedUploadUrl(path, { upsert: false });
+    if (error || !data) throw new AppError("SERVICE_UNAVAILABLE", { message: "Não foi possível preparar o envio." });
+    return { status: "ready", path, token: data.token };
+  } catch (error) {
+    unstable_rethrow(error);
+    return { status: "error", ...toPublicError(error, requestId, "cms.media.upload_ticket_failed") };
+  }
+}
+
+/** Confere os bytes do objeto enviado e só então registra a mídia no catálogo. */
+export async function cmsFinalizeMediaUpload(form: FormData): Promise<CmsFormState> {
+  const path = text(form, "path");
+  const name = text(form, "name");
+  const type = text(form, "type");
   const back = safeAdminRedirect(form.get("voltar"));
   const destination = back === "/admin" ? "/admin/midia" : back;
   return cmsFormAction(
     "media",
     "create",
     async (user, deps) => {
-      const file = form.get("file");
-      if (!(file instanceof File) || file.size === 0) {
-        throw new AppError("VALIDATION_FAILED", { fieldErrors: { file: ["Escolha um arquivo."] } });
+      if (!/^\d{4}\/\d{2}\/[0-9a-f-]{36}-[a-z0-9-]+\.[a-z0-9]+$/i.test(path) || !MEDIA_RULES[type]) {
+        throw new AppError("VALIDATION_FAILED", {
+          fieldErrors: { file: ["Envio inválido. Inicie o envio novamente."] },
+        });
       }
       const client = await createSessionClient();
-      await uploadMedia(
-        { ...deps, storage: supabaseStorage(client), newId: () => crypto.randomUUID() },
+      const bucket = client.storage.from(MEDIA_BUCKET);
+      let downloaded: { head: Uint8Array; size: number };
+      try {
+        downloaded = await downloadMediaHead(publicMediaUrl(publicEnv.NEXT_PUBLIC_SUPABASE_URL!, path));
+      } catch {
+        await bucket.remove([path]).catch(() => undefined);
+        throw new AppError("SERVICE_UNAVAILABLE", { message: "Não foi possível conferir o arquivo enviado." });
+      }
+      await registerUploadedMedia(
+        { ...deps, storage: supabaseStorage(client) },
         user,
-        { name: file.name, type: file.type, bytes: new Uint8Array(await file.arrayBuffer()) },
+        path,
+        { name, type, bytes: downloaded.head, size: downloaded.size },
         { alt: text(form, "alt"), decorative: checked(form, "decorative") },
       );
       return withFlash(destination, "enviado");

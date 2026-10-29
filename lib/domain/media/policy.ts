@@ -50,12 +50,8 @@ export const MEDIA_RULES: Readonly<Record<string, MediaRule>> = {
   "application/pdf": { kind: "document", extension: "pdf", maxBytes: 10 * MB },
 };
 
-/**
- * Limite do envio pelo painel. O arquivo viaja no corpo da Server Action, e a Vercel recusa
- * corpo acima de 4,5 MB antes de a action rodar, sem a mensagem de validação (TECH-13). Vale
- * até o envio ir direto do navegador ao Storage; MEDIA_RULES continua sendo o limite do banco.
- */
-export const PANEL_UPLOAD_MAX_BYTES = 4 * MB;
+/** Maior arquivo permitido pelo bucket, compatível com as regras de mídia (ADR-0005). */
+export const MAX_MEDIA_UPLOAD_BYTES = 10 * MB;
 
 /** Maior lado aceito para imagens (px); acima disso o CMS pede para reduzir antes de enviar. */
 export const MAX_IMAGE_DIMENSION = 4000;
@@ -106,7 +102,7 @@ export function validateUpload(candidate: UploadCandidate): MediaProblem[] {
   if (sniffed !== candidate.declaredType) {
     problems.push({ code: "TYPE_MISMATCH", message: "O conteúdo do arquivo não corresponde ao formato informado." });
   }
-  const maxBytes = Math.min(rule.maxBytes, PANEL_UPLOAD_MAX_BYTES);
+  const maxBytes = rule.maxBytes;
   if (candidate.size > maxBytes) {
     problems.push({ code: "PAYLOAD_TOO_LARGE", message: uploadTooLargeMessage(maxBytes) });
   }
@@ -123,7 +119,7 @@ export function validateUpload(candidate: UploadCandidate): MediaProblem[] {
 }
 
 /** Mensagem de arquivo grande demais, a mesma no navegador e no servidor. */
-export function uploadTooLargeMessage(maxBytes: number = PANEL_UPLOAD_MAX_BYTES): string {
+export function uploadTooLargeMessage(maxBytes: number = MAX_MEDIA_UPLOAD_BYTES): string {
   return `Arquivo maior que ${Math.round(maxBytes / MB)} MB. Reduza o arquivo (para imagens, exporte em WebP) e envie de novo.`;
 }
 

@@ -30,7 +30,7 @@ import { can } from "@/lib/domain/auth/rbac";
 import { safeAdminRedirect } from "@/lib/domain/auth/redirect";
 import { requirePageAccess } from "@/lib/server/auth/guards";
 import { cmsDeps } from "@/lib/server/cms/context";
-import { uploadMediaFile } from "./actions";
+import { createMediaUpload, finalizeMediaUpload } from "./actions";
 
 export const metadata: Metadata = { title: "Biblioteca de mídia" };
 
@@ -60,7 +60,10 @@ export default async function MediaAdminPage({ searchParams }: PageProps<"/admin
                 Depois do envio você volta para o formulário que pediu a imagem.
               </p>
             ) : null}
-            <MediaUploadForm action={uploadMediaFile} back={back && back !== "/admin" ? back : undefined} />
+            <MediaUploadForm
+              actions={{ create: createMediaUpload, finalize: finalizeMediaUpload }}
+              back={back && back !== "/admin" ? back : undefined}
+            />
           </section>
         ) : null}
         <section aria-labelledby="arquivos" className="rounded-3xl border-2 border-benja-noite/15 bg-white p-6">

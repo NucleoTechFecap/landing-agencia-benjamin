@@ -59,10 +59,6 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     agentFeedback: true,
-    // Envio para a biblioteca de mídia por Server Action: arquivos até 4 MB
-    // (PANEL_UPLOAD_MAX_BYTES) + folga do multipart. A Vercel recusa corpo acima de 4,5 MB, então
-    // um limite maior aqui não teria efeito (TECH-13). O padrão do Next é 1 MB (ADM-08).
-    serverActions: { bodySizeLimit: "4.5mb" },
   },
   cacheComponents: true,
   partialPrefetching: true,
