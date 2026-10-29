@@ -25,6 +25,7 @@ import { describe, expect, it } from "vitest";
 import { serviceInputSchema, validateServiceForPublish } from "./service-schema";
 
 const area = "8b4f6a52-6c43-4a8f-9d55-2f5a2f6f0c11";
+const seededId = "931efdd5-9284-2841-d728-5a82de73c7d6";
 
 describe("serviço no CMS (ADM-06)", () => {
   it("rascunho exige só nome e slug; vazios viram ausentes", () => {
@@ -49,6 +50,10 @@ describe("serviço no CMS (ADM-06)", () => {
       imageId: "y",
     });
     expect(result.error?.issues.map((issue) => issue.path[0]).sort()).toEqual(["areaIds", "imageId"]);
+  });
+
+  it("aceita UUID determinístico da seed do PostgreSQL", () => {
+    expect(serviceInputSchema.safeParse({ name: "Serviço", slug: "servico", imageId: seededId }).success).toBe(true);
   });
 
   it("publicar exige resumo, descrição e ao menos uma área (R03)", () => {

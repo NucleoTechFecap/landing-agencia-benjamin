@@ -27,6 +27,7 @@ import { caseInputSchema, formatLinkLines, parseLinkLines } from "./case-input-s
 import { categoryInputSchema } from "./category-schema";
 
 const id = "8b4f6a52-6c43-4a8f-9d55-2f5a2f6f0c11";
+const seededId = "931efdd5-9284-2841-d728-5a82de73c7d6";
 
 describe("case no CMS (ADM-08)", () => {
   it("rascunho exige só título e slug; vazios viram ausentes", () => {
@@ -56,6 +57,12 @@ describe("case no CMS (ADM-08)", () => {
     expect(caseInputSchema.safeParse({ title: "M", slug: "meridiano", categoryId: id, serviceIds: [id] }).success).toBe(
       false,
     );
+  });
+
+  it("aceita UUID determinístico da seed do PostgreSQL", () => {
+    expect(
+      caseInputSchema.safeParse({ title: "Case", slug: "case", coverId: seededId, serviceIds: [seededId] }).success,
+    ).toBe(true);
   });
 
   it("links: uma linha por link no formato Rótulo | https://…", () => {

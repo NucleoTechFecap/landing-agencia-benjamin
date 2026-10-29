@@ -25,6 +25,11 @@
 
 ## Segurança, acesso e dados pessoais
 
+| Documento | Uso |
+| --------- | --- |
+| [Política de segurança e reporte privado](../SECURITY.md) | Reportar vulnerabilidades sem divulgação pública |
+| [Fonte das páginas da Wiki](wiki/README.md) | Preparação e publicação da Wiki do GitHub |
+
 | Documento | Issue |
 | --------- | ----- |
 | [Perfis e permissões administrativas](seguranca/perfis-e-permissoes.md) | ADM-01 |
