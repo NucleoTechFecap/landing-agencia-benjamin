@@ -2,7 +2,7 @@
 
 | Campo           | Valor                                                                        |
 | --------------- | ---------------------------------------------------------------------------- |
-| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58), DBX-02 (#113)                       |
+| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58), DBX-02 (#113), DBX-03 (#114)        |
 | Responsável     | Vinicius Binda (`@VinnizzZ`)                                                 |
 | Revisão técnica | Vinícius Nishimura Reis (`@Vinishireis`)                                     |
 | Versão          | 1.0.0                                                                        |
@@ -297,7 +297,8 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
   (§5, `pages` e `blocks`).
 - [ ] **Depoimentos públicos:** fora do MVP até a Benjamin decidir (exige consentimento).
 - [ ] **Redirecionamento de slug** alterado após publicar: tabela própria em DB-08.
-- [ ] **Índices de listagem e filtros** do portfólio: DBX-03 (esta migration só indexa as FKs).
+- [x] **Índices de listagem e filtros** do portfólio: DBX-03 (§10). Filtros e paginação ficam na
+  aplicação; índices só onde a medição justificou.
 - [x] **Seeds** do conteúdo provisório de `content/`: DBX-02 (`supabase/seed.sql`, §9). Os ids
   textuais viram UUID, e as capas de `public/brand` entram em `media_assets` com o caminho público.
 
@@ -318,6 +319,9 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | `npm run test:supabase` (DB-04): serviços publicados com imagem e só vínculos com área publicada; área e serviço em rascunho fora; mídia usada só por rascunho invisível; checagem de slug do proxy | 4 testes, `PASS` |
 | `npm run test:supabase` (DB-05): case publicado com capa, galeria em ordem, link externo e mês; vínculo com serviço em rascunho oculto; categoria e galeria de rascunho invisíveis; slug do proxy | 4 testes, `PASS` |
 | `repository.supabase.test.ts` (DB-05): repositório público inteiro sobre a fonte Supabase — banco vazio (listas vazias, detalhes inexistentes) e populado (filtro por categoria, detalhe com galeria, agendado para o futuro oculto) | Passa no `npm test` |
+| `supabase/tests/database/indices_rls.test.sql` (DBX-03): toda FK indexada; uma política de leitura por papel nas 11 tabelas do CMS; `has_permission` em `(select …)`; para `anon`, `pending`, `viewer`, `editor` e `admin`, as mesmas linhas visíveis com as políticas novas e com as antigas recriadas na transação | `Files=4, Tests=110, Result: PASS` |
+| `tests/integration/supabase/filtros-paginacao.test.ts` (DBX-03): repositório real sobre a RLS real — filtros combinados (categoria + serviço/área/cliente), serviço em rascunho não filtra nada, ordem por `sort_order`, páginas somadas = lista inteira, página além da última vazia com os totais | 9 arquivos, 44 testes, `PASS` |
+| `npm run test:migrations` com a `20261028000200`: upgrade da `20261027000200` com dados, 8 rollbacks em ordem inversa (cada um duas vezes) e reaplicação | `Files=4, Tests=110, Result: PASS` em cada etapa |
 
 ## 9. Como aplicar, testar e reverter
 
@@ -328,6 +332,7 @@ npx supabase db reset
 npx supabase test db          # testes pgTAP de supabase/tests/
 npm run test:supabase         # integração do código com a RLS real (tests/integration/supabase)
 npm run test:migrations       # instalação limpa, seed, upgrade e reversão completa (DBX-02)
+npm run perf:queries          # EXPLAIN ANALYZE vazio e com volume sintético (DBX-03, §10)
 
 # Ambiente remoto (hoje só produção): só migrations, nunca o seed
 npx supabase link --project-ref <ref>
@@ -337,7 +342,8 @@ npx supabase db push
 
 **Ordem das migrations.** Sequência por timestamp, sem pular: perfis e papéis (0100) → matriz
 RBAC e bucket (0200) → auditoria (0300) → formulários (0400) → conteúdo do CMS (20261025000100)
-→ ajustes da TECH-13 (20261027000100/0200). Cada uma depende só das anteriores. Mudança
+→ ajustes da TECH-13 (20261027000100/0200) → índices e leitura do painel (DBX-03,
+20261028000200). Cada uma depende só das anteriores. Mudança
 destrutiva em banco com dados é feita em duas releases: primeiro a coluna nova, depois a remoção
 da antiga.
 
@@ -366,3 +372,60 @@ produção:
    ([provisionamento](../operacao/provisionamento-producao.md) §2), mesmo com
    `db push --include-seed` ou colado no SQL Editor.
 3. `supabase db reset --linked` é proibido: apagaria o banco remoto antes do seed.
+
+## 10. Índices e consultas (DBX-03)
+
+**Decisão: filtros, ordenação e paginação ficam na aplicação.** O site e a API leem o conteúdo
+publicado de cada tabela (`status = 'published'`, a RLS completa o resto), guardam em cache por
+horas (`"use cache"`, invalidado ao publicar) e filtram/paginam em memória (`listCases` +
+`paginate`). No volume do MVP isso é mais simples e tão rápido quanto paginar no banco, e não
+muda os contratos de DB-04/DB-05. **Revisar a decisão** quando houver mais de ~500 cases
+publicados ou quando `cases publicados` + `vínculos case × serviço` + `galerias` passarem de
+~50 ms no `npm run perf:queries`: aí vale uma função `search_cases` com `range` e índices de
+filtro.
+
+**Medição.** `npm run perf:queries` roda `supabase/perf/planos-de-consulta.sql` no banco local,
+numa transação desfeita: as mesmas consultas do site (anon), do proxy e do painel (editor), com o
+banco atual e com volume sintético (50 áreas, 1.000 serviços, 10.000 cases com 3 serviços e 5
+imagens cada, 61.000 mídias, 500 CTAs, 50 páginas). Postgres 17.11 local, 28/10/2026:
+
+| Consulta (volume sintético) | Antes | Depois | Plano depois |
+| --------------------------- | ----: | -----: | ------------ |
+| Site: cases publicados (9.003 linhas) | 2,4 ms | 2,2 ms | Seq Scan (correto: lê quase tudo) |
+| Site: vínculos case × serviço (27.005) | 9,7 ms | 9,3 ms | Seq Scan + semi-join da RLS |
+| Site: galerias ordenadas (45.000) | 14,4 ms | 13,5 ms | Seq Scan + Sort |
+| Site: mídia por id (lote de 200) | 0,7 ms | 0,7 ms | Index Scan (PK + FKs de mídia na RLS) |
+| Proxy: slug de case existe | 0,01 ms | 0,02 ms | Index Scan `cases_slug_key` |
+| Página por slug / blocos | 0,01 / 0,05 ms | 0,01 / 0,05 ms | Seq Scan / `blocks_page_idx` |
+| Painel: cases (10.004) | 41,2 ms | 2,5 ms | `has_permission` uma vez (InitPlan) |
+| Painel: vínculos case × serviço (30.006) | 145,4 ms | 2,7 ms | idem |
+| Painel: galerias (50.000) | 228,1 ms | 4,0 ms | idem |
+| Painel: biblioteca de mídia (61.004) | 406,2 ms | 9,6 ms | InitPlan + `media_assets_created_idx` |
+| Excluir conta com 610 linhas de autoria | 18,9 ms | 14,9 ms | Índices `*_updated_by_idx` na ação da FK |
+
+Com o banco vazio ou só com o seed, todas as consultas ficam abaixo de 0,5 ms (exclusão de conta:
+~2 ms). Com poucas linhas o Postgres lê a tabela inteira mesmo havendo índice; é o esperado.
+
+**Índices e justificativa** (migration `20261028000200_dbx03_indices_rls.sql`):
+
+| Índice | Consulta que atende | Por que |
+| ------ | ------------------- | ------- |
+| `unique (slug)` (já existia) | Proxy (404 real) e detalhe | Busca por igualdade em toda requisição de detalhe |
+| FKs de mídia: `services_image_idx`, `cases_cover_idx`, `case_media_media_idx` (já existiam) | RLS pública de `media_assets` | As três subconsultas `EXISTS` usam esses índices; o "não usado" do Supabase Advisor vinha do banco de produção vazio |
+| `blocks_page_idx`, `service_areas_area_idx`, `case_services_service_idx`, `ctas_*_idx` (já existiam) | Blocos da página, lado inverso das junções, `restrict`/`set null` ao excluir | Cobrem a FK; mantidos |
+| `*_updated_by_idx` (9 tabelas) e `profiles_invited_by_idx` — **novos**, parciais (`where … is not null`) | `on delete set null` ao excluir conta | Sem índice, cada tabela era lida inteira; o Advisor apontava as 10 FKs |
+| `media_assets_created_idx` — **novo** | Biblioteca do painel (`order by created_at desc`) | Sem ele, com dezenas de milhares de arquivos, a ordenação ia para disco (16,5 → 7,8 ms no teste isolado) |
+| Índices por `status`/`sort_order` — **não criados** | Listagens públicas | Leem quase toda a tabela (90% publicado); o planner escolhe Seq Scan com ou sem índice |
+| Índices de filtro (`category_id` + cliente, etc.) — **não criados** | Filtros do portfólio | Filtros rodam na aplicação sobre o cache; o banco não vê o filtro |
+
+**Políticas de leitura.** Nas 11 tabelas do CMS, quem estava logado passava por duas políticas
+de SELECT ("público lê" ou "painel lê") e `has_permission()` rodava linha a linha. Agora a pública
+vale só para `anon` e "painel lê" (para `authenticated`) junta as duas condições, com
+`(select public.has_permission(...))` avaliado uma vez por consulta. As escritas não mudaram. O
+pgTAP `indices_rls.test.sql` recria as políticas antigas dentro da transação e confirma que cada
+papel (`anon`, `pending`, `viewer`, `editor`, `admin`) vê as mesmas linhas em cada tabela.
+`profiles` continua com duas políticas (fora do escopo de conteúdo; poucas linhas).
+
+**Paginação e filtros testados:** `paginate` e limites de `pageSize` (`contracts.test.ts`), filtros
+sobre conteúdo local (`repository.test.ts`) e sobre a RLS real, com filtros combinados, serviço em
+rascunho e páginas somadas (`tests/integration/supabase/filtros-paginacao.test.ts`).
