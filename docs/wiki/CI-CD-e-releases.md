@@ -1,32 +1,42 @@
-# CI/CD e releases
+# CI-CD e releases
 
-## Pull requests
+## Checks de pull request
 
-O workflow `.github/workflows/ci.yml` roda em PRs destinados a `main` e `production`. O job
-`verify` instala as dependências com `npm ci` e roda `npm run verify`. PRs para `production` também
-validam a origem `main` (`release-source`) e o conteúdo de release (`release-content`). Dependabot
-monitora npm e GitHub Actions. CodeQL analisa JavaScript/TypeScript.
+O workflow `.github/workflows/ci.yml` roda em PRs para `main` e `production`:
 
-## Regras de branch
+| Check | O que valida |
+| --- | --- |
+| `verify` | `npm ci` e `npm run verify` (cabeçalhos, formatação, tipos, lint, testes e build) |
+| `release-source` | Em PRs para `production`, que a origem é a `main` |
+| `release-content` | Em PRs para `production`, que não há conteúdo provisório publicado |
 
-As regras do repositório exigem PR, revisão e checks configurados, além de bloquear force push e
-exclusões nas branches protegidas. A lista de usuários autorizados a atualizar refs está configurada
-em um ruleset separado. A autorização de bypass não substitui o fluxo normal de PR.
+Fora de PRs para `production`, os dois últimos informam que não se aplicam. Os nomes ficam estáveis
+nas duas branches. Dependabot monitora npm e GitHub Actions; CodeQL analisa o código.
 
-## Entrega
+A Vercel também gera uma **pré-visualização por PR** e comenta o link no próprio PR. Abra a
+pré-visualização antes do merge.
 
-O merge em branch conectada à Vercel inicia o deployment correspondente. Preview de PR deve ser
-inspecionado antes do merge. Para produção, siga o checklist GO-01 e confirme no painel da Vercel
-qual branch está configurada como Production; não presuma que o nome da branch documentado equivale
-à configuração atual.
+## Regras das branches
 
-## Checklist mínimo
+- Só `Vinishireis`, `VinnizzZ` e `NucleoTechFecap` atualizam `main` e `production`, e sempre por PR.
+- O PR exige uma aprovação independente, aprovação da última atualização, histórico linear e os
+  três checks.
+- Sem force push e sem exclusão das branches protegidas.
 
-1. Review independente e conversas resolvidas.
-2. Checks obrigatórios verdes e conteúdo válido para o ambiente alvo.
-3. Variáveis e banco compatíveis com a versão.
-4. Smoke test após o deployment.
-5. Deployment anterior identificado para rollback.
+## Como uma versão chega à produção
 
-Detalhes: [`docs/operacao/ci-cd-github-actions.md`](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/operacao/ci-cd-github-actions.md)
-e [`docs/operacao/release-e-rollback.md`](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/operacao/release-e-rollback.md).
+1. Tudo entra na `main` por PR.
+2. Go/no-go técnico (TECH-14): checklist de evidências e riscos.
+3. Tag `vX.Y.Z` na `main` e migrations pendentes aplicadas em produção, com backup recente.
+4. PR `main → production`; o merge aprovado publica pela Vercel.
+5. Smoke test (health, páginas, formulário de teste, login no painel, `robots.txt`) e decisão de
+   manter ou reverter.
+
+| Documento | Para quê |
+| --- | --- |
+| [CI e regras de branch](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/operacao/ci-cd-github-actions.md) | Detalhe dos checks e rulesets |
+| [Release e rollback (GO-01)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/operacao/release-e-rollback.md) | Checklist, smoke test e critérios de rollback |
+| [Go/no-go (TECH-14)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/operacao/go-no-go.md) | Evidências e decisão técnica |
+| [Publicação do MVP (GO-06)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/operacao/publicacao-mvp.md) | Roteiro do dia da publicação |
+| [Provisionamento (GO-02)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/operacao/provisionamento-producao.md) | Criação de homologação e produção |
+| [Domínio e HTTPS (GO-03)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/operacao/dominio-dns-https.md) | DNS e a decisão de publicar em `*.vercel.app` até o domínio sair |
