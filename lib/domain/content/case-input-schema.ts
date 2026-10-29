@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,15 +19,16 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
+28/10/2026 Codex                     Aceita IDs da seed do banco (MANUT-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { z } from "zod";
 import { CASE_LIMITS, externalLinkSchema } from "./case-schema";
-import { optionalText, orderField, slugField } from "./cms-schema";
+import { optionalText, orderField, slugField, uuidField } from "./cms-schema";
 import type { ExternalLink } from "./types";
 
-const uuid = z.string().uuid("Seleção inválida.");
+const uuid = uuidField;
 const optionalUuid = uuid.optional().or(z.literal("").transform(() => undefined));
 
 /**
