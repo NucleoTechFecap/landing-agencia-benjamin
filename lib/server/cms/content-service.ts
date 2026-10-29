@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
  26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
+ 28/10/2026 Vinícius Nishimura Reis  Salva conteúdo e relações atomicamente no banco (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -228,9 +229,14 @@ export async function saveContent<I extends { slug: string }, T extends CmsItem>
     if (!check.ok) throw publicationError(check.error);
   }
 
-  const saved = current
-    ? await deps.store.update(def.table, current.id, def.toValues(input), current.updatedAt)
-    : await deps.store.insert(def.table, { ...def.toValues(input), status: "draft" });
+  const saved = await deps.store.saveAtomic({
+    table: def.table,
+    values: def.toValues(input),
+    ...(current ? { id: current.id, expectedUpdatedAt: current.updatedAt } : {}),
+    ...(def.links?.table === "service_areas" ? { serviceAreaIds: def.links.from(input) } : {}),
+    ...(def.links?.table === "case_services" ? { caseServiceIds: def.links.from(input) } : {}),
+    ...("galleryIds" in input && Array.isArray(input.galleryIds) ? { caseGalleryIds: input.galleryIds } : {}),
+  });
   const auditSave = (outcome: "success" | "failure", reason?: string) =>
     deps.audit({
       event: current ? "content.updated" : "content.created",
@@ -247,31 +253,6 @@ export async function saveContent<I extends { slug: string }, T extends CmsItem>
     if (current?.status === "published")
       deps.invalidate(contentChange(def, input.slug, [merged, current], snapshot, now));
   };
-
-  try {
-    if (def.links) {
-      await deps.store.syncLinks({
-        table: def.links.table,
-        ownerColumn: def.links.ownerColumn,
-        ownerId: saved.id,
-        otherColumn: def.links.otherColumn,
-        current: current ? def.links.of(current) : [],
-        next: def.links.from(input),
-      });
-    }
-    if (def.afterSave) await def.afterSave(deps.store, saved.id, input);
-  } catch (error) {
-    // Sem transação entre as chamadas: o item já foi gravado e os vínculos não. Registra a
-    // gravação parcial e atualiza o site antes de devolver o erro (TECH-13).
-    await auditSave("failure", "vinculos").catch(() => undefined);
-    refreshSite();
-    throw new AppError(error instanceof AppError ? error.code : "INTERNAL_ERROR", {
-      message: current
-        ? "O texto foi salvo, mas os vínculos (áreas, serviços ou galeria) não. Recarregue a página, confira e salve de novo."
-        : "O rascunho foi criado, mas os vínculos (áreas, serviços ou galeria) não. Abra-o na lista, confira e salve de novo.",
-      cause: error,
-    });
-  }
 
   await auditSave("success");
   refreshSite();

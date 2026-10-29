@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
+ 28/10/2026 Vinícius Nishimura Reis  Simula gravação atômica de conteúdo e relações (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -38,7 +39,7 @@ import type {
   ServiceRow,
 } from "../content/supabase/rows";
 import { AppError } from "../errors";
-import type { CmsStore, EntityTable, Row } from "./store";
+import type { AtomicSave, CmsStore, EntityTable, Row } from "./store";
 import { toMediaAsset } from "./supabase-store";
 
 /** Valores padrão das colunas, como no banco (default da migration). */
@@ -138,6 +139,51 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
       return tables.media_assets.map((row) => toMediaAsset(row, "https://projeto.supabase.co"));
     },
 
+    async saveAtomic(input: AtomicSave) {
+      const unique = <T>(ids: readonly T[] | undefined) => [...new Set(ids ?? [])];
+      if (input.table === "services") {
+        const areaIds = unique(input.serviceAreaIds);
+        if (areaIds.some((id) => !tables.areas.some((area) => area.id === id))) throw new AppError("CONFLICT");
+        const mediaId = input.values.image_media_id;
+        if (mediaId && !tables.media_assets.some((asset) => asset.id === mediaId)) throw new AppError("CONFLICT");
+      }
+      if (input.table === "cases") {
+        const serviceIds = unique(input.caseServiceIds);
+        const galleryIds = unique(input.caseGalleryIds);
+        const categoryId = input.values.category_id;
+        const coverId = input.values.cover_media_id;
+        if (
+          (categoryId && !tables.case_categories.some((category) => category.id === categoryId)) ||
+          (coverId && !tables.media_assets.some((asset) => asset.id === coverId)) ||
+          serviceIds.some((id) => !tables.services.some((service) => service.id === id)) ||
+          galleryIds.some((id) => !tables.media_assets.some((asset) => asset.id === id))
+        ) {
+          throw new AppError("CONFLICT");
+        }
+      }
+
+      const saved = input.id
+        ? await store.update(input.table, input.id, input.values, input.expectedUpdatedAt!)
+        : await store.insert(input.table, { ...input.values, status: "draft" });
+      if (input.table === "services") {
+        tables.service_areas = tables.service_areas.filter((link) => link.service_id !== saved.id);
+        tables.service_areas.push(
+          ...unique(input.serviceAreaIds).map((area_id) => ({ service_id: saved.id, area_id })),
+        );
+      }
+      if (input.table === "cases") {
+        tables.case_services = tables.case_services.filter((link) => link.case_id !== saved.id);
+        tables.case_services.push(
+          ...unique(input.caseServiceIds).map((service_id) => ({ case_id: saved.id, service_id })),
+        );
+        tables.case_media = tables.case_media.filter((link) => link.case_id !== saved.id);
+        tables.case_media.push(
+          ...unique(input.caseGalleryIds).map((media_id, sort_order) => ({ case_id: saved.id, media_id, sort_order })),
+        );
+      }
+      return saved;
+    },
+
     async insertMedia(values) {
       if (tables.media_assets.some((row) => row.path === values.path)) {
         throw new AppError("CONFLICT", { message: "Arquivo já registrado." });
@@ -145,13 +191,6 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
       const row = { ...values, id: crypto.randomUUID() };
       tables.media_assets.push(row);
       return toMediaAsset(row, "https://projeto.supabase.co");
-    },
-
-    async syncGallery(caseId, mediaIds) {
-      tables.case_media = [
-        ...tables.case_media.filter((link) => link.case_id !== caseId),
-        ...mediaIds.map((mediaId, index) => ({ case_id: caseId, media_id: mediaId, sort_order: index })),
-      ];
     },
 
     async insert(table, values) {
@@ -195,13 +234,6 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
       tables.service_areas = tables.service_areas.filter((link) => link.service_id !== id && link.area_id !== id);
       tables.case_services = tables.case_services.filter((link) => link.case_id !== id && link.service_id !== id);
       tables.case_media = tables.case_media.filter((link) => link.case_id !== id);
-    },
-
-    async syncLinks({ table, ownerColumn, ownerId, otherColumn, next }) {
-      const links = tables[table] as unknown as Row[];
-      const kept = links.filter((link) => link[ownerColumn] !== ownerId);
-      const added = next.map((otherId) => ({ [ownerColumn]: ownerId, [otherColumn]: otherId }));
-      (tables as unknown as Record<string, Row[]>)[table] = [...kept, ...added];
     },
   };
 

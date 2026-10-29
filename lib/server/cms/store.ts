@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
+ 28/10/2026 Vinícius Nishimura Reis  Grava item e relações numa operação atômica (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -58,13 +59,15 @@ export interface MediaAsset extends MediaRef {
   decorative: boolean;
 }
 
-export interface LinkSync {
-  table: LinkTable;
-  ownerColumn: string;
-  ownerId: string;
-  otherColumn: string;
-  current: readonly string[];
-  next: readonly string[];
+/** Dados para salvar um item e todos os seus vínculos na mesma transação do banco. */
+export interface AtomicSave {
+  table: EntityTable;
+  values: Row;
+  id?: string;
+  expectedUpdatedAt?: string;
+  serviceAreaIds?: readonly string[];
+  caseServiceIds?: readonly string[];
+  caseGalleryIds?: readonly string[];
 }
 
 /**
@@ -78,17 +81,12 @@ export interface CmsStore {
   snapshot(): Promise<ContentSnapshot>;
   /** Biblioteca de mídia inteira (imagens e PDFs), mais recentes primeiro. */
   listMedia(): Promise<MediaAsset[]>;
+  /** Item, vínculos e galeria são persistidos juntos; erro em qualquer FK desfaz tudo. */
+  saveAtomic(input: AtomicSave): Promise<SavedRow>;
   insert(table: EntityTable, values: Row): Promise<SavedRow>;
   /** Grava só se `updated_at` ainda for `expectedUpdatedAt` (concorrência otimista). */
   update(table: EntityTable, id: string, values: Row, expectedUpdatedAt: string): Promise<SavedRow>;
   remove(table: EntityTable, id: string): Promise<void>;
   /** Registra um arquivo já enviado ao Storage na biblioteca de mídia. */
   insertMedia(values: MediaRow): Promise<MediaAsset>;
-  /** Galeria do case na ordem dada (reordena, inclui e remove). */
-  syncGallery(caseId: string, mediaIds: readonly string[]): Promise<void>;
-  /**
-   * Ajusta os vínculos de um item. Inclui os novos antes de remover os antigos: se a segunda
-   * etapa falhar, sobra um vínculo a mais (corrigido no próximo save), nunca um a menos.
-   */
-  syncLinks(sync: LinkSync): Promise<void>;
 }

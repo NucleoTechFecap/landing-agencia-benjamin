@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
+ 28/10/2026 Vinícius Nishimura Reis  Usa RPCs para salvar item e relações atomicamente (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -47,7 +48,7 @@ import {
 } from "../content/supabase/rows";
 import { AppError } from "../errors";
 import { logger } from "../logger";
-import type { CmsStore, EntityTable, LinkSync, MediaAsset, MediaRow, Row, SavedRow } from "./store";
+import type { AtomicSave, CmsStore, EntityTable, MediaAsset, MediaRow, SavedRow } from "./store";
 
 interface PostgrestError {
   message: string;
@@ -73,6 +74,11 @@ export function toCmsError(error: PostgrestError, context: { table: string; oper
     case "23514":
       return new AppError("VALIDATION_FAILED", {
         message: "Algum campo está fora das regras de publicação. Revise e tente de novo.",
+        internal,
+      });
+    case "40001":
+      return new AppError("CONFLICT", {
+        message: "O conteúdo foi alterado por outra pessoa. Recarregue e tente de novo.",
         internal,
       });
     case "42501":
@@ -150,30 +156,73 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
       return rows.map((row) => toMediaAsset(row, supabaseUrl));
     },
 
+    async saveAtomic(input: AtomicSave): Promise<SavedRow> {
+      const common = {
+        p_id: input.id ?? null,
+        p_expected_updated_at: input.expectedUpdatedAt ?? null,
+        p_values: input.values,
+      };
+      let functionName: string;
+      let args: Record<string, unknown>;
+      switch (input.table) {
+        case "areas":
+          functionName = "save_area";
+          args = common;
+          break;
+        case "case_categories":
+          functionName = "save_category";
+          args = common;
+          break;
+        case "services":
+          functionName = "save_service";
+          args = { ...common, p_area_ids: input.serviceAreaIds ?? [] };
+          break;
+        case "cases":
+          functionName = "save_case";
+          args = {
+            ...common,
+            p_service_ids: input.caseServiceIds ?? [],
+            p_gallery_ids: input.caseGalleryIds ?? [],
+          };
+          break;
+        case "ctas": {
+          const row = input.id
+            ? await run<{ id: string; updated_at: string }>(
+                client
+                  .from("ctas")
+                  .update(input.values)
+                  .eq("id", input.id)
+                  .eq("updated_at", input.expectedUpdatedAt!)
+                  .select("id, updated_at")
+                  .single(),
+                { table: "ctas", operation: "update" },
+              )
+            : await run<{ id: string; updated_at: string }>(
+                client
+                  .from("ctas")
+                  .insert({ ...input.values, status: "draft" })
+                  .select("id, updated_at")
+                  .single(),
+                { table: "ctas", operation: "insert" },
+              );
+          return saved(row!);
+        }
+      }
+
+      const rows = await run<{ id: string; updated_at: string }[]>(client.rpc(functionName, args), {
+        table: input.table,
+        operation: "save",
+      });
+      if (!rows?.[0]) throw new AppError("INTERNAL_ERROR", { message: "O banco não devolveu a versão salva." });
+      return saved(rows[0]);
+    },
+
     async insertMedia(values: MediaRow): Promise<MediaAsset> {
       const row = await run<MediaAssetRow>(
         client.from("media_assets").insert(values).select(COLUMNS.media_assets).single(),
         { table: "media_assets", operation: "insert" },
       );
       return toMediaAsset(row!, supabaseUrl);
-    },
-
-    async syncGallery(caseId, mediaIds) {
-      if (mediaIds.length) {
-        await run(
-          client.from("case_media").upsert(
-            mediaIds.map((mediaId, index) => ({ case_id: caseId, media_id: mediaId, sort_order: index })),
-            { onConflict: "case_id,media_id" },
-          ),
-          { table: "case_media", operation: "upsert" },
-        );
-      }
-      // Depois de gravar a nova ordem, remove o que saiu da galeria (falha parcial não perde imagem).
-      const removal = client.from("case_media").delete().eq("case_id", caseId);
-      await run(mediaIds.length ? removal.not("media_id", "in", `(${mediaIds.join(",")})`) : removal, {
-        table: "case_media",
-        operation: "delete",
-      });
     },
 
     async insert(table, values) {
@@ -213,25 +262,6 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
       if ((await currentVersion(table, id)) === null) throw new AppError("NOT_FOUND");
       // A política só exclui itens arquivados e com permissão de exclusão.
       throw new AppError("FORBIDDEN");
-    },
-
-    async syncLinks({ table, ownerColumn, ownerId, otherColumn, current, next }: LinkSync) {
-      const toAdd = next.filter((id) => !current.includes(id));
-      const toRemove = current.filter((id) => !next.includes(id));
-      if (toAdd.length) {
-        await run(
-          client
-            .from(table)
-            .insert(toAdd.map((otherId) => ({ [ownerColumn]: ownerId, [otherColumn]: otherId }) as Row)),
-          { table, operation: "insert" },
-        );
-      }
-      if (toRemove.length) {
-        await run(client.from(table).delete().eq(ownerColumn, ownerId).in(otherColumn, toRemove), {
-          table,
-          operation: "delete",
-        });
-      }
     },
   };
 }

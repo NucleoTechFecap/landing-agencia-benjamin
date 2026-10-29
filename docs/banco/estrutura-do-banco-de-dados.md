@@ -536,15 +536,15 @@ os vínculos são trocados por funções RPC atômicas:
 
 | Função | Faz |
 | ------ | --- |
-| `set_service_areas(service_id, area_ids[])` | Mantém as áreas da lista e remove as demais |
-| `set_case_services(case_id, service_ids[])` | Idem, com no máximo 9 serviços |
-| `set_case_gallery(case_id, media_ids[])` | Galeria na ordem do array, com no máximo 20 imagens |
-| `set_case_links(case_id, links jsonb)` | Substitui os links (`[{label, url}]`), com no máximo 10 |
+| `save_area(id, expected_updated_at, values)` | Cria ou edita a área com a versão otimista na mesma operação |
+| `save_category(id, expected_updated_at, values)` | Cria ou edita a categoria com a versão otimista na mesma operação |
+| `save_service(id, expected_updated_at, values, area_ids[])` | Salva o serviço e substitui as áreas (máx. 6) |
+| `save_case(id, expected_updated_at, values, service_ids[], gallery_ids[])` | Salva case, serviços e galeria (máx. 9 serviços e 20 imagens) |
 
-Fluxo de "Salvar case" no painel: `requirePermission` → validação Zod → `update cases … where
-updated_at = esperado` → `set_case_services` / `set_case_gallery` / `set_case_links` → auditoria →
-`updateTag`. Se depois quiserem atomicidade total, essas chamadas podem virar um único
-`save_case(...)`.
+Todas as funções são `SECURITY INVOKER`: a RLS do usuário autenticado continua valendo para o item
+e para cada tabela de vínculo. O RPC verifica `updated_at` dentro da transação. Se qualquer FK,
+constraint ou etapa de vínculo falhar, a alteração do item e as relações são revertidas juntas.
+Fluxo de salvar: `requirePermission` → validação Zod → `save_*` → auditoria → `updateTag`.
 
 ### 8.4 Concorrência otimista
 

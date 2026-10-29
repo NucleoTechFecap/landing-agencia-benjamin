@@ -3,14 +3,14 @@
  Sistema      : Agência Benjamin Landing Page
  Módulo       : Tests
  Arquivo      : cms-cases.test.ts
- Descrição    : Integração: envio de mídia ao Storage e CRUD de cases e categorias com RLS.
+ Descrição    : Integração: mídia, gravação atômica e CRUD de cases/categorias sob RLS.
 
  Desenvolvedor: Vinícius Nishimura Reis
 
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
+ 28/10/2026 Vinícius Nishimura Reis  Verifica rollback com FK inválida na gravação do case (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -172,5 +173,50 @@ describe.runIf(hasSupabaseTestEnv)("CMS de cases, categorias e mídia no Supabas
         "archive",
       ),
     ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("FK inválida em vínculo reverte item, serviços e galeria na mesma transação (TECH-13)", async () => {
+    const deps = cmsDepsFor(users.editor!.client);
+    const beforeCaseQuery = await serviceClient().from("cases").select("title, updated_at").eq("id", ids.case).single();
+    if (beforeCaseQuery.error || !beforeCaseQuery.data)
+      throw new Error("Case de teste não encontrado antes da gravação atômica.");
+    const beforeCase = beforeCaseQuery.data;
+    const beforeServices = await must(
+      serviceClient().from("case_services").select("service_id").eq("case_id", ids.case),
+    );
+    const beforeGallery = await must(
+      serviceClient().from("case_media").select("media_id, sort_order").eq("case_id", ids.case),
+    );
+
+    await expect(
+      saveContent(
+        deps,
+        editor(),
+        CASE,
+        {
+          title: "Título alterado que deve ser revertido",
+          slug: `case-${suffix}`,
+          client: "Cliente de teste",
+          categoryId: ids.category,
+          serviceIds: [crypto.randomUUID()],
+          summary: "Resumo do case de teste com mais de trinta caracteres.",
+          coverId: ids.media,
+          galleryIds: [ids.media],
+          externalLinks: [{ label: "Matéria", url: "https://exemplo.com.br/materia" }],
+          date: "2026-08",
+        },
+        { id: ids.case, expectedUpdatedAt: beforeCase.updated_at },
+      ),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+
+    expect(await must(serviceClient().from("cases").select("title, updated_at").eq("id", ids.case).single())).toEqual(
+      beforeCase,
+    );
+    expect(await must(serviceClient().from("case_services").select("service_id").eq("case_id", ids.case))).toEqual(
+      beforeServices,
+    );
+    expect(
+      await must(serviceClient().from("case_media").select("media_id, sort_order").eq("case_id", ids.case)),
+    ).toEqual(beforeGallery);
   });
 });

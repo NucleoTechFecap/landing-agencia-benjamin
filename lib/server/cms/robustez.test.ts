@@ -3,14 +3,14 @@
  Sistema      : Agência Benjamin Landing Page
  Módulo       : Lib
  Arquivo      : robustez.test.ts
- Descrição    : Achados da revisão TECH-13: gravação parcial, ids repetidos e páginas relacionadas no cache.
+ Descrição    : Achados da revisão TECH-13: gravação atômica, ids repetidos e cache relacionado.
 
  Desenvolvedor: Vinícius Nishimura Reis
 
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 27/10/2026
- Modificado em: 27/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  27/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-13).
+ 28/10/2026 Vinícius Nishimura Reis  Verifica rollback de item e vínculos com FK inválida (TECH-13).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,7 +30,6 @@ import { runContentCommand, saveContent, type CmsDeps } from "./content-service"
 import { CASE, SERVICE } from "./entities";
 import { many } from "./form-data";
 import { createMemoryCmsStore } from "./memory-store";
-import type { CmsStore } from "./store";
 
 const NOW = new Date("2026-10-27T15:00:00.000Z");
 const control = { provisional: false, archived_at: null, updated_at: "2026-10-20T00:00:00.000Z" };
@@ -54,7 +54,7 @@ const service = (id: string, slug: string, name: string, order: number) => ({
   sort_order: order,
 });
 
-function setup(wrap: (store: CmsStore) => CmsStore = (store) => store) {
+function setup() {
   const { store, tables } = createMemoryCmsStore({
     case_categories: [
       {
@@ -85,7 +85,7 @@ function setup(wrap: (store: CmsStore) => CmsStore = (store) => store) {
   const audits: AuditInput[] = [];
   const changes: ContentChange[] = [];
   const deps: CmsDeps = {
-    store: wrap(store),
+    store,
     audit: async (input) => void audits.push(input),
     invalidate: (change) => void changes.push(change),
     now: () => NOW,
@@ -162,57 +162,46 @@ describe("páginas relacionadas no aquecimento do cache (TECH-13)", () => {
   });
 });
 
-describe("gravação parcial (TECH-13)", () => {
-  const brokenLinks = (store: CmsStore): CmsStore => ({
-    ...store,
-    syncLinks: async () => {
-      throw new Error("conexão encerrada");
-    },
+describe("gravação atômica (TECH-13)", () => {
+  it("criação: FK inválida nos serviços não deixa item nem vínculo gravado", async () => {
+    const env = setup();
+    const invalidServiceId = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+    await expect(
+      saveContent(env.deps, env.actor("editor"), CASE, caseInput("case-novo", [invalidServiceId])),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+    expect(env.tables.cases).toEqual([]);
+    expect(env.tables.case_services).toEqual([]);
+    expect(env.tables.case_media).toEqual([]);
+    expect(env.audits).toEqual([]);
+    expect(env.changes).toEqual([]);
   });
 
-  it("edição de item publicado: registra a falha, atualiza o site e explica o que ficou salvo", async () => {
-    let failGallery = false;
-    const env = setup((store) => ({
-      ...store,
-      syncGallery: async (...args) => {
-        if (failGallery) throw new Error("conexão encerrada");
-        return store.syncGallery(...args);
-      },
-    }));
-    const meridiano = await publishedCase(env, "meridiano", [ID.social]);
-    env.audits.length = 0;
-    env.changes.length = 0;
-    failGallery = true;
+  it("edição: FK inválida na galeria reverte o texto, vínculos e ordem anteriores", async () => {
+    const env = setup();
+    const meridiano = await saveContent(env.deps, env.actor("editor"), CASE, caseInput("meridiano", [ID.social]));
+    const before = structuredClone({
+      item: env.tables.cases.find((row) => row.id === meridiano.id),
+      services: env.tables.case_services.filter((row) => row.case_id === meridiano.id),
+      gallery: env.tables.case_media.filter((row) => row.case_id === meridiano.id),
+    });
     await expect(
       saveContent(
         env.deps,
         env.actor("editor"),
         CASE,
-        { ...caseInput("meridiano", [ID.social]), title: "Título novo" },
+        {
+          ...caseInput("meridiano", [ID.audiovisual]),
+          title: "Título novo",
+          galleryIds: ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"],
+        },
         { id: meridiano.id, expectedUpdatedAt: meridiano.updatedAt },
       ),
-    ).rejects.toMatchObject({ code: "INTERNAL_ERROR", message: expect.stringContaining("O texto foi salvo") });
-    expect(env.tables.cases.find((row) => row.id === meridiano.id)?.title).toBe("Título novo");
-    expect(env.audits).toEqual([
-      expect.objectContaining({
-        event: "content.updated",
-        outcome: "failure",
-        metadata: expect.objectContaining({ reason: "vinculos", slug: "meridiano" }),
-      }),
-    ]);
-    expect(env.changes).toEqual([expect.objectContaining({ entity: "case", slug: "meridiano" })]);
-  });
-
-  it("criação: avisa que o rascunho existe e não mexe no cache", async () => {
-    const env = setup(brokenLinks);
-    await expect(
-      saveContent(env.deps, env.actor("editor"), CASE, caseInput("case-novo", [ID.social])),
-    ).rejects.toMatchObject({
-      message: expect.stringContaining("O rascunho foi criado"),
-    });
-    expect(env.tables.cases).toHaveLength(1);
-    expect(env.audits).toEqual([expect.objectContaining({ event: "content.created", outcome: "failure" })]);
-    expect(env.changes).toEqual([]);
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+    expect({
+      item: env.tables.cases.find((row) => row.id === meridiano.id),
+      services: env.tables.case_services.filter((row) => row.case_id === meridiano.id),
+      gallery: env.tables.case_media.filter((row) => row.case_id === meridiano.id),
+    }).toEqual(before);
   });
 });
 

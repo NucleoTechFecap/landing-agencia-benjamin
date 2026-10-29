@@ -44,7 +44,7 @@ import type {
   Publishable,
   Service,
 } from "@/lib/domain/content/types";
-import type { CmsStore, EntityTable, LinkTable, Row } from "./store";
+import type { EntityTable, LinkTable, Row } from "./store";
 
 /** Item editável: publicável e com endereço próprio. */
 export type CmsItem = Publishable & { id: string; slug: string };
@@ -90,8 +90,6 @@ export interface EntityDefinition<I extends { slug: string }, T extends CmsItem>
   };
   /** Impede a exclusão definitiva quando o banco recusaria (FK restrict), com mensagem clara. */
   deleteBlockers?(item: T, snapshot: ContentSnapshot): string[];
-  /** Relações gravadas depois do item (ex.: galeria ordenada do case). */
-  afterSave?(store: CmsStore, id: string, input: I): Promise<void>;
   /**
    * Outras páginas de detalhe do site que exibem o item (ex.: o case aparece na página dos
    * serviços dele). São aquecidas junto depois de invalidar o cache (ADR-0006, TECH-13).
@@ -318,7 +316,6 @@ export const CASE: EntityDefinition<CaseInput, CaseStudy> = {
     of: (item) => item.serviceIds,
     from: (input) => input.serviceIds,
   },
-  afterSave: (store, id, input) => store.syncGallery(id, input.galleryIds),
   // A página do serviço lista os cases dele; a do case mostra os relacionados da mesma categoria.
   relatedPaths: (item, snapshot, now) => [
     ...live(snapshot.services, now)

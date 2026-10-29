@@ -10,7 +10,7 @@
 | Migration       | `supabase/migrations/20261025000100_cms_content.sql`                         |
 | Reversão        | `supabase/rollbacks/<migration>.down.sql` (uma por migration, §9)            |
 | Seed            | `supabase/seed.sql`, gerado por `scripts/content-seed.mjs` (só banco local, §9) |
-| Testes          | `supabase/tests/database/cms_content.test.sql` (pgTAP, 84 testes) e `lib/server/content/content-sql.test.ts` (SQL × regras de domínio) |
+| Testes          | `supabase/tests/database/` (pgTAP) e `lib/server/content/content-sql.test.ts` (SQL × regras de domínio) |
 | Insumos         | [integridade](../negocio/integridade-de-conteudo.md), [campos do case](../negocio/campos-do-case.md), [fluxo de publicação](../negocio/fluxo-de-publicacao.md), [proteção de rotas](../seguranca/protecao-de-rotas.md), [ADR-0005](../adr/0005-armazenamento-de-midia.md) |
 
 ## 1. Visão geral
@@ -283,7 +283,7 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 
 | Regra | Motivo de não ser constraint | Onde reforçar depois |
 | ----- | ---------------------------- | -------------------- |
-| R03 — serviço com ≥ 1 área | Serviço e vínculos são gravados em requisições separadas | RPC transacional (ADM-07) ou trigger *deferrable* (DBX-04) |
+| R03 — serviço com ≥ 1 área | Rascunhos podem ficar incompletos; publicação exige ao menos uma área | `validateServiceForPublish`; persistência do item e das áreas usa `save_service` na mesma transação |
 | R05/R06/R07 — dependências publicadas | Depende do estado de outra tabela | Trigger de publicação (DBX-04) |
 | R10 — rota interna conhecida | A lista de rotas está em `integrity.ts` | — |
 | R11 — até 6 destaques | É aviso, não erro | — |
@@ -317,6 +317,8 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | `npm run test:supabase` (DB-03): leitura pública de configuração, páginas e CTAs com a RLS real — rascunho, página agendada e blocos de rascunho não vazam; visitante não grava | 6 testes, `PASS` |
 | `npm run test:supabase` (DB-04): serviços publicados com imagem e só vínculos com área publicada; área e serviço em rascunho fora; mídia usada só por rascunho invisível; checagem de slug do proxy | 4 testes, `PASS` |
 | `npm run test:supabase` (DB-05): case publicado com capa, galeria em ordem, link externo e mês; vínculo com serviço em rascunho oculto; categoria e galeria de rascunho invisíveis; slug do proxy | 4 testes, `PASS` |
+| `npx supabase test db` (TECH-13 #315/#314, migrations 20261028000100/00200): auditoria por papel, allowlist de funções `SECURITY INVOKER`, RLS e rollback do item após FK inválida | `Files=4, Tests=112, Result: PASS` |
+| `tests/integration/supabase/cms-cases.test.ts` (TECH-13 #314): edição de case com FK inválida verifica que item, serviços e galeria permanecem inalterados | Adicionado; aguarda execução com API local disponível |
 | `repository.supabase.test.ts` (DB-05): repositório público inteiro sobre a fonte Supabase — banco vazio (listas vazias, detalhes inexistentes) e populado (filtro por categoria, detalhe com galeria, agendado para o futuro oculto) | Passa no `npm test` |
 
 ## 9. Como aplicar, testar e reverter
@@ -337,7 +339,8 @@ npx supabase db push
 
 **Ordem das migrations.** Sequência por timestamp, sem pular: perfis e papéis (0100) → matriz
 RBAC e bucket (0200) → auditoria (0300) → formulários (0400) → conteúdo do CMS (20261025000100)
-→ ajustes da TECH-13 (20261027000100/0200). Cada uma depende só das anteriores. Mudança
+→ ajustes da TECH-13 (20261027000100/0200) → autorização de auditoria e gravação atômica do CMS
+(20261028000100/00200). Cada uma depende só das anteriores. Mudança
 destrutiva em banco com dados é feita em duas releases: primeiro a coluna nova, depois a remoção
 da antiga.
 
