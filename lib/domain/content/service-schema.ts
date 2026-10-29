@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-06).
+28/10/2026 Codex                     Aceita IDs da seed do banco (MANUT-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -31,12 +32,13 @@ import {
   requiredText,
   shortList,
   slugField,
+  uuidField,
 } from "./cms-schema";
 
 /** Limites do serviço (TECH-05 §5; colunas de public.services). */
 export const SERVICE_LIMITS = { summary: 200, description: 4000, examples: 12, example: 120, areas: 6 } as const;
 
-const uuid = z.string().uuid("Seleção inválida.");
+const uuid = uuidField;
 
 /** Rascunho: nome e slug bastam para salvar. */
 export const serviceInputSchema = z.object({

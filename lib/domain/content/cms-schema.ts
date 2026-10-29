@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,12 +18,21 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+28/10/2026 Codex                     Valida UUIDs aceitos pelo PostgreSQL (MANUT-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { z } from "zod";
 import { BRAND_ICONS } from "./icons";
 import { RESERVED_SLUGS, SLUG_MAX_LENGTH, SLUG_MIN_LENGTH, SLUG_PATTERN } from "./slug";
+
+/**
+ * O PostgreSQL aceita qualquer UUID de 128 bits; não exige bits de versão ou variante RFC.
+ * A seed determinística do CMS usa UUIDs derivados de MD5, que `z.string().uuid()` rejeita.
+ */
+export const uuidField = z
+  .string()
+  .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Seleção inválida.");
 
 /** Slug editável no CMS: mesmas regras de validateSlug() e de is_valid_slug() no banco. */
 export const slugField = z
