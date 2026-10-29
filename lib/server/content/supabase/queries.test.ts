@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,9 +20,11 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Testes de categorias, cases e galeria (DB-05).
+ 29/10/2026 Vinicius Binda             resolvePublicSlug no lugar de isSlugPublished (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it, vi } from "vitest";
 import { siteSettings } from "@/content";
 import { fakeSupabase } from "@/tests/stubs/fake-supabase";
@@ -32,7 +34,7 @@ import {
   fetchCtas,
   fetchPage,
   fetchSiteSettings,
-  isSlugPublished,
+  resolvePublicSlug,
 } from "./queries";
 
 vi.spyOn(console, "log").mockImplementation(() => {});
@@ -174,14 +176,18 @@ describe("áreas e serviços (DB-04)", () => {
     expect(calls.map((call) => call.table)).not.toContain("media_assets");
   });
 
-  it("slug publicado: consulta só publicados e libera a requisição se o banco falhar", async () => {
-    const { client } = fakeSupabase({
-      services: { data: [service("social", "published"), service("eventos", "draft")] },
-    });
-    expect(await isSlugPublished(client, "services", "social")).toBe(true);
-    expect(await isSlugPublished(client, "services", "eventos")).toBe(false);
-    const broken = fakeSupabase({ cases: { error: { message: "timeout" } } });
-    expect(await isSlugPublished(broken.client, "cases", "meridiano")).toBe(true);
+  it("slug atual: pergunta ao banco (resolve_public_slug) e libera a requisição se ele falhar", async () => {
+    const rpc = vi.fn(async (_fn: string, args: { p_entity: string; p_slug: string }) => ({
+      data: { "social-antigo": "social", social: "social" }[args.p_slug] ?? null,
+      error: null,
+    }));
+    const client = { rpc } as unknown as SupabaseClient;
+    expect(await resolvePublicSlug(client, "service", "social")).toBe("social");
+    expect(await resolvePublicSlug(client, "service", "social-antigo")).toBe("social");
+    expect(await resolvePublicSlug(client, "service", "eventos")).toBeNull();
+    expect(rpc).toHaveBeenCalledWith("resolve_public_slug", { p_entity: "service", p_slug: "social-antigo" });
+    const broken = { rpc: async () => ({ data: null, error: { message: "timeout" } }) } as unknown as SupabaseClient;
+    expect(await resolvePublicSlug(broken, "case", "meridiano")).toBe("meridiano");
   });
 });
 

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-12).
+ 29/10/2026 Vinicius Binda             Maiúsculas no endereço respondem 301 (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -81,6 +82,17 @@ test.describe("J1 · visitante encontra um serviço, vê um case e pede um proje
     const response = await page.goto("/cases/case-que-nao-existe");
     expect(response?.status()).toBe(404);
     await expect(page.getByRole("heading", { name: /Essa pauta não saiu do briefing/ })).toBeVisible();
+  });
+
+  test("endereço com maiúsculas responde 301 para as minúsculas, mantendo a query (DB-08)", async ({
+    page,
+    request,
+  }) => {
+    const response = await request.get("/cases/Meridiano?origem=e2e", { maxRedirects: 0 });
+    expect(response.status()).toBe(301);
+    expect(response.headers().location).toMatch(/\/cases\/meridiano\?origem=e2e$/);
+    await page.goto("/servicos/AUDIOVISUAL");
+    await expect(page).toHaveURL(/\/servicos\/audiovisual$/);
   });
 });
 
