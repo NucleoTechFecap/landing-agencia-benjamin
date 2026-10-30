@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 28/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 28/10/2026 Caio Moraes              Classes do botão exportadas para reuso em <button> (INT-01).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -32,6 +33,11 @@ const VARIANTS = {
 } as const;
 
 export type ButtonVariant = keyof typeof VARIANTS;
+
+/** Classes do botão "sticker", para usar também em <button> com o mesmo visual dos links. */
+export function buttonClasses(variant: ButtonVariant = "primary", className = "") {
+  return `inline-flex items-center justify-center gap-2 rounded-full border-2 px-6 py-3 text-base font-bold shadow-sticker transition hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${VARIANTS[variant]} ${className}`;
+}
 
 /** Link com aparência de botão "sticker" (borda grossa e sombra deslocada). */
 export function ButtonLink({
@@ -49,7 +55,7 @@ export function ButtonLink({
   className?: string;
   prefetch?: boolean;
 }) {
-  const classes = `inline-flex items-center justify-center gap-2 rounded-full border-2 px-6 py-3 text-base font-bold shadow-sticker transition hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${VARIANTS[variant]} ${className}`;
+  const classes = buttonClasses(variant, className);
   if (external) {
     return (
       <a href={href} target="_blank" rel="noopener noreferrer" className={classes}>
