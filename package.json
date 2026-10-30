@@ -14,6 +14,7 @@
     "test:watch": "vitest",
     "test:supabase": "node scripts/test-supabase.mjs",
     "test:migrations": "node scripts/test-migrations.mjs",
+    "perf:queries": "node scripts/explain-queries.mjs",
     "seed:write": "node --experimental-strip-types --no-warnings scripts/content-seed.mjs --write",
     "seed:check": "node --experimental-strip-types --no-warnings scripts/content-seed.mjs --check",
     "check:headers": "node scripts/file-headers.mjs --check",

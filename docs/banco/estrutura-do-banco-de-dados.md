@@ -484,6 +484,10 @@ Na invalidação de cache, `tagsForChange()` já trata o **slug antigo** (ADR-00
 
 ## 8. Consultas, índices e gravação (DBX-03)
 
+> **Superado em 30/10/2026 (DBX-03).** Os índices e a leitura via `search_cases` desta proposta
+> não foram adotados: filtros e paginação ficaram na aplicação, e os índices criados (com
+> medições e justificativa) estão no [dicionário de dados](dicionario-de-dados.md) §10.
+
 ### 8.1 Índices
 
 | Tabela | Índice | Serve para |
