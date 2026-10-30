@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Áreas e serviços do Supabase e checagem de slug do proxy (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
  26/10/2026 Vinícius Nishimura Reis  CMS como fonte padrão com Supabase; provisório recusado em hml/prd (INT-02).
+ 29/10/2026 Vinicius Binda             Slug atual no lugar de slugExists, com endereços antigos (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,7 +38,7 @@ import {
   fetchCtas,
   fetchPage,
   fetchSiteSettings,
-  isSlugPublished,
+  resolvePublicSlug,
 } from "./supabase/queries";
 
 export type ContentSourceName = "local" | "supabase";
@@ -51,8 +52,11 @@ export interface ContentSource {
   snapshot(): Promise<ContentSnapshot>;
   settings(): Promise<SiteSettings>;
   page(slug: string): Promise<Page | null>;
-  /** Existe item publicado com este slug? (proxy — 404 real antes do streaming). */
-  slugExists(route: DetailRoute, slug: string, now?: Date): Promise<boolean>;
+  /**
+   * Slug atual do item publicado que responde pelo endereço: ele mesmo, o novo quando o
+   * endereço é antigo (301) ou `null` (404). Usado pelo proxy, antes do streaming, e pela API.
+   */
+  currentSlug(route: DetailRoute, slug: string, now?: Date): Promise<string | null>;
 }
 
 /** Conteúdo provisório versionado em content/ (desenvolvimento, testes e fallback). */
@@ -62,9 +66,10 @@ export const localSource: ContentSource = {
   settings: async () => siteSettings,
   // Páginas só existem no CMS: sem banco, as rotas exibem apenas as seções fixas.
   page: async () => null,
-  async slugExists(route, slug, now = new Date()) {
+  // O conteúdo versionado não muda de endereço: não há endereços antigos.
+  async currentSlug(route, slug, now = new Date()) {
     const items = route === "servicos" ? seedSnapshot.services : seedSnapshot.cases;
-    return items.some((item) => item.slug === slug && isPubliclyVisible(item, now));
+    return items.some((item) => item.slug === slug && isPubliclyVisible(item, now)) ? slug : null;
   },
 };
 
@@ -86,7 +91,8 @@ export const supabaseSource: ContentSource = {
   },
   settings: () => fetchSiteSettings(createPublicClient(), siteSettings),
   page: (slug) => fetchPage(createPublicClient(), slug),
-  slugExists: (route, slug) => isSlugPublished(createPublicClient(), route === "servicos" ? "services" : "cases", slug),
+  currentSlug: (route, slug) =>
+    resolvePublicSlug(createPublicClient(), route === "servicos" ? "service" : "case", slug),
 };
 
 /**

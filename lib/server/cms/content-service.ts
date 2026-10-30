@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 28/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,6 +23,7 @@
  26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
 28/10/2026 Codex                     Propaga códigos fechados de impacto (TECH-13).
+ 29/10/2026 Vinicius Binda             Troca de slug com 301 em serviço/case e endereço reservado (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -45,7 +46,7 @@ import type { AuditInput } from "../audit";
 import type { ContentChange } from "../content/invalidate";
 import { AppError } from "../errors";
 import type { CmsItem, EntityDefinition } from "./entities";
-import type { CmsStore } from "./store";
+import type { CmsStore, RetiredSlug } from "./store";
 
 export interface CmsActor {
   id: string;
@@ -99,9 +100,15 @@ function contentChange<I extends { slug: string }, T extends CmsItem>(
   items: T[],
   snapshot: ContentSnapshot,
   now: Date,
+  previousSlug?: string,
 ): ContentChange {
   const relatedPaths = [...new Set(items.flatMap((item) => def.relatedPaths?.(item, snapshot, now) ?? []))];
-  return { entity: def.type, slug, ...(relatedPaths.length ? { relatedPaths } : {}) };
+  return {
+    entity: def.type,
+    slug,
+    ...(previousSlug && previousSlug !== slug ? { previousSlug } : {}),
+    ...(relatedPaths.length ? { relatedPaths } : {}),
+  };
 }
 
 /** Snapshot com o item substituído pela versão nova (para checar integridade antes de gravar). */
@@ -150,12 +157,14 @@ function publicationError(error: PublicationError): AppError {
 
 /**
  * Slug em branco: na criação vira o nome/título normalizado e único entre os itens da
- * entidade; na edição mantém o atual (apagar o campo não apaga o endereço).
+ * entidade e os endereços antigos/reservados; na edição mantém o atual (apagar o campo não
+ * apaga o endereço).
  */
 function withSlug<I extends { slug: string }, T extends CmsItem>(
   def: EntityDefinition<I, T>,
   raw: unknown,
   snapshot: ContentSnapshot,
+  retired: readonly RetiredSlug[],
   ref?: ItemRef,
 ): unknown {
   if (typeof raw !== "object" || raw === null) return raw;
@@ -168,10 +177,7 @@ function withSlug<I extends { slug: string }, T extends CmsItem>(
   if (!source.trim()) return raw;
   return {
     ...values,
-    slug: uniqueSlug(
-      source,
-      items.map((item) => item.slug),
-    ),
+    slug: uniqueSlug(source, [...items.map((item) => item.slug), ...retired.map((entry) => entry.slug)]),
   };
 }
 
@@ -184,8 +190,10 @@ const stateOf = (item: CmsItem): PublicationState => ({
 /**
  * Cria (rascunho) ou edita um item. Editar item publicado o mantém publicado, então o
  * conteúdo passa pela validação de publicação (I5); item arquivado precisa ser restaurado
- * antes de editar. O slug fica travado depois da primeira publicação: os links já foram
- * divulgados e o redirecionamento de URL antiga ainda não existe (DB-08).
+ * antes de editar. Endereço (DB-08): serviço e case podem trocar de slug depois de publicados
+ * (o banco registra o antigo e o site responde 301); área e categoria ficam com o slug fixo
+ * após a primeira publicação. Endereço antigo de outro item ou de item excluído não é
+ * reaproveitado: os links que circulam com ele abririam outro conteúdo.
  */
 export async function saveContent<I extends { slug: string }, T extends CmsItem>(
   deps: CmsDeps,
@@ -195,8 +203,11 @@ export async function saveContent<I extends { slug: string }, T extends CmsItem>
   ref?: ItemRef,
 ): Promise<SaveResult> {
   if (!can(actor.role, def.resource, ref ? "edit" : "create")) throw new AppError("FORBIDDEN");
-  const snapshot = await deps.store.snapshot();
-  const parsed = def.inputSchema.safeParse(withSlug(def, raw, snapshot, ref));
+  const [snapshot, retired] = await Promise.all([
+    deps.store.snapshot(),
+    def.redirectEntity ? deps.store.retiredSlugs(def.redirectEntity) : [],
+  ]);
+  const parsed = def.inputSchema.safeParse(withSlug(def, raw, snapshot, retired, ref));
   if (!parsed.success) throw new AppError("VALIDATION_FAILED", { fieldErrors: fieldErrorsOf(parsed.error) });
   const input = parsed.data;
 
@@ -212,11 +223,21 @@ export async function saveContent<I extends { slug: string }, T extends CmsItem>
       fieldErrors: { slug: ["Já existe um item com este endereço. Escolha outro."] },
     });
   }
-  if (current?.publishedAt && current.slug !== input.slug) {
+  if (retired.some((entry) => entry.slug === input.slug && (!current || entry.itemId !== current.id))) {
+    throw new AppError("VALIDATION_FAILED", {
+      fieldErrors: {
+        slug: [
+          "Este endereço já foi de outro item e continua reservado, para os links antigos não abrirem outro conteúdo. Escolha outro.",
+        ],
+      },
+    });
+  }
+  if (!def.redirectEntity && current?.publishedAt && current.slug !== input.slug) {
     throw new AppError("VALIDATION_FAILED", {
       fieldErrors: { slug: ["O endereço não muda depois da primeira publicação: os links já foram divulgados."] },
     });
   }
+  const previousSlug = current && current.slug !== input.slug ? current.slug : undefined;
 
   const media = new Map((await deps.store.listMedia()).map((asset) => [asset.id, asset]));
   const merged = def.merge(current, input, current?.id ?? "novo", media);
@@ -241,13 +262,14 @@ export async function saveContent<I extends { slug: string }, T extends CmsItem>
       metadata: {
         entity: def.type,
         slug: input.slug,
+        ...(previousSlug ? { previousSlug } : {}),
         ...(current ? { fromStatus: current.status } : {}),
         ...(reason ? { reason } : {}),
       },
     });
   const refreshSite = () => {
     if (current?.status === "published")
-      deps.invalidate(contentChange(def, input.slug, [merged, current], snapshot, now));
+      deps.invalidate(contentChange(def, input.slug, [merged, current], snapshot, now, previousSlug));
   };
 
   try {

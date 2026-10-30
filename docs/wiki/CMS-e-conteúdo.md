@@ -12,8 +12,8 @@ versionado em `content/` serve de fallback de desenvolvimento e de fonte do seed
 | Publicado | Aparece (ou a partir da data agendada) | "Publicar", só com os campos obrigatórios preenchidos |
 | Arquivado | Não aparece; o link antigo dá 404 | "Arquivar"; "Restaurar" devolve como rascunho |
 
-Editar um item publicado o mantém publicado: a alteração vai ao ar ao salvar. O endereço (slug) fica
-travado depois da primeira publicação. Arquivar ou excluir algo de que outra página depende é
+Editar um item publicado o mantém publicado: a alteração vai ao ar ao salvar. Depois da primeira publicação, o endereço
+(slug) de serviço e case pode mudar, e o antigo leva ao novo (301); o de área e categoria fica fixo. Arquivar ou excluir algo de que outra página depende é
 bloqueado, com a lista do que quebraria.
 
 ## Quem pode o quê

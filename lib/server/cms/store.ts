@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
+ 29/10/2026 Vinicius Binda             Endereços antigos e reservados (retiredSlugs) (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -58,6 +59,16 @@ export interface MediaAsset extends MediaRef {
   decorative: boolean;
 }
 
+/** Tipos com página própria, cujo endereço antigo redireciona (public.slug_redirects, DB-08). */
+export type RedirectEntity = "service" | "case";
+
+/** Endereço que um item publicado já usou: segue com ele (301) ou, se foi excluído, reservado. */
+export interface RetiredSlug {
+  slug: string;
+  /** Item que responde pelo endereço; `null` quando ele foi excluído (endereço reservado). */
+  itemId: string | null;
+}
+
 export interface LinkSync {
   table: LinkTable;
   ownerColumn: string;
@@ -78,6 +89,11 @@ export interface CmsStore {
   snapshot(): Promise<ContentSnapshot>;
   /** Biblioteca de mídia inteira (imagens e PDFs), mais recentes primeiro. */
   listMedia(): Promise<MediaAsset[]>;
+  /**
+   * Endereços antigos e reservados do tipo. Quem grava é o banco (trigger track_slug), ao
+   * trocar o slug de item já publicado ou excluí-lo; o painel só consulta para avisar antes.
+   */
+  retiredSlugs(entity: RedirectEntity): Promise<RetiredSlug[]>;
   insert(table: EntityTable, values: Row): Promise<SavedRow>;
   /** Grava só se `updated_at` ainda for `expectedUpdatedAt` (concorrência otimista). */
   update(table: EntityTable, id: string, values: Row, expectedUpdatedAt: string): Promise<SavedRow>;

@@ -56,10 +56,14 @@ visibilidade é única (TECH-04, invariante I1).
 | `/api/v1/areas` | `AreaDTO[]` (ordem configurada) | — |
 | `/api/v1/areas/{slug}` | `AreaDetailDTO` (área e serviços publicados vinculados) | 404 |
 | `/api/v1/services?featured=` | `ServiceDTO[]` | 400 |
-| `/api/v1/services/{slug}` | `ServiceDTO & { cases: CaseCardDTO[] }` | 404 |
+| `/api/v1/services/{slug}` | `ServiceDTO & { cases: CaseCardDTO[] }` | 301, 404 |
 | `/api/v1/categories` | `CategoryDTO[]` | — |
 | `/api/v1/cases?category=&service=&area=&client=&page=&pageSize=` | `CaseCardDTO[]` + `meta` | 400 |
-| `/api/v1/cases/{slug}` | `CaseDetailDTO` | 404 |
+| `/api/v1/cases/{slug}` | `CaseDetailDTO` | 301, 404 |
+
+**301 nos detalhes de serviço e case (DB-08).** Endereço antigo (o item trocou de slug depois de
+publicado) ou com maiúsculas responde `301` com `Location` no endereço atual, mantendo a query
+string. Endereço de item fora do ar ou excluído continua `404`.
 
 ### DTOs
 
@@ -152,7 +156,8 @@ página seguem o mesmo padrão rascunho/publicação, com campos obrigatórios d
 
 **Implementação (ADM-07).** `lib/server/cms/content-service.ts` aplica, para toda entidade
 descrita em `lib/server/cms/entities.ts`: permissão → Zod da entidade → versão otimista
-(`updated_at`) → slug único e fixo após a primeira publicação → `transition()` (inclusive no save
+(`updated_at`) → slug único, sem reaproveitar endereço antigo ou reservado, e fixo após a primeira
+publicação em área e categoria (DB-08) → `transition()` (inclusive no save
 de item publicado) → `assessRemovalImpact` ao despublicar/arquivar/excluir → auditoria (crítica
 antes da gravação, com registro de falha) → gravação pelo store → `updateTag`. O store de
 produção (`supabase-store.ts`) usa a sessão do usuário, então a RLS do banco é a segunda barreira;

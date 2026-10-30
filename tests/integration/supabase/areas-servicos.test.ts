@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,11 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-04).
+ 29/10/2026 Vinicius Binda             resolvePublicSlug no lugar de isSlugPublished (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { fetchAreasAndServices, isSlugPublished } from "@/lib/server/content/supabase/queries";
+import { fetchAreasAndServices, resolvePublicSlug } from "@/lib/server/content/supabase/queries";
 import { anonClient, hasSupabaseTestEnv, must, serviceClient, supabaseTestEnv, testSuffix } from "./helpers";
 
 vi.spyOn(console, "log").mockImplementation(() => {});
@@ -115,7 +116,7 @@ describe.runIf(hasSupabaseTestEnv)("áreas e serviços no Supabase (DB-04)", () 
   });
 
   it("checagem de slug do proxy respeita o estado de publicação", async () => {
-    expect(await isSlugPublished(anonClient(), "services", slug("servico-a"))).toBe(true);
-    expect(await isSlugPublished(anonClient(), "services", slug("servico-rascunho"))).toBe(false);
+    expect(await resolvePublicSlug(anonClient(), "service", slug("servico-a"))).toBe(slug("servico-a"));
+    expect(await resolvePublicSlug(anonClient(), "service", slug("servico-rascunho"))).toBeNull();
   });
 });

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Áreas, serviços, vínculos e mídia do CMS (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
  26/10/2026 Vinícius Nishimura Reis  Montagem do snapshot compartilhada com o painel (ADM-07).
+ 29/10/2026 Vinicius Binda             Slug atual por resolve_public_slug, com endereços antigos (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -151,25 +152,23 @@ export async function fetchCasesAndCategories(
 }
 
 /**
- * Consulta leve usada pelo proxy (404 real para slug inexistente). Se o banco não responder,
- * deixa a requisição seguir (fail open): a própria página ainda chama notFound(), e um
- * problema de rede não pode transformar todo o portfólio em 404.
+ * Slug atual do serviço/case publicado que responde pelo endereço pedido — ele mesmo, o novo
+ * (endereço antigo, 301) ou `null` (404) — via `resolve_public_slug` (DB-08). Usada pelo proxy
+ * e pela API. Se o banco não responder, deixa a requisição seguir com o próprio slug (fail
+ * open): a página ainda chama notFound(), e um problema de rede não pode transformar todo o
+ * portfólio em 404.
  */
-export async function isSlugPublished(
+export async function resolvePublicSlug(
   client: SupabaseClient,
-  table: "services" | "cases",
+  entity: "service" | "case",
   slug: string,
-): Promise<boolean> {
-  try {
-    const found = await rows<{ slug: string }>(
-      table,
-      client.from(table).select("slug").eq("slug", slug).eq("status", "published").limit(1),
-    );
-    return found.length > 0;
-  } catch (error) {
-    logger.warn("content.slug_check.failed", { table, error });
-    return true;
+): Promise<string | null> {
+  const { data, error } = await client.rpc("resolve_public_slug", { p_entity: entity, p_slug: slug });
+  if (error) {
+    logger.warn("content.slug_check.failed", { entity, error });
+    return slug;
   }
+  return typeof data === "string" ? data : null;
 }
 
 export async function fetchCtas(client: SupabaseClient): Promise<Cta[]> {

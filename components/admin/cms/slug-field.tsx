@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Sugestão a partir do campo de origem (título do case) (ADM-08).
  26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
+ 29/10/2026 Vinicius Binda             Aviso de redirecionamento ao trocar endereço publicado (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,16 +31,20 @@ import { TextField } from "@/components/forms/fields";
 /**
  * Endereço (slug). Em branco, o servidor gera a partir do nome ou título (único entre os
  * itens). Não há preenchimento automático no navegador: ele se misturava com o que a pessoa
- * colava ou digitava no campo (achado do E2E do TECH-12). Depois da primeira publicação o
- * campo fica só leitura — os links já circulam.
+ * colava ou digitava no campo (achado do E2E do TECH-12). Depois da primeira publicação, área
+ * e categoria ficam só leitura — os links já circulam; serviço e case continuam editáveis e o
+ * endereço antigo passa a redirecionar para o novo (DB-08).
  */
 export function SlugField({
   locked,
+  redirects = false,
   errors,
   defaultValue,
   source = "nome",
 }: {
   locked: boolean;
+  /** Item já publicado cujo endereço antigo redireciona: mostra o aviso ao trocar. */
+  redirects?: boolean;
   errors?: string[];
   defaultValue?: string;
   /** Como o campo de origem aparece na dica ("nome" ou "título"). */
@@ -62,7 +67,11 @@ export function SlugField({
       name="slug"
       label="Endereço (slug)"
       maxLength={80}
-      hint={`Minúsculas, números e hífens (ex.: social-media). Em branco, é gerado a partir do ${source}.`}
+      hint={
+        redirects
+          ? "Minúsculas, números e hífens. Já publicado: se trocar, o endereço antigo continua funcionando e leva ao novo."
+          : `Minúsculas, números e hífens (ex.: social-media). Em branco, é gerado a partir do ${source}.`
+      }
       errors={errors}
       defaultValue={defaultValue}
     />

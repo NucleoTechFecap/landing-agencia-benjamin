@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 27/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
  26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
+ 29/10/2026 Vinicius Binda             Serviço e case com endereço antigo redirecionando (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -44,7 +45,7 @@ import type {
   Publishable,
   Service,
 } from "@/lib/domain/content/types";
-import type { CmsStore, EntityTable, LinkTable, Row } from "./store";
+import type { CmsStore, EntityTable, LinkTable, RedirectEntity, Row } from "./store";
 
 /** Item editável: publicável e com endereço próprio. */
 export type CmsItem = Publishable & { id: string; slug: string };
@@ -60,6 +61,11 @@ export interface EntityDefinition<I extends { slug: string }, T extends CmsItem>
   table: EntityTable;
   /** Campo do formulário usado para gerar o slug quando ele vem em branco. */
   slugSource: "name" | "title";
+  /**
+   * Tipo com página própria (DB-08): depois de publicado o slug pode mudar, e o banco registra
+   * o antigo em public.slug_redirects (301). Sem ele, o slug fica fixo após a primeira publicação.
+   */
+  redirectEntity?: RedirectEntity;
   /** Coleção correspondente no snapshot de conteúdo. */
   key: Exclude<keyof ContentSnapshot, "ctas">;
   /** Para mensagens: "a área", "o serviço". */
@@ -149,6 +155,7 @@ export const SERVICE: EntityDefinition<ServiceInput, Service> = {
   resource: "service",
   table: "services",
   slugSource: "name",
+  redirectEntity: "service",
   key: "services",
   noun: { singular: "serviço", article: "o" },
   adminPath: "/admin/servicos",
@@ -259,6 +266,7 @@ export const CASE: EntityDefinition<CaseInput, CaseStudy> = {
   resource: "case",
   table: "cases",
   slugSource: "title",
+  redirectEntity: "case",
   key: "cases",
   noun: { singular: "case", article: "o" },
   adminPath: "/admin/cases",

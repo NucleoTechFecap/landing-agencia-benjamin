@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (QA-04).
+ 29/10/2026 Vinicius Binda             resolvePublicSlug no lugar de isSlugPublished (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -27,7 +28,7 @@ import {
   fetchCasesAndCategories,
   fetchCtas,
   fetchPage,
-  isSlugPublished,
+  resolvePublicSlug,
 } from "@/lib/server/content/supabase/queries";
 import { anonClient, hasSupabaseTestEnv, must, serviceClient, supabaseTestEnv, testSuffix } from "./helpers";
 
@@ -152,8 +153,8 @@ describe.runIf(hasSupabaseTestEnv)("visibilidade pública de conteúdo não publ
     expect(mine(cases)).toEqual([]);
     expect(mine(ctas)).toEqual([]);
     for (const slug of slugs("pagina")) expect(await fetchPage(client, slug)).toBeNull();
-    for (const slug of slugs("servico")) expect(await isSlugPublished(client, "services", slug)).toBe(false);
-    for (const slug of slugs("case")) expect(await isSlugPublished(client, "cases", slug)).toBe(false);
+    for (const slug of slugs("servico")) expect(await resolvePublicSlug(client, "service", slug)).toBeNull();
+    for (const slug of slugs("case")) expect(await resolvePublicSlug(client, "case", slug)).toBeNull();
   });
 
   it.each(["areas", "services", "case_categories", "cases", "ctas", "pages", "media_assets"])(
