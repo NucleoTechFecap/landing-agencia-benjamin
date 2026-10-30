@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
+ 29/10/2026 Caio Moraes              Cores via tokens do tema (ADM-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,5 +31,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminLayout({ children }: LayoutProps<"/admin">) {
-  return <div className="min-h-dvh bg-[#f4f7ec] text-[#161313]">{children}</div>;
+  return <div className="min-h-dvh bg-benja-admin-fundo text-benja-noite">{children}</div>;
 }

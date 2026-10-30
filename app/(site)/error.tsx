@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,13 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 29/10/2026 Caio Moraes              Botão "Tentar novamente" com o estilo padrão (INT-01).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
 import { BrandIcon } from "@/components/ui/brand-icon";
-import { ButtonLink } from "@/components/ui/button-link";
+import { ButtonLink, buttonClasses } from "@/components/ui/button-link";
 import { Section } from "@/components/ui/section";
 
 /** Erro inesperado em páginas públicas: mensagem amigável + código para atendimento (ARC-09). */
@@ -40,11 +41,7 @@ export default function SiteError({ error, retry }: { error: Error & { digest?: 
         </p>
       ) : null}
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <button
-          type="button"
-          onClick={() => retry()}
-          className="rounded-full border-2 border-benja-noite bg-benja-verde px-6 py-3 font-bold text-benja-nyanza shadow-sticker"
-        >
+        <button type="button" onClick={() => retry()} className={buttonClasses("primary")}>
           Tentar novamente
         </button>
         <ButtonLink href="/" variant="secondary">

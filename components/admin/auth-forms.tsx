@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
  26/10/2026 Vinícius Nishimura Reis  Formulário único no shell; next por promessa (B-08) (ADM-02).
+ 29/10/2026 Caio Moraes              Cores via tokens do tema (ADM-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -31,21 +32,21 @@ import type { AuthFormState } from "@/lib/domain/auth/redirect";
 type AuthAction = (state: AuthFormState, formData: FormData) => Promise<AuthFormState>;
 
 const input =
-  "w-full rounded-xl border-2 border-[#004a1b]/20 bg-white px-4 py-3 text-base outline-none transition focus:border-[#24d139] focus:ring-4 focus:ring-[#24d139]/25";
+  "w-full rounded-xl border-2 border-benja-verde/20 bg-white px-4 py-3 text-base outline-none transition focus:border-benja-lima focus:ring-4 focus:ring-benja-lima/25";
 const button =
-  "w-full rounded-full bg-[#004a1b] px-6 py-3 font-bold text-[#f1fcd0] transition hover:bg-[#03621f] disabled:cursor-wait disabled:opacity-60";
+  "w-full rounded-full bg-benja-verde px-6 py-3 font-bold text-benja-nyanza transition hover:bg-benja-verde-hover disabled:cursor-wait disabled:opacity-60";
 
 function Feedback({ state }: { state: AuthFormState }) {
   if (state.error) {
     return (
-      <p role="alert" className="rounded-xl bg-[#ffe1d1] px-4 py-3 text-sm font-medium text-[#8a2c00]">
+      <p role="alert" className="rounded-xl bg-benja-erro-fundo px-4 py-3 text-sm font-medium text-benja-erro-texto">
         {state.error}
       </p>
     );
   }
   if (state.message) {
     return (
-      <p role="status" className="rounded-xl bg-[#e3f9da] px-4 py-3 text-sm font-medium text-[#004a1b]">
+      <p role="status" className="rounded-xl bg-benja-sucesso-fundo px-4 py-3 text-sm font-medium text-benja-verde">
         {state.message}
       </p>
     );
@@ -100,7 +101,7 @@ export function LoginForm({ action, next }: { action: AuthAction; next?: Promise
         {pending ? "Entrando…" : "Entrar"}
       </button>
       <p className="text-center text-sm">
-        <Link href="/admin/recuperar-senha" className="font-semibold text-[#004a1b] underline underline-offset-4">
+        <Link href="/admin/recuperar-senha" className="font-semibold text-benja-verde underline underline-offset-4">
           Esqueci minha senha
         </Link>
       </p>
@@ -135,7 +136,7 @@ export function ResetRequestForm({ action }: { action: AuthAction }) {
         {pending ? "Enviando…" : "Enviar link"}
       </button>
       <p className="text-center text-sm">
-        <Link href="/admin/login" className="font-semibold text-[#004a1b] underline underline-offset-4">
+        <Link href="/admin/login" className="font-semibold text-benja-verde underline underline-offset-4">
           Voltar ao login
         </Link>
       </p>
@@ -161,7 +162,7 @@ export function NewPasswordForm({ action }: { action: AuthAction }) {
           aria-describedby="password-hint"
           className={input}
         />
-        <p id="password-hint" className="text-xs text-[#231f20]/70">
+        <p id="password-hint" className="text-xs text-benja-grafite/70">
           Mínimo de 12 caracteres, combinando letras e números.
         </p>
       </div>

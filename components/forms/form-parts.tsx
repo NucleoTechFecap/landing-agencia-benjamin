@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,12 +19,14 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  25/10/2026 Caio Moraes              Cores de erro via tokens do tema (LAY-04).
+ 29/10/2026 Caio Moraes              Botão "Enviar outra mensagem" com o estilo padrão (INT-01).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
 import Link from "next/link";
+import { buttonClasses } from "@/components/ui/button-link";
 import type { FormActionState } from "@/lib/domain/forms/state";
 
 /** Campos técnicos ocultos: idempotência, tempo de preenchimento e página de origem. */
@@ -86,11 +88,7 @@ export function FormSuccess({ protocol, title, onReset }: { protocol: string; ti
         Protocolo <strong className="font-mono text-lg">{protocol}</strong>. Guarde este número caso precise falar com a
         gente sobre esta mensagem.
       </p>
-      <button
-        type="button"
-        onClick={onReset}
-        className="mt-6 rounded-full border-2 border-benja-noite bg-benja-nyanza px-6 py-3 font-bold shadow-sticker"
-      >
+      <button type="button" onClick={onReset} className={buttonClasses("secondary", "mt-6")}>
         Enviar outra mensagem
       </button>
     </div>

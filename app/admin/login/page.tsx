@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
  26/10/2026 Vinícius Nishimura Reis  Formulário único no shell; next por promessa (B-08) (ADM-02).
+ 29/10/2026 Caio Moraes              Cores via tokens do tema (ADM-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -54,12 +55,18 @@ async function LoginNotices({ searchParams }: Pick<PageProps<"/admin/login">, "s
   return (
     <>
       {params.saiu ? (
-        <p role="status" className="mb-4 rounded-xl bg-[#e3f9da] px-4 py-3 text-sm font-medium text-[#004a1b]">
+        <p
+          role="status"
+          className="mb-4 rounded-xl bg-benja-sucesso-fundo px-4 py-3 text-sm font-medium text-benja-verde"
+        >
           Você saiu do painel com segurança.
         </p>
       ) : null}
       {notice ? (
-        <p role="alert" className="mb-4 rounded-xl bg-[#ffe1d1] px-4 py-3 text-sm font-medium text-[#8a2c00]">
+        <p
+          role="alert"
+          className="mb-4 rounded-xl bg-benja-erro-fundo px-4 py-3 text-sm font-medium text-benja-erro-texto"
+        >
           {notice}
         </p>
       ) : null}

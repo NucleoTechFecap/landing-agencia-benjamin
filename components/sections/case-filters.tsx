@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 28/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,11 +19,13 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  28/10/2026 Caio Moraes              Categorias mantêm os outros filtros ativos (CASE-03).
+ 29/10/2026 Caio Moraes              Botão "Filtrar" com o estilo padrão (INT-01).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import Form from "next/form";
 import Link from "next/link";
+import { buttonClasses } from "@/components/ui/button-link";
 
 export interface FilterOption {
   slug: string;
@@ -136,10 +138,7 @@ export function CaseFilters({
             ))}
           </select>
         </label>
-        <button
-          type="submit"
-          className="rounded-full border-2 border-benja-noite bg-benja-lima px-6 py-3 font-bold text-benja-verde shadow-sticker"
-        >
+        <button type="submit" className={buttonClasses("lima")}>
           Filtrar
         </button>
         {hasFilters ? (
