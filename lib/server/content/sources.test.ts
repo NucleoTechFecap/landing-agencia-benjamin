@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
  26/10/2026 Vinícius Nishimura Reis  CMS como fonte padrão com Supabase; provisório recusado em hml/prd (INT-02).
+ 29/10/2026 Vinicius Binda             currentSlug no lugar de slugExists (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -49,9 +50,9 @@ describe("resolveContentSource (DB-03)", () => {
   });
 });
 
-describe("localSource.slugExists (DB-04)", () => {
+describe("localSource.currentSlug (DB-04/DB-08)", () => {
   it("reconhece serviço e case publicados no conteúdo versionado", async () => {
-    expect(await localSource.slugExists("servicos", "audiovisual")).toBe(true);
-    expect(await localSource.slugExists("cases", "audiovisual")).toBe(false);
+    expect(await localSource.currentSlug("servicos", "audiovisual")).toBe("audiovisual");
+    expect(await localSource.currentSlug("cases", "audiovisual")).toBeNull();
   });
 });

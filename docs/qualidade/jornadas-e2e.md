@@ -30,6 +30,7 @@ Legenda de tipo: **E2E** navegador real · **INT** teste integrado de domínio/s
 | J1.1 | Home → Serviços → detalhe → case relacionado → "Quero este serviço" → formulário com serviço pré-selecionado → envio com protocolo | Pos | E2E (desktop e mobile) | Front (Caio) + Formulários | ✅ automatizado |
 | J1.2 | Campos inválidos mostram erros e focam o primeiro campo inválido | Neg | E2E | Formulários | ✅ automatizado |
 | J1.3 | Case inexistente responde HTTP 404 com página da marca | Neg | E2E | Front | ✅ automatizado |
+| J1.3b | Endereço com maiúsculas responde 301 para as minúsculas, mantendo a query (DB-08) | Pos | E2E | Banco (Binda) | ✅ automatizado |
 | J1.4 | Filtros do portfólio por categoria/serviço/área/cliente | Pos | MAN (QA-02) | Front (Julia) | ⏳ roteiro |
 | J1.5 | Navegação completa por teclado e leitor de tela | Pos | MAN (SEG-07) | QA | ⏳ roteiro |
 
