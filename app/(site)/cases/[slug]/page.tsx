@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 30/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  25/10/2026 Caio Moraes              Permite navegação bloqueante (instant = false) (LAY-01).
  26/10/2026 Vinícius Nishimura Reis  Parâmetro estático para banco vazio (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
+ 30/10/2026 Caio Moraes              Galeria mostra a peça inteira, sem corte (CASE-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -247,14 +248,14 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
             {item.gallery.map((image) => (
               <li
                 key={image.src}
-                className="relative aspect-square overflow-hidden rounded-3xl border-2 border-benja-noite"
+                className="relative aspect-square overflow-hidden rounded-3xl border-2 border-benja-noite bg-white"
               >
                 <Image
                   src={image.src}
                   alt={image.alt}
                   fill
                   sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  className="object-cover"
+                  className="object-contain"
                 />
               </li>
             ))}
