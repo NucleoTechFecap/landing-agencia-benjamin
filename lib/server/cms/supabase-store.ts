@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
+ 29/10/2026 Vinicius Binda             Leitura de public.slug_redirects (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -148,6 +149,15 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
           { table: "media_assets", operation: "select" },
         )) ?? [];
       return rows.map((row) => toMediaAsset(row, supabaseUrl));
+    },
+
+    async retiredSlugs(entity) {
+      const rows =
+        (await run<{ old_slug: string; entity_id: string | null }[]>(
+          client.from("slug_redirects").select("old_slug, entity_id").eq("entity_type", entity),
+          { table: "slug_redirects", operation: "select" },
+        )) ?? [];
+      return rows.map((row) => ({ slug: row.old_slug, itemId: row.entity_id }));
     },
 
     async insertMedia(values: MediaRow): Promise<MediaAsset> {

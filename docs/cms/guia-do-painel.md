@@ -29,8 +29,12 @@ stateDiagram-v2
 - **Item arquivado** não é editável: restaure como rascunho primeiro.
 - **Excluir** é definitivo e só existe para itens arquivados, feito por administrador.
 - **Endereço (slug)** é a parte final do link (ex.: `/servicos/social-media`). Deixe em branco
-  para o painel gerar a partir do nome (ou título, no case); ele **não muda depois da primeira
-  publicação**, porque o link já circulou.
+  para o painel gerar a partir do nome (ou título, no case). Depois da primeira publicação:
+  - **serviço e case**: o endereço pode mudar, e o antigo continua funcionando, levando ao novo;
+  - **área e categoria**: o endereço não muda mais, porque o link já circulou.
+
+  O endereço de um item que já foi publicado não pode ser usado por outro item, nem depois de
+  excluído: quem tiver o link antigo nunca cai em outro conteúdo.
 
 ## O que cada papel pode fazer
 

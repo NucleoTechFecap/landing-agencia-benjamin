@@ -13,7 +13,7 @@
 | Campo | Texto atual (provisório) | Regra para publicar |
 | ----- | ------------------------ | ------------------- |
 | Nome | Design e Identidade Visual | 2 a 120 caracteres |
-| Endereço (slug) | `design-e-identidade-visual` | Fixo depois da primeira publicação |
+| Endereço (slug) | `design-e-identidade-visual` | Pode mudar depois de publicado; o antigo leva ao novo (301) |
 | Resumo | Identidade, peças gráficas e direção de arte. | 10 a 200 caracteres (atual: 45) |
 | Descrição | Criação e evolução de identidades visuais, peças para meios digitais e impressos e direção de arte de campanhas. | Mínimo de 20 caracteres (atual: 112) |
 | Exemplos de entregas | Identidade visual · Peças digitais e impressas · Direção de arte | Até 12, um por linha |

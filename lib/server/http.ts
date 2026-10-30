@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-02).
+ 29/10/2026 Vinicius Binda             301 para o endereço atual do recurso (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -40,6 +41,19 @@ export function jsonOk<T>(body: ApiSuccess<T>, init: { requestId: string; cacheC
       "X-Request-Id": init.requestId,
       "Cache-Control": init.cacheControl ?? "no-store",
     },
+  });
+}
+
+/**
+ * 301 para o endereço atual do recurso (slug antigo ou com maiúsculas — DB-08), mantendo a
+ * query string. Fica no cache da CDN como as leituras públicas.
+ */
+export function movedPermanently(request: Request, path: string, requestId: string) {
+  const location = new URL(path, request.url);
+  location.search = new URL(request.url).search;
+  return new Response(null, {
+    status: 301,
+    headers: { Location: location.toString(), "X-Request-Id": requestId, "Cache-Control": PUBLIC_CACHE_CONTROL },
   });
 }
 

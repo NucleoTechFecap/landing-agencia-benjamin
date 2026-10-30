@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
+ 29/10/2026 Vinicius Binda             Endereço editável depois de publicado, com aviso (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -85,7 +86,8 @@ export function CaseForm({
               />
               <SlugField
                 source="título"
-                locked={Boolean(item?.publishedAt)}
+                locked={false}
+                redirects={Boolean(item?.publishedAt)}
                 errors={errors("slug")}
                 defaultValue={value("slug", item?.slug)}
               />
