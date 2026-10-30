@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 29/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-03).
+ 29/10/2026 Caio Moraes              Cores via tokens do tema (ADM-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,7 +37,7 @@ export default function ForbiddenPage() {
       </p>
       <Link
         href="/admin"
-        className="mt-6 block w-full rounded-full bg-[#004a1b] px-6 py-3 text-center font-bold text-[#f1fcd0]"
+        className="mt-6 block w-full rounded-full bg-benja-verde px-6 py-3 text-center font-bold text-benja-nyanza"
       >
         Voltar ao início do painel
       </Link>
