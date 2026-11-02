@@ -25,7 +25,7 @@
 
 "use client";
 
-import { startTransition, useActionState, useState, type FormEvent } from "react";
+import { startTransition, useActionState, useState, useSyncExternalStore, type FormEvent } from "react";
 import { CheckboxField, TextField } from "@/components/forms/fields";
 import { publicEnv } from "@/lib/config/public-env";
 import { CMS_IDLE, type CmsFormState, type MediaUploadTicket } from "@/lib/domain/content/cms-form";
@@ -34,6 +34,8 @@ import { CmsFormError } from "./form-error";
 
 type RequestAction = (formData: FormData) => Promise<MediaUploadTicket>;
 type FinishAction = (state: CmsFormState, formData: FormData) => Promise<CmsFormState>;
+
+const subscribeToNothing = () => () => {};
 
 /** Manda os bytes direto ao Storage, com o token de uso único. O cliente só carrega ao enviar. */
 async function sendToStorage(path: string, token: string, file: File) {
@@ -66,6 +68,13 @@ export function MediaUploadForm({
   const [failure, setFailure] = useState<CmsFormState>(CMS_IDLE);
   const [sending, setSending] = useState(false);
   const [fileProblem, setFileProblem] = useState<string | null>(null);
+  // O envio só existe no navegador: antes de a página ficar pronta, o arquivo escolhido não passaria
+  // pelo aviso de tamanho, e "Enviar" recarregaria a página sem enviar nada.
+  const ready = useSyncExternalStore(
+    subscribeToNothing,
+    () => true,
+    () => false,
+  );
   const pending = sending || finishing;
   const state = pending ? CMS_IDLE : failure.status === "error" ? failure : finished;
   const errors = (name: string) => (state.status === "error" ? state.fieldErrors?.[name] : undefined);
@@ -124,6 +133,7 @@ export function MediaUploadForm({
           name="file"
           type="file"
           required
+          disabled={!ready}
           accept="image/jpeg,image/png,image/webp,image/avif,application/pdf"
           onChange={(event) => {
             const file = event.currentTarget.files?.[0];
@@ -156,7 +166,7 @@ export function MediaUploadForm({
       </CheckboxField>
       <button
         type="submit"
-        disabled={pending || Boolean(fileProblem)}
+        disabled={!ready || pending || Boolean(fileProblem)}
         className="rounded-full bg-benja-verde px-6 py-3 font-bold text-benja-nyanza transition hover:bg-benja-noite disabled:cursor-wait disabled:opacity-60"
       >
         {pending ? "Enviando…" : "Enviar"}

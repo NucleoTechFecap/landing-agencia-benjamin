@@ -96,6 +96,7 @@ test.describe("Biblioteca de mídia · envio direto ao Storage @cms", () => {
 
   async function send(page: Page, file: { name: string; mimeType: string; buffer: Buffer }, alt: string) {
     await page.goto("/admin/midia");
+    await expect(page.locator("#file")).toBeEnabled();
     await page.locator("#file").setInputFiles(file);
     if (alt) await page.locator("#alt").fill(alt);
     await page.getByRole("button", { name: "Enviar", exact: true }).click();
@@ -153,6 +154,7 @@ test.describe("Biblioteca de mídia · envio direto ao Storage @cms", () => {
   test("arquivo acima do limite é recusado no navegador, antes de qualquer envio", async ({ page }) => {
     await login(page);
     await page.goto("/admin/midia");
+    await expect(page.locator("#file")).toBeEnabled();
     await page
       .locator("#file")
       .setInputFiles({ name: `midia-${suffix}-grande.png`, mimeType: "image/png", buffer: pngOf(6 * MB) });
