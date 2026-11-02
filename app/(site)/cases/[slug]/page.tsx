@@ -23,6 +23,7 @@
  26/10/2026 Vinícius Nishimura Reis  Parâmetro estático para banco vazio (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
  30/10/2026 Caio Moraes              Galeria mostra a peça inteira, sem corte (CASE-04).
+ 01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
  01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
@@ -38,6 +39,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { BrandIcon } from "@/components/ui/brand-icon";
 import { Section } from "@/components/ui/section";
+import { EmptyState } from "@/components/ui/states";
 import { siteUrl } from "@/lib/config/public-env";
 import { caseSchema } from "@/lib/domain/seo/structured-data";
 import { getCaseDetail, getSiteSettings, listCases, listPublishedSlugs } from "@/lib/server/content/repository";
@@ -170,9 +172,9 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
                 </article>
               ))
             ) : (
-              <p className="rounded-3xl border-2 border-dashed border-benja-verde/40 p-6 text-benja-grafite">
+              <EmptyState className="text-benja-grafite">
                 Os detalhes deste case (desafio, solução e resultados) estão sendo preparados com o cliente.
-              </p>
+              </EmptyState>
             )}
           </div>
           <aside
