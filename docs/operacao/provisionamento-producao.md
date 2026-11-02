@@ -5,7 +5,7 @@
 | Issue        | GO-02 (#192)                                                             |
 | Responsável  | Vinícius Nishimura Reis (`@Vinishireis`) · backup: Vinicius Binda (`@VinnizzZ`) |
 | Versão       | 1.1.0 — decisão de contas e estado em 27/10/2026                         |
-| Data         | 13/10/2026 · atualizado em 27/10/2026                                    |
+| Data         | 13/10/2026 · atualizado em 27/10 e 02/11/2026                            |
 | Depende de   | ARC-06 (ambientes), DB-02 (migrations de conteúdo), decisão de plano/conta (ADR-0002) |
 | Arquivos     | `vercel.json` (região `gru1` — São Paulo), `app/api/internal/jobs/notificacoes` |
 
@@ -33,14 +33,15 @@
    supabase db push
    ```
 4. Conferir: `profiles`, `role_permissions` (148 linhas), `audit_log`, `form_submissions`, bucket `media` e as tabelas de conteúdo (DB-02) com RLS **habilitada** (`select relname, relrowsecurity from pg_class …`).
-5. Marcar o banco como produção (DBX-02). O `supabase/seed.sql` de desenvolvimento recusa rodar
+5. Marcar o banco como produção (ARC-11). O `supabase/seed.sql` de desenvolvimento recusa rodar
    em banco marcado, mesmo que alguém use `db push --include-seed` ou cole o arquivo no SQL Editor.
-   No SQL Editor, uma vez por projeto:
+   Depende da migration `20261102000100` (passo 3). No SQL Editor, uma vez por projeto:
    ```sql
-   alter database postgres set app.ambiente = 'producao';
-   -- conferir numa conexão nova (a configuração vale para sessões abertas depois):
-   select current_setting('app.ambiente', true);  -- producao
+   insert into public.ambiente_banco (ambiente) values ('producao');
+   select ambiente from public.ambiente_banco;  -- producao
    ```
+   A primeira versão usava `alter database ... set app.ambiente`, que não funciona no Supabase:
+   o papel `postgres` não é superusuário e o comando falha com `42501`.
    Nunca rode `supabase db reset --linked`: ele apaga o banco remoto inteiro antes de chegar ao seed.
 6. Auth: desligar cadastro público, senha mínima 12, Site URL/Redirect URLs de produção, templates de convite/recuperação (ADM-02 §3), SMTP do domínio (GO-03).
 7. Backups: confirmar política diária e testar restauração em projeto descartável (DB-10).
@@ -87,22 +88,43 @@
 
 - [ ] URL, projeto Supabase, chaves e destinatários de produção diferentes de homologação.
 - [ ] Dados de homologação não existem em produção (seed fictício nunca aplicado em `benjamin-prd`).
-- [ ] `select current_setting('app.ambiente', true)` em produção retorna `producao` (trava do seed, DBX-02).
+- [ ] `select ambiente from public.ambiente_banco` em produção retorna `producao` (trava do seed, ARC-11).
 - [ ] Deploy de produção funcional: `GET /api/v1/health` = 200 e smoke test de GO-01 §5.
 - [ ] `GET /api/internal/jobs/notificacoes` sem token = 401; com token = 200.
 - [ ] `robots.txt` indexável apenas em produção.
 
-## 6. Estado em 27/10/2026
+## 6. Estado em 02/11/2026
 
 | Item | Situação |
 | ---- | -------- |
 | Decisão de conta e plano | ✅ Contas institucionais do NúcleoTech (Vercel e Supabase) |
-| Migrations de conteúdo (DB-02) | ✅ Na `main`; validadas em banco recriado do zero (84 testes pgTAP) |
-| Migrations da revisão TECH-13 | ⏳ #301 e #312 aguardando revisão do banco |
-| Aplicação | ✅ Next.js 16.4.3, `npm audit` sem vulnerabilidades, `vercel.json` em `gru1` |
-| Acesso às contas institucionais | ⏳ Falta o login de quem provisiona |
+| Projeto na Vercel | 🟡 Existe (`agencia-benjamin`) e publica a cada merge. Ver a divergência abaixo |
+| Projeto no Supabase | 🟡 Existe na organização NucleoTech FECAP. Ver a divergência abaixo. O conteúdo do banco **não foi inspecionado** |
+| Migrations de conteúdo (DB-02) e da TECH-13 (#301, #312) | ✅ Na `main` |
+| Migrations pendentes | ⏳ `20261102000300` (#365) e `20261102000200` (#366), aguardando revisão. Não aplicadas em ambiente remoto |
+| Aplicação | 🟡 Next.js 16.4.3 na `main`, 16.4.4 no #368. Falta o release de segurança de 03/11. `vercel.json` em `gru1` |
+| Acesso às contas na máquina de quem provisiona | ⏳ Em 02/11, a Vercel CLI estava na conta pessoal e a Supabase CLI não via o projeto |
 | Remetente dos formulários (`NOTIFICATION_FROM`) | ⏳ Depende de um domínio verificado no Resend ([GO-03 §0](dominio-dns-https.md#0-decisão-de-27102026-publicar-em-vercelapp-até-o-domínio-sair)) |
 | Destinatários (`*_NOTIFICATION_TO`) | ⏳ No pedido de aprovação preparado para a Benjamin (CON-10) |
 
-Com o acesso liberado, a ordem é: homologação (`benjamin-hml`) pelo mesmo roteiro → QA em
-homologação → produção (§2 e §3) → verificação de isolamento (§5).
+### Divergências entre o que está no ar e esta documentação
+
+Precisam de decisão de quem responde pela produção antes de qualquer `db push` ou publicação.
+
+| Tema | Documentado | Observado em 02/11/2026 | Por que importa |
+| ---- | ----------- | ----------------------- | --------------- |
+| Fluxo de publicação | `main` = homologação; produção só por PR `main → production` (GO-01, ARC-06) | A branch `production` não existe, e a Vercel marca os deploys da `main` como **Production** | Todo merge vai ao ar em `agencia-benjamin.vercel.app`, sem o passo de aprovação de release |
+| Modo do site | Produção indexável | Esse endereço responde `noindex` e `robots.txt` com `Disallow: /`, e ainda mostra "Conteúdo provisório" | Funciona hoje como homologação pública, apesar do nome Production |
+| Região do banco | `sa-east-1`, junto da Vercel em `gru1` (§2) | O projeto está em `us-east-1` | Cada consulta atravessa São Paulo–Virgínia, e a região não muda depois de criada: corrigir exige projeto novo. Vale também confirmar o que o aviso de privacidade diz sobre o local dos dados |
+| Separação de ambientes | Um projeto por ambiente (`benjamin-dev`, `-hml`, `-prd`; ARC-06 §4) | A organização tem um único projeto, "Agência Benjamin" | Homologação e produção não ficam isoladas, que é o critério de aceite da GO-02 |
+
+**Decisões pedidas:**
+
+1. Esse projeto Supabase é a produção, a homologação ou será substituído por projetos em `sa-east-1`?
+   Não foi possível saber, de fora, se o deploy público já usa esse banco: o formulário de login aparece
+   com ou sem Supabase configurado. A resposta está nas variáveis da Vercel.
+2. A Production Branch da Vercel passa para `production`, ou a documentação muda para o fluxo que
+   está em uso?
+
+Com isso decidido, a ordem é: homologação pelo mesmo roteiro → QA em homologação → produção (§2 e §3)
+→ verificação de isolamento (§5).

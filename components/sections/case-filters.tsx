@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  28/10/2026 Caio Moraes              Categorias mantêm os outros filtros ativos (CASE-03).
  29/10/2026 Caio Moraes              Botão "Filtrar" com o estilo padrão (INT-01).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -72,14 +73,17 @@ export function CaseFilters({
 }) {
   const hasFilters = Boolean(active.categoria || active.servico || active.area || active.cliente);
   return (
-    <div className="rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-5 text-benja-noite shadow-sticker">
+    <div
+      data-motion="reveal"
+      className="rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-5 text-benja-noite shadow-sticker"
+    >
       <nav aria-label="Filtrar por categoria">
         <ul className="flex flex-wrap gap-2">
           <li>
             <Link
               href={categoryHref(active)}
               aria-current={!active.categoria ? "true" : undefined}
-              className={`inline-block rounded-full border-2 border-benja-noite px-4 py-1.5 text-sm font-bold ${!active.categoria ? "bg-benja-verde text-benja-nyanza" : "bg-white"}`}
+              className={`inline-block rounded-full border-2 border-benja-noite px-4 py-1.5 text-sm font-bold transition hover:-translate-y-0.5 ${!active.categoria ? "bg-benja-verde text-benja-nyanza" : "bg-white"}`}
             >
               Todos
             </Link>
@@ -91,7 +95,7 @@ export function CaseFilters({
                 <Link
                   href={categoryHref(active, category.slug)}
                   aria-current={current ? "true" : undefined}
-                  className={`inline-block rounded-full border-2 border-benja-noite px-4 py-1.5 text-sm font-bold ${current ? "bg-benja-verde text-benja-nyanza" : "bg-white"}`}
+                  className={`inline-block rounded-full border-2 border-benja-noite px-4 py-1.5 text-sm font-bold transition hover:-translate-y-0.5 ${current ? "bg-benja-verde text-benja-nyanza" : "bg-white"}`}
                 >
                   {category.name}
                 </Link>

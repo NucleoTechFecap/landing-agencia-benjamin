@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 27/10/2026
- Modificado em: 27/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  27/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-13).
+ 02/11/2026 Vinícius Nishimura Reis  Gravação atômica no lugar da gravação parcial (TECH-13, #314).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -25,8 +26,9 @@ import { describe, expect, it } from "vitest";
 import type { Role } from "@/lib/domain/auth/rbac";
 import type { AuditInput } from "../audit";
 import type { ContentChange } from "../content/invalidate";
+import { AppError } from "../errors";
 import { runContentCommand, saveContent, type CmsDeps } from "./content-service";
-import { CASE, SERVICE } from "./entities";
+import { CASE, CATEGORY, SERVICE } from "./entities";
 import { many } from "./form-data";
 import { createMemoryCmsStore } from "./memory-store";
 import type { CmsStore } from "./store";
@@ -162,27 +164,22 @@ describe("páginas relacionadas no aquecimento do cache (TECH-13)", () => {
   });
 });
 
-describe("gravação parcial (TECH-13)", () => {
-  const brokenLinks = (store: CmsStore): CmsStore => ({
+describe("gravação atômica (TECH-13)", () => {
+  const failing = (store: CmsStore, fail: () => boolean): CmsStore => ({
     ...store,
-    syncLinks: async () => {
-      throw new Error("conexão encerrada");
+    saveWithRelations: async (...args) => {
+      if (fail()) throw new AppError("CONFLICT", { message: "Uma relação não existe mais." });
+      return store.saveWithRelations(...args);
     },
   });
 
-  it("edição de item publicado: registra a falha, atualiza o site e explica o que ficou salvo", async () => {
-    let failGallery = false;
-    const env = setup((store) => ({
-      ...store,
-      syncGallery: async (...args) => {
-        if (failGallery) throw new Error("conexão encerrada");
-        return store.syncGallery(...args);
-      },
-    }));
+  it("edição de item publicado: o erro do banco chega ao painel e nada é auditado nem atualizado", async () => {
+    let broken = false;
+    const env = setup((store) => failing(store, () => broken));
     const meridiano = await publishedCase(env, "meridiano", [ID.social]);
     env.audits.length = 0;
     env.changes.length = 0;
-    failGallery = true;
+    broken = true;
     await expect(
       saveContent(
         env.deps,
@@ -191,28 +188,41 @@ describe("gravação parcial (TECH-13)", () => {
         { ...caseInput("meridiano", [ID.social]), title: "Título novo" },
         { id: meridiano.id, expectedUpdatedAt: meridiano.updatedAt },
       ),
-    ).rejects.toMatchObject({ code: "INTERNAL_ERROR", message: expect.stringContaining("O texto foi salvo") });
-    expect(env.tables.cases.find((row) => row.id === meridiano.id)?.title).toBe("Título novo");
-    expect(env.audits).toEqual([
-      expect.objectContaining({
-        event: "content.updated",
-        outcome: "failure",
-        metadata: expect.objectContaining({ reason: "vinculos", slug: "meridiano" }),
-      }),
-    ]);
-    expect(env.changes).toEqual([expect.objectContaining({ entity: "case", slug: "meridiano" })]);
+    ).rejects.toMatchObject({ code: "CONFLICT", message: "Uma relação não existe mais." });
+    expect(env.tables.cases.find((row) => row.id === meridiano.id)?.title).toBe("Case meridiano");
+    expect(env.audits).toEqual([]);
+    expect(env.changes).toEqual([]);
   });
 
-  it("criação: avisa que o rascunho existe e não mexe no cache", async () => {
-    const env = setup(brokenLinks);
+  it("criação: nenhum rascunho fica para trás", async () => {
+    const env = setup((store) => failing(store, () => true));
     await expect(
       saveContent(env.deps, env.actor("editor"), CASE, caseInput("case-novo", [ID.social])),
-    ).rejects.toMatchObject({
-      message: expect.stringContaining("O rascunho foi criado"),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+    expect(env.tables.cases).toEqual([]);
+    expect(env.audits).toEqual([]);
+  });
+
+  it("item com relações usa a gravação em transação; item de uma linha só, o insert comum", async () => {
+    const calls: string[] = [];
+    const env = setup((store) => ({
+      ...store,
+      saveWithRelations: (...args) => {
+        calls.push(`relações:${args[0].table}`);
+        return store.saveWithRelations(...args);
+      },
+      insert: (...args) => {
+        calls.push(`insert:${args[0]}`);
+        return store.insert(...args);
+      },
+    }));
+    await saveContent(env.deps, env.actor("editor"), CASE, caseInput("com-relacoes", [ID.social]));
+    await saveContent(env.deps, env.actor("editor"), CATEGORY, {
+      name: "Categoria nova",
+      slug: "categoria-nova",
+      order: "2",
     });
-    expect(env.tables.cases).toHaveLength(1);
-    expect(env.audits).toEqual([expect.objectContaining({ event: "content.created", outcome: "failure" })]);
-    expect(env.changes).toEqual([]);
+    expect(calls).toEqual(["relações:cases", "insert:case_categories"]);
   });
 });
 

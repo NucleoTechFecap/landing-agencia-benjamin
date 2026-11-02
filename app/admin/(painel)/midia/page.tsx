@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
+ 02/11/2026 Vinícius Nishimura Reis  Formulário com os dois passos do envio direto (TECH-13, #313).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,7 +31,7 @@ import { can } from "@/lib/domain/auth/rbac";
 import { safeAdminRedirect } from "@/lib/domain/auth/redirect";
 import { requirePageAccess } from "@/lib/server/auth/guards";
 import { cmsDeps } from "@/lib/server/cms/context";
-import { uploadMediaFile } from "./actions";
+import { finishMediaUpload, requestMediaUpload } from "./actions";
 
 export const metadata: Metadata = { title: "Biblioteca de mídia" };
 
@@ -60,7 +61,11 @@ export default async function MediaAdminPage({ searchParams }: PageProps<"/admin
                 Depois do envio você volta para o formulário que pediu a imagem.
               </p>
             ) : null}
-            <MediaUploadForm action={uploadMediaFile} back={back && back !== "/admin" ? back : undefined} />
+            <MediaUploadForm
+              request={requestMediaUpload}
+              finish={finishMediaUpload}
+              back={back && back !== "/admin" ? back : undefined}
+            />
           </section>
         ) : null}
         <section aria-labelledby="arquivos" className="rounded-3xl border-2 border-benja-noite/15 bg-white p-6">

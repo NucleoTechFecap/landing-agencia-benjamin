@@ -79,7 +79,7 @@ alimentam o site a partir de `content/`. Quando as tabelas existirem, só a cama
 | Textos | `text` + `check (char_length(...))`, sem `varchar(n)`. Os limites seguem os schemas Zod |
 | Listas simples | `text[]` com limite de `cardinality` (destaques, exemplos, equipe, palavras-chave) |
 | Listas com estrutura ou ordem | Tabela filha (galeria e links do case) |
-| Conteúdo provisório | `provisional boolean`: o site mostra o selo e o gate de release bloqueia ([GO-01](../operacao/release-e-rollback.md)) |
+| Conteúdo provisório | `provisional boolean`: o painel sinaliza, o site não exibe selo e o gate de release bloqueia ([GO-01](../operacao/release-e-rollback.md)) |
 | Exclusão | **Não há soft delete.** O arquivamento (`archived`) faz esse papel; a exclusão definitiva só vale para item arquivado |
 | Constraints | Sempre **nomeadas** (`cases_publish_requires_fields`), para a aplicação traduzir o erro em mensagem de campo |
 | Erros próprios | SQLSTATE da classe `BJ` (tabela abaixo) |
@@ -557,8 +557,12 @@ os vínculos são trocados por funções RPC atômicas:
 
 Fluxo de "Salvar case" no painel: `requirePermission` → validação Zod → `update cases … where
 updated_at = esperado` → `set_case_services` / `set_case_gallery` / `set_case_links` → auditoria →
-`updateTag`. Se depois quiserem atomicidade total, essas chamadas podem virar um único
-`save_case(...)`.
+`updateTag`.
+
+**Implementado em 02/11/2026 (TECH-13, #314):** em vez das funções `set_*` acima, cada item com
+relações tem uma função que grava tudo numa transação: `save_service` (serviço e áreas) e
+`save_case` (case, serviços e galeria). Área, categoria e página são uma linha só e continuam com o
+`update` comum, já atômico. Ver `supabase/migrations/20261102000200_cms_gravacao_atomica.sql`.
 
 ### 8.4 Concorrência otimista
 
@@ -668,6 +672,10 @@ destrutiva em produção é feita em duas etapas: primeiro a coluna nova, depois
 em outra release.
 
 ### 10.4 Seed de desenvolvimento (ARC-11)
+
+> **Superado em 02/11/2026 (ARC-11).** Cases e páginas do seed são fictícios, a trava usa
+> `public.ambiente_banco` e as contas de teste vêm de `npm run seed:users`. Regras em vigor:
+> [dicionário de dados](dicionario-de-dados.md) §9.
 
 - **`supabase/seed.sql`**: dados **fictícios**, rodados só por `supabase db reset` (local). O
   `db push` não executa o seed, então ele não chega a hml/prd por acidente.

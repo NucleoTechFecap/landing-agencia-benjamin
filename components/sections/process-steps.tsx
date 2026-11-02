@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,18 +38,26 @@ export function ProcessSteps() {
   return (
     <Section tone="azul" halftone labelledBy="processo-titulo">
       <SectionHeading id="processo-titulo" eyebrow="Como trabalhamos" title="Do briefing à entrega" />
-      <ol className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Linha do progresso das etapas: acompanha a rolagem em telas grandes, com as animações ligadas. */}
+      <div aria-hidden className="mt-10 hidden h-1 rounded-full bg-benja-nyanza/25 motion-off:hidden lg:block">
+        <div data-steps-line className="h-full origin-left rounded-full bg-benja-lima" />
+      </div>
+      <ol data-motion="steps" className="mt-10 grid gap-5 sm:grid-cols-2 lg:mt-6 lg:grid-cols-4">
         {STEPS.map((step, index) => (
-          <li
-            key={step.title}
-            className="rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-6 text-benja-noite shadow-sticker"
-          >
-            <div className="flex items-center justify-between">
-              <BrandIcon name={step.icon} color="azul" size={52} />
-              <span className="text-4xl font-black text-benja-azul/30">{String(index + 1).padStart(2, "0")}</span>
+          <li key={step.title}>
+            <div
+              data-card="soft"
+              className="h-full rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-6 text-benja-noite shadow-sticker"
+            >
+              <div className="flex items-center justify-between">
+                <span data-card-icon>
+                  <BrandIcon name={step.icon} color="azul" size={52} />
+                </span>
+                <span className="text-4xl font-black text-benja-azul/30">{String(index + 1).padStart(2, "0")}</span>
+              </div>
+              <h3 className="mt-4 text-xl font-black text-benja-verde">{step.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-benja-grafite">{step.text}</p>
             </div>
-            <h3 className="mt-4 text-xl font-black text-benja-verde">{step.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-benja-grafite">{step.text}</p>
           </li>
         ))}
       </ol>

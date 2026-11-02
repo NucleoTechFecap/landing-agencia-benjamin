@@ -31,7 +31,7 @@ flowchart LR
 | Hospedagem | `next dev` (máquina do dev) | Vercel Preview (URL automática) | Vercel Preview com domínio fixo da branch `main` | Vercel Production |
 | URL | `http://localhost:3000` | `*-nucleotechfecap.vercel.app` | `https://hml-agencia-benjamin.vercel.app` (a confirmar no GO-02) | Domínio oficial da Benjamin (CON-11/GO-03) |
 | Banco/Auth/Storage | Supabase `benjamin-dev` **ou** Supabase CLI local | Supabase `benjamin-dev` | Supabase `benjamin-hml` | Supabase `benjamin-prd` |
-| Dados | Seed fictício (ARC-11) | Seed fictício | Seed fictício + conteúdo provisório aprovado | Somente dados reais; nunca copiados para outros ambientes |
+| Dados | Seed fictício (ARC-11), só no banco local | Sem seed: conteúdo cadastrado pelo painel | Sem seed: conteúdo provisório aprovado, cadastrado pelo painel | Somente dados reais; nunca copiados para outros ambientes |
 | E-mail (Resend) | Desligado (`NOTIFY_PROVIDER=log`) | Desligado | Ligado, destinatário de teste da equipe | Ligado, destinatário institucional (CON-10) |
 | Indexação | — | `noindex` | `noindex` (`NEXT_PUBLIC_SITE_ENV=homologation`) | Indexável |
 | Logs | Console | Vercel (Preview) | Vercel (Preview) | Vercel (Production), retenção do plano |

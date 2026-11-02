@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
  29/10/2026 Vinicius Binda             Endereços antigos e reservados (retiredSlugs) (DB-08).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 02/11/2026 Vinícius Nishimura Reis  saveWithRelations no lugar de syncLinks e syncGallery (TECH-13, #314).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -43,9 +44,6 @@ export interface BlockValues {
   content: unknown;
   sort_order: number;
 }
-
-/** Tabelas de vínculo N:M (sem estado próprio). */
-export type LinkTable = "service_areas" | "case_services";
 
 export type Row = Record<string, unknown>;
 
@@ -83,14 +81,10 @@ export interface RetiredSlug {
   itemId: string | null;
 }
 
-export interface LinkSync {
-  table: LinkTable;
-  ownerColumn: string;
-  ownerId: string;
-  otherColumn: string;
-  current: readonly string[];
-  next: readonly string[];
-}
+/** Relações gravadas junto com o item, na mesma transação do banco (TECH-13). */
+export type ItemRelations =
+  | { table: "services"; areaIds: readonly string[] }
+  | { table: "cases"; serviceIds: readonly string[]; galleryIds: readonly string[] };
 
 /**
  * Persistência usada pela camada de serviço do CMS. A implementação de produção grava com a
@@ -111,16 +105,18 @@ export interface CmsStore {
   insert(table: EntityTable, values: Row): Promise<SavedRow>;
   /** Grava só se `updated_at` ainda for `expectedUpdatedAt` (concorrência otimista). */
   update(table: EntityTable, id: string, values: Row, expectedUpdatedAt: string): Promise<SavedRow>;
+  /**
+   * Cria (sem `version`) ou edita o item e substitui as relações dele numa só transação: qualquer
+   * falha desfaz tudo, inclusive o texto. A galeria fica na ordem dada.
+   */
+  saveWithRelations(
+    relations: ItemRelations,
+    values: Row,
+    version?: { id: string; expectedUpdatedAt: string },
+  ): Promise<SavedRow>;
   remove(table: EntityTable, id: string): Promise<void>;
   /** Registra um arquivo já enviado ao Storage na biblioteca de mídia. */
   insertMedia(values: MediaRow): Promise<MediaAsset>;
-  /** Galeria do case na ordem dada (reordena, inclui e remove). */
-  syncGallery(caseId: string, mediaIds: readonly string[]): Promise<void>;
-  /**
-   * Ajusta os vínculos de um item. Inclui os novos antes de remover os antigos: se a segunda
-   * etapa falhar, sobra um vínculo a mais (corrigido no próximo save), nunca um a menos.
-   */
-  syncLinks(sync: LinkSync): Promise<void>;
   /** Blocos não têm estado nem versão próprios: a versão que vale é a da página (page-blocks.ts). */
   insertBlock(values: BlockValues): Promise<void>;
   updateBlock(id: string, values: Partial<BlockValues>): Promise<void>;

@@ -2,7 +2,7 @@
 
 | Campo           | Valor                                                                        |
 | --------------- | ---------------------------------------------------------------------------- |
-| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58), DBX-02 (#113), DB-08 (#64), DBX-03 (#114)          |
+| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58), DBX-02 (#113), DB-08 (#64), DBX-03 (#114), ARC-11 (#52) |
 | Responsável     | Vinicius Binda (`@VinnizzZ`)                                                 |
 | Revisão técnica | Vinícius Nishimura Reis (`@Vinishireis`)                                     |
 | Versão          | 1.0.0                                                                        |
@@ -23,6 +23,7 @@ O banco tem três grupos de tabelas. Este documento cobre o grupo de conteúdo e
 | Formulários (leads, contatos, feedbacks) | `form_submissions` | 0400, 20261102000300 (`update` do painel só em `status`) |
 | **Conteúdo do CMS** | `pages`, `blocks`, `areas`, `services`, `service_areas`, `case_categories`, `cases`, `case_services`, `case_media`, `ctas`, `media_assets`, `site_settings` | **20261025000100** |
 | Endereços antigos (DB-08) | `slug_redirects` | 20261029000100 |
+| Marcação de produção (ARC-11) | `ambiente_banco` | 20261102000100 |
 
 Decisões que orientaram o modelo:
 
@@ -282,6 +283,17 @@ outro slug ficam salvas, mas sem rota pública até uma decisão de produto sobr
 Gravada **só** pelo trigger `track_slug` (`security definer`); ninguém tem `insert`/`update`/`delete`.
 Leitura: o visitante vê só endereços de item no ar; o painel vê os do tipo que o papel pode ver.
 
+### `ambiente_banco` — marcação de banco de produção (ARC-11)
+
+| Coluna | Tipo | Nulo | Regra |
+| ------ | ---- | ---- | ----- |
+| `ambiente` | `text` | Não | PK; só aceita `producao`, então a tabela tem no máximo uma linha |
+| `created_at` | `timestamptz` | Não | Data da marcação |
+
+Com uma linha, o banco é de produção e o seed recusa rodar (§9). A migration não marca nada: a
+marcação é feita à mão, uma vez ([provisionamento](../operacao/provisionamento-producao.md) §2).
+Sem acesso pela API (`anon` e `authenticated` não têm privilégio nenhum), e a aplicação não a lê.
+
 ### `site_settings` — configuração institucional (ADM-10)
 
 Linha única (`id boolean primary key default true check (id)`).
@@ -304,7 +316,7 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 
 | Regra | Motivo de não ser constraint | Onde reforçar depois |
 | ----- | ---------------------------- | -------------------- |
-| R03 — serviço com ≥ 1 área | Serviço e vínculos são gravados em requisições separadas | RPC transacional (ADM-07) ou trigger *deferrable* (DBX-04) |
+| R03 — serviço com ≥ 1 área | Só vale ao publicar; rascunho pode não ter área. Serviço e vínculos já são gravados numa transação (`save_service`, TECH-13) | Trigger *deferrable* (DBX-04) |
 | R05/R06/R07 — dependências publicadas | Depende do estado de outra tabela | Trigger de publicação (DBX-04) |
 | R10 — rota interna conhecida | A lista de rotas está em `integrity.ts` | — |
 | R11 — até 6 destaques | É aviso, não erro | — |
@@ -351,6 +363,11 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | `tests/integration/supabase/formularios.test.ts` (TECH-06): três tipos pelo serviço real até o banco, contas reais de cada papel, corrida do mesmo `submissionId` e fila de reenvio | 6 testes, `PASS` (12 arquivos, 62 testes no total) |
 | `next start` sobre o Supabase local, case renomeado de `meridiano` para `meridiano-2026` (DB-08): `/cases/meridiano?utm=x` → 301 com a query; `/cases/Meridiano` → 301 direto ao atual; `/cases/meridiano-2026` → 200; rascunho e inexistente → 404; `/servicos/Audiovisual` → 301; `/api/v1/cases/meridiano` → 301; `/api/v1/cases/nao-existe` → 404 | Conferido com `curl` |
 | `npm run test:migrations` (DB-08, 29/10/2026): 9 migrations, todas com rollback; upgrade de `20261028000100` com dados; os 9 `.down.sql` em ordem inversa, duas vezes cada; reaplicação e pgTAP. À parte: com endereço antigo registrado, `20261029000100_db08_slugs_e_urls.down.sql` para sem `benjamin.confirmar_rollback` e mantém a tabela; com a confirmação, remove tabela, triggers e funções | `Files=5, Tests=148, Result: PASS` em cada etapa |
+| `npm run test:migrations` (ARC-11, 02/11/2026): 11 migrations, todas com rollback. Seed: 6 áreas, 10 serviços, 5 cases, 2 itens de galeria, 5 CTAs, 4 mídias, 2 páginas, 5 blocos, 1 configuração. Com a marcação real em `public.ambiente_banco`, o seed é recusado sem inserir nada; os 11 `.down.sql` rodam em ordem inversa, duas vezes cada, e reaplicam. À parte: o rollback da marcação para em banco marcado e só segue com `benjamin.confirmar_rollback` | `Files=7, Tests=163, Result: PASS` em cada etapa |
+| `content-seed.test.mjs` e `seed-users.test.mjs` (ARC-11): cases publicados passam na validação de publicação, sem erro de integridade, blocos no catálogo, mídia em `public/`, nenhum cliente real; contas só no Supabase local e sem senha fixa | Passa no `npm test` |
+| Site e painel sobre o seed (ARC-11, navegador e `curl`): cases fictícios em `/cases`, rascunho, agendado, arquivado e cliente real com 404, blocos em `/areas`. Login com as 4 contas de `npm run seed:users`: `admin` e `editor` veem 5 cases com o botão de novo case, `viewer` vê os 5 sem o botão, `pending` fica no login com o aviso | Conforme. E2E `@cms` sobre o seed: 18 testes, `PASS` |
+| `supabase/tests/database/cms_gravacao_atomica.test.sql` e `tests/integration/supabase/cms-gravacao-atomica.test.ts` (TECH-13, #314, 02/11/2026): 25 testes pgTAP e 6 de integração. FK inválida em qualquer etapa (área, serviço, galeria, criação) desfaz texto e vínculos; versão desatualizada (`40001`), item inexistente (`P0002`), coluna a mais ou a menos (`22023`) e leitor (`42501`) são recusados; funções `security invoker`, sem execução para `anon`, com `search_path` vazio | `Files=7, Tests=179, Result: PASS`; `npm run test:supabase` 62/62; `npm run test:e2e:cms` 18/18 |
+| `npm run test:migrations` com a `20261102000200`: instalação limpa, upgrade com dados, rollbacks em ordem inversa (duas vezes cada) e reaplicação | Verde em 02/11/2026 |
 
 ## 9. Como aplicar, testar e reverter
 
@@ -371,7 +388,7 @@ npx supabase db push
 
 **Ordem das migrations.** Sequência por timestamp, sem pular: perfis e papéis (0100) → matriz
 RBAC e bucket (0200) → auditoria (0300) → formulários (0400) → conteúdo do CMS (20261025000100)
-→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03) → `update` do painel só em `status` (20261102000300, TECH-06). Cada uma
+→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03) → marcação de produção (20261102000100, ARC-11) → gravação atômica (20261102000200, TECH-13) → `update` do painel só em `status` (20261102000300, TECH-06). Cada uma
 depende só das anteriores. Mudança
 destrutiva em banco com dados é feita em duas releases: primeiro a coluna nova, depois a remoção
 da antiga.
@@ -389,18 +406,35 @@ npx supabase migration repair --status reverted 20261025000100      # remoto (pr
 npx supabase migration repair --status reverted 20261025000100 --local
 ```
 
-**Seed de desenvolvimento.** `supabase/seed.sql` é gerado de `content/` por
-`scripts/content-seed.mjs` (`npm run seed:write`; o `npm test` falha se estiver desatualizado). Traz
-o conteúdo provisório do site, mais um case em rascunho, um serviço arquivado e uma mídia sem uso.
+**Seed de desenvolvimento (ARC-11).** `supabase/seed.sql` é gerado por `scripts/content-seed.mjs`
+(`npm run seed:write`; o `npm test` falha se estiver desatualizado) e **só roda no banco local**.
+Homologação e produção recebem conteúdo pelo painel.
+
+| Dados | Origem |
+| ----- | ------ |
+| Áreas, serviços, categorias, CTAs e configuração | `content/`: textos institucionais, iguais aos do fallback do site |
+| Cases (3 publicados, 1 agendado, 1 rascunho, 1 com galeria e 1 com link externo) | **Fictícios**, definidos no script. Os cases de `content/` citam clientes reais que dependem de autorização (CON-06 a CON-08) |
+| Páginas e blocos (`areas` publicada, 1 rascunho) | **Fictícios**, definidos no script |
+| Serviço arquivado e mídia sem uso | Fictícios, para exercitar a RLS e o painel |
+
+O `content-seed.test.mjs` confere que os cases publicados passam na validação de publicação, que
+não há erro de integridade, que os blocos seguem o catálogo e que nenhum cliente real entrou. As
+capas reutilizam ilustrações genéricas de `public/brand/cases`, cujos nomes de arquivo são herdados.
+
 Não cria contas, senhas nem dados pessoais. Os ids textuais viram `md5(id)::uuid`, e todo insert
-usa `on conflict do nothing`: rodar de novo não duplica nada. Três barreiras impedem que chegue à
-produção:
+usa `on conflict do nothing`: rodar de novo não duplica nem altera nada. Tudo roda numa transação,
+então uma falha no meio não deixa dados pela metade. Três barreiras impedem que chegue à produção:
 
 1. Só o `db reset` local executa o seed; o `db push` não executa.
-2. O primeiro comando do arquivo recusa banco marcado com `app.ambiente = 'producao'`
+2. O primeiro bloco do arquivo recusa banco marcado em `public.ambiente_banco`
    ([provisionamento](../operacao/provisionamento-producao.md) §2), mesmo com
    `db push --include-seed` ou colado no SQL Editor.
 3. `supabase db reset --linked` é proibido: apagaria o banco remoto antes do seed.
+
+**Contas de teste.** `npm run seed:users` cria uma conta por papel (`admin`, `editor`, `viewer` e
+`pending`) com e-mail `@teste.local`. O script só aceita o Supabase local, gera as senhas a cada
+execução e as mostra só no terminal. Passo a passo para reproduzir tudo:
+[roteiro da ARC-11](../qualidade/arc-11-reproducao-do-seed.md).
 
 ## 10. Slugs e URLs (DB-08)
 

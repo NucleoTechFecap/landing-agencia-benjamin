@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,6 +23,7 @@
  26/10/2026 Vinícius Nishimura Reis  Parâmetro estático para banco vazio (DB-03).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
  01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -94,7 +95,6 @@ export default async function ServicePage({ params }: PageProps<"/servicos/[slug
           { label: service.name },
         ]}
         icon={service.icon}
-        provisional={service.provisional}
       >
         <div className="mt-8">
           <ButtonLink href={contactHref} variant="lima">
@@ -106,14 +106,18 @@ export default async function ServicePage({ params }: PageProps<"/servicos/[slug
       <Section tone="nyanza" labelledBy="servico-descricao">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr]">
           <div>
-            <h2 id="servico-descricao" className="text-3xl font-black text-benja-verde">
+            <h2 id="servico-descricao" data-motion="lines" className="text-3xl font-black text-benja-verde">
               Como funciona
             </h2>
-            <p className="mt-4 text-lg leading-relaxed text-benja-grafite">{service.description}</p>
+            <p data-motion="reveal" className="mt-4 text-lg leading-relaxed text-benja-grafite">
+              {service.description}
+            </p>
             {service.examples.length > 0 ? (
               <>
-                <h3 className="mt-10 text-xl font-black text-benja-verde">O que pode entrar no projeto</h3>
-                <ul className="mt-4 space-y-3">
+                <h3 data-motion="reveal" className="mt-10 text-xl font-black text-benja-verde">
+                  O que pode entrar no projeto
+                </h3>
+                <ul data-motion="group" className="mt-4 space-y-3">
                   {service.examples.map((example) => (
                     <li key={example} className="flex items-center gap-3 text-lg">
                       <BrandIcon name="estrela" color="lima" size={28} />
@@ -126,6 +130,7 @@ export default async function ServicePage({ params }: PageProps<"/servicos/[slug
           </div>
           <aside
             aria-labelledby="areas-envolvidas"
+            data-motion="reveal"
             className="h-fit rounded-3xl border-2 border-benja-noite bg-benja-claro p-6 shadow-sticker"
           >
             <h2 id="areas-envolvidas" className="text-sm font-black tracking-widest text-benja-verde uppercase">
@@ -151,7 +156,7 @@ export default async function ServicePage({ params }: PageProps<"/servicos/[slug
       <Section tone="verde" halftone labelledBy="cases-relacionados">
         <SectionHeading id="cases-relacionados" eyebrow="Na prática" title={`Cases com ${service.name}`} />
         {cases.length > 0 ? (
-          <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ul data-motion="cards" className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {cases.map((item) => (
               <li key={item.id}>
                 <CaseCard item={item} />
@@ -167,15 +172,15 @@ export default async function ServicePage({ params }: PageProps<"/servicos/[slug
 
       {others.length > 0 ? (
         <Section tone="creme" labelledBy="outros-servicos">
-          <h2 id="outros-servicos" className="text-2xl font-black text-benja-verde">
+          <h2 id="outros-servicos" data-motion="lines" className="text-2xl font-black text-benja-verde">
             Outros serviços
           </h2>
-          <ul className="mt-6 flex flex-wrap gap-3">
+          <ul data-motion="group" className="mt-6 flex flex-wrap gap-3">
             {others.map((item) => (
               <li key={item.id}>
                 <Link
                   href={`/servicos/${item.slug}`}
-                  className="inline-block rounded-full border-2 border-benja-noite bg-benja-nyanza px-4 py-2 font-bold text-benja-verde shadow-sticker hover:-translate-y-0.5"
+                  className="inline-block rounded-full border-2 border-benja-noite bg-benja-nyanza px-4 py-2 font-bold text-benja-verde shadow-sticker transition hover:-translate-y-0.5"
                 >
                   {item.name}
                 </Link>
