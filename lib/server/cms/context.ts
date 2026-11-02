@@ -168,7 +168,7 @@ const typedMediaMeta = (form: FormData) => ({
 });
 
 async function mediaStorage() {
-  return createSupabaseMediaStorage(await createSessionClient(), publicEnv.NEXT_PUBLIC_SUPABASE_URL!);
+  return createSupabaseMediaStorage(await createSessionClient());
 }
 
 /**

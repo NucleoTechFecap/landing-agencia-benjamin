@@ -23,7 +23,7 @@
 
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { MEDIA_BUCKET, publicMediaUrl } from "@/lib/domain/media/policy";
+import { MEDIA_BUCKET } from "@/lib/domain/media/policy";
 import { AppError } from "../errors";
 import type { MediaStorage, StoredObject } from "./media-service";
 
@@ -50,7 +50,7 @@ export async function readObjectStart(url: string, limit: number): Promise<Store
 }
 
 /** Bucket "media" com a sessão de quem envia: as políticas media:* do Storage continuam valendo. */
-export function createSupabaseMediaStorage(client: SupabaseClient, supabaseUrl: string): MediaStorage {
+export function createSupabaseMediaStorage(client: SupabaseClient): MediaStorage {
   const bucket = client.storage.from(MEDIA_BUCKET);
   return {
     async createUploadToken(path) {
@@ -63,7 +63,7 @@ export function createSupabaseMediaStorage(client: SupabaseClient, supabaseUrl: 
       }
       return data.token;
     },
-    readStart: (path, limit) => readObjectStart(publicMediaUrl(supabaseUrl, path), limit),
+    readStart: (path, limit) => readObjectStart(bucket.getPublicUrl(path).data.publicUrl, limit),
     async remove(path) {
       await bucket.remove([path]);
     },

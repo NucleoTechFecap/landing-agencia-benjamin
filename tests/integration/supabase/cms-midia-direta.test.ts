@@ -34,7 +34,6 @@ import {
   deleteTestUsers,
   hasSupabaseTestEnv,
   serviceClient,
-  supabaseTestEnv,
   testSuffix,
   type TestUser,
 } from "./helpers";
@@ -74,7 +73,7 @@ describe.runIf(hasSupabaseTestEnv)("envio direto de mídia ao Storage (TECH-13, 
   const editor = () => ({ id: users.editor!.id, role: "editor" as const });
   const depsFor = (user: TestUser) => ({
     ...cmsDepsFor(user.client),
-    storage: createSupabaseMediaStorage(user.client, supabaseTestEnv.url!),
+    storage: createSupabaseMediaStorage(user.client),
     newId: () => crypto.randomUUID(),
   });
   const inBucket = async (path: string) => {

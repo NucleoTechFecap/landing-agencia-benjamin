@@ -91,7 +91,7 @@ describe.runIf(hasSupabaseTestEnv)("CMS de cases, categorias e mídia no Supabas
     (await serviceClient().from(table).select("updated_at").eq("id", id).single()).data!.updated_at as string;
 
   it("editor envia a capa: arquivo no bucket público e registro na biblioteca", async () => {
-    const storage = createSupabaseMediaStorage(users.editor!.client, supabaseTestEnv.url!);
+    const storage = createSupabaseMediaStorage(users.editor!.client);
     const deps = { ...cmsDepsFor(users.editor!.client), storage, newId: () => crypto.randomUUID() };
     const meta = { alt: "Capa do case de teste", decorative: false };
     const name = `capa-${suffix}.webp`;

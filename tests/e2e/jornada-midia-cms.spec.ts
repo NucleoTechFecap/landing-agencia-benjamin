@@ -21,6 +21,7 @@
 ──────────────────────────────────────────────────────────────────────────────
 */
 
+import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Page } from "@playwright/test";
 
@@ -50,7 +51,7 @@ test.describe("Biblioteca de mídia · envio direto ao Storage @cms", () => {
   test.skip(!SUPABASE_URL || !SERVICE_KEY, "Requer o Supabase local: npm run test:e2e:cms");
   test.skip(({ isMobile }) => isMobile, "Painel no celular é avaliado em ADM-16.");
 
-  const suffix = Math.random().toString(36).slice(2, 8);
+  const suffix = randomUUID().slice(0, 8);
   const account = { email: `e2e-midia-${suffix}@teste.local`, password: `Senha-e2e-${suffix}-md!`, id: "" };
   let admin: SupabaseClient;
 
