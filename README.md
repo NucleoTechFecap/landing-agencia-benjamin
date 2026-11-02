@@ -303,8 +303,18 @@ supabase link --project-ref <ref-do-ambiente>   # ex.: benjamin-dev
 supabase db push                                # aplica as migrations pendentes
 ```
 
-O primeiro administrador é criado com o script de provisionamento. O passo a passo está em
-[`docs/operacao/administrador-inicial.md`](docs/operacao/administrador-inicial.md).
+Para desenvolver, use o banco local, com dados fictícios e uma conta de teste por papel:
+
+```bash
+npx supabase start
+npx supabase db reset   # migrations + seed fictício (só no banco local)
+npm run seed:users      # admin, editor, viewer e pending, com senhas mostradas só no terminal
+```
+
+O passo a passo completo está em [`docs/wiki/Começando.md`](docs/wiki/Começando.md).
+
+Em homologação e produção, o primeiro administrador é criado com o script de provisionamento. O
+passo a passo está em [`docs/operacao/administrador-inicial.md`](docs/operacao/administrador-inicial.md).
 
 ---
 

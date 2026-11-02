@@ -147,7 +147,8 @@ export async function publishCase(input: { id: string; expectedUpdatedAt: string
 | `publish` / `unpublish` | `{ id, expectedUpdatedAt }` | `publish` | 401, 403, 404, 409 (`INVALID_TRANSITION`/`CONFLICT`), 422 |
 | `archive` / `restore` | `{ id, expectedUpdatedAt }` | `archive` | + `assessRemovalImpact` (409 com bloqueios) |
 | `delete` | `{ id }` (somente arquivado) | `delete` | 403, 409 |
-| `uploadMedia` | `FormData { file, alt }` | `media:create` | 413, 415, 422 (ARC-10) |
+| `requestMediaUpload` | `FormData { name, type, size, alt, decorative }` (sem o arquivo) | `media:create` | 413, 415, 422 (ARC-10) |
+| `finishMediaUpload` | `FormData { path, name, type, alt, decorative, voltar? }` | `media:create` | 413, 415, 422 (ARC-10) |
 | `listLeads` | `{ kind?, category?, status?, page, pageSize }` | `lead:view` | 401, 403 |
 | `exportLeads` | filtros | `lead:export` | 401, 403 |
 
@@ -163,10 +164,13 @@ antes da gravação, com registro de falha) → gravação pelo store → `updat
 produção (`supabase-store.ts`) usa a sessão do usuário, então a RLS do banco é a segunda barreira;
 o de memória (`memory-store.ts`) cobre as regras nos testes. As Server Actions de cada tela usam
 `cmsSaveAction`/`cmsCommandAction` (`context.ts`) e redirecionam com `?ok=` no sucesso.
-O envio de mídia (ADM-08) é `cmsUploadAction` → `media-service.ts`: `media:create`, texto
-alternativo, tipo real pela assinatura dos bytes, tamanho e dimensões (`readImageDimensions`),
-`buildStoragePath`, upload ao bucket com a sessão do usuário e registro em `media_assets`; se o
-registro falhar, o objeto é apagado. `serverActions.bodySizeLimit` = 11 MB (`next.config.ts`).
+O envio de mídia (ADM-08, TECH-13) tem três passos, descritos no
+[ADR-0005](../adr/0005-armazenamento-de-midia.md): `cmsRequestMediaUpload` autoriza
+(`prepareMediaUpload`: `media:create`, formato, tamanho e texto alternativo declarados) e devolve o
+token; o navegador envia direto ao bucket; `cmsFinishMediaUpload` confere o que chegou
+(`finalizeMediaUpload`: tipo gravado, assinatura dos bytes, tamanho real e dimensões) e registra em
+`media_assets`. Arquivo recusado, ou cujo registro falhou, é apagado. O arquivo não passa pela Server
+Action, então `serverActions.bodySizeLimit` fica no padrão do Next.
 
 ## 7. Códigos de erro
 

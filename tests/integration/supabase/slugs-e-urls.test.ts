@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 29/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  29/10/2026 Vinicius Binda             Criação inicial (DB-08).
+ 02/11/2026 Vinicius Binda             Comparação sem depender do sufixo aleatório (ARC-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -145,12 +146,15 @@ describe.runIf(hasSupabaseTestEnv)("slugs e URLs no Supabase (DB-08)", () => {
     const { data } = await serviceClient()
       .from("slug_redirects")
       .select("old_slug, entity_id")
-      .in("old_slug", [slug("servico"), slug("servico-novo")])
-      .order("old_slug");
-    expect(data).toEqual([
-      { old_slug: slug("servico"), entity_id: null },
-      { old_slug: slug("servico-novo"), entity_id: null },
-    ]);
+      .in("old_slug", [slug("servico"), slug("servico-novo")]);
+    // Sem ordem fixa: o sufixo aleatório muda qual dos dois slugs vem primeiro.
+    expect(data).toHaveLength(2);
+    expect(data).toEqual(
+      expect.arrayContaining([
+        { old_slug: slug("servico"), entity_id: null },
+        { old_slug: slug("servico-novo"), entity_id: null },
+      ]),
+    );
     expect(await resolve(slug("servico-novo"))).toBeNull();
     await expect(
       saveContent(cmsDepsFor(users.editor!.client), actor("editor"), SERVICE, input({ slug: slug("servico-novo") })),

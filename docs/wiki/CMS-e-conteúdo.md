@@ -2,7 +2,8 @@
 
 O painel (`/admin`) deixa a equipe da Benjamin manter **páginas e blocos, manifesto, texto Sobre, áreas
 de atuação, serviços, categorias, cases e a biblioteca de mídia** sem deploy. O site lê do Supabase só o que está publicado. O conteúdo
-versionado em `content/` serve de fallback de desenvolvimento e de fonte do seed.
+versionado em `content/` serve de fallback de desenvolvimento e de fonte de parte do seed (os cases do
+seed são fictícios).
 
 ## Páginas e textos do site
 
@@ -36,8 +37,8 @@ Contas são criadas **por convite**; ninguém conhece a senha de outra pessoa. M
 
 ## Mídia
 
-JPG, PNG, WebP, AVIF e PDF, **até 4 MB por arquivo** pelo painel (o teto da Vercel é 4,5 MB por
-requisição). Toda imagem precisa de texto alternativo, salvo as decorativas. SVG não é aceito.
+JPG, PNG, WebP e AVIF **até 5 MB** e PDF **até 10 MB**. O arquivo vai direto do navegador ao Storage,
+sem passar pela Vercel, que recusa requisições acima de 4,5 MB. Toda imagem precisa de texto alternativo, salvo as decorativas. SVG não é aceito.
 
 ## Conteúdo provisório e aprovação da agência
 

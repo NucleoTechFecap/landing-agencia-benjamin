@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 27/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,14 +19,15 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-10).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
+ 02/11/2026 Vinícius Nishimura Reis  Limites do ADR-0005, envio declarado e caminho de volta (TECH-13, #313).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { describe, expect, it } from "vitest";
 import {
   buildStoragePath,
-  MEDIA_RULES,
-  PANEL_UPLOAD_MAX_BYTES,
+  checkDeclaredUpload,
+  isUploadPath,
   publicMediaUrl,
   sniffMimeType,
   validateUpload,
@@ -79,17 +80,41 @@ describe("validateUpload", () => {
     );
   });
 
-  it("aplica o limite do envio pelo painel, abaixo do teto de 4,5 MB da Vercel (TECH-13)", () => {
+  it("volta aos limites do ADR-0005: imagem até 5 MB e PDF até 10 MB (TECH-13, #313)", () => {
     const pdf = (size: number) => validateUpload(candidate({ declaredType: "application/pdf", head: PDF, size }));
-    expect(validateUpload(candidate({ size: 6 * 1024 * 1024 }))[0].code).toBe("PAYLOAD_TOO_LARGE");
-    expect(validateUpload(candidate({ size: 4.5 * 1024 * 1024 }))[0]).toMatchObject({
+    expect(validateUpload(candidate({ size: 5 * 1024 * 1024 }))).toEqual([]);
+    expect(validateUpload(candidate({ size: 5 * 1024 * 1024 + 1 }))[0]).toMatchObject({
       code: "PAYLOAD_TOO_LARGE",
-      message: expect.stringContaining("4 MB"),
+      message: expect.stringContaining("5 MB"),
     });
-    expect(pdf(8 * 1024 * 1024)[0].code).toBe("PAYLOAD_TOO_LARGE");
-    expect(pdf(PANEL_UPLOAD_MAX_BYTES)).toEqual([]);
-    // O limite do banco continua o de armazenamento (10 MB para PDF); o do painel é o do transporte.
-    expect(MEDIA_RULES["application/pdf"].maxBytes).toBe(10 * 1024 * 1024);
+    expect(pdf(8 * 1024 * 1024)).toEqual([]);
+    expect(pdf(10 * 1024 * 1024)).toEqual([]);
+    expect(pdf(10 * 1024 * 1024 + 1)[0]).toMatchObject({
+      code: "PAYLOAD_TOO_LARGE",
+      message: expect.stringContaining("10 MB"),
+    });
+  });
+
+  it("recusa antes de enviar o que o navegador já declara errado", () => {
+    expect(checkDeclaredUpload("application/pdf", 8 * 1024 * 1024)).toBeNull();
+    expect(checkDeclaredUpload("image/png", 5 * 1024 * 1024 + 1)?.code).toBe("PAYLOAD_TOO_LARGE");
+    expect(checkDeclaredUpload("image/svg+xml", 10)?.code).toBe("UNSUPPORTED_MEDIA_TYPE");
+    expect(checkDeclaredUpload("", 10)?.code).toBe("UNSUPPORTED_MEDIA_TYPE");
+    expect(checkDeclaredUpload("image/png", 0)?.code).toBe("EMPTY_FILE");
+    expect(checkDeclaredUpload("image/png", Number.NaN)?.code).toBe("EMPTY_FILE");
+    expect(checkDeclaredUpload("image/png", Number.POSITIVE_INFINITY)?.code).toBe("PAYLOAD_TOO_LARGE");
+  });
+
+  it("só aceita de volta um caminho no formato gerado, com a extensão do tipo", () => {
+    const uuid = "11111111-2222-4333-8444-555555555555";
+    const path = buildStoragePath("Release de Imprensa.pdf", "application/pdf", uuid);
+    expect(isUploadPath(path, "application/pdf")).toBe(true);
+    expect(isUploadPath(path, "image/png")).toBe(false);
+    expect(isUploadPath(path, "image/svg+xml")).toBe(false);
+    expect(isUploadPath(`../${path}`, "application/pdf")).toBe(false);
+    expect(isUploadPath(`${path}?x=1`, "application/pdf")).toBe(false);
+    expect(isUploadPath(`2026/10/${uuid}-a/../../b.pdf`, "application/pdf")).toBe(false);
+    expect(isUploadPath("/brand/cases/meridiano.webp", "image/webp")).toBe(false);
   });
 
   it("limita dimensões de imagem e rejeita arquivo vazio", () => {

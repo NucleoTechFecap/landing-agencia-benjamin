@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 27/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-10).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
+ 02/11/2026 Vinícius Nishimura Reis  Volta aos limites do ADR-0005; confere o que volta do navegador (TECH-13, #313).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -49,13 +50,6 @@ export const MEDIA_RULES: Readonly<Record<string, MediaRule>> = {
   "image/avif": { kind: "image", extension: "avif", maxBytes: 5 * MB },
   "application/pdf": { kind: "document", extension: "pdf", maxBytes: 10 * MB },
 };
-
-/**
- * Limite do envio pelo painel. O arquivo viaja no corpo da Server Action, e a Vercel recusa
- * corpo acima de 4,5 MB antes de a action rodar, sem a mensagem de validação (TECH-13). Vale
- * até o envio ir direto do navegador ao Storage; MEDIA_RULES continua sendo o limite do banco.
- */
-export const PANEL_UPLOAD_MAX_BYTES = 4 * MB;
 
 /** Maior lado aceito para imagens (px); acima disso o CMS pede para reduzir antes de enviar. */
 export const MAX_IMAGE_DIMENSION = 4000;
@@ -92,23 +86,36 @@ export interface UploadCandidate {
   height?: number;
 }
 
-/** Valida um upload antes de enviá-lo ao Storage. Retorna os problemas encontrados. */
+const UNSUPPORTED: MediaProblem = {
+  code: "UNSUPPORTED_MEDIA_TYPE",
+  message: "Formato não aceito. Use JPG, PNG, WebP, AVIF ou PDF.",
+};
+
+/**
+ * O que dá para recusar antes de os bytes saírem do navegador: formato e tamanho declarados.
+ * A palavra final é de validateUpload, sobre o arquivo que chegou ao Storage.
+ */
+export function checkDeclaredUpload(declaredType: string, size: number): MediaProblem | null {
+  if (!(size > 0)) return { code: "EMPTY_FILE", message: "Arquivo vazio." };
+  const rule = MEDIA_RULES[declaredType];
+  if (!rule) return UNSUPPORTED;
+  return size > rule.maxBytes ? { code: "PAYLOAD_TOO_LARGE", message: uploadTooLargeMessage(rule.maxBytes) } : null;
+}
+
+/** Valida o arquivo enviado ao Storage. Retorna os problemas encontrados. */
 export function validateUpload(candidate: UploadCandidate): MediaProblem[] {
   if (candidate.size === 0) return [{ code: "EMPTY_FILE", message: "Arquivo vazio." }];
 
   const rule = MEDIA_RULES[candidate.declaredType];
-  if (!rule) {
-    return [{ code: "UNSUPPORTED_MEDIA_TYPE", message: "Formato não aceito. Use JPG, PNG, WebP, AVIF ou PDF." }];
-  }
+  if (!rule) return [UNSUPPORTED];
 
   const problems: MediaProblem[] = [];
   const sniffed = sniffMimeType(candidate.head);
   if (sniffed !== candidate.declaredType) {
     problems.push({ code: "TYPE_MISMATCH", message: "O conteúdo do arquivo não corresponde ao formato informado." });
   }
-  const maxBytes = Math.min(rule.maxBytes, PANEL_UPLOAD_MAX_BYTES);
-  if (candidate.size > maxBytes) {
-    problems.push({ code: "PAYLOAD_TOO_LARGE", message: uploadTooLargeMessage(maxBytes) });
+  if (candidate.size > rule.maxBytes) {
+    problems.push({ code: "PAYLOAD_TOO_LARGE", message: uploadTooLargeMessage(rule.maxBytes) });
   }
   if (
     rule.kind === "image" &&
@@ -123,7 +130,7 @@ export function validateUpload(candidate: UploadCandidate): MediaProblem[] {
 }
 
 /** Mensagem de arquivo grande demais, a mesma no navegador e no servidor. */
-export function uploadTooLargeMessage(maxBytes: number = PANEL_UPLOAD_MAX_BYTES): string {
+export function uploadTooLargeMessage(maxBytes: number): string {
   return `Arquivo maior que ${Math.round(maxBytes / MB)} MB. Reduza o arquivo (para imagens, exporte em WebP) e envie de novo.`;
 }
 
@@ -139,6 +146,13 @@ export function buildStoragePath(fileName: string, mimeType: string, uuid: strin
   const year = now.getUTCFullYear();
   const month = String(now.getUTCMonth() + 1).padStart(2, "0");
   return `${year}/${month}/${uuid}-${safeName}.${rule.extension}`;
+}
+
+/** Confere o caminho que volta do navegador: o formato de buildStoragePath, com a extensão do tipo. */
+export function isUploadPath(path: string, mimeType: string): boolean {
+  const rule = MEDIA_RULES[mimeType];
+  if (!rule) return false;
+  return new RegExp(`^\\d{4}/\\d{2}/[0-9a-f-]{36}-[a-z0-9-]{1,60}\\.${rule.extension}$`).test(path);
 }
 
 /** URL pública de um objeto do bucket de mídia. */

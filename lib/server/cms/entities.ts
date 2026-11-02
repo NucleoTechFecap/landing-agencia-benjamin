@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -24,6 +24,7 @@
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
  29/10/2026 Vinicius Binda             Serviço e case com endereço antigo redirecionando (DB-08).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 02/11/2026 Vinícius Nishimura Reis  Relações entram na gravação em transação (TECH-13, #314).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -49,7 +50,7 @@ import type {
   Publishable,
   Service,
 } from "@/lib/domain/content/types";
-import type { CmsSnapshot, CmsStore, EntityTable, LinkTable, RedirectEntity, Row } from "./store";
+import type { CmsSnapshot, EntityTable, ItemRelations, RedirectEntity, Row } from "./store";
 
 /** Item editável: publicável e com endereço próprio. */
 export type CmsItem = Publishable & { id: string; slug: string };
@@ -90,18 +91,13 @@ export interface EntityDefinition<I extends { slug: string }, T extends CmsItem>
   validateForPublish(item: T): string[];
   /** Regras de integridade já cobertas pela validação acima (não repetir a mensagem). */
   coveredRules?: readonly string[];
-  /** Vínculos N:M editados no mesmo formulário (ex.: áreas do serviço). */
-  links?: {
-    table: LinkTable;
-    ownerColumn: string;
-    otherColumn: string;
-    of(item: T): string[];
-    from(input: I): string[];
-  };
+  /**
+   * Relações editadas no mesmo formulário (ex.: áreas do serviço, galeria do case): o banco as
+   * grava na mesma transação do item. Sem elas, o item é uma linha só e já é atômico.
+   */
+  relations?(input: I): ItemRelations;
   /** Impede a exclusão definitiva quando o banco recusaria (FK restrict), com mensagem clara. */
   deleteBlockers?(item: T, snapshot: ContentSnapshot): string[];
-  /** Relações gravadas depois do item (ex.: galeria ordenada do case). */
-  afterSave?(store: CmsStore, id: string, input: I): Promise<void>;
   /**
    * Outras páginas de detalhe do site que exibem o item (ex.: o case aparece na página dos
    * serviços dele). São aquecidas junto depois de invalidar o cache (ADR-0006, TECH-13).
@@ -192,13 +188,7 @@ export const SERVICE: EntityDefinition<ServiceInput, Service> = {
   }),
   validateForPublish: (service) => validateServiceForPublish({ ...service, imageId: service.image?.id }),
   coveredRules: ["R03"],
-  links: {
-    table: "service_areas",
-    ownerColumn: "service_id",
-    otherColumn: "area_id",
-    of: (service) => service.areaIds,
-    from: (input) => input.areaIds,
-  },
+  relations: (input) => ({ table: "services", areaIds: input.areaIds }),
   relatedPaths: (service, snapshot, now) =>
     live(snapshot.cases, now)
       .filter((item) => item.serviceIds.includes(service.id))
@@ -323,14 +313,7 @@ export const CASE: EntityDefinition<CaseInput, CaseStudy> = {
         summary: item.summary || undefined,
       }),
     ),
-  links: {
-    table: "case_services",
-    ownerColumn: "case_id",
-    otherColumn: "service_id",
-    of: (item) => item.serviceIds,
-    from: (input) => input.serviceIds,
-  },
-  afterSave: (store, id, input) => store.syncGallery(id, input.galleryIds),
+  relations: (input) => ({ table: "cases", serviceIds: input.serviceIds, galleryIds: input.galleryIds }),
   // A página do serviço lista os cases dele; a do case mostra os relacionados da mesma categoria.
   relatedPaths: (item, snapshot, now) => [
     ...live(snapshot.services, now)

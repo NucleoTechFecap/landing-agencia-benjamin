@@ -9,7 +9,7 @@ O backend usa **Supabase (PostgreSQL)**, com Row Level Security em todas as tabe
 | `supabase/migrations/` | Schema em ordem temporal: perfis, RBAC, auditoria, formulários, conteúdo do CMS e ajustes posteriores |
 | `supabase/rollbacks/` | Um `.down.sql` por migration que precisa de reversão |
 | `supabase/tests/database/` | Testes pgTAP (`npx supabase test db`) |
-| `supabase/seed.sql` | Dados de desenvolvimento gerados de `content/` (`npm run seed:write`; `seed:check` confere) |
+| `supabase/seed.sql` | Dados de desenvolvimento, só para o banco local: `content/` mais cases e páginas fictícios (`npm run seed:write`; `seed:check` confere) |
 | `supabase/templates/` | E-mails de convite e recuperação de senha do painel |
 | `supabase/config.toml` | Configuração da stack local |
 

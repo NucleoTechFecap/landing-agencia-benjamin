@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 29/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,11 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  29/10/2026 Vinicius Binda             Criação inicial (DB-08).
+ 02/11/2026 Vinicius Binda             Slugs dos cases fictícios do seed (ARC-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 -- Executar com: npx supabase db reset && npx supabase test db
--- Usa o seed (cases meridiano, fecap e aventura-de-construir publicados; um case em rascunho;
+-- Usa o seed (cases cafeteria-exemplo, instituto-exemplo e editora-exemplo publicados; um case em rascunho;
 -- serviço social-media publicado). Tudo roda numa transação desfeita no fim.
 
 begin;
@@ -52,7 +53,7 @@ select ok((select relrowsecurity from pg_class where oid = 'public.slug_redirect
 
 -- ─── Resolução sem troca ──────────────────────────────────────────────────────
 
-select is(pg_temp.resolver('case', 'meridiano'), 'meridiano', 'endereço atual de case publicado resolve para ele mesmo (200)');
+select is(pg_temp.resolver('case', 'cafeteria-exemplo'), 'cafeteria-exemplo', 'endereço atual de case publicado resolve para ele mesmo (200)');
 select is(pg_temp.resolver('case', 'case-ficticio-em-rascunho'), null, 'rascunho não resolve (404)');
 select is(pg_temp.resolver('case', 'nao-existe'), null, 'endereço inexistente não resolve (404)');
 select is(pg_temp.resolver('case', 'social-media'), null, 'slug de serviço não resolve como case');
@@ -64,20 +65,20 @@ update public.cases set slug = 'case-rascunho-renomeado' where slug = 'case-fict
 select is_empty($$select 1 from public.slug_redirects where old_slug = 'case-ficticio-em-rascunho'$$,
   'rascunho que nunca foi ao ar troca de endereço sem registrar o antigo');
 
-update public.cases set slug = 'meridiano-2026' where slug = 'meridiano';
-select is((select entity_id from public.slug_redirects where entity_type = 'case' and old_slug = 'meridiano'),
-  (select id from public.cases where slug = 'meridiano-2026'), 'case publicado: endereço antigo aponta para o id do item');
-select is(pg_temp.resolver('case', 'meridiano'), 'meridiano-2026', 'endereço antigo resolve para o atual (301)');
-select is(pg_temp.resolver('case', 'meridiano-2026'), 'meridiano-2026', 'endereço novo resolve para ele mesmo (200)');
+update public.cases set slug = 'cafeteria-exemplo-2026' where slug = 'cafeteria-exemplo';
+select is((select entity_id from public.slug_redirects where entity_type = 'case' and old_slug = 'cafeteria-exemplo'),
+  (select id from public.cases where slug = 'cafeteria-exemplo-2026'), 'case publicado: endereço antigo aponta para o id do item');
+select is(pg_temp.resolver('case', 'cafeteria-exemplo'), 'cafeteria-exemplo-2026', 'endereço antigo resolve para o atual (301)');
+select is(pg_temp.resolver('case', 'cafeteria-exemplo-2026'), 'cafeteria-exemplo-2026', 'endereço novo resolve para ele mesmo (200)');
 
-update public.cases set slug = 'meridiano-portfolio' where slug = 'meridiano-2026';
-select is(pg_temp.resolver('case', 'meridiano'), 'meridiano-portfolio', 'trocas seguidas: o primeiro endereço vai direto ao atual');
-select is(pg_temp.resolver('case', 'meridiano-2026'), 'meridiano-portfolio', 'trocas seguidas: o intermediário também');
+update public.cases set slug = 'cafeteria-exemplo-portfolio' where slug = 'cafeteria-exemplo-2026';
+select is(pg_temp.resolver('case', 'cafeteria-exemplo'), 'cafeteria-exemplo-portfolio', 'trocas seguidas: o primeiro endereço vai direto ao atual');
+select is(pg_temp.resolver('case', 'cafeteria-exemplo-2026'), 'cafeteria-exemplo-portfolio', 'trocas seguidas: o intermediário também');
 
-update public.cases set slug = 'meridiano' where slug = 'meridiano-portfolio';
-select is_empty($$select 1 from public.slug_redirects where entity_type = 'case' and old_slug = 'meridiano'$$,
+update public.cases set slug = 'cafeteria-exemplo' where slug = 'cafeteria-exemplo-portfolio';
+select is_empty($$select 1 from public.slug_redirects where entity_type = 'case' and old_slug = 'cafeteria-exemplo'$$,
   'voltar a um endereço antigo do próprio item tira o redirecionamento dele');
-select is(pg_temp.resolver('case', 'meridiano-portfolio'), 'meridiano', 'e o endereço abandonado passa a redirecionar');
+select is(pg_temp.resolver('case', 'cafeteria-exemplo-portfolio'), 'cafeteria-exemplo', 'e o endereço abandonado passa a redirecionar');
 
 update public.services set slug = 'social-media-e-conteudo' where slug = 'social-media';
 select is(pg_temp.resolver('service', 'social-media'), 'social-media-e-conteudo', 'serviço: endereço antigo resolve para o atual');
@@ -85,20 +86,20 @@ select is(pg_temp.resolver('case', 'social-media'), null, 'endereço antigo de s
 
 -- ─── Sem colisão ──────────────────────────────────────────────────────────────
 
-select throws_ok($$update public.cases set slug = 'meridiano-2026' where slug = 'fecap'$$, '23505', null,
+select throws_ok($$update public.cases set slug = 'cafeteria-exemplo-2026' where slug = 'instituto-exemplo'$$, '23505', null,
   'outro item não assume endereço antigo de um case');
 select throws_ok(
-  $$insert into public.cases (slug, title) values ('meridiano-portfolio', 'Outro case')$$, '23505', null,
+  $$insert into public.cases (slug, title) values ('cafeteria-exemplo-portfolio', 'Outro case')$$, '23505', null,
   'case novo não nasce com endereço antigo de outro case');
-select lives_ok($$insert into public.services (slug, name) values ('meridiano-portfolio', 'Outro serviço')$$,
+select lives_ok($$insert into public.services (slug, name) values ('cafeteria-exemplo-portfolio', 'Outro serviço')$$,
   'o mesmo endereço continua livre em outro tipo');
 
 -- ─── Visibilidade ─────────────────────────────────────────────────────────────
 
-update public.cases set status = 'draft' where slug = 'meridiano';
-select is(pg_temp.resolver('case', 'meridiano-portfolio'), null, 'endereço antigo de item despublicado não resolve (404)');
+update public.cases set status = 'draft' where slug = 'cafeteria-exemplo';
+select is(pg_temp.resolver('case', 'cafeteria-exemplo-portfolio'), null, 'endereço antigo de item despublicado não resolve (404)');
 set local role anon;
-select is_empty($$select 1 from public.slug_redirects where entity_type = 'case' and old_slug = 'meridiano-portfolio'$$,
+select is_empty($$select 1 from public.slug_redirects where entity_type = 'case' and old_slug = 'cafeteria-exemplo-portfolio'$$,
   'visitante não vê endereços antigos de item fora do ar');
 select isnt_empty($$select 1 from public.slug_redirects where old_slug = 'social-media'$$,
   'visitante vê endereços antigos de item no ar');
@@ -106,13 +107,13 @@ reset role;
 
 -- ─── Exclusão: endereço reservado ─────────────────────────────────────────────
 
-update public.cases set slug = 'fecap-2026' where slug = 'fecap';
-delete from public.ctas where target_case_id = (select id from public.cases where slug = 'fecap-2026');
-delete from public.cases where slug = 'fecap-2026';
-select is((select count(*) from public.slug_redirects where entity_type = 'case' and old_slug in ('fecap', 'fecap-2026') and entity_id is null),
+update public.cases set slug = 'instituto-exemplo-2026' where slug = 'instituto-exemplo';
+delete from public.ctas where target_case_id = (select id from public.cases where slug = 'instituto-exemplo-2026');
+delete from public.cases where slug = 'instituto-exemplo-2026';
+select is((select count(*) from public.slug_redirects where entity_type = 'case' and old_slug in ('instituto-exemplo', 'instituto-exemplo-2026') and entity_id is null),
   2::bigint, 'excluir item já publicado reserva o endereço atual e os antigos');
-select is(pg_temp.resolver('case', 'fecap'), null, 'endereço reservado responde 404');
-select throws_ok($$insert into public.cases (slug, title) values ('fecap', 'Outro case')$$, '23505', null,
+select is(pg_temp.resolver('case', 'instituto-exemplo'), null, 'endereço reservado responde 404');
+select throws_ok($$insert into public.cases (slug, title) values ('instituto-exemplo', 'Outro case')$$, '23505', null,
   'endereço reservado não volta a ser usado');
 
 delete from public.cases where slug = 'case-rascunho-renomeado';
@@ -140,8 +141,8 @@ set local role authenticated;
 set local request.jwt.claim.sub = '00000000-0000-4000-8000-0000000008e1';
 select throws_ok($$insert into public.slug_redirects (entity_type, old_slug, entity_id) values ('case', 'forjado', null)$$,
   '42501', null, 'editor não grava endereços diretamente');
-update public.cases set slug = 'aventura' where slug = 'aventura-de-construir';
-select isnt_empty($$select 1 from public.slug_redirects where old_slug = 'aventura-de-construir'$$,
+update public.cases set slug = 'editora' where slug = 'editora-exemplo';
+select isnt_empty($$select 1 from public.slug_redirects where old_slug = 'editora-exemplo'$$,
   'editor troca o endereço pelo painel e o trigger registra o antigo');
 reset role;
 
