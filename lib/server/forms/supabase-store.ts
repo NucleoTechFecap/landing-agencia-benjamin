@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,11 +18,13 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 02/11/2026 Vinícius Nishimura Reis  Tentativas esgotadas fora da fila de reenvio (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { NOTIFICATION_RETRY } from "@/lib/domain/forms/idempotency";
 import { DuplicateSubmissionError, type SubmissionRecord, type SubmissionStore } from "./types";
 
 const TABLE = "form_submissions";
@@ -141,6 +143,7 @@ export class SupabaseSubmissionStore implements SubmissionStore {
       .from(TABLE)
       .select("*")
       .in("notification_status", ["pending", "failed"])
+      .lt("notification_attempts", NOTIFICATION_RETRY.maxAttempts)
       .order("created_at", { ascending: true })
       .limit(limit)
       .returns<Row[]>();
