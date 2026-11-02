@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  25/10/2026 Caio Moraes              Serviço pré-selecionado também após navegar (SERV-02).
+ 01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
@@ -31,12 +32,13 @@ import { Suspense } from "react";
 import { ContactForm } from "@/components/forms/contact-form";
 import { LeadForm } from "@/components/forms/lead-form";
 import { SocialLinks } from "@/components/layout/social-links";
+import { PageBlocks } from "@/components/sections/page-blocks";
 import { PageHero } from "@/components/sections/page-hero";
 import { BrandIcon } from "@/components/ui/brand-icon";
 import { Section } from "@/components/ui/section";
 import { LoadingState } from "@/components/ui/states";
 import { CONTACT_SUBJECTS } from "@/lib/domain/forms/schemas";
-import { getSiteSettings, listServices } from "@/lib/server/content/repository";
+import { getPage, getSiteSettings, listServices } from "@/lib/server/content/repository";
 import { submitContact, submitLead } from "../actions";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -54,7 +56,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Contato institucional + formulário de prospecção (FORM-02, FORM-03, FORM-04). */
 export default async function ContactPage({ searchParams }: PageProps<"/contato">) {
-  const settings = await getSiteSettings();
+  const [settings, page] = await Promise.all([getSiteSettings(), getPage("contato")]);
   return (
     <>
       <PageHero
@@ -121,6 +123,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contato"
           </div>
         </div>
       </Section>
+      <PageBlocks page={page} />
     </>
   );
 }

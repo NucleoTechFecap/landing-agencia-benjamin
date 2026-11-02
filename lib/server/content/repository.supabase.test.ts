@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-05).
  26/10/2026 Vinícius Nishimura Reis  Ambiente no mock da configuração pública (INT-02).
+ 01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Testes de aceite dos cases em destaque (HOME-04).
  01/11/2026 Vinícius Nishimura Reis  Sufixo de teste com node:crypto (CodeQL).
 ──────────────────────────────────────────────────────────────────────────────
@@ -248,5 +249,55 @@ describe("repositório sobre o Supabase (DB-05)", () => {
   it("publicação agendada para o futuro não aparece nem no detalhe", async () => {
     tables = populated();
     expect(await repository.getCaseDetail("futuro")).toBeNull();
+  });
+});
+
+describe("textos do painel na configuração do site (INT-03)", () => {
+  const settingsRow = {
+    name: "Agência Benjamin",
+    short_name: "Benja",
+    tagline: "Somando diferenças",
+    description: "Descrição.",
+    manifesto: { title: "Manifesto da configuração", paragraphs: ["Texto."] },
+    about: { title: "Sobre", intro: "i", valueProposition: "v", howWeWork: "h", fecapRelation: "f" },
+    contact: {},
+    socials: {},
+    keywords: [],
+  };
+  const manifesto = { title: "Manifesto do painel", paragraphs: ["Texto novo."] };
+
+  beforeEach(() => {
+    tables = {
+      site_settings: { data: [settingsRow] },
+      pages: {
+        data: [{ ...live, id: "p1", slug: "home", title: "Home", description: null }],
+      },
+      blocks: { data: [{ id: "b1", page_id: "p1", type: "manifesto", content: manifesto, sort_order: 0 }] },
+    };
+  });
+
+  it("manifesto publicado toma o lugar do valor de site_settings", async () => {
+    expect((await repository.getSiteSettings()).manifesto).toEqual({ ...manifesto, provisional: false });
+  });
+
+  it("publicação agendada para o futuro ainda não vale", async () => {
+    tables.pages = {
+      data: [
+        {
+          ...live,
+          id: "p1",
+          slug: "home",
+          title: "Home",
+          description: null,
+          published_at: "2999-01-01T00:00:00+00:00",
+        },
+      ],
+    };
+    expect((await repository.getSiteSettings()).manifesto.title).toBe("Manifesto da configuração");
+  });
+
+  it("sem página no banco, segue com site_settings", async () => {
+    tables.pages = { data: [] };
+    expect((await repository.getSiteSettings()).manifesto.title).toBe("Manifesto da configuração");
   });
 });

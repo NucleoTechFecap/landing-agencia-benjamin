@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,13 +19,15 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
+ 01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/server/seo";
-import { getSiteSettings } from "@/lib/server/content/repository";
+import { getPage, getSiteSettings } from "@/lib/server/content/repository";
 import Link from "next/link";
+import { PageBlocks } from "@/components/sections/page-blocks";
 import { PageHero } from "@/components/sections/page-hero";
 import { Section } from "@/components/ui/section";
 
@@ -88,7 +90,8 @@ const SECTIONS = [
  * Aviso de privacidade — MINUTA técnica baseada em SEG-01/TECH-08. Texto final, bases
  * legais e contato do encarregado dependem de validação institucional (SEG-02/SEG-10).
  */
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const page = await getPage("privacidade");
   return (
     <>
       <PageHero
@@ -127,6 +130,7 @@ export default function PrivacyPage() {
           </p>
         </article>
       </Section>
+      <PageBlocks page={page} />
     </>
   );
 }

@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  28/10/2026 Caio Moraes              Estado vazio com link para limpar os filtros (CASE-03).
+ 01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
@@ -30,6 +31,7 @@ import { Suspense } from "react";
 import { CaseCard } from "@/components/cards/case-card";
 import { CaseFilters, type ActiveFilters } from "@/components/sections/case-filters";
 import { ClosingCta } from "@/components/sections/closing-cta";
+import { PageBlocks } from "@/components/sections/page-blocks";
 import { PageHero } from "@/components/sections/page-hero";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Section } from "@/components/ui/section";
@@ -37,7 +39,14 @@ import { CardsSkeleton, EmptyState, LoadingState } from "@/components/ui/states"
 import { siteUrl } from "@/lib/config/public-env";
 import { isValidSlug } from "@/lib/domain/content/slug";
 import { itemListSchema } from "@/lib/domain/seo/structured-data";
-import { getSiteSettings, listAreas, listCases, listCategories, listServices } from "@/lib/server/content/repository";
+import {
+  getPage,
+  getSiteSettings,
+  listAreas,
+  listCases,
+  listCategories,
+  listServices,
+} from "@/lib/server/content/repository";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata(
@@ -54,7 +63,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Portfólio com filtros por categoria, serviço e área (CASE-01, CASE-03). */
 export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
-  const allCases = await listCases();
+  const [allCases, page] = await Promise.all([listCases(), getPage("cases")]);
   return (
     <>
       <JsonLd
@@ -91,6 +100,7 @@ export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
           <FilteredCases searchParams={searchParams} />
         </Suspense>
       </Section>
+      <PageBlocks page={page} />
       <ClosingCta
         title="Seu projeto pode ser o próximo case."
         links={[
