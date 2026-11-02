@@ -114,7 +114,7 @@ e E13 dependem de respostas que estão fora do alcance do NúcleoTech. E6 tem sa
 
 1. Decidir o papel do projeto Supabase e o fluxo da Vercel ([provisionamento §6](provisionamento-producao.md)).
 2. Aplicar o release de segurança do Next.js assim que sair.
-3. Revisar e mesclar #365, #366, #367 e #368, e aplicar as migrations `20261102000100` e `20261102000200`.
+3. Revisar e mesclar #365, #366, #367 e #368, e aplicar as migrations `20261102000300` e `20261102000200`.
 4. Respostas da Benjamin (aprovações, destinatários e conteúdo final), publicação pelo painel e
    `check:release-content` verde.
 5. QA-09/10/11 em homologação, `test:e2e` contra homologação e QA-06.

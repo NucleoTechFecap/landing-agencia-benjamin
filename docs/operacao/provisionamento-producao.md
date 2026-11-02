@@ -100,7 +100,7 @@
 | Projeto na Vercel | 🟡 Existe (`agencia-benjamin`) e publica a cada merge. Ver a divergência abaixo |
 | Projeto no Supabase | 🟡 Existe na organização NucleoTech FECAP. Ver a divergência abaixo. O conteúdo do banco **não foi inspecionado** |
 | Migrations de conteúdo (DB-02) e da TECH-13 (#301, #312) | ✅ Na `main` |
-| Migrations pendentes | ⏳ `20261102000100` (#365) e `20261102000200` (#366), aguardando revisão. Não aplicadas em ambiente remoto |
+| Migrations pendentes | ⏳ `20261102000300` (#365) e `20261102000200` (#366), aguardando revisão. Não aplicadas em ambiente remoto |
 | Aplicação | 🟡 Next.js 16.4.3 na `main`, 16.4.4 no #368. Falta o release de segurança de 03/11. `vercel.json` em `gru1` |
 | Acesso às contas na máquina de quem provisiona | ⏳ Em 02/11, a Vercel CLI estava na conta pessoal e a Supabase CLI não via o projeto |
 | Remetente dos formulários (`NOTIFICATION_FROM`) | ⏳ Depende de um domínio verificado no Resend ([GO-03 §0](dominio-dns-https.md#0-decisão-de-27102026-publicar-em-vercelapp-até-o-domínio-sair)) |

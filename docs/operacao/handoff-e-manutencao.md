@@ -62,7 +62,7 @@ Pendências conhecidas em 02/11/2026:
   (GO-03) segue pendente, com publicação em `*.vercel.app` até ele existir.
 - **Release de segurança do Next.js em 03/11/2026:** atualizar assim que sair, antes de publicar.
 - **PRs abertos:** #365 (TECH-06), #366 (gravação atômica, #314), #367 (envio direto de mídia, #313)
-  e #368 (dependências). As migrations `20261102000100` e `20261102000200` não foram aplicadas em
+  e #368 (dependências). As migrations `20261102000300` e `20261102000200` não foram aplicadas em
   nenhum ambiente remoto.
 - **Achados baixos da revisão técnica de 02/11:** #369.
 - **PRs críticos sem revisão registrada:** ver [revisão de PRs §6.3](../qualidade/revisao-de-prs.md).
