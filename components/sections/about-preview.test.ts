@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Testes de aceite do bloco Quem é a Benjamin (HOME-02).
+ 02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -58,8 +59,8 @@ describe('bloco "Quem é a Benjamin" (HOME-02)', () => {
     expect(render()).toContain('href="/sobre"');
   });
 
-  it("o selo aparece só em texto provisório", () => {
-    expect(render({ provisional: true })).toContain("Conteúdo provisório");
+  it("não exibe selo de provisório: o texto fica sinalizado só no painel", () => {
+    expect(render({ provisional: true })).not.toContain("Conteúdo provisório");
     expect(render({ provisional: false })).not.toContain("Conteúdo provisório");
   });
 

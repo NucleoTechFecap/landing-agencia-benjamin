@@ -125,7 +125,6 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
         description={<p>{item.summary}</p>}
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Cases", href: "/cases" }, { label: item.client }]}
         tone="azul"
-        provisional={item.provisional}
       >
         <div className="mt-6 flex flex-wrap gap-2">
           {category ? (

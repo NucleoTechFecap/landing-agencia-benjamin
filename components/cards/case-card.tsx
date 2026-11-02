@@ -25,7 +25,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { CaseStudy } from "@/lib/domain/content/types";
-import { Badge, ProvisionalBadge } from "../ui/badge";
+import { Badge } from "../ui/badge";
 
 export interface CaseCardData extends CaseStudy {
   categoryName: string;
@@ -62,7 +62,6 @@ export function CaseCard({
       <div className="flex flex-1 flex-col p-6">
         <div className="flex flex-wrap items-center gap-2">
           {item.categoryName ? <Badge>{item.categoryName}</Badge> : null}
-          {item.provisional ? <ProvisionalBadge /> : null}
         </div>
         <p className="mt-4 text-xs font-bold tracking-widest text-benja-grafite/80 uppercase">{item.client}</p>
         <Heading className="mt-1 text-xl font-black text-benja-verde">

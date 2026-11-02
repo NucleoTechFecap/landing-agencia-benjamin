@@ -22,7 +22,6 @@
 */
 
 import type { SiteSettings } from "@/lib/domain/content/types";
-import { ProvisionalBadge } from "../ui/badge";
 import { BrandIcon } from "../ui/brand-icon";
 import { ButtonLink } from "../ui/button-link";
 import { Section } from "../ui/section";
@@ -45,7 +44,6 @@ export function AboutPreview({ settings, solutionsSummary }: { settings: SiteSet
           Conheça a agência
         </ButtonLink>
       </div>
-      {about.provisional ? <ProvisionalBadge className="mt-4" /> : null}
       <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {topics.map((topic) => (
           <li key={topic.title} className="rounded-3xl border-2 border-benja-noite bg-white/60 p-6">

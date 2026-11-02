@@ -101,7 +101,6 @@ export default async function PrivacyPage() {
         path="/privacidade"
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Aviso de privacidade" }]}
         tone="creme"
-        provisional
       />
       <Section tone="nyanza">
         <article className="mx-auto max-w-3xl">

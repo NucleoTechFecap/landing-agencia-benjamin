@@ -26,7 +26,6 @@ import type { ReactNode } from "react";
 import { siteUrl } from "@/lib/config/public-env";
 import { breadcrumbSchema } from "@/lib/domain/seo/structured-data";
 import { JsonLd } from "../seo/json-ld";
-import { ProvisionalBadge } from "../ui/badge";
 import { BrandIcon, type BrandIconColor } from "../ui/brand-icon";
 import { Breadcrumbs, type Crumb } from "../ui/breadcrumbs";
 import { Section, type SectionTone } from "../ui/section";
@@ -40,7 +39,6 @@ export function PageHero({
   tone = "verde",
   icon,
   iconColor = "lima",
-  provisional = false,
   path,
   children,
 }: {
@@ -51,7 +49,6 @@ export function PageHero({
   tone?: SectionTone;
   icon?: string;
   iconColor?: BrandIconColor;
-  provisional?: boolean;
   /** Caminho da página: gera o BreadcrumbList em JSON-LD. */
   path?: string;
   children?: ReactNode;
@@ -76,7 +73,6 @@ export function PageHero({
             {title}
           </h1>
           {description ? <div className="mt-5 text-lg leading-relaxed opacity-95">{description}</div> : null}
-          {provisional ? <ProvisionalBadge className="mt-4" /> : null}
           {children}
         </div>
         {icon ? <BrandIcon name={icon} color={iconColor} size={150} className="hidden shrink-0 md:block" /> : null}

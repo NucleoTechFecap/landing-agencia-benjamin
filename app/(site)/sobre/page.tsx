@@ -70,7 +70,6 @@ export default async function AboutPage() {
         path="/sobre"
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Sobre" }]}
         icon="hermes"
-        provisional={about.provisional}
       />
 
       <Section tone="nyanza" labelledBy="pilares-titulo">
