@@ -30,6 +30,7 @@
  26/10/2026 Vinícius Nishimura Reis  Item Social Media & Criação (CASE-09).
  26/10/2026 Vinícius Nishimura Reis  Categoria Assessoria de Imprensa e imports organizados (CASE-10).
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case Aventura de Construir (CASE-05).
+ 01/11/2026 Vinícius Nishimura Reis  Conformidade do case Meridiano (CASE-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -263,6 +264,12 @@ describe("itens de conteúdo do MVP", () => {
   checkCase("aventura-de-construir", {
     category: "copywriting",
     services: ["copywriting", "producao-de-conteudo"],
+    provisional: true,
+    material: false,
+  });
+  checkCase("meridiano", {
+    category: "social-media-e-criacao",
+    services: ["social-media", "design-e-identidade-visual"],
     provisional: true,
     material: false,
   });
