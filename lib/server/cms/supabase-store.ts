@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
  29/10/2026 Vinicius Binda             Leitura de public.slug_redirects (DB-08).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 02/11/2026 Vinícius Nishimura Reis  Serviço e case gravados pelas funções do banco (TECH-13, #314).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -51,7 +52,7 @@ import {
 } from "../content/supabase/rows";
 import { AppError } from "../errors";
 import { logger } from "../logger";
-import type { CmsSnapshot, CmsStore, EntityTable, LinkSync, MediaAsset, MediaRow, Row, SavedRow } from "./store";
+import type { CmsSnapshot, CmsStore, EntityTable, MediaAsset, MediaRow, SavedRow } from "./store";
 
 interface PostgrestError {
   message: string;
@@ -71,7 +72,10 @@ export function toCmsError(error: PostgrestError, context: { table: string; oper
       });
     case "23503":
       return new AppError("CONFLICT", {
-        message: "Este item está em uso por outro conteúdo (inclusive rascunhos) e não pode ser excluído.",
+        message:
+          context.operation === "save"
+            ? "Uma área, serviço, categoria ou imagem escolhida não existe mais. Nada foi salvo: recarregue a página e confira."
+            : "Este item está em uso por outro conteúdo (inclusive rascunhos) e não pode ser excluído.",
         internal,
       });
     case "23514":
@@ -81,6 +85,10 @@ export function toCmsError(error: PostgrestError, context: { table: string; oper
       });
     case "42501":
       return new AppError("FORBIDDEN", { internal });
+    case "40001":
+      return new AppError("CONFLICT", { internal });
+    case "P0002":
+      return new AppError("NOT_FOUND", { internal });
     default:
       return new AppError("SERVICE_UNAVAILABLE", { internal, cause: error });
   }
@@ -176,24 +184,6 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
       return toMediaAsset(row!, supabaseUrl);
     },
 
-    async syncGallery(caseId, mediaIds) {
-      if (mediaIds.length) {
-        await run(
-          client.from("case_media").upsert(
-            mediaIds.map((mediaId, index) => ({ case_id: caseId, media_id: mediaId, sort_order: index })),
-            { onConflict: "case_id,media_id" },
-          ),
-          { table: "case_media", operation: "upsert" },
-        );
-      }
-      // Depois de gravar a nova ordem, remove o que saiu da galeria (falha parcial não perde imagem).
-      const removal = client.from("case_media").delete().eq("case_id", caseId);
-      await run(mediaIds.length ? removal.not("media_id", "in", `(${mediaIds.join(",")})`) : removal, {
-        table: "case_media",
-        operation: "delete",
-      });
-    },
-
     async insert(table, values) {
       const row = await run<{ id: string; updated_at: string }>(
         client.from(table).insert(values).select("id, updated_at").single(),
@@ -233,23 +223,23 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
       throw new AppError("FORBIDDEN");
     },
 
-    async syncLinks({ table, ownerColumn, ownerId, otherColumn, current, next }: LinkSync) {
-      const toAdd = next.filter((id) => !current.includes(id));
-      const toRemove = current.filter((id) => !next.includes(id));
-      if (toAdd.length) {
-        await run(
-          client
-            .from(table)
-            .insert(toAdd.map((otherId) => ({ [ownerColumn]: ownerId, [otherColumn]: otherId }) as Row)),
-          { table, operation: "insert" },
-        );
-      }
-      if (toRemove.length) {
-        await run(client.from(table).delete().eq(ownerColumn, ownerId).in(otherColumn, toRemove), {
-          table,
-          operation: "delete",
-        });
-      }
+    async saveWithRelations(relations, values, version) {
+      const item = {
+        p_id: version?.id ?? null,
+        p_expected_updated_at: version?.expectedUpdatedAt ?? null,
+        p_values: values,
+      };
+      const rows = await run<{ id: string; updated_at: string }[]>(
+        relations.table === "services"
+          ? client.rpc("save_service", { ...item, p_area_ids: relations.areaIds })
+          : client.rpc("save_case", {
+              ...item,
+              p_service_ids: relations.serviceIds,
+              p_gallery_ids: relations.galleryIds,
+            }),
+        { table: relations.table, operation: "save" },
+      );
+      return saved(rows![0]);
     },
 
     async insertBlock(values) {

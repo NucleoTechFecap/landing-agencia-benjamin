@@ -316,7 +316,7 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 
 | Regra | Motivo de não ser constraint | Onde reforçar depois |
 | ----- | ---------------------------- | -------------------- |
-| R03 — serviço com ≥ 1 área | Serviço e vínculos são gravados em requisições separadas | RPC transacional (ADM-07) ou trigger *deferrable* (DBX-04) |
+| R03 — serviço com ≥ 1 área | Só vale ao publicar; rascunho pode não ter área. Serviço e vínculos já são gravados numa transação (`save_service`, TECH-13) | Trigger *deferrable* (DBX-04) |
 | R05/R06/R07 — dependências publicadas | Depende do estado de outra tabela | Trigger de publicação (DBX-04) |
 | R10 — rota interna conhecida | A lista de rotas está em `integrity.ts` | — |
 | R11 — até 6 destaques | É aviso, não erro | — |
@@ -363,6 +363,8 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | `npm run test:migrations` (ARC-11, 02/11/2026): 11 migrations, todas com rollback. Seed: 6 áreas, 10 serviços, 5 cases, 2 itens de galeria, 5 CTAs, 4 mídias, 2 páginas, 5 blocos, 1 configuração. Com a marcação real em `public.ambiente_banco`, o seed é recusado sem inserir nada; os 11 `.down.sql` rodam em ordem inversa, duas vezes cada, e reaplicam. À parte: o rollback da marcação para em banco marcado e só segue com `benjamin.confirmar_rollback` | `Files=7, Tests=163, Result: PASS` em cada etapa |
 | `content-seed.test.mjs` e `seed-users.test.mjs` (ARC-11): cases publicados passam na validação de publicação, sem erro de integridade, blocos no catálogo, mídia em `public/`, nenhum cliente real; contas só no Supabase local e sem senha fixa | Passa no `npm test` |
 | Site e painel sobre o seed (ARC-11, navegador e `curl`): cases fictícios em `/cases`, rascunho, agendado, arquivado e cliente real com 404, blocos em `/areas`. Login com as 4 contas de `npm run seed:users`: `admin` e `editor` veem 5 cases com o botão de novo case, `viewer` vê os 5 sem o botão, `pending` fica no login com o aviso | Conforme. E2E `@cms` sobre o seed: 18 testes, `PASS` |
+| `supabase/tests/database/cms_gravacao_atomica.test.sql` e `tests/integration/supabase/cms-gravacao-atomica.test.ts` (TECH-13, #314, 02/11/2026): 25 testes pgTAP e 6 de integração. FK inválida em qualquer etapa (área, serviço, galeria, criação) desfaz texto e vínculos; versão desatualizada (`40001`), item inexistente (`P0002`), coluna a mais ou a menos (`22023`) e leitor (`42501`) são recusados; funções `security invoker`, sem execução para `anon`, com `search_path` vazio | `Files=7, Tests=179, Result: PASS`; `npm run test:supabase` 62/62; `npm run test:e2e:cms` 18/18 |
+| `npm run test:migrations` com a `20261102000200`: instalação limpa, upgrade com dados, rollbacks em ordem inversa (duas vezes cada) e reaplicação | Verde em 02/11/2026 |
 
 ## 9. Como aplicar, testar e reverter
 
@@ -383,7 +385,7 @@ npx supabase db push
 
 **Ordem das migrations.** Sequência por timestamp, sem pular: perfis e papéis (0100) → matriz
 RBAC e bucket (0200) → auditoria (0300) → formulários (0400) → conteúdo do CMS (20261025000100)
-→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03) → marcação de produção (20261102000100, ARC-11). Cada uma
+→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03) → marcação de produção (20261102000100, ARC-11) → gravação atômica (20261102000200, TECH-13). Cada uma
 depende só das anteriores. Mudança
 destrutiva em banco com dados é feita em duas releases: primeiro a coluna nova, depois a remoção
 da antiga.

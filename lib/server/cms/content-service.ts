@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -25,6 +25,7 @@
 28/10/2026 Codex                     Propaga códigos fechados de impacto (TECH-13).
  29/10/2026 Vinicius Binda             Troca de slug com 301 em serviço/case e endereço reservado (DB-08).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 02/11/2026 Vinícius Nishimura Reis  Item e relações gravados numa transação (TECH-13, #314).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -251,54 +252,33 @@ export async function saveContent<I extends { slug: string }, T extends CmsItem>
     if (!check.ok) throw publicationError(check.error);
   }
 
-  const saved = current
-    ? await deps.store.update(def.table, current.id, def.toValues(input), current.updatedAt)
-    : await deps.store.insert(def.table, { ...def.toValues(input), status: "draft" });
-  const auditSave = (outcome: "success" | "failure", reason?: string) =>
-    deps.audit({
-      event: current ? "content.updated" : "content.created",
-      resourceId: saved.id,
-      outcome,
-      metadata: {
-        entity: def.type,
-        slug: input.slug,
-        ...(previousSlug ? { previousSlug } : {}),
-        ...(current ? { fromStatus: current.status } : {}),
-        ...(reason ? { reason } : {}),
-      },
-    });
-  const refreshSite = () => {
-    if (current?.status === "published")
-      deps.invalidate(contentChange(def, input.slug, [merged, current], snapshot, now, previousSlug));
-  };
+  // Item e relações entram juntos ou não entram (TECH-13): se falhar, nada mudou, então não há o
+  // que auditar nem cache a renovar.
+  const values = def.toValues(input);
+  const saved = def.relations
+    ? await deps.store.saveWithRelations(
+        def.relations(input),
+        values,
+        current && { id: current.id, expectedUpdatedAt: current.updatedAt },
+      )
+    : current
+      ? await deps.store.update(def.table, current.id, values, current.updatedAt)
+      : await deps.store.insert(def.table, { ...values, status: "draft" });
 
-  try {
-    if (def.links) {
-      await deps.store.syncLinks({
-        table: def.links.table,
-        ownerColumn: def.links.ownerColumn,
-        ownerId: saved.id,
-        otherColumn: def.links.otherColumn,
-        current: current ? def.links.of(current) : [],
-        next: def.links.from(input),
-      });
-    }
-    if (def.afterSave) await def.afterSave(deps.store, saved.id, input);
-  } catch (error) {
-    // Sem transação entre as chamadas: o item já foi gravado e os vínculos não. Registra a
-    // gravação parcial e atualiza o site antes de devolver o erro (TECH-13).
-    await auditSave("failure", "vinculos").catch(() => undefined);
-    refreshSite();
-    throw new AppError(error instanceof AppError ? error.code : "INTERNAL_ERROR", {
-      message: current
-        ? "O texto foi salvo, mas os vínculos (áreas, serviços ou galeria) não. Recarregue a página, confira e salve de novo."
-        : "O rascunho foi criado, mas os vínculos (áreas, serviços ou galeria) não. Abra-o na lista, confira e salve de novo.",
-      cause: error,
-    });
+  await deps.audit({
+    event: current ? "content.updated" : "content.created",
+    resourceId: saved.id,
+    outcome: "success",
+    metadata: {
+      entity: def.type,
+      slug: input.slug,
+      ...(previousSlug ? { previousSlug } : {}),
+      ...(current ? { fromStatus: current.status } : {}),
+    },
+  });
+  if (current?.status === "published") {
+    deps.invalidate(contentChange(def, input.slug, [merged, current], snapshot, now, previousSlug));
   }
-
-  await auditSave("success");
-  refreshSite();
   return { id: saved.id, updatedAt: saved.updatedAt, status: current?.status ?? "draft", created: !current };
 }
 
