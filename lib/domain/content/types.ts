@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Página editável e entidade page (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Id da mídia na referência, só para o painel (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,7 +35,7 @@ export interface Publishable {
   publishedAt: string | null;
   archivedAt?: string | null;
   updatedAt: string;
-  /** Texto provisório (PRJ §40): exibe selo e bloqueia o go-live (GO-01). */
+  /** Texto provisório (PRJ §40): aparece como provisório só no painel e bloqueia o go-live (GO-01). */
   provisional?: boolean;
 }
 

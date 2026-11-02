@@ -28,12 +28,12 @@ portal de login). Suba sem os serviços de log e analytics:
 
 ## Painel e conteúdo
 
-**"Arquivo maior que 4 MB" no envio de mídia.** É o limite do painel, porque a Vercel recusa
-requisições acima de 4,5 MB. Reduza o arquivo (para imagens, exporte em WebP).
+**"Arquivo maior que 5 MB" (ou 10 MB) no envio de mídia.** São os limites de imagem e de PDF. Reduza o
+arquivo (para imagens, exporte em WebP).
 
-**O site mostra "Conteúdo provisório".** Sem Supabase o site usa `content/`; com Supabase, o item
-ainda não foi aprovado pela Benjamin. O gate de release bloqueia conteúdo provisório; não remova o
-gate para publicar.
+**O go-live está bloqueado por conteúdo provisório.** O item ainda não foi aprovado pela Benjamin. O
+site não mostra aviso ao visitante, então confira no painel o que está marcado. Não remova o gate para
+publicar.
 
 **A alteração publicada não aparece na página.** Listas e API atualizam na hora; o detalhe pode
 levar uma requisição. Se persistir, veja o log `content.cache.invalidated` e o

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,10 +18,11 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
-import type { ReactNode } from "react";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { Container } from "./container";
 
 /** Tons de seção do sistema de cores variadas (UX-05), com contraste AA garantido. */
@@ -46,7 +47,8 @@ export function Section({
   containerClassName = "",
   labelledBy,
   children,
-}: {
+  ...rest
+}: ComponentPropsWithoutRef<"section"> & {
   id?: string;
   tone?: SectionTone;
   halftone?: boolean;
@@ -60,8 +62,20 @@ export function Section({
       id={id}
       aria-labelledby={labelledBy}
       className={`relative overflow-hidden py-16 sm:py-24 ${SECTION_TONES[tone]} ${className}`}
+      {...rest}
     >
-      {halftone ? <div aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-60" /> : null}
+      {/* Nos tons verdes a textura ganha movimento (HalftoneWave) quando as animações estão ligadas. */}
+      {halftone ? (
+        tone === "verde" ? (
+          <div
+            aria-hidden
+            data-wave
+            className="halftone pointer-events-none absolute inset-0 opacity-60 motion-on:bg-none motion-on:opacity-100"
+          />
+        ) : (
+          <div aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-60" />
+        )
+      ) : null}
       <Container className={`relative ${containerClassName}`}>{children}</Container>
     </section>
   );

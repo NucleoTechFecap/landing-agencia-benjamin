@@ -14,6 +14,7 @@ gera um novo ADR que **substitui** o anterior (o antigo muda para `Substituída 
 | [0005](0005-armazenamento-de-midia.md) | Armazenamento e otimização de mídia | Aceita | ARC-10 |
 | [0006](0006-cache-e-invalidacao.md) | Cache, invalidação e consistência após publicação | Aceita | TECH-09 |
 | [0007](0007-historico-de-versoes.md) | Histórico de versões do conteúdo (fora do MVP) | Aceita | ADM-17 |
+| [0008](0008-animacoes-com-gsap.md) | Animações do site público com GSAP | Aceita | — |
 
 ## Modelo
 

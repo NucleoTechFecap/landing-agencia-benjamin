@@ -75,7 +75,7 @@ A proposta original, com dono e backup de todas as 211 tarefas, continua em
 | 42 tarefas (35 críticas) concentradas na coordenação técnica | Tarefas de definição (TECH) entregues em S1; implementação de formulários e QA migram para os donos das frentes após o aceite |
 | Formulários (P0) dependem de integrante sem acesso ao GitHub | Vinícius Nishimura Reis assume como backup até o convite ser aceito (GOV-06) |
 | Design sem usuário GitHub | Entregas de UX acontecem no Figma; Caio Moraes registra as validações nas issues UX |
-| Conteúdo depende da Benjamin | Conteúdo provisório versionado e selo "Conteúdo provisório" (CON-13) |
+| Conteúdo depende da Benjamin | Conteúdo provisório versionado, sinalizado no painel e barrado no go-live (CON-13) |
 
 ## 5. Próximos passos para concluir a GOV-07
 

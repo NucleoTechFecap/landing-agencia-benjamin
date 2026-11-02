@@ -123,15 +123,26 @@ O site não usa estes arquivos diretamente. As versões otimizadas ficam em `pub
 | ----- | -------- |
 | `public/brand/logos/` | `logo-horizontal`, `logo-vertical` e `simbolo` em **SVG** (usados no site) e em PNG (imagens Open Graph, JSON-LD e README) |
 | `public/brand/logos/comemorativo/` | `logo-vertical-<cor>.svg` e `simbolo-<cor>.svg` nas cores `rosa`, `azul`, `amarelo` e `arco-iris` |
-| `public/brand/icons/` | 14 ícones × 6 cores em WebP 160 px (`BrandIcon`) |
-| `public/brand/stickers/` | 8 stickers × 5 cores em WebP (`Sticker`) |
+| `public/brand/icons/` | Os 126 ícones do pacote em **SVG**: `<ícone>-<cor>.svg` (`BrandIcon`). O CMS oferece 14 deles (`lib/domain/content/icons.ts`) |
+| `public/brand/stickers/` | Os 40 stickers do pacote em **SVG**: `<sticker>-<cor>.svg` (`Sticker`) |
+| `public/brand/social/` | `instagram`, `tiktok` e `linkedin` em **SVG**, da prancheta de WhatsApp, sem o fundo verde (`SocialLinks`) |
 
 Os ícones do app (`app/icon.png`, `app/apple-icon.png` e `app/favicon.ico`) também saem do
 `simbolo.svg`.
 
-Para usar um ícone ou sticker que ainda não está no site (por exemplo `exclamacao`,
-`interrogacao`, `pp-galo-v1` ou `estrela-8-pontas`), gere o WebP a partir do PNG daqui com
-o mesmo padrão de nome e tamanho dos que já existem em `public/brand/`.
+> O pacote recebido não traz arquivos `.svg`: só `.ai`, `.pdf`, `.png` e `.psd`. Os SVGs são gerados
+> dos `.ai`, que são vetoriais, por isso ficam nítidos em qualquer tamanho.
+
+### Como ícones, stickers e redes sociais foram gerados
+
+Rode `node scripts/brand-vectors.mjs` (requer Inkscape e o módulo Python `scour`). O script importa os
+`.ai`, separa a grade de `assets.ai` em um arquivo por ícone, recorta cada desenho e otimiza o SVG. Se
+o pacote mudar de formato, ele para com um erro em vez de gerar arquivos trocados; as tabelas de
+páginas ficam no início do script. "Café V1" (a xícara com fumaça) está no `.ai`, mas não nas
+exportações oficiais, e por isso não é publicado.
+
+Na geração inicial, os 169 SVGs foram comparados com os PNGs oficiais pixel a pixel: diferença média
+de 0,44 em 255, sem peça trocada. As cores são as do `.ai`, as mesmas dos PNGs.
 
 ### Como os logotipos foram gerados
 

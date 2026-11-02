@@ -56,7 +56,7 @@ daquela rota, sempre como rascunho.
 | ----- | ---------------- | ---------- |
 | Título interno | salvar | Identifica a página no painel e na API |
 | Descrição | — | Até 300 caracteres |
-| Texto provisório | — | Nasce marcado. Desmarque só depois da aprovação da Benjamin: o site mostra um selo e o go-live fica bloqueado enquanto houver texto provisório publicado |
+| Texto provisório | — | Nasce marcado. Desmarque só depois da aprovação da Benjamin: o site não mostra aviso ao visitante, mas o go-live fica bloqueado enquanto houver texto provisório publicado |
 | Blocos | publicar | Ao menos um |
 
 Os blocos são editados um de cada vez, com **Editar**, **Subir**, **Descer** e **Excluir**. Em página
@@ -117,7 +117,7 @@ para a biblioteca** abre esta tela e, depois do envio, volta para o item que voc
 
 | Regra | Valor |
 | ----- | ----- |
-| Formatos | JPG, PNG, WebP, AVIF e PDF, até 4 MB cada. Arquivo maior é recusado antes do envio: reduza (para imagens, exporte em WebP). SVG não é aceito |
+| Formatos | JPG, PNG, WebP e AVIF até 5 MB; PDF até 10 MB. Arquivo maior é recusado antes do envio: reduza (para imagens, exporte em WebP). SVG não é aceito |
 | Tamanho da imagem | Até 4000 px no maior lado; recomendado 2400 px de largura |
 | Texto alternativo | Obrigatório (3 a 160 caracteres), exceto se a imagem for marcada como decorativa |
 

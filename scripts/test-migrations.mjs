@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 28/10/2026
- Modificado em: 28/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  28/10/2026 Vinicius Binda             Criação inicial (DBX-02).
+ 02/11/2026 Vinicius Binda             Trava do seed testada com a marcação real, páginas e galeria (ARC-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -87,6 +88,9 @@ const CONTENT_COUNT = `select string_agg(t || '=' || n, ' ' order by t) from (
   select 'cases', count(*) from public.cases union all
   select 'ctas', count(*) from public.ctas union all
   select 'media_assets', count(*) from public.media_assets union all
+  select 'pages', count(*) from public.pages union all
+  select 'blocks', count(*) from public.blocks union all
+  select 'case_media', count(*) from public.case_media union all
   select 'site_settings', count(*) from public.site_settings) c;`;
 
 const PROJECT_OBJECTS = `select
@@ -131,11 +135,14 @@ supabase("test", "db");
 
 step("2. Seed: trava de produção e reexecução");
 const seed = read("supabase/seed.sql");
-const refused = psql(seed, { before: ["set app.ambiente = 'producao'"] });
+// A marcação de verdade, igual à de produção: comando à parte, gravado e consultado em nova sessão.
+query("insert into public.ambiente_banco (ambiente) values ('producao');");
+const refused = psql(seed);
+query("delete from public.ambiente_banco;");
 if (refused.ok || !refused.err.includes("Seed de desenvolvimento recusado")) {
   fail(`O seed rodou num banco marcado como produção.\n${refused.err}`);
 }
-console.log("  ✓ banco com app.ambiente = 'producao' recusa o seed");
+expectEqual(query(CONTENT_COUNT), seeded, "banco marcado como produção recusa o seed sem inserir nada");
 if (!psql(seed).ok) fail("O seed não roda de novo sem erro.");
 expectEqual(query(CONTENT_COUNT), seeded, "seed reexecutado sem duplicar linhas");
 

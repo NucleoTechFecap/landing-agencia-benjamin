@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 28/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Mensagem de arquivo enviado (ADM-08).
 28/10/2026 Codex                     Adiciona catálogo fechado de avisos (TECH-13).
+ 02/11/2026 Vinícius Nishimura Reis  Tíquete do envio direto de mídia (TECH-13, #313).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -38,6 +39,10 @@ export type CmsFormState =
     };
 
 export const CMS_IDLE: CmsFormState = { status: "idle" };
+
+/** Resposta do primeiro passo do envio de mídia: autorização para mandar os bytes ao Storage. */
+export type MediaUploadTicket =
+  Extract<CmsFormState, { status: "error" }> | { status: "ready"; path: string; token: string };
 
 /** Mensagens exibidas depois do redirecionamento de uma operação concluída (?ok=). */
 export const CMS_FLASH = {
