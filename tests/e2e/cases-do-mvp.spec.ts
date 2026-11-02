@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case Aventura de Construir (CASE-05).
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case Meridiano (CASE-06).
+ 01/11/2026 Vinícius Nishimura Reis  Conformidade do case FECAP (CASE-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -32,7 +33,15 @@ import { expect, test } from "@playwright/test";
 const CASES = [
   { slug: "aventura-de-construir", category: "copywriting", client: "Aventura de Construir" },
   { slug: "meridiano", category: "social-media-e-criacao", client: "Meridiano" },
+  { slug: "fecap", category: "assessoria-de-imprensa", client: "FECAP" },
 ];
+
+test("o case FECAP credita a Agência Benjamin; o NúcleoTech aparece só no crédito da plataforma", async ({ page }) => {
+  await page.goto("/cases/fecap");
+  await expect(page.getByRole("main").getByText("Agência Benjamin").first()).toBeVisible();
+  await expect(page.getByRole("main").getByText(/n[úu]cleo\s*tech/i)).toHaveCount(0);
+  await expect(page.getByRole("contentinfo").getByRole("link", { name: "NúcleoTech FECAP" })).toBeVisible();
+});
 
 for (const { slug, category, client } of CASES) {
   test.describe(`Case ${client}`, () => {

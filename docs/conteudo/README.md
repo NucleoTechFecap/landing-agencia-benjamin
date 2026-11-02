@@ -26,3 +26,4 @@ painel exige para publicar.
 | Assessoria de Imprensa | Categoria de cases | CASE-10 | [categorias/assessoria-de-imprensa.md](categorias/assessoria-de-imprensa.md) | Aprovada (PRJ §12) — materiais dos cases pendentes |
 | Aventura de Construir | Case | CASE-05 | [cases/aventura-de-construir.md](cases/aventura-de-construir.md) | Bloqueado — aguardando material e autorização (CON-06) |
 | Meridiano | Case | CASE-06 | [cases/meridiano.md](cases/meridiano.md) | Bloqueado — aguardando material e autorização (CON-07) |
+| FECAP | Case | CASE-07 | [cases/fecap.md](cases/fecap.md) | Bloqueado — aguardando material e autorização (CON-08) |
