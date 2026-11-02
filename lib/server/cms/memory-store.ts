@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
  29/10/2026 Vinicius Binda             Imita o trigger track_slug: endereços antigos e reservados (DB-08).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 02/11/2026 Vinícius Nishimura Reis  Gravação de item com relações, como no banco (TECH-13, #314).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -206,13 +207,6 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
       return toMediaAsset(row, "https://projeto.supabase.co");
     },
 
-    async syncGallery(caseId, mediaIds) {
-      tables.case_media = [
-        ...tables.case_media.filter((link) => link.case_id !== caseId),
-        ...mediaIds.map((mediaId, index) => ({ case_id: caseId, media_id: mediaId, sort_order: index })),
-      ];
-    },
-
     async retiredSlugs(entity) {
       return tables.slug_redirects
         .filter((row) => row.entity_type === entity)
@@ -268,11 +262,30 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
       tables.blocks = tables.blocks.filter((block) => block.page_id !== id);
     },
 
-    async syncLinks({ table, ownerColumn, ownerId, otherColumn, next }) {
-      const links = tables[table] as unknown as Row[];
-      const kept = links.filter((link) => link[ownerColumn] !== ownerId);
-      const added = next.map((otherId) => ({ [ownerColumn]: ownerId, [otherColumn]: otherId }));
-      (tables as unknown as Record<string, Row[]>)[table] = [...kept, ...added];
+    async saveWithRelations(relations, values, version) {
+      const saved = version
+        ? await store.update(relations.table, version.id, values, version.expectedUpdatedAt)
+        : await store.insert(relations.table, values);
+      if (relations.table === "services") {
+        tables.service_areas = [
+          ...tables.service_areas.filter((link) => link.service_id !== saved.id),
+          ...relations.areaIds.map((areaId) => ({ service_id: saved.id, area_id: areaId })),
+        ];
+      } else {
+        tables.case_services = [
+          ...tables.case_services.filter((link) => link.case_id !== saved.id),
+          ...relations.serviceIds.map((serviceId) => ({ case_id: saved.id, service_id: serviceId })),
+        ];
+        tables.case_media = [
+          ...tables.case_media.filter((link) => link.case_id !== saved.id),
+          ...relations.galleryIds.map((mediaId, index) => ({
+            case_id: saved.id,
+            media_id: mediaId,
+            sort_order: index,
+          })),
+        ];
+      }
+      return saved;
     },
 
     async insertBlock(values) {
