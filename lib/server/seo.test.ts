@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
+ 01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -41,5 +42,28 @@ describe("buildMetadata", () => {
 
   it("título absoluto ignora o template", () => {
     expect(buildMetadata({ ...page, absoluteTitle: true }).title).toEqual({ absolute: "Serviços" });
+  });
+
+  describe("imagem de compartilhamento (SEG-09)", () => {
+    const base = { title: "T", description: "D", path: "/t" };
+
+    it("sem imagem própria usa a da marca: o openGraph da página encobre o arquivo do segmento pai", () => {
+      const metadata = buildMetadata(base);
+      expect(metadata.openGraph?.images).toEqual([expect.objectContaining({ url: "/opengraph-image", width: 1200 })]);
+      expect(metadata.twitter?.images).toEqual(["/twitter-image"]);
+    });
+
+    it("rota com opengraph-image próprio não declara imagem, para o arquivo valer", () => {
+      const metadata = buildMetadata({ ...base, segmentImage: true });
+      expect(metadata.openGraph).not.toHaveProperty("images");
+      expect(metadata.twitter).not.toHaveProperty("images");
+    });
+
+    it("imagem específica tem prioridade", () => {
+      const image = { url: "/capa.png", alt: "Capa" };
+      const metadata = buildMetadata({ ...base, image });
+      expect(metadata.openGraph?.images).toEqual([image]);
+      expect(metadata.twitter?.images).toEqual(["/capa.png"]);
+    });
   });
 });

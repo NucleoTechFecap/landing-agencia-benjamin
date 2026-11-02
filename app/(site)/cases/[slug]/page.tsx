@@ -24,6 +24,7 @@
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
  30/10/2026 Caio Moraes              Galeria mostra a peça inteira, sem corte (CASE-04).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
+ 01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -64,6 +65,7 @@ export async function generateMetadata({ params }: PageProps<"/cases/[slug]">): 
       description: item.summary,
       path: `/cases/${item.slug}`,
       type: "article",
+      segmentImage: true,
       keywords: [item.client, category?.name ?? "", ...services.map((service) => service.name)].filter(Boolean),
     },
     await getSiteSettings(),
