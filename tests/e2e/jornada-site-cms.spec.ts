@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Sufixo de teste com node:crypto (CodeQL).
+ 01/11/2026 Vinícius Nishimura Reis  Espera curta para o toPass recarregar a página (INT-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,6 +35,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 const SUPABASE_URL = process.env.E2E_SUPABASE_URL;
 const SERVICE_KEY = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
 const PUBLISH_BUDGET_MS = 5_000; // ADR-0006: publicação reflete no site em até 5 s
+const READ_TIMEOUT_MS = 500;
 
 const visible = (locator: Locator) => locator.filter({ visible: true });
 
@@ -94,7 +96,11 @@ test.describe("Painel → site · Home e Sobre @cms", () => {
     const tab = await visitor.newPage();
     await expect(async () => {
       await tab.goto(path);
-      await (present ? expect(tab.getByText(text).first()).toBeVisible() : expect(tab.getByText(text)).toHaveCount(0));
+      // Espera curta: a página já carregada não muda. Quem precisa olhar de novo é o toPass, recarregando.
+      const onPage = { timeout: READ_TIMEOUT_MS };
+      await (present
+        ? expect(tab.getByText(text).first()).toBeVisible(onPage)
+        : expect(tab.getByText(text)).toHaveCount(0, onPage));
     }).toPass({ timeout: PUBLISH_BUDGET_MS });
     await visitor.close();
   };
