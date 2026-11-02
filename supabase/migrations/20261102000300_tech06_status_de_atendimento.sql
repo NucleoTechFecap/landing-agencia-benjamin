@@ -2,7 +2,7 @@
 ════════════════════════════════════════════════════════════════════════════════
  Sistema      : Agência Benjamin Landing Page
  Módulo       : Supabase
- Arquivo      : 20261102000100_tech06_status_de_atendimento.sql
+ Arquivo      : 20261102000300_tech06_status_de_atendimento.sql
  Descrição    : O painel altera só o status de atendimento dos envios de formulário.
 
  Desenvolvedor: Vinícius Nishimura Reis
