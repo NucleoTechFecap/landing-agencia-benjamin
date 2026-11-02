@@ -4,8 +4,8 @@
 | ------------ | ------------------------------------------------------------------ |
 | Issue        | GOV-07 (#7)                                                        |
 | Responsável  | Vinícius Nishimura Reis (`@Vinishireis`)                           |
-| Versão       | 1.0.1 — **proposta para consenso da equipe** (situação de 27/10/2026) |
-| Data         | 13/10/2026 · atualização 27/10/2026                                |
+| Versão       | 1.0.2 — **proposta para consenso da equipe** (situação de 02/11/2026) |
+| Data         | 13/10/2026 · atualizações 27/10 e 02/11/2026                       |
 | Fonte        | `Agencia_Benjamin_Backlog_Redistribuido.csv` (211 tarefas) + capacidade informada por integrante |
 
 ## 1. Princípios
@@ -45,24 +45,24 @@
 | Julia Damasio | `Juliadamassio` | 24 | Atribuídas |
 | Murilo Ribeiro Vasconcellos | `murilovasconcellos` | 24 | Atribuídas |
 | Vinícius Binda | `VinnizzZ` | 12 | Atribuídas |
-| Gustavo Duarte Güering | `gueringg` (a confirmar) | 19 | **Convite enviado, ainda não aceito** (27/10) |
+| Gustavo Duarte Güering | `gueringg` (a confirmar) | 19 | **Convite enviado, ainda não aceito** (conferido em 02/11) |
 | Rafael Morais Rocha | `rm-rafael` | 17 | Já é colaborador do repositório; **atribuir após o aceite** |
 | Vinícius Cardoso de Lima | — | 17 | **Sem usuário GitHub informado** |
 | Flávio Santos | — | 16 | **Sem usuário GitHub informado** |
 | Agência Benjamin | — | 13 | Externo — acompanhamento por Flávio |
 | David de Oliveira Lemes | `dolemes` | 0 | Colaborador do repositório, **sem frente na matriz** — definir no checkpoint |
 
-Em 13/10, **69 issues** (33%) não tinham responsável atribuível no GitHub. Em 27/10 são **83 issues
+Em 13/10, **69 issues** (33%) não tinham responsável atribuível no GitHub. Em 02/11 são **80 issues
 abertas sem responsável**, listadas com dono sugerido, login e backup em
 [`atribuicoes-pendentes.csv`](atribuicoes-pendentes.csv):
 
 | Dono sugerido | Issues | O que falta |
 | ------------- | -----: | ----------- |
-| Gustavo Duarte Güering | 19 | Aceitar o convite (`gueringg`) e o aceite da frente |
+| Gustavo Duarte Güering | 17 | Aceitar o convite (`gueringg`) e o aceite da frente |
 | Rafael Morais Rocha | 17 | Aceite da frente (`rm-rafael` já é colaborador) |
 | Flávio Santos | 16 | Usuário GitHub |
 | Vinícius Cardoso de Lima | 15 | Usuário GitHub |
-| Agência Benjamin | 13 | Externo: acompanhadas por Flávio Santos |
+| Agência Benjamin | 12 | Externo: acompanhadas por Flávio Santos |
 | Murilo Vasconcellos / Caio Moraes | 3 | ADM-13, ADM-16 e ADM-18 nunca foram atribuídas; a ADM-13 parece coberta pelo CMS já entregue |
 
 A proposta original, com dono e backup de todas as 211 tarefas, continua em
