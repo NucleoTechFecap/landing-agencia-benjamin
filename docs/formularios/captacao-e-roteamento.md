@@ -53,9 +53,11 @@ flowchart TD
 | `feedback` | `feedback:<perfil>` (`cliente`, `parceiro`, `aluno`, `comunidade`, `outro`) | Alta quando pede retorno; normal nos demais |
 
 - A categoria permite filtros no painel (FORM-09) e métricas futuras sem antecipar um CRM (FUT-01).
-- **Serviço de interesse:** o servidor confere o formato de slug, não a lista de serviços. Serviço que
-  sai do ar com o formulário aberto não recusa o pedido; valor forjado (`lead:<qualquer texto>`) é
-  recusado na validação.
+- **Serviço de interesse:** a validação confere o formato de slug e recusa texto livre. Depois, o
+  servidor confere a lista de serviços do site: valor que não está nela não vira categoria, e o pedido
+  entra como `lead:nao-sei`, com o valor enviado no conteúdo. Assim, um serviço que sai do ar com o
+  formulário aberto não recusa o pedido, e ninguém cria categorias como `lead:urgente-diretoria`.
+- **Nome e empresa:** ficam em uma linha, porque entram no assunto e em linhas fixas do e-mail interno.
 - **Prioridade:** aparece no e-mail interno e não é gravada no banco no MVP.
 - **Protocolo:** identifica o envio para as pessoas, derivado dos 6 primeiros caracteres do `id`. Não é
   chave única: a chave é o `id`.
@@ -131,7 +133,9 @@ grava direto: a gravação é do servidor, depois da validação.
 | -------- | ------- | ------------------ |
 | **Positivo** | Pedido de vídeo vira `lead:audiovisual`, notifica o destinatário comercial, devolve protocolo e o `admin` consulta e altera o status | `jornada-lead.test.ts`, `formularios.test.ts`, `form_submissions_rls.test.sql` |
 | **Negativa de acesso** | `editor`, `viewer`, `super_admin` e conta pendente: 0 linhas e nada alterado. Visitante: `42501`. `admin` tentando reescrever `payload`, `kind`, `category` ou `notification_status`: `42501` | `formularios.test.ts` (Auth e RLS reais), `form_submissions_rls.test.sql` |
-| **Borda** | Serviço forjado recusado; serviço fora do ar aceito | `schemas.test.ts` |
+| **Borda** | Texto livre no serviço recusado; serviço fora do ar aceito | `schemas.test.ts` |
+| | Slug que não está na lista vira `lead:nao-sei`, com o pedido aceito, mesmo se a consulta à lista falhar | `submission-service.test.ts` |
+| | Quebra de linha em nome e empresa não forja linhas no e-mail | `schemas.test.ts` |
 | | Feedback anônimo sem `Reply-To`; mesma mensagem em tipos diferentes não é tratada como duplicada | `jornada-lead.test.ts` |
 | | 20 envios esgotados não bloqueiam o reenvio de um novo (S13) | `submission-service.test.ts`, `formularios.test.ts` |
 | | Com só `feedback:view`, o `admin` vê feedback e não vê lead nem contato; com só `lead:view`, o inverso | `form_submissions_rls.test.sql` |

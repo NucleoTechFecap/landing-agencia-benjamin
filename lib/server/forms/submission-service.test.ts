@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-07).
  02/11/2026 Vinícius Nishimura Reis  Tentativas esgotadas fora da fila (TECH-06).
+ 02/11/2026 Vinícius Nishimura Reis  Serviço forjado e falha ao consultar a lista (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -79,6 +80,33 @@ beforeEach(() => {
     now: () => now,
     siteUrl: "https://benjamin.test",
   };
+});
+
+describe("serviço de interesse (TECH-06)", () => {
+  const withService = (serviceInterest: string) => lead({ serviceInterest });
+
+  it("serviço da lista vira categoria", async () => {
+    deps.serviceName = async (slug) => (slug === "audiovisual" ? "Audiovisual" : undefined);
+    await processSubmission("lead", withService("audiovisual"), context, deps);
+    expect((await store.findById(ID))?.category).toBe("lead:audiovisual");
+  });
+
+  it("valor forjado em formato de slug não vira categoria, nem no e-mail, e o pedido segue", async () => {
+    deps.serviceName = async () => undefined;
+    const result = await processSubmission("lead", withService("urgente-diretoria"), context, deps);
+    expect(result.status).toBe("success");
+    const record = await store.findById(ID);
+    expect(record?.category).toBe("lead:nao-sei");
+    expect(record?.payload).toMatchObject({ serviceInterest: "urgente-diretoria" });
+    expect(notifier.sent[0].text).toContain("Categoria: lead:nao-sei");
+  });
+
+  it("falha ao consultar a lista não perde o pedido", async () => {
+    deps.serviceName = async () => Promise.reject(new Error("CMS fora"));
+    const result = await processSubmission("lead", withService("audiovisual"), context, deps);
+    expect(result.status).toBe("success");
+    expect((await store.findById(ID))?.category).toBe("lead:nao-sei");
+  });
 });
 
 describe("processSubmission — cenários (TECH-07)", () => {

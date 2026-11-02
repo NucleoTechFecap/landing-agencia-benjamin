@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-07).
  13/10/2026 Vinícius Nishimura Reis  Tipo de estado movido para o domínio (estrutura da landing).
+ 02/11/2026 Vinícius Nishimura Reis  Confere o serviço na lista antes de gravar a categoria (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -141,7 +142,7 @@ export async function processSubmission(
       if (recent >= RATE_LIMIT.max) throw new AppError("RATE_LIMITED", { internal: { recent } });
     }
 
-    const decision = routeSubmission(input);
+    const decision = routeSubmission(input, await serviceExists(input, deps));
     const record: SubmissionRecord = {
       id: submissionId,
       protocol,
@@ -185,9 +186,27 @@ export async function processSubmission(
   }
 }
 
+/**
+ * O serviço de interesse está na lista do site? Falha ao consultar conta como "não": a categoria
+ * cai em `nao-sei`, mas o pedido nunca é perdido, e o valor enviado continua no conteúdo do envio.
+ */
+async function serviceExists(input: SubmissionInput, deps: SubmissionDeps): Promise<boolean> {
+  if (input.kind !== "lead" || !input.data.serviceInterest || !deps.serviceName) return true;
+  try {
+    return Boolean(await deps.serviceName(input.data.serviceInterest));
+  } catch (error) {
+    logger.warn("forms.submission.service_lookup_failed", {
+      submissionId: input.data.submissionId,
+      cause: String(error),
+    });
+    return false;
+  }
+}
+
 /** Envia a notificação e registra o resultado; erros nunca sobem para o visitante. */
 async function deliverNotification(record: SubmissionRecord, input: SubmissionInput, deps: SubmissionDeps) {
-  const decision = routeSubmission(input);
+  // A categoria que vale é a gravada, inclusive no reenvio, quando a lista de serviços pode ter mudado.
+  const decision = { ...routeSubmission(input), category: record.category };
   const recipients = resolveRecipients(decision, deps.recipients);
   const attempts = record.notificationAttempts + 1;
   const updatedAt = deps.now().toISOString();
