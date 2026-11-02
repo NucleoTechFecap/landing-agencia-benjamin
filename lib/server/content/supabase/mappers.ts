@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,6 +23,7 @@
  26/10/2026 Vinícius Nishimura Reis  Montagem do snapshot compartilhada com o painel (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Id da mídia na referência, só para o painel (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
+ 01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -239,6 +240,20 @@ export function toPage(row: PageRow, blocks: readonly BlockRow[]): { page: Page;
     },
     problems,
   };
+}
+
+/** Páginas com os blocos de cada uma. Bloco inválido não entra e volta em `problems`. */
+export function assemblePages(
+  pages: readonly PageRow[],
+  blocks: readonly BlockRow[],
+): { pages: Page[]; problems: string[] } {
+  const assembled = pages.map((row) =>
+    toPage(
+      row,
+      blocks.filter((block) => block.page_id === row.id),
+    ),
+  );
+  return { pages: assembled.map((item) => item.page), problems: assembled.flatMap((item) => item.problems) };
 }
 
 /** Configuração institucional do banco; seções jsonb inválidas usam o valor de referência. */

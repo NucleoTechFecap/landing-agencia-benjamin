@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,6 +23,7 @@
  26/10/2026 Vinícius Nishimura Reis  Link para o CMS de serviços (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Links para cases e biblioteca de mídia (ADM-08).
  29/10/2026 Caio Moraes              Cores via tokens do tema (ADM-04).
+ 01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,7 +35,13 @@ import { requirePageAccess } from "@/lib/server/auth/guards";
 export const metadata: Metadata = { title: "Início" };
 
 const MODULES: { name: string; issue: string; resource: Resource; action: Action; href?: string }[] = [
-  { name: "Páginas e textos institucionais", issue: "ADM-05", resource: "page", action: "view" },
+  {
+    name: "Páginas e textos institucionais",
+    issue: "ADM-05",
+    resource: "page",
+    action: "view",
+    href: "/admin/paginas",
+  },
   { name: "Serviços", issue: "ADM-06", resource: "service", action: "view", href: "/admin/servicos" },
   { name: "Áreas de atuação", issue: "ADM-07", resource: "area", action: "view", href: "/admin/areas" },
   { name: "Cases e categorias", issue: "ADM-08", resource: "case", action: "view", href: "/admin/cases" },
