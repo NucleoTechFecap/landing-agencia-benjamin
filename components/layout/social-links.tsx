@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 01/11/2026 Vinícius Nishimura Reis  Endereço sem mapa e redes vazias no rodapé (LAY-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -41,6 +42,7 @@ const ICONS: Record<keyof SocialLinksData, { label: string; path: string }> = {
 /** Links oficiais de Instagram, TikTok e LinkedIn (PRJ §16), abrindo em nova aba. */
 export function SocialLinks({ socials, className = "" }: { socials: SocialLinksData; className?: string }) {
   const entries = (Object.keys(ICONS) as (keyof SocialLinksData)[]).filter((key) => socials[key]);
+  if (!entries.length) return null;
   return (
     <ul className={`flex items-center gap-3 ${className}`}>
       {entries.map((key) => (

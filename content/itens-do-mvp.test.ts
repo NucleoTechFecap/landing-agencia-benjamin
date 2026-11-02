@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -29,6 +29,7 @@
  26/10/2026 Vinícius Nishimura Reis  Item Copywriting (CASE-08).
  26/10/2026 Vinícius Nishimura Reis  Item Social Media & Criação (CASE-09).
  26/10/2026 Vinícius Nishimura Reis  Categoria Assessoria de Imprensa e imports organizados (CASE-10).
+ 01/11/2026 Vinícius Nishimura Reis  Conformidade do case Aventura de Construir (CASE-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,6 +37,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { validateAreaForPublish } from "../lib/domain/content/area-schema";
+import { validateCaseForPublish } from "../lib/domain/content/case-schema";
 import { categoryInputSchema } from "../lib/domain/content/category-schema";
 import { isBrandIcon } from "../lib/domain/content/icons";
 import { isValidExternalUrl, resolveCtaHref } from "../lib/domain/content/integrity";
@@ -45,7 +47,7 @@ import { isPubliclyVisible, visibleSorted } from "../lib/domain/content/visibili
 import { seedSnapshot } from "./index";
 
 /*
- * Um bloco por item das tasks de conteúdo (SOB-08…10, SERV-06…11, CASE-08…10). Cada item é
+ * Um bloco por item das tasks de conteúdo (SOB-08…10, SERV-06…11, CASE-05…10). Cada item é
  * conferido como o site e o painel o usam: publicável pelas regras do CMS, ícone oficial,
  * relações (área ↔ serviços, serviço ↔ cases, categoria ↔ cases), CTA de contato e mídia
  * sem link quebrado. O texto é provisório até a aprovação da Benjamin (CON-05) e as fichas
@@ -161,6 +163,47 @@ function checkCategory(slug: string, expected: { cases: string[] }) {
   });
 }
 
+function checkCase(
+  slug: string,
+  expected: { category: string; services: string[]; provisional: boolean; material: boolean },
+) {
+  describe(`case ${slug}`, () => {
+    const item = cases.find((entry) => entry.slug === slug)!;
+
+    it("existe e cumpre as regras de publicação do painel (CASE-11)", () => {
+      expect(item).toBeDefined();
+      expect(isValidSlug(item.slug)).toBe(true);
+      expect(validateCaseForPublish(item)).toEqual([]);
+    });
+
+    it("está na categoria e nos serviços combinados, todos publicados", () => {
+      const category = categories.find((entry) => entry.id === item.categoryId)!;
+      expect(category.slug).toBe(expected.category);
+      expect(isPubliclyVisible(category)).toBe(true);
+      const linked = services.filter((service) => item.serviceIds.includes(service.id));
+      expect(linked.map((service) => service.slug).sort()).toEqual([...expected.services].sort());
+      expect(linked.every((service) => isPubliclyVisible(service))).toBe(true);
+    });
+
+    it("não tem mídia quebrada nem link sem https", () => {
+      expect(existsSync(join(process.cwd(), "public", item.cover!.src))).toBe(true);
+      expect(item.externalLinks.every((link) => isValidExternalUrl(link.url))).toBe(true);
+    });
+
+    it(expected.provisional ? "segue provisório até a aprovação (CON-05)" : "está aprovado", () => {
+      expect(Boolean(item.provisional)).toBe(expected.provisional);
+    });
+
+    if (!expected.material) {
+      it("sem material autorizado, não apresenta nada como trabalho real do cliente", () => {
+        expect(item.cover!.alt).toMatch(/provisória/i);
+        for (const field of [item.challenge, item.solution, item.results, item.date]) expect(field).toBeUndefined();
+        expect([...item.gallery, ...item.externalLinks, ...item.team]).toEqual([]);
+      });
+    }
+  });
+}
+
 describe("itens de conteúdo do MVP", () => {
   checkArea("copywriting", {
     order: 4,
@@ -217,4 +260,10 @@ describe("itens de conteúdo do MVP", () => {
   checkCategory("copywriting", { cases: ["aventura-de-construir"] });
   checkCategory("social-media-e-criacao", { cases: ["meridiano"] });
   checkCategory("assessoria-de-imprensa", { cases: ["fecap"] });
+  checkCase("aventura-de-construir", {
+    category: "copywriting",
+    services: ["copywriting", "producao-de-conteudo"],
+    provisional: true,
+    material: false,
+  });
 });
