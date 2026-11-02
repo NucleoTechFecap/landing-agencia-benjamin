@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-03).
  13/10/2026 Vinícius Nishimura Reis  Home completa com seções e conteúdo do repositório (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
+ 01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,6 +35,7 @@ import type { BrandIconColor } from "@/components/ui/brand-icon";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Section } from "@/components/ui/section";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { EmptyState } from "@/components/ui/states";
 import { getSiteSettings, listAreas, listCtas, listFeaturedCases, listServices } from "@/lib/server/content/repository";
 import { DEFAULT_TITLE, buildMetadata } from "@/lib/server/seo";
 
@@ -66,10 +68,12 @@ export default async function HomePage() {
 
   const toLinks = (ctas: typeof heroCtas) =>
     ctas.map((cta) => ({ id: cta.id, label: cta.label, href: cta.link.href, external: cta.link.external }));
-  const solutionsSummary = `${allServices.length} serviços — ${allServices
-    .slice(0, 4)
-    .map((service) => service.name)
-    .join(", ")} e mais.`;
+  const solutionsSummary = allServices.length
+    ? `${allServices.length} serviços — ${allServices
+        .slice(0, 4)
+        .map((service) => service.name)
+        .join(", ")} e mais.`
+    : "Nossos serviços estão sendo atualizados.";
 
   return (
     <>
@@ -84,13 +88,17 @@ export default async function HomePage() {
           title="Seis frentes, um mesmo time."
           description="Cada projeto combina as áreas certas para o objetivo da sua marca."
         />
-        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {areas.map((area, index) => (
-            <li key={area.id}>
-              <AreaCard area={area} color={AREA_COLORS[index % AREA_COLORS.length]} />
-            </li>
-          ))}
-        </ul>
+        {areas.length > 0 ? (
+          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {areas.map((area, index) => (
+              <li key={area.id}>
+                <AreaCard area={area} color={AREA_COLORS[index % AREA_COLORS.length]} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState className="mt-10">As áreas de atuação estão sendo atualizadas. Volte em breve!</EmptyState>
+        )}
       </Section>
 
       <Section tone="nyanza" labelledBy="servicos-titulo">
@@ -105,13 +113,17 @@ export default async function HomePage() {
             Ver todos os serviços
           </ButtonLink>
         </div>
-        <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {featuredServices.map((service, index) => (
-            <li key={service.id}>
-              <ServiceCard service={service} index={index} />
-            </li>
-          ))}
-        </ul>
+        {featuredServices.length > 0 ? (
+          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredServices.map((service, index) => (
+              <li key={service.id}>
+                <ServiceCard service={service} index={index} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState className="mt-10">Os serviços em destaque estão sendo atualizados. Volte em breve!</EmptyState>
+        )}
       </Section>
 
       <Section tone="verde" halftone labelledBy="cases-titulo">
@@ -135,9 +147,7 @@ export default async function HomePage() {
             ))}
           </ul>
         ) : (
-          <p className="mt-10 rounded-3xl border-2 border-dashed border-benja-nyanza/60 p-8 text-center">
-            Os primeiros cases estão sendo preparados. Volte em breve!
-          </p>
+          <EmptyState className="mt-10">Os primeiros cases estão sendo preparados. Volte em breve!</EmptyState>
         )}
       </Section>
 
