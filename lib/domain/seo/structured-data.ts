@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
  26/10/2026 Vinícius Nishimura Reis  Logotipos em /brand/logos (UX-14).
+ 01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -117,7 +118,8 @@ export function caseSchema(item: CaseStudy, categoryName: string | undefined, se
     genre: categoryName,
     keywords: services.map((service) => service.name).join(", "),
     inLanguage: "pt-BR",
-    ...(item.cover ? { image: `${siteUrl}${item.cover.src}` } : {}),
+    // A capa do Storage já é uma URL absoluta; só a de /public recebe o domínio do site.
+    ...(item.cover ? { image: new URL(item.cover.src, siteUrl).href } : {}),
     ...(item.date ? { dateCreated: item.date } : {}),
     ...(item.publishedAt ? { datePublished: item.publishedAt } : {}),
   };
