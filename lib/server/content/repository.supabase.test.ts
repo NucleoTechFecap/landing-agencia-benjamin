@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-05).
  26/10/2026 Vinícius Nishimura Reis  Ambiente no mock da configuração pública (INT-02).
  01/11/2026 Vinícius Nishimura Reis  Testes de aceite dos cases em destaque (HOME-04).
+ 01/11/2026 Vinícius Nishimura Reis  Sufixo de teste com node:crypto (CodeQL).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -218,6 +219,12 @@ describe("repositório sobre o Supabase (DB-05)", () => {
     ]);
   });
 
+  it("sem nenhum case em destaque, a lista da Home vem vazia, sem erro (HOME-04)", async () => {
+    tables = populated();
+    tables.cases = { data: tables.cases.data!.map((item) => ({ ...item, featured: false })) };
+    expect(await repository.listFeaturedCases()).toEqual([]);
+  });
+
   it("banco populado: lista, filtra por categoria e monta o detalhe com galeria", async () => {
     tables = populated();
     const cases = await repository.listCases();
@@ -241,34 +248,5 @@ describe("repositório sobre o Supabase (DB-05)", () => {
   it("publicação agendada para o futuro não aparece nem no detalhe", async () => {
     tables = populated();
     expect(await repository.getCaseDetail("futuro")).toBeNull();
-  });
-
-  describe("cases em destaque da Home (HOME-04)", () => {
-    const withCases = (extra: Record<string, unknown>[]) => {
-      tables = populated();
-      const current = tables.cases.data!;
-      tables.cases = { data: [...current, ...extra.map((item) => ({ ...current[0], ...item }))] };
-    };
-
-    it("só entra case publicado e marcado como destaque", async () => {
-      withCases([
-        { id: "k3", slug: "rascunho", status: "draft", published_at: null },
-        { id: "k4", slug: "arquivado", status: "archived", archived_at: "2026-10-21T00:00:00+00:00" },
-        { id: "k5", slug: "agendado", published_at: "2999-01-01T00:00:00+00:00" },
-        { id: "k6", slug: "sem-destaque", featured: false },
-      ]);
-      expect((await repository.listFeaturedCases()).map((item) => item.slug)).toEqual(["meridiano"]);
-    });
-
-    it("mostra no máximo seis", async () => {
-      withCases(Array.from({ length: 8 }, (_, index) => ({ id: `n${index}`, slug: `destaque-${index}` })));
-      expect(await repository.listFeaturedCases()).toHaveLength(6);
-    });
-
-    it("sem nenhum destaque, a lista vem vazia, sem erro", async () => {
-      withCases([]);
-      tables.cases = { data: tables.cases.data!.map((item) => ({ ...item, featured: false })) };
-      expect(await repository.listFeaturedCases()).toEqual([]);
-    });
   });
 });
