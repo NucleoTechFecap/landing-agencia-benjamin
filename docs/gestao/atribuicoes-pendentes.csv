@@ -1,5 +1,4 @@
 Issue,ID,Título,Dono sugerido,GitHub,Backup,Observação
-15,CON-02,Solicitar e receber manifesto definitivo,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
 16,CON-03,Solicitar e receber apresentação institucional e Sobre,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
 17,CON-04,Validar textos finais das seis áreas de atuação,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
 18,CON-05,Receber descrição final dos nove serviços,Agência Benjamin — Melissa Namie / Renan Hida,—,Julia Damásio,Externo — acompanhamento por Flávio Santos
@@ -29,8 +28,6 @@ Issue,ID,Título,Dono sugerido,GitHub,Backup,Observação
 197,GO-07,Realizar verificação final e aceite institucional,Flávio Santos,—,Vinícius Binda,Sem usuário GitHub informado
 200,GO-10,Atualizar vitrine pública do projeto no NúcleoTech,Flávio Santos,—,Vinícius Binda,Sem usuário GitHub informado
 201,GO-11,"Planejar suporte, correções e evolução após lançamento",Flávio Santos,—,Vinícius Binda,Sem usuário GitHub informado
-62,DB-06,Implementar criação e consulta segura de leads,Gustavo Duarte Güering,gueringg (a confirmar),Murilo Ribeiro Vasconcellos,"Convite enviado, ainda não aceito"
-63,DB-07,Implementar criação e consulta segura de feedbacks,Gustavo Duarte Güering,gueringg (a confirmar),Murilo Ribeiro Vasconcellos,"Convite enviado, ainda não aceito"
 69,FORM-03,Implementar formulário de novos clientes e projetos,Gustavo Duarte Güering,gueringg (a confirmar),Vinícius Nishimura Reis,"Convite enviado, ainda não aceito"
 70,FORM-04,Implementar formulário institucional de contato,Gustavo Duarte Güering,gueringg (a confirmar),Vinícius Nishimura Reis,"Convite enviado, ainda não aceito"
 71,FORM-05,Implementar formulário de feedback,Gustavo Duarte Güering,gueringg (a confirmar),Vinícius Nishimura Reis,"Convite enviado, ainda não aceito"
