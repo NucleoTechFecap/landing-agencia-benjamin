@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,11 +18,11 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { SiteSettings } from "@/lib/domain/content/types";
-import { ProvisionalBadge } from "../ui/badge";
 import { BrandIcon } from "../ui/brand-icon";
 import { ButtonLink } from "../ui/button-link";
 import { Section } from "../ui/section";
@@ -45,13 +45,16 @@ export function AboutPreview({ settings, solutionsSummary }: { settings: SiteSet
           Conheça a agência
         </ButtonLink>
       </div>
-      {about.provisional ? <ProvisionalBadge className="mt-4" /> : null}
-      <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <ul data-motion="cards" className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {topics.map((topic) => (
-          <li key={topic.title} className="rounded-3xl border-2 border-benja-noite bg-white/60 p-6">
-            <BrandIcon name={topic.icon} color="lima" size={56} />
-            <h3 className="mt-4 text-lg font-black text-benja-verde">{topic.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-benja-grafite">{topic.text}</p>
+          <li key={topic.title}>
+            <div data-card="soft" className="h-full rounded-3xl border-2 border-benja-noite bg-white/60 p-6">
+              <span data-card-icon className="block w-fit">
+                <BrandIcon name={topic.icon} color="lima" size={56} />
+              </span>
+              <h3 className="mt-4 text-lg font-black text-benja-verde">{topic.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-benja-grafite">{topic.text}</p>
+            </div>
           </li>
         ))}
       </ul>

@@ -2,7 +2,8 @@
 
 O painel (`/admin`) deixa a equipe da Benjamin manter **páginas e blocos, manifesto, texto Sobre, áreas
 de atuação, serviços, categorias, cases e a biblioteca de mídia** sem deploy. O site lê do Supabase só o que está publicado. O conteúdo
-versionado em `content/` serve de fallback de desenvolvimento e de fonte do seed.
+versionado em `content/` serve de fallback de desenvolvimento e de fonte de parte do seed (os cases do
+seed são fictícios).
 
 ## Páginas e textos do site
 
@@ -41,7 +42,8 @@ sem passar pela Vercel, que recusa requisições acima de 4,5 MB. Toda imagem pr
 
 ## Conteúdo provisório e aprovação da agência
 
-Os textos atuais são provisórios e aparecem com o selo "Conteúdo provisório" até a Benjamin aprovar.
+Os textos atuais são provisórios até a Benjamin aprovar. O painel sinaliza esses itens; o site público
+não exibe selo.
 Cada item tem uma ficha de aprovação em
 [`docs/conteudo/`](https://github.com/NucleoTechFecap/landing-agencia-benjamin/tree/main/docs/conteudo).
 O gate de release (`npm run check:release-content`) **bloqueia a publicação** enquanto houver item

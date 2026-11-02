@@ -3,14 +3,14 @@
  Sistema      : Agência Benjamin Landing Page
  Módulo       : Tests
  Arquivo      : cases-do-mvp.spec.ts
- Descrição    : Cases do MVP sem material autorizado: filtro, selo e campos omitidos.
+ Descrição    : Cases do MVP sem material autorizado: filtro e campos omitidos, sem selo no site.
 
  Desenvolvedor: Vinícius Nishimura Reis
 
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case Aventura de Construir (CASE-05).
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case Meridiano (CASE-06).
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case FECAP (CASE-07).
+ 02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -27,7 +28,7 @@ import { expect, test } from "@playwright/test";
 
 /**
  * Cada case do MVP como o visitante o encontra, em celular e desktop, enquanto o material autorizado
- * não chega (CASE-05 a CASE-07): filtro, selo de provisório e nada de campo vazio como resultado real.
+ * não chega (CASE-05 a CASE-07): filtro e nada de campo vazio como resultado real.
  * Quando o case receber o material, ajuste a entrada dele aqui.
  */
 const CASES = [
@@ -53,10 +54,10 @@ for (const { slug, category, client } of CASES) {
       await expect(page).toHaveURL(new RegExp(`/cases/${slug}$`));
     });
 
-    test("deixa claro que é provisório e não mostra campo vazio como resultado", async ({ page }) => {
+    test("não mostra selo de provisório nem campo vazio como resultado", async ({ page }) => {
       await page.goto(`/cases/${slug}`);
       const main = page.getByRole("main");
-      await expect(main.getByText("Conteúdo provisório").first()).toBeVisible();
+      await expect(main.getByText("Conteúdo provisório")).toHaveCount(0);
       await expect(main.getByText("Os detalhes deste case")).toBeVisible();
       for (const name of ["Desafio", "Solução", "Resultados", "Galeria", "Veja publicado", "Equipe"]) {
         await expect(main.getByRole("heading", { name, exact: true })).toHaveCount(0);

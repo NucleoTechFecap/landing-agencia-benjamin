@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  25/10/2026 Caio Moraes              Serviço pré-selecionado também após navegar (SERV-02).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -73,6 +74,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contato"
         <div className="grid gap-10 lg:grid-cols-[1fr_1.6fr]">
           <aside
             aria-label="Outros canais"
+            data-motion="reveal"
             className="h-fit space-y-6 rounded-3xl border-2 border-benja-noite bg-benja-claro p-7 shadow-sticker"
           >
             <BrandIcon name="enviado" color="verde" size={64} />
@@ -112,6 +114,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contato"
           </aside>
           <div
             id="formulario"
+            data-motion="reveal"
             className="scroll-mt-28 rounded-3xl border-2 border-benja-noite bg-white/70 p-6 shadow-sticker-lg sm:p-8"
           >
             <h2 id="formulario-titulo" className="sr-only">

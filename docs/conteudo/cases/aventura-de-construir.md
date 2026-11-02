@@ -14,8 +14,8 @@ nem na issue de recebimento. Por isso o case não tem desafio, solução, result
 de preenchê-los com conteúdo inventado. A capa é uma ilustração provisória da marca.
 
 Pela regra de [campos do case](../../negocio/campos-do-case.md#3-status-de-publicação-do-case), case sem
-material validado fica em rascunho. No conteúdo versionado ele ainda está publicado com o selo "Conteúdo
-provisório", e o go-live segue bloqueado enquanto isso não mudar
+material validado fica em rascunho. No conteúdo versionado ele ainda está publicado como provisório, e o
+go-live segue bloqueado enquanto isso não mudar
 ([go/no-go](../../operacao/go-no-go.md), item E4).
 
 ## Campos no painel

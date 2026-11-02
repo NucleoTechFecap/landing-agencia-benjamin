@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -100,7 +101,7 @@ export default async function HomePage() {
           description="Cada projeto combina as áreas certas para o objetivo da sua marca."
         />
         {areas.length > 0 ? (
-          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul data-motion="cards" className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {areas.map((area, index) => (
               <li key={area.id}>
                 <AreaCard area={area} color={AREA_COLORS[index % AREA_COLORS.length]} />
@@ -125,7 +126,7 @@ export default async function HomePage() {
           </ButtonLink>
         </div>
         {featuredServices.length > 0 ? (
-          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul data-motion="cards" className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {featuredServices.map((service, index) => (
               <li key={service.id}>
                 <ServiceCard service={service} index={index} />
@@ -150,7 +151,7 @@ export default async function HomePage() {
           </ButtonLink>
         </div>
         {featuredCases.length > 0 ? (
-          <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ul data-motion="cards" className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {featuredCases.map((item) => (
               <li key={item.id}>
                 <CaseCard item={item} />

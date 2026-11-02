@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Testes de aceite da página Sobre (SOB-01).
+ 02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,9 +35,10 @@ test.describe("Página Sobre", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
   });
 
-  test("texto ainda sem aprovação aparece com o selo, não como final", async ({ page }) => {
+  test("texto ainda sem aprovação não exibe selo no site: fica sinalizado no painel", async ({ page }) => {
     await page.goto("/sobre");
-    await expect(page.getByText("Conteúdo provisório").first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByText("Conteúdo provisório")).toHaveCount(0);
   });
 
   test("a quantidade de áreas confere com o título da seção", async ({ page }) => {

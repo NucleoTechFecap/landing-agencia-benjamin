@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Testes de aceite da proposta de valor (SOB-02).
+ 02/11/2026 Vinícius Nishimura Reis  Ajuste à entrada animada dos cards (GSAP).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -43,9 +44,13 @@ test.describe("Sobre · proposta de valor e modelo de atuação", () => {
   test("lado a lado no desktop, empilhados no celular, sem rolagem lateral", async ({ page, isMobile }) => {
     await page.goto("/sobre");
     const pillars = page.locator(section).getByRole("listitem");
-    const [first, second] = [(await pillars.nth(0).boundingBox())!, (await pillars.nth(1).boundingBox())!];
-    if (isMobile) expect(second.x).toBe(first.x);
-    else expect(second.y).toBe(first.y);
+    // Os cards entram com transformação (ADR-0008): a posição vale depois da entrada.
+    await expect
+      .poll(async () => {
+        const [first, second] = [(await pillars.nth(0).boundingBox())!, (await pillars.nth(1).boundingBox())!];
+        return Math.abs(isMobile ? second.x - first.x : second.y - first.y);
+      })
+      .toBeLessThan(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
   });
 });

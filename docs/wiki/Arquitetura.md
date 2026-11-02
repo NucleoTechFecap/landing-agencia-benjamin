@@ -12,7 +12,7 @@ formulários vivem no mesmo projeto e compartilham regras de domínio explícita
 | `app/api/v1/` | API pública de leitura (somente conteúdo publicado) |
 | `app/api/internal/` | Rotas operacionais autenticadas por segredo (revalidação, jobs) |
 | `components/` | Interface reutilizável; nunca importa `lib/server` |
-| `content/` | Conteúdo versionado: fallback de desenvolvimento e fonte do seed |
+| `content/` | Conteúdo versionado: fallback de desenvolvimento e fonte das áreas, serviços e CTAs do seed |
 | `lib/domain/` | Regras puras: publicação, integridade, permissões, formulários, mídia |
 | `lib/server/` | I/O: Supabase, sessão, CMS, auditoria, cache, notificações |
 | `lib/config/` | Leitura e validação das variáveis de ambiente |

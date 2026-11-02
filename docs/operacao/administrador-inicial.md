@@ -9,6 +9,9 @@
 | Depende de   | ADM-02 (autenticação), ADM-03 (proteção), CON-10 (indicação dos representantes) |
 | Ferramenta   | `scripts/provision-admin.mjs` (+ testes)                              |
 
+> **Desenvolvimento local:** não precisa de convite. Use `npm run seed:users`, que só funciona no
+> Supabase local ([Começando](../wiki/Começando.md)).
+
 ## 1. Regras
 
 1. **Ninguém compartilha senha.** A conta é criada por convite; a pessoa define a própria senha pelo
