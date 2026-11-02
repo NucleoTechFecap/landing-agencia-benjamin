@@ -21,12 +21,12 @@
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  28/10/2026 Caio Moraes              Estado vazio com link para limpar os filtros (CASE-03).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
+ 01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/server/seo";
-import Link from "next/link";
 import { Suspense } from "react";
 import { CaseCard } from "@/components/cards/case-card";
 import { CaseFilters, type ActiveFilters } from "@/components/sections/case-filters";
@@ -35,6 +35,7 @@ import { PageBlocks } from "@/components/sections/page-blocks";
 import { PageHero } from "@/components/sections/page-hero";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Section } from "@/components/ui/section";
+import { CardsSkeleton, EmptyState, LoadingState } from "@/components/ui/states";
 import { siteUrl } from "@/lib/config/public-env";
 import { isValidSlug } from "@/lib/domain/content/slug";
 import { itemListSchema } from "@/lib/domain/seo/structured-data";
@@ -88,7 +89,14 @@ export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
           Lista de cases
         </h2>
         {/* Os filtros dependem da URL: ficam atrás de Suspense (Cache Components). */}
-        <Suspense fallback={<p className="font-bold">Carregando cases…</p>}>
+        <Suspense
+          fallback={
+            <>
+              <LoadingState label="Carregando cases…" />
+              <CardsSkeleton className="mt-6" />
+            </>
+          }
+        >
           <FilteredCases searchParams={searchParams} />
         </Suspense>
       </Section>
@@ -133,6 +141,7 @@ async function FilteredCases({ searchParams }: Pick<PageProps<"/cases">, "search
     client: active.cliente,
   });
   const option = (item: { slug: string; name: string }) => ({ slug: item.slug, name: item.name });
+  const filtered = Object.values(active).some(Boolean);
 
   return (
     <>
@@ -155,12 +164,14 @@ async function FilteredCases({ searchParams }: Pick<PageProps<"/cases">, "search
           ))}
         </ul>
       ) : (
-        <div className="mt-4 rounded-3xl border-2 border-dashed border-benja-verde/50 bg-benja-nyanza p-8 text-center">
-          <p>Nenhum case com esses filtros por enquanto. Tente outra combinação.</p>
-          <Link href="/cases" className="mt-3 inline-block font-bold underline underline-offset-4">
-            Limpar filtros e ver todos os cases
-          </Link>
-        </div>
+        <EmptyState
+          className="mt-4 bg-benja-nyanza"
+          action={filtered ? { href: "/cases", label: "Limpar filtros e ver todos os cases" } : undefined}
+        >
+          {filtered
+            ? "Nenhum case com esses filtros por enquanto. Tente outra combinação."
+            : "Os primeiros cases estão sendo preparados. Volte em breve!"}
+        </EmptyState>
       )}
     </>
   );
