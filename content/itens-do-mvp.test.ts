@@ -31,6 +31,7 @@
  26/10/2026 Vinícius Nishimura Reis  Categoria Assessoria de Imprensa e imports organizados (CASE-10).
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case Aventura de Construir (CASE-05).
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case Meridiano (CASE-06).
+ 01/11/2026 Vinícius Nishimura Reis  Conformidade do case FECAP (CASE-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -186,6 +187,10 @@ function checkCase(
       expect(linked.every((service) => isPubliclyVisible(service))).toBe(true);
     });
 
+    it("não confunde a Agência Benjamin com o NúcleoTech, que só desenvolve a plataforma", () => {
+      expect(JSON.stringify(item)).not.toMatch(/n[úu]cleo\s*tech/i);
+    });
+
     it("não tem mídia quebrada nem link sem https", () => {
       expect(existsSync(join(process.cwd(), "public", item.cover!.src))).toBe(true);
       expect(item.externalLinks.every((link) => isValidExternalUrl(link.url))).toBe(true);
@@ -270,6 +275,12 @@ describe("itens de conteúdo do MVP", () => {
   checkCase("meridiano", {
     category: "social-media-e-criacao",
     services: ["social-media", "design-e-identidade-visual"],
+    provisional: true,
+    material: false,
+  });
+  checkCase("fecap", {
+    category: "assessoria-de-imprensa",
+    services: ["assessoria-de-imprensa"],
     provisional: true,
     material: false,
   });
