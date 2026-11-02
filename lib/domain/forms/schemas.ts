@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,10 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (FORM-01).
+ 02/11/2026 Vinícius Nishimura Reis  Serviço de interesse só aceita slug (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { z } from "zod";
+import { SLUG_MAX_LENGTH, SLUG_PATTERN } from "../content/slug";
 
 /** Tipos de envio — registros distintos por regra de negócio (RN-02 / TECH-06). */
 export const SUBMISSION_KINDS = ["lead", "contact", "feedback"] as const;
@@ -122,7 +124,12 @@ export const leadSchema = technicalFieldsSchema.extend({
   email,
   phone,
   company: optionalText(LIMITS.company, "a empresa"),
-  serviceInterest: optionalText(80, "o serviço"),
+  // Formato, não a lista: o serviço pode sair do ar com o formulário aberto, e isso não pode
+  // recusar o pedido. O formato impede categorias forjadas (`lead:<qualquer texto>`) — TECH-06.
+  serviceInterest: z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    trimmed(SLUG_MAX_LENGTH, "o serviço").regex(SLUG_PATTERN, "Escolha um serviço da lista.").optional(),
+  ),
   projectDescription: trimmed(LIMITS.message, "a descrição do projeto").min(
     20,
     "Conte um pouco mais sobre o projeto (mín. 20 caracteres).",
