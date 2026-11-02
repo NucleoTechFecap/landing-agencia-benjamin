@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,25 +21,33 @@
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
  29/10/2026 Vinicius Binda             Imita o trigger track_slug: endereços antigos e reservados (DB-08).
+ 01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
-import type { ContentSnapshot } from "@/lib/domain/content/types";
-import { assembleAreasAndServices, assembleCasesAndCategories, toCta, toMediaMap } from "../content/supabase/mappers";
+import {
+  assembleAreasAndServices,
+  assembleCasesAndCategories,
+  assemblePages,
+  toCta,
+  toMediaMap,
+} from "../content/supabase/mappers";
 import type {
   AreaRow,
+  BlockRow,
   CaseMediaRow,
   CaseRow,
   CaseServiceRow,
   CategoryRow,
   CtaRow,
   MediaAssetRow,
+  PageRow,
   ServiceAreaRow,
   ServiceRow,
 } from "../content/supabase/rows";
 import { AppError } from "../errors";
-import type { CmsStore, EntityTable, RedirectEntity, Row } from "./store";
+import type { CmsSnapshot, CmsStore, EntityTable, RedirectEntity, Row } from "./store";
 import { toMediaAsset } from "./supabase-store";
 
 /** Valores padrão das colunas, como no banco (default da migration). */
@@ -78,6 +86,7 @@ const DEFAULTS: Record<EntityTable, Row> = {
     target_area_id: null,
     sort_order: 0,
   },
+  pages: { description: null },
 };
 
 export interface MemoryTables {
@@ -90,6 +99,8 @@ export interface MemoryTables {
   case_media: CaseMediaRow[];
   media_assets: MediaAssetRow[];
   ctas: CtaRow[];
+  pages: PageRow[];
+  blocks: BlockRow[];
   slug_redirects: SlugRedirectRow[];
 }
 
@@ -118,6 +129,8 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
     case_media: [],
     media_assets: [],
     ctas: [],
+    pages: [],
+    blocks: [],
     slug_redirects: [],
     ...structuredClone(seed),
   };
@@ -170,12 +183,13 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
   }
 
   const store: CmsStore = {
-    async snapshot(): Promise<ContentSnapshot> {
+    async snapshot(): Promise<CmsSnapshot> {
       const media = toMediaMap(tables.media_assets, "https://projeto.supabase.co");
       return structuredClone({
         ...assembleAreasAndServices(tables, media),
         ...assembleCasesAndCategories(tables, media),
         ctas: tables.ctas.map(toCta),
+        pages: assemblePages(tables.pages, tables.blocks).pages,
       });
     },
 
@@ -251,6 +265,7 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
       tables.service_areas = tables.service_areas.filter((link) => link.service_id !== id && link.area_id !== id);
       tables.case_services = tables.case_services.filter((link) => link.case_id !== id && link.service_id !== id);
       tables.case_media = tables.case_media.filter((link) => link.case_id !== id);
+      tables.blocks = tables.blocks.filter((block) => block.page_id !== id);
     },
 
     async syncLinks({ table, ownerColumn, ownerId, otherColumn, next }) {
@@ -258,6 +273,21 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
       const kept = links.filter((link) => link[ownerColumn] !== ownerId);
       const added = next.map((otherId) => ({ [ownerColumn]: ownerId, [otherColumn]: otherId }));
       (tables as unknown as Record<string, Row[]>)[table] = [...kept, ...added];
+    },
+
+    async insertBlock(values) {
+      tables.blocks.push({ ...values, id: crypto.randomUUID() });
+    },
+
+    async updateBlock(id, values) {
+      const block = tables.blocks.find((row) => row.id === id);
+      if (!block) throw new AppError("NOT_FOUND");
+      Object.assign(block, values);
+    },
+
+    async removeBlock(id) {
+      if (!tables.blocks.some((row) => row.id === id)) throw new AppError("NOT_FOUND");
+      tables.blocks = tables.blocks.filter((row) => row.id !== id);
     },
   };
 
