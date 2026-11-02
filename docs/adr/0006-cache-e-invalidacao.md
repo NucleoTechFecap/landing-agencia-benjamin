@@ -85,12 +85,20 @@ mostraria o card na primeira visita. Por isso cada entidade declara `relatedPath
 (`lib/server/cms/entities.ts`), e o aquecimento cobre também essas páginas: só as publicadas, no
 máximo 12 por alteração. Em edição, entram as relações de antes e de depois.
 
-**Corrida com regeneração em andamento (INT-03).** Se uma requisição está regenerando a rota quando a
-tag expira, o resultado antigo é gravado **depois** da invalidação e passa por novo até o fim do
-`cacheLife`. Medido com o `<Link>` "Ver no site" do painel: o prefetch dele regenerava a rota ao abrir
-a tela, e despublicar logo em seguida deixava `/sobre` com o conteúdo antigo. Por isso esse link tem
-`prefetch={false}`. A janela segue existindo para visitantes (uma regeneração dura ~100 ms): se o site
-não refletir a publicação, salvar de novo ou `POST /api/internal/revalidate` resolve.
+**Corrida com regeneração em andamento (INT-03).** Se uma requisição está regenerando a rota no momento
+da gravação, ela lê o dado antigo e grava o resultado **depois** da invalidação. Esse resultado passa por
+novo até o fim do `cacheLife`: publicado que não aparece e, pior, despublicado que segue no ar. Por isso:
+
+- `invalidateContentFrom*()` expira as mesmas tags de novo 3 s depois (`after()`), o que descarta o
+  resultado atrasado, e reaquece as páginas de detalhe.
+- O `<Link>` "Ver no site" do painel tem `prefetch={false}`: o prefetch regenerava a rota ao abrir a tela.
+
+Medido com `next start` e Supabase local, forçando uma regeneração em momento aleatório durante a
+publicação: **sem a segunda expiração, 4 de 45 tentativas ficaram presas; com ela, 0 de 45** depois de
+5 s. Em 4 de 45 o site ainda mostrava a versão anterior 1 s depois, dentro da meta de 5 s. Não foi medido
+na Vercel. Se uma regeneração passar de 3 s, a corrida pode voltar; nesse caso,
+`POST /api/internal/revalidate` resolve. Salvar de novo só resolve em item publicado: em rascunho, salvar
+não invalida o cache.
 
 ### 4. Latência-alvo
 
