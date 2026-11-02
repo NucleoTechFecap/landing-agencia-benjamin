@@ -50,7 +50,10 @@ Legenda: **O** obrigatória · **R** recomendada · **—** não usar · *públi
   e `isSupabaseConfigured`.
 - `lib/config/server-env.ts` — `getServerEnv()` valida as variáveis de servidor na primeira
   leitura (com `import "server-only"`, impedindo uso em Client Components). Fora do
-  desenvolvimento, exige segredo de formulários, Resend e destinatário de leads.
+  desenvolvimento, exige segredo de formulários, Resend e destinatário de leads; em produção, também
+  `CRON_SECRET`, sem o qual notificação com falha nunca é reenviada. As páginas de conteúdo leem a
+  mesma função, então variável inválida **barra o build** e a versão anterior segue no ar
+  ([TECH-06 §6](../formularios/captacao-e-roteamento.md)).
 - Testes: `lib/config/env.test.ts`.
 
 ## 4. Rotação e incidentes

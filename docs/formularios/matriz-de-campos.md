@@ -27,7 +27,7 @@ Legenda: **O** obrigatório · **Op** opcional · **—** não existe no formul�
 | E-mail | O | O | Op¹ | Formato válido, minúsculas | Responder ao contato |
 | Telefone (com DDD) | Op | Op | — | 10–11 dígitos (+55 opcional); só dígitos são guardados | Retorno mais rápido, se a pessoa preferir |
 | Empresa/organização | Op | — | — | até 120 | Contextualizar o pedido comercial |
-| Serviço de interesse | Op | — | — | Lista dos serviços publicados + "Ainda não sei" | Encaminhar para a área certa; pré-selecionado pelo CTA do serviço |
+| Serviço de interesse | Op | — | — | Lista dos serviços publicados + "Ainda não sei"; o servidor confere o formato de slug, não a lista ([TECH-06 §3](captacao-e-roteamento.md)) | Encaminhar para a área certa; pré-selecionado pelo CTA do serviço |
 | Descrição do projeto | O | — | — | 20–3000 | Entender a demanda |
 | Assunto | — | O | — | Lista fechada: Parcerias e eventos, Imprensa, Quero fazer parte da Benjamin, Dúvidas gerais, Outro | Categorizar e encaminhar |
 | Mensagem | — | O | O | 10–3000 (feedback: 10–2000) | Conteúdo do contato/feedback |

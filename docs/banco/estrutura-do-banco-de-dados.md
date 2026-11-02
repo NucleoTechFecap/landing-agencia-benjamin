@@ -392,7 +392,7 @@ limites.
 | `site_settings` | `select` | `select`; `update` com `settings:edit` | Ignora RLS |
 | `page_blocks` | `select` dos blocos visíveis de página visível | `select` (pela página); escrita com `page:edit` | Ignora RLS |
 | `slug_redirects` | `select` | `select` | Escrita por trigger |
-| `form_submissions` | **Nada** | Conforme `lead:*` / `feedback:*` | Gravação dos envios |
+| `form_submissions` | **Nada** | `select` e `delete` conforme `lead:*` / `feedback:*`; `update` com `edit`, **só na coluna `status`** (TECH-06) | Gravação dos envios |
 | `audit_log` | **Nada** | `select` com `audit:view` | — |
 
 ### 6.2 Modelo de políticas (aplicado pela função `setup_publishable_table`)
