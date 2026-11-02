@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Testes de aceite dos cases em destaque (HOME-04).
  01/11/2026 Vinícius Nishimura Reis  Sufixo de teste com node:crypto (CodeQL).
+ 01/11/2026 Vinícius Nishimura Reis  Espera curta para o toPass recarregar a página (HOME-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -33,6 +34,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 const SUPABASE_URL = process.env.E2E_SUPABASE_URL;
 const SERVICE_KEY = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
 const PUBLISH_BUDGET_MS = 5_000; // ADR-0006: publicação reflete no site em até 5 s
+const READ_TIMEOUT_MS = 500;
 
 const visible = (locator: Locator) => locator.filter({ visible: true });
 const section = (page: Page) =>
@@ -104,7 +106,9 @@ test.describe("Home · cases em destaque no painel @cms", () => {
     await expect(async () => {
       await tab.goto("/");
       const card = section(tab).getByText(text);
-      await (present ? expect(card).toBeVisible() : expect(card).toHaveCount(0));
+      // Espera curta: a página já carregada não muda. Quem precisa olhar de novo é o toPass, recarregando.
+      const onPage = { timeout: READ_TIMEOUT_MS };
+      await (present ? expect(card).toBeVisible(onPage) : expect(card).toHaveCount(0, onPage));
     }).toPass({ timeout: PUBLISH_BUDGET_MS });
     await visitor.close();
   };
