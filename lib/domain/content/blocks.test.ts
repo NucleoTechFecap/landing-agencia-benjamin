@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
+ 01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -33,6 +34,14 @@ describe("catálogo de blocos (DB-03)", () => {
       list: { items: [{ title: "Prática real", text: "Clientes de verdade." }] },
       team: { members: [{ name: "Melissa Namie", role: "Diretoria" }] },
       cta: { title: "Vamos conversar?", label: "Fale com a gente", href: "/contato#formulario" },
+      manifesto: { title: "Comunicação que soma diferenças.", paragraphs: ["Toda marca tem algo a dizer."] },
+      about: {
+        title: "Uma agência experimental",
+        intro: "Quem somos.",
+        valueProposition: "Nossa proposta.",
+        howWeWork: "Como atuamos.",
+        fecapRelation: "Relação com a FECAP.",
+      },
     };
     expect(Object.keys(examples).sort()).toEqual([...BLOCK_TYPES].sort());
     for (const [type, content] of Object.entries(examples)) {

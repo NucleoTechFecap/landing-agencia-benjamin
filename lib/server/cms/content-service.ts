@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -24,6 +24,7 @@
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
 28/10/2026 Codex                     Propaga códigos fechados de impacto (TECH-13).
  29/10/2026 Vinicius Binda             Troca de slug com 301 em serviço/case e endereço reservado (DB-08).
+ 01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -41,12 +42,11 @@ import {
   type PublicationState,
 } from "@/lib/domain/content/publication";
 import type { PublicationStatus } from "@/lib/domain/content/publication-status";
-import type { ContentSnapshot } from "@/lib/domain/content/types";
 import type { AuditInput } from "../audit";
 import type { ContentChange } from "../content/invalidate";
 import { AppError } from "../errors";
 import type { CmsItem, EntityDefinition } from "./entities";
-import type { CmsStore, RetiredSlug } from "./store";
+import type { CmsSnapshot, CmsStore, RetiredSlug } from "./store";
 
 export interface CmsActor {
   id: string;
@@ -98,7 +98,7 @@ function contentChange<I extends { slug: string }, T extends CmsItem>(
   def: EntityDefinition<I, T>,
   slug: string,
   items: T[],
-  snapshot: ContentSnapshot,
+  snapshot: CmsSnapshot,
   now: Date,
   previousSlug?: string,
 ): ContentChange {
@@ -113,10 +113,10 @@ function contentChange<I extends { slug: string }, T extends CmsItem>(
 
 /** Snapshot com o item substituído pela versão nova (para checar integridade antes de gravar). */
 function withItem<I extends { slug: string }, T extends CmsItem>(
-  snapshot: ContentSnapshot,
+  snapshot: CmsSnapshot,
   def: EntityDefinition<I, T>,
   item: T,
-): ContentSnapshot {
+): CmsSnapshot {
   const items = def.list(snapshot);
   const replaced = items.some((entry) => entry.id === item.id)
     ? items.map((entry) => (entry.id === item.id ? item : entry))
@@ -131,7 +131,7 @@ function withItem<I extends { slug: string }, T extends CmsItem>(
 export function publishProblems<I extends { slug: string }, T extends CmsItem>(
   def: EntityDefinition<I, T>,
   item: T,
-  snapshot: ContentSnapshot,
+  snapshot: CmsSnapshot,
   now: Date,
 ): string[] {
   // Primeiro o que falta no próprio item; as regras entre conteúdos (categoria publicada,
@@ -146,7 +146,7 @@ export function publishProblems<I extends { slug: string }, T extends CmsItem>(
   return integrity;
 }
 
-function publicationError(error: PublicationError): AppError {
+export function publicationError(error: PublicationError): AppError {
   if (error.code === "FORBIDDEN") return new AppError("FORBIDDEN", { message: error.message });
   if (error.code === "INVALID_TRANSITION") return new AppError("INVALID_TRANSITION", { message: error.message });
   return new AppError("VALIDATION_FAILED", {
@@ -163,7 +163,7 @@ function publicationError(error: PublicationError): AppError {
 function withSlug<I extends { slug: string }, T extends CmsItem>(
   def: EntityDefinition<I, T>,
   raw: unknown,
-  snapshot: ContentSnapshot,
+  snapshot: CmsSnapshot,
   retired: readonly RetiredSlug[],
   ref?: ItemRef,
 ): unknown {
@@ -181,7 +181,7 @@ function withSlug<I extends { slug: string }, T extends CmsItem>(
   };
 }
 
-const stateOf = (item: CmsItem): PublicationState => ({
+export const stateOf = (item: CmsItem): PublicationState => ({
   status: item.status,
   publishedAt: item.publishedAt,
   archivedAt: item.archivedAt ?? null,

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,15 +21,16 @@
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
  29/10/2026 Vinicius Binda             Leitura de public.slug_redirects (DB-08).
+ 01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ContentSnapshot } from "@/lib/domain/content/types";
 import {
   assembleAreasAndServices,
   assembleCasesAndCategories,
+  assemblePages,
   toCta,
   toMediaMap,
   toMediaRef,
@@ -37,18 +38,20 @@ import {
 import {
   COLUMNS,
   type AreaRow,
+  type BlockRow,
   type CaseMediaRow,
   type CaseRow,
   type CaseServiceRow,
   type CategoryRow,
   type CtaRow,
   type MediaAssetRow,
+  type PageRow,
   type ServiceAreaRow,
   type ServiceRow,
 } from "../content/supabase/rows";
 import { AppError } from "../errors";
 import { logger } from "../logger";
-import type { CmsStore, EntityTable, LinkSync, MediaAsset, MediaRow, Row, SavedRow } from "./store";
+import type { CmsSnapshot, CmsStore, EntityTable, LinkSync, MediaAsset, MediaRow, Row, SavedRow } from "./store";
 
 interface PostgrestError {
   message: string;
@@ -115,8 +118,8 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
   }
 
   return {
-    async snapshot(): Promise<ContentSnapshot> {
-      const [areas, services, serviceAreas, categories, cases, caseServices, caseMedia, media, ctas] =
+    async snapshot(): Promise<CmsSnapshot> {
+      const [areas, services, serviceAreas, categories, cases, caseServices, caseMedia, media, ctas, pages, blocks] =
         await Promise.all([
           all<AreaRow>("areas"),
           all<ServiceRow>("services"),
@@ -127,8 +130,12 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
           all<CaseMediaRow>("case_media"),
           all<MediaAssetRow>("media_assets"),
           all<CtaRow>("ctas"),
+          all<PageRow>("pages"),
+          all<BlockRow>("blocks"),
         ]);
       const mediaById = toMediaMap(media, supabaseUrl);
+      const assembled = assemblePages(pages, blocks);
+      if (assembled.problems.length) logger.warn("cms.page.blocks_skipped", { problems: assembled.problems });
       return {
         ...assembleAreasAndServices({ areas, services, service_areas: serviceAreas }, mediaById),
         ...assembleCasesAndCategories(
@@ -136,6 +143,7 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
           mediaById,
         ),
         ctas: ctas.map(toCta),
+        pages: assembled.pages,
       };
     },
 
@@ -242,6 +250,26 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
           operation: "delete",
         });
       }
+    },
+
+    async insertBlock(values) {
+      await run(client.from("blocks").insert(values), { table: "blocks", operation: "insert" });
+    },
+
+    async updateBlock(id, values) {
+      const rows = await run<{ id: string }[]>(client.from("blocks").update(values).eq("id", id).select("id"), {
+        table: "blocks",
+        operation: "update",
+      });
+      if (!rows?.length) throw new AppError("NOT_FOUND");
+    },
+
+    async removeBlock(id) {
+      const rows = await run<{ id: string }[]>(client.from("blocks").delete().eq("id", id).select("id"), {
+        table: "blocks",
+        operation: "delete",
+      });
+      if (!rows?.length) throw new AppError("NOT_FOUND");
     },
   };
 }
