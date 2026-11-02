@@ -4,6 +4,12 @@ O painel (`/admin`) deixa a equipe da Benjamin manter **páginas e blocos, manif
 de atuação, serviços, categorias, cases e a biblioteca de mídia** sem deploy. O site lê do Supabase só o que está publicado. O conteúdo
 versionado em `content/` serve de fallback de desenvolvimento e de fonte do seed.
 
+## Páginas e textos do site
+
+Manifesto e texto Sobre são blocos das páginas `home` e `sobre`: publicados, tomam o lugar do valor de
+`site_settings`; sem página publicada, o site segue com ele. Os demais blocos entram depois das seções
+fixas de cada rota. Despublicar devolve o texto anterior.
+
 ## Estados de publicação
 
 | Estado | No site | Como chega lá |

@@ -85,6 +85,13 @@ mostraria o card na primeira visita. Por isso cada entidade declara `relatedPath
 (`lib/server/cms/entities.ts`), e o aquecimento cobre também essas páginas: só as publicadas, no
 máximo 12 por alteração. Em edição, entram as relações de antes e de depois.
 
+**Corrida com regeneração em andamento (INT-03).** Se uma requisição está regenerando a rota quando a
+tag expira, o resultado antigo é gravado **depois** da invalidação e passa por novo até o fim do
+`cacheLife`. Medido com o `<Link>` "Ver no site" do painel: o prefetch dele regenerava a rota ao abrir
+a tela, e despublicar logo em seguida deixava `/sobre` com o conteúdo antigo. Por isso esse link tem
+`prefetch={false}`. A janela segue existindo para visitantes (uma regeneração dura ~100 ms): se o site
+não refletir a publicação, salvar de novo ou `POST /api/internal/revalidate` resolve.
+
 ### 4. Latência-alvo
 
 | Situação | Meta |

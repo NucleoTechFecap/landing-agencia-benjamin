@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  25/10/2026 Caio Moraes              Última área sem laranja, distinta do CTA final (SOB-04).
+ 01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -27,12 +28,13 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/server/seo";
 import Link from "next/link";
 import { ClosingCta } from "@/components/sections/closing-cta";
+import { PageBlocks } from "@/components/sections/page-blocks";
 import { PageHero } from "@/components/sections/page-hero";
 import { ProvisionalBadge } from "@/components/ui/badge";
 import { BrandIcon, type BrandIconColor } from "@/components/ui/brand-icon";
 import { Container } from "@/components/ui/container";
 import { SECTION_TONES, type SectionTone } from "@/components/ui/section";
-import { getSiteSettings, listAreas, listServices } from "@/lib/server/content/repository";
+import { getPage, getSiteSettings, listAreas, listServices } from "@/lib/server/content/repository";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata(
@@ -68,7 +70,7 @@ const TONES: { tone: SectionTone; icon: BrandIconColor }[] = [
 
 /** Listagem das seis áreas, cada uma com âncora própria e serviços relacionados (SOB-04…SOB-10). */
 export default async function AreasPage() {
-  const [areas, services] = await Promise.all([listAreas(), listServices()]);
+  const [areas, services, page] = await Promise.all([listAreas(), listServices(), getPage("areas")]);
 
   return (
     <>
@@ -151,6 +153,8 @@ export default async function AreasPage() {
           </section>
         );
       })}
+
+      <PageBlocks page={page} />
 
       <ClosingCta
         links={[

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-03).
  13/10/2026 Vinícius Nishimura Reis  Home completa com seções e conteúdo do repositório (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
+ 01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,11 +31,19 @@ import { ServiceCard } from "@/components/cards/service-card";
 import { AboutPreview } from "@/components/sections/about-preview";
 import { ClosingCta } from "@/components/sections/closing-cta";
 import { HeroManifesto } from "@/components/sections/hero-manifesto";
+import { PageBlocks } from "@/components/sections/page-blocks";
 import type { BrandIconColor } from "@/components/ui/brand-icon";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Section } from "@/components/ui/section";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { getSiteSettings, listAreas, listCtas, listFeaturedCases, listServices } from "@/lib/server/content/repository";
+import {
+  getPage,
+  getSiteSettings,
+  listAreas,
+  listCtas,
+  listFeaturedCases,
+  listServices,
+} from "@/lib/server/content/repository";
 import { DEFAULT_TITLE, buildMetadata } from "@/lib/server/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -54,15 +63,17 @@ export async function generateMetadata(): Promise<Metadata> {
 const AREA_COLORS: BrandIconColor[] = ["verde", "laranja", "azul", "rosa", "verde-claro", "lima"];
 
 export default async function HomePage() {
-  const [settings, heroCtas, highlightCtas, areas, featuredServices, allServices, featuredCases] = await Promise.all([
-    getSiteSettings(),
-    listCtas("home-hero"),
-    listCtas("home-highlight"),
-    listAreas(),
-    listServices({ featuredOnly: true }),
-    listServices(),
-    listFeaturedCases(),
-  ]);
+  const [settings, page, heroCtas, highlightCtas, areas, featuredServices, allServices, featuredCases] =
+    await Promise.all([
+      getSiteSettings(),
+      getPage("home"),
+      listCtas("home-hero"),
+      listCtas("home-highlight"),
+      listAreas(),
+      listServices({ featuredOnly: true }),
+      listServices(),
+      listFeaturedCases(),
+    ]);
 
   const toLinks = (ctas: typeof heroCtas) =>
     ctas.map((cta) => ({ id: cta.id, label: cta.label, href: cta.link.href, external: cta.link.external }));
@@ -140,6 +151,8 @@ export default async function HomePage() {
           </p>
         )}
       </Section>
+
+      <PageBlocks page={page} />
 
       <ClosingCta links={toLinks(highlightCtas)} />
     </>
