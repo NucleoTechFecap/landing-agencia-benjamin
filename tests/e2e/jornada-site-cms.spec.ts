@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
+ 01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -32,6 +33,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 const SUPABASE_URL = process.env.E2E_SUPABASE_URL;
 const SERVICE_KEY = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
 const PUBLISH_BUDGET_MS = 5_000; // ADR-0006: publicação reflete no site em até 5 s
+const PHOTO_PATH = "/brand/icons/calendario-azul.webp";
 
 const visible = (locator: Locator) => locator.filter({ visible: true });
 
@@ -45,7 +47,9 @@ test.describe("Painel → site · Home e Sobre @cms", () => {
   const manifesto = `Manifesto ${suffix}`;
   const sobre = `Sobre ${suffix}`;
   const bloco = `Bloco ${suffix}`;
+  const photoAlt = `Foto E2E ${suffix}`;
   let admin: SupabaseClient;
+  let photoId = "";
   const editors: Record<string, string> = {};
 
   const login = async (page: Page) => {
@@ -108,10 +112,22 @@ test.describe("Painel → site · Home e Sobre @cms", () => {
     if (error) throw error;
     account.id = data.user.id;
     await admin.from("profiles").update({ role: "editor", full_name: "E2E editor" }).eq("id", account.id);
+    // Arquivo público do site: a foto do "Nosso time" não depende do Storage neste teste.
+    const { data: media, error: mediaError } = await admin
+      .from("media_assets")
+      .upsert(
+        { path: PHOTO_PATH, mime_type: "image/webp", width: 512, height: 512, alt_text: photoAlt, decorative: false },
+        { onConflict: "path" },
+      )
+      .select("id")
+      .single();
+    if (mediaError) throw mediaError;
+    photoId = media.id;
   });
 
   test.afterAll(async () => {
     await admin.from("pages").delete().in("slug", ["home", "sobre"]);
+    if (photoId) await admin.from("media_assets").delete().eq("id", photoId);
     if (account.id) await admin.auth.admin.deleteUser(account.id);
   });
 
@@ -155,6 +171,36 @@ test.describe("Painel → site · Home e Sobre @cms", () => {
     await visitor.close();
     expect(order.indexOf(bloco)).toBeGreaterThan(order.indexOf("Seis áreas que trabalham juntas"));
     expect(order.indexOf(bloco)).toBeLessThan(order.indexOf("Quer construir algo com a gente?"));
+  });
+
+  test("sem pessoas no bloco não há seção Nosso time; com elas, nome, cargo e foto aparecem na ordem", async ({
+    page,
+  }) => {
+    await expectOnSite(page, "/sobre", "Nosso time", false);
+    await login(page);
+    await page.goto(`${editors.sobre}/blocos/novo?tipo=team`);
+    await page.getByRole("button", { name: "Adicionar pessoa" }).click();
+    const names = visible(page.getByLabel("Nome"));
+    await names.nth(0).fill(`Pessoa Um ${suffix}`);
+    await visible(page.getByLabel("Cargo ou área")).nth(0).fill("Direção de arte");
+    await visible(page.getByLabel("Foto")).nth(0).selectOption({ label: photoAlt });
+    await names.nth(1).fill(`Pessoa Dois ${suffix}`);
+    await visible(page.getByRole("button", { name: "Adicionar bloco" })).click();
+    await expect(page.getByRole("status").getByText("Alterações salvas.")).toBeVisible();
+
+    await expectOnSite(page, "/sobre", "Nosso time");
+    const visitor = await page.context().browser()!.newContext();
+    const tab = await visitor.newPage();
+    await tab.goto("/sobre");
+    const section = tab.locator("section", { has: tab.getByRole("heading", { name: "Nosso time" }) });
+    await expect(section.getByRole("heading", { level: 3 })).toHaveText([
+      `Pessoa Um ${suffix}`,
+      `Pessoa Dois ${suffix}`,
+    ]);
+    await expect(section.getByText("Direção de arte")).toBeVisible();
+    await expect(section.getByRole("img", { name: photoAlt })).toBeVisible();
+    await expect(section.getByRole("img")).toHaveCount(1);
+    await visitor.close();
   });
 
   test("texto marcado como provisório mostra o selo no site", async ({ page }) => {

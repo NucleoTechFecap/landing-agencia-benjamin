@@ -18,9 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
+ 01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
+import Image from "next/image";
+import { publicEnv } from "@/lib/config/public-env";
 import { isValidExternalUrl } from "@/lib/domain/content/integrity";
 import { isSectionBlock, type BlockContent, type PageBlock } from "@/lib/domain/content/blocks";
 import type { Page } from "@/lib/domain/content/types";
@@ -60,6 +63,45 @@ function ListBlock({ id, content, tone }: { id: string; content: BlockContent<"l
   );
 }
 
+/**
+ * "Nosso time" (SOB-03). Sem foto, o card mostra só o texto: nada de avatar genérico. A foto do
+ * bloco fica gravada como endereço, então um host fora de `images.remotePatterns` (ex.: projeto
+ * Supabase trocado) não pode derrubar a página: nesse caso a imagem vai sem otimização.
+ */
+function TeamBlock({ id, content, tone }: { id: string; content: BlockContent<"team">; tone: SectionTone }) {
+  const known = (src: string) => src.startsWith("/") || src.startsWith(`${publicEnv.NEXT_PUBLIC_SUPABASE_URL}/`);
+  return (
+    <Section tone={tone} labelledBy={id}>
+      <SectionHeading id={id} title={content.title ?? "Nosso time"} />
+      <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {content.members.map((member, index) => (
+          <li
+            key={index}
+            className="overflow-hidden rounded-3xl border-2 border-benja-noite bg-white/70 shadow-sticker"
+          >
+            {member.photo ? (
+              <div className="relative aspect-square">
+                <Image
+                  src={member.photo.src}
+                  alt={member.photo.alt}
+                  fill
+                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                  unoptimized={!known(member.photo.src)}
+                  className="object-cover"
+                />
+              </div>
+            ) : null}
+            <div className="p-6">
+              <h3 className="text-xl font-black text-benja-verde">{member.name}</h3>
+              {member.role ? <p className="mt-1 text-benja-grafite">{member.role}</p> : null}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
+
 function CtaBlock({ id, content }: { id: string; content: BlockContent<"cta"> }) {
   return (
     <Section tone="lima" labelledBy={id}>
@@ -78,6 +120,8 @@ function Block({ block, tone }: { block: PageBlock; tone: SectionTone }) {
       return <RichTextBlock id={id} content={block.content} tone={tone} />;
     case "list":
       return <ListBlock id={id} content={block.content} tone={tone} />;
+    case "team":
+      return <TeamBlock id={id} content={block.content} tone={tone} />;
     case "cta":
       return <CtaBlock id={id} content={block.content} />;
     default:

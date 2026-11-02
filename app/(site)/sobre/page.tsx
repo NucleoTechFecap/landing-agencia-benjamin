@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
+ 01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -100,7 +101,7 @@ export default async function AboutPage() {
         </ul>
       </Section>
 
-      {/* "Nosso time" é opcional (SOB-03): só aparece quando a Benjamin enviar as informações (CON-09). */}
+      {/* "Nosso time" é um bloco da página (SOB-03): sem pessoas autorizadas (CON-09), a seção não existe. */}
       <PageBlocks page={page} />
 
       <ClosingCta
