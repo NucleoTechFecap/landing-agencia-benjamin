@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-06).
+ 02/11/2026 Vinícius Nishimura Reis  Prioridade sugerida no e-mail interno (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -112,6 +113,7 @@ describe("protocolo e notificação", () => {
     expect(content.replyTo).toBe("maria@empresa.com");
     expect(content.text).toContain("Serviço de interesse: Audiovisual");
     expect(content.text).toContain("https://benjamin.test/admin");
+    expect(content.text).toContain("Prioridade sugerida: alta");
   });
 
   it("não expõe reply-to em feedback sem pedido de retorno", () => {
@@ -122,5 +124,6 @@ describe("protocolo e notificação", () => {
     });
     expect(content.replyTo).toBeUndefined();
     expect(content.text).toContain("Identificação: anônimo");
+    expect(content.text).toContain("Prioridade sugerida: normal");
   });
 });

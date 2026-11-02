@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-06).
+ 02/11/2026 Vinícius Nishimura Reis  Prioridade sugerida no e-mail interno (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -86,7 +87,9 @@ export function routeSubmission(input: SubmissionInput): RoutingDecision {
 
 /**
  * Destinatários configurados para a decisão. Contato e feedback caem para a lista de
- * leads quando não houver configuração própria; lista vazia = notificação pendente.
+ * leads quando não houver configuração própria. Lista vazia só acontece em desenvolvimento
+ * e preview: o envio é salvo como `skipped`, sem e-mail (em homologação e produção a falta
+ * de `LEAD_NOTIFICATION_TO` barra o build — `parseServerEnv`).
  */
 export function resolveRecipients(decision: RoutingDecision, config: RecipientConfig): string[] {
   const own = config[decision.recipientKey];
@@ -112,7 +115,12 @@ export function buildNotification(
   meta: { protocol: string; receivedAt: Date; siteUrl: string; serviceName?: string },
 ): NotificationContent {
   const when = meta.receivedAt.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
-  const header = [`Protocolo: ${meta.protocol}`, `Recebido em: ${when}`, `Categoria: ${decision.category}`];
+  const header = [
+    `Protocolo: ${meta.protocol}`,
+    `Recebido em: ${when}`,
+    `Categoria: ${decision.category}`,
+    `Prioridade sugerida: ${decision.priority}`,
+  ];
   const footer = [
     "",
     `Consulte no painel: ${meta.siteUrl}/admin`,
