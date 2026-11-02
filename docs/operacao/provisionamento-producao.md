@@ -33,14 +33,15 @@
    supabase db push
    ```
 4. Conferir: `profiles`, `role_permissions` (148 linhas), `audit_log`, `form_submissions`, bucket `media` e as tabelas de conteúdo (DB-02) com RLS **habilitada** (`select relname, relrowsecurity from pg_class …`).
-5. Marcar o banco como produção (DBX-02). O `supabase/seed.sql` de desenvolvimento recusa rodar
+5. Marcar o banco como produção (ARC-11). O `supabase/seed.sql` de desenvolvimento recusa rodar
    em banco marcado, mesmo que alguém use `db push --include-seed` ou cole o arquivo no SQL Editor.
-   No SQL Editor, uma vez por projeto:
+   Depende da migration `20261102000100` (passo 3). No SQL Editor, uma vez por projeto:
    ```sql
-   alter database postgres set app.ambiente = 'producao';
-   -- conferir numa conexão nova (a configuração vale para sessões abertas depois):
-   select current_setting('app.ambiente', true);  -- producao
+   insert into public.ambiente_banco (ambiente) values ('producao');
+   select ambiente from public.ambiente_banco;  -- producao
    ```
+   A primeira versão usava `alter database ... set app.ambiente`, que não funciona no Supabase:
+   o papel `postgres` não é superusuário e o comando falha com `42501`.
    Nunca rode `supabase db reset --linked`: ele apaga o banco remoto inteiro antes de chegar ao seed.
 6. Auth: desligar cadastro público, senha mínima 12, Site URL/Redirect URLs de produção, templates de convite/recuperação (ADM-02 §3), SMTP do domínio (GO-03).
 7. Backups: confirmar política diária e testar restauração em projeto descartável (DB-10).
@@ -87,7 +88,7 @@
 
 - [ ] URL, projeto Supabase, chaves e destinatários de produção diferentes de homologação.
 - [ ] Dados de homologação não existem em produção (seed fictício nunca aplicado em `benjamin-prd`).
-- [ ] `select current_setting('app.ambiente', true)` em produção retorna `producao` (trava do seed, DBX-02).
+- [ ] `select ambiente from public.ambiente_banco` em produção retorna `producao` (trava do seed, ARC-11).
 - [ ] Deploy de produção funcional: `GET /api/v1/health` = 200 e smoke test de GO-01 §5.
 - [ ] `GET /api/internal/jobs/notificacoes` sem token = 401; com token = 200.
 - [ ] `robots.txt` indexável apenas em produção.

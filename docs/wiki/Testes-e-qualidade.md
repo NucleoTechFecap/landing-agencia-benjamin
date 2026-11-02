@@ -28,5 +28,6 @@ apontado para o Supabase local.
 
 - [Jornadas críticas e testes E2E](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/qualidade/jornadas-e2e.md)
 - [Testes de CRUD e estados de publicação do CMS (QA-04)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/qualidade/qa-04-cms.md)
+- [Roteiro de reprodução do ambiente com seed (ARC-11)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/qualidade/arc-11-reproducao-do-seed.md)
 - [Revisão de PRs críticos e registro de revisões (TECH-13)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/qualidade/revisao-de-prs.md)
 - [Critérios de aceite (GOV-13)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/gestao/criterios-de-aceite.md)

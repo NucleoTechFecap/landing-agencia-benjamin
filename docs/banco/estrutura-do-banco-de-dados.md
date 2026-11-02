@@ -669,6 +669,10 @@ em outra release.
 
 ### 10.4 Seed de desenvolvimento (ARC-11)
 
+> **Superado em 02/11/2026 (ARC-11).** Cases e páginas do seed são fictícios, a trava usa
+> `public.ambiente_banco` e as contas de teste vêm de `npm run seed:users`. Regras em vigor:
+> [dicionário de dados](dicionario-de-dados.md) §9.
+
 - **`supabase/seed.sql`**: dados **fictícios**, rodados só por `supabase db reset` (local). O
   `db push` não executa o seed, então ele não chega a hml/prd por acidente.
 - Fonte sugerida: gerar o SQL a partir de `content/` com um script

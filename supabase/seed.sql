@@ -3,14 +3,14 @@
  Sistema      : Agência Benjamin Landing Page
  Módulo       : Supabase
  Arquivo      : seed.sql
- Descrição    : Seed de desenvolvimento gerado de content/ (só banco local; recusado em produção).
+ Descrição    : Seed de desenvolvimento com cases e páginas fictícios (só banco local; recusado em produção).
 
  Desenvolvedor: Vinicius Binda
 
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 28/10/2026
- Modificado em: 28/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,27 +18,34 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  28/10/2026 Vinicius Binda             Criação inicial (DBX-02).
+ 02/11/2026 Vinicius Binda             Cases e páginas fictícios, transação e trava por tabela (ARC-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
--- GERADO por scripts/content-seed.mjs a partir de content/. Não edite à mão: altere content/ e
--- rode `npm run seed:write`.
+-- GERADO por scripts/content-seed.mjs. Não edite à mão: altere content/ ou o script e rode
+-- `npm run seed:write`.
 --
 -- Roda só no `npx supabase db reset` local. O `db push` não executa o seed; se alguém o rodar
 -- num banco remoto (`db push --include-seed`, SQL Editor, psql), o bloco abaixo recusa bancos
--- marcados como produção (docs/operacao/provisionamento-producao.md).
+-- marcados como produção em public.ambiente_banco (docs/operacao/provisionamento-producao.md).
+-- A transação garante que uma falha no meio não deixe dados pela metade.
+begin;
+
 do $$
 begin
-  if coalesce(current_setting('app.ambiente', true), '') = 'producao' then
-    raise exception 'Seed de desenvolvimento recusado: este banco é de produção (app.ambiente = producao).';
+  -- A tabela pode não existir num banco anterior à migration 20261102000100.
+  if to_regclass('public.ambiente_banco') is not null then
+    if exists (select 1 from public.ambiente_banco) then
+      raise exception 'Seed de desenvolvimento recusado: este banco é de produção (public.ambiente_banco).';
+    end if;
   end if;
 end;
 $$;
 
 insert into public.media_assets (id, path, mime_type, width, height, alt_text, decorative) values
-  (md5('media:/brand/cases/aventura-de-construir.webp')::uuid, '/brand/cases/aventura-de-construir.webp', 'image/webp', 1200, 750, 'Ilustração provisória com ícone de envio e sticker da Agência Benjamin', false),
-  (md5('media:/brand/cases/meridiano.webp')::uuid, '/brand/cases/meridiano.webp', 'image/webp', 1200, 750, 'Ilustração provisória com ícone de coração e sticker da Agência Benjamin', false),
-  (md5('media:/brand/cases/fecap.webp')::uuid, '/brand/cases/fecap.webp', 'image/webp', 1200, 750, 'Ilustração provisória com ícone de megafone e sticker da Agência Benjamin', false),
+  (md5('media:/brand/cases/aventura-de-construir.webp')::uuid, '/brand/cases/aventura-de-construir.webp', 'image/webp', 1200, 750, 'Ilustração fictícia com ícone de envio', false),
+  (md5('media:/brand/cases/meridiano.webp')::uuid, '/brand/cases/meridiano.webp', 'image/webp', 1200, 750, 'Ilustração fictícia com ícone de coração', false),
+  (md5('media:/brand/cases/fecap.webp')::uuid, '/brand/cases/fecap.webp', 'image/webp', 1200, 750, 'Ilustração fictícia com ícone de megafone', false),
   (md5('media:/brand/logos/simbolo.png')::uuid, '/brand/logos/simbolo.png', 'image/png', null, null, 'Símbolo da Agência Benjamin (mídia fictícia sem uso)', false)
 on conflict (id) do nothing;
 
@@ -87,20 +94,27 @@ insert into public.case_categories (id, slug, name, description, sort_order, sta
 on conflict (id) do nothing;
 
 insert into public.cases (id, slug, title, client_name, category_id, delivery_type, summary, challenge, solution, results, cover_media_id, external_links, reference_month, team, featured, sort_order, status, provisional, published_at, archived_at) values
-  (md5('case-aventura-de-construir')::uuid, 'aventura-de-construir', 'Conteúdo para o blog Aventura de Construir', 'Aventura de Construir', md5('category-copywriting')::uuid, 'Artigos para blog', 'Artigos e textos desenvolvidos pela Agência Benjamin para o blog Aventura de Construir.', null, null, null, md5('media:/brand/cases/aventura-de-construir.webp')::uuid, '[]'::jsonb, null, '{}'::text[], true, 1, 'published', true, '2026-10-13T00:00:00.000Z'::timestamptz, null),
-  (md5('case-meridiano')::uuid, 'meridiano', 'Social media e criação para a Meridiano', 'Meridiano', md5('category-social-media-e-criacao')::uuid, 'Redes sociais', 'Desdobramentos visuais, criativos e estratégicos desenvolvidos para as redes sociais da Meridiano.', null, null, null, md5('media:/brand/cases/meridiano.webp')::uuid, '[]'::jsonb, null, '{}'::text[], true, 2, 'published', true, '2026-10-13T00:00:00.000Z'::timestamptz, null),
-  (md5('case-fecap')::uuid, 'fecap', 'Assessoria de imprensa para a FECAP', 'FECAP', md5('category-assessoria-de-imprensa')::uuid, 'Releases e publicações', 'Releases, pautas e conteúdos publicados no site da FECAP e conquistados em veículos externos pela Agência Benjamin.', null, null, null, md5('media:/brand/cases/fecap.webp')::uuid, '[]'::jsonb, null, '{}'::text[], true, 3, 'published', true, '2026-10-13T00:00:00.000Z'::timestamptz, null),
+  (md5('case-ficticio-editora')::uuid, 'editora-exemplo', 'Blog da Editora Exemplo', 'Editora Exemplo (fictícia)', md5('category-copywriting')::uuid, 'Artigos para blog', 'Case fictício do seed de desenvolvimento: artigos para o blog de uma editora que não existe.', 'Texto fictício: organizar a pauta de um blog parado havia meses.', 'Texto fictício: calendário editorial e artigos com um tom de voz definido.', 'Texto fictício: nenhum número aqui é real.', md5('media:/brand/cases/aventura-de-construir.webp')::uuid, '[]'::jsonb, '2026-08-01'::date, array['Pessoa Fictícia A', 'Pessoa Fictícia B'], true, 1, 'published', true, '2026-10-13T00:00:00.000Z'::timestamptz, null),
+  (md5('case-ficticio-cafeteria')::uuid, 'cafeteria-exemplo', 'Redes sociais da Cafeteria Exemplo', 'Cafeteria Exemplo (fictícia)', md5('category-social-media-e-criacao')::uuid, 'Redes sociais', 'Case fictício do seed de desenvolvimento: redes sociais de uma cafeteria que não existe.', null, null, null, md5('media:/brand/cases/meridiano.webp')::uuid, '[]'::jsonb, '2026-07-01'::date, '{}'::text[], true, 2, 'published', true, '2026-10-13T00:00:00.000Z'::timestamptz, null),
+  (md5('case-ficticio-instituto')::uuid, 'instituto-exemplo', 'Assessoria de imprensa do Instituto Exemplo', 'Instituto Exemplo (fictício)', md5('category-assessoria-de-imprensa')::uuid, 'Releases e publicações', 'Case fictício do seed de desenvolvimento: releases de um instituto que não existe.', null, null, null, md5('media:/brand/cases/fecap.webp')::uuid, '[{"label":"Matéria fictícia","url":"https://example.com/materia-ficticia","source":"Portal Exemplo","date":"2026-06-15"}]'::jsonb, '2026-06-01'::date, '{}'::text[], false, 3, 'published', true, '2026-10-13T00:00:00.000Z'::timestamptz, null),
+  (md5('case-ficticio-agendado')::uuid, 'case-ficticio-agendado', 'Case fictício agendado', 'Cliente Fictício', md5('category-copywriting')::uuid, null, 'Item fictício do seed de desenvolvimento, agendado para o futuro: ainda não aparece no site.', null, null, null, md5('media:/brand/cases/aventura-de-construir.webp')::uuid, '[]'::jsonb, null, '{}'::text[], false, 98, 'published', true, '2099-01-01T00:00:00.000Z'::timestamptz, null),
   (md5('case-ficticio-em-rascunho')::uuid, 'case-ficticio-em-rascunho', 'Case fictício em rascunho', 'Cliente Fictício', md5('category-copywriting')::uuid, null, 'Item fictício do seed de desenvolvimento, em rascunho: nunca aparece no site.', null, null, null, null, '[]'::jsonb, null, '{}'::text[], false, 99, 'draft', true, null, null)
 on conflict (id) do nothing;
 
 insert into public.case_services (case_id, service_id) values
-  (md5('case-aventura-de-construir')::uuid, md5('service-copywriting')::uuid),
-  (md5('case-aventura-de-construir')::uuid, md5('service-producao-de-conteudo')::uuid),
-  (md5('case-meridiano')::uuid, md5('service-social-media')::uuid),
-  (md5('case-meridiano')::uuid, md5('service-design-e-identidade-visual')::uuid),
-  (md5('case-fecap')::uuid, md5('service-assessoria-de-imprensa')::uuid),
+  (md5('case-ficticio-editora')::uuid, md5('service-copywriting')::uuid),
+  (md5('case-ficticio-editora')::uuid, md5('service-producao-de-conteudo')::uuid),
+  (md5('case-ficticio-cafeteria')::uuid, md5('service-social-media')::uuid),
+  (md5('case-ficticio-cafeteria')::uuid, md5('service-design-e-identidade-visual')::uuid),
+  (md5('case-ficticio-instituto')::uuid, md5('service-assessoria-de-imprensa')::uuid),
+  (md5('case-ficticio-agendado')::uuid, md5('service-copywriting')::uuid),
   (md5('case-ficticio-em-rascunho')::uuid, md5('service-copywriting')::uuid)
 on conflict (case_id, service_id) do nothing;
+
+insert into public.case_media (case_id, media_id, sort_order) values
+  (md5('case-ficticio-editora')::uuid, md5('media:/brand/cases/meridiano.webp')::uuid, 0),
+  (md5('case-ficticio-editora')::uuid, md5('media:/brand/cases/fecap.webp')::uuid, 1)
+on conflict (case_id, media_id) do nothing;
 
 insert into public.ctas (id, label, placement, target_kind, target_path, target_url, target_service_id, target_case_id, target_area_id, sort_order, status, provisional, published_at, archived_at) values
   (md5('cta-hero-projeto')::uuid, 'Quero um projeto', 'home-hero', 'contact', null, null, null, null, null, 1, 'published', false, '2026-10-13T00:00:00.000Z'::timestamptz, null),
@@ -113,3 +127,18 @@ on conflict (id) do nothing;
 insert into public.site_settings (id, name, short_name, tagline, description, manifesto, about, contact, socials, keywords) values
   (true, 'Agência Benjamin', 'Benja', 'Somando diferenças', 'Agência experimental de comunicação da FECAP. Estratégia, conteúdo, criação, eventos e assessoria de imprensa feitos por estudantes em projetos reais para marcas e organizações.', '{"title":"Comunicação que soma diferenças.","paragraphs":["Toda marca tem algo a dizer. Nem toda marca é ouvida.","A Benjamin nasce dentro da FECAP para provar que comunicação boa é feita de gente diferente pensando junto: estratégia, texto, imagem, evento e relacionamento trabalhando pelo mesmo objetivo.","Aqui, cada projeto é real, cada entrega é aprendizado e cada ideia é testada no mundo — não só na sala de aula."],"provisional":true}'::jsonb, '{"title":"Uma agência experimental dentro da FECAP","intro":"A Agência Benjamin é a agência experimental de comunicação da FECAP. Reúne estudantes que atuam em áreas complementares para desenvolver projetos de comunicação para clientes, parceiros e para a própria comunidade acadêmica.","valueProposition":"Unimos o olhar curioso de quem está se formando à responsabilidade de entregar para marcas reais: estratégia, criatividade e execução com acompanhamento próximo.","howWeWork":"Cada demanda passa por briefing, planejamento e produção com times formados pelas áreas da agência — de social media a assessoria de imprensa — com validação em cada etapa.","fecapRelation":"Vinculada à FECAP, a Benjamin conecta a formação acadêmica à prática profissional, fortalecendo a presença da instituição e de seus parceiros.","provisional":true}'::jsonb, '{"address":"FECAP — Av. da Liberdade, 532, Liberdade, São Paulo/SP","mapsUrl":"https://www.google.com/maps/search/?api=1&query=FECAP+Av.+da+Liberdade+532+S%C3%A3o+Paulo"}'::jsonb, '{"instagram":"https://www.instagram.com/agenciabenja","tiktok":"https://www.tiktok.com/@tik.benja","linkedin":"https://www.linkedin.com/company/benjamin-fecap/"}'::jsonb, array['Agência Benjamin', 'Benja', 'agência experimental', 'agência experimental FECAP', 'agência de comunicação', 'agência de comunicação São Paulo', 'FECAP', 'estratégia digital', 'social media', 'gestão de redes sociais', 'produção de conteúdo', 'copywriting', 'design e identidade visual', 'audiovisual', 'eventos e parcerias', 'assessoria de imprensa', 'comunicação interna', 'portfólio de comunicação', 'cases de comunicação'])
 on conflict (id) do nothing;
+
+insert into public.pages (id, slug, title, description, status, provisional, published_at, archived_at) values
+  (md5('page-ficticia-areas')::uuid, 'areas', 'Áreas de atuação', 'Página fictícia do seed de desenvolvimento.', 'published', true, '2026-10-13T00:00:00.000Z'::timestamptz, null),
+  (md5('page-ficticia-rascunho')::uuid, 'pagina-ficticia-rascunho', 'Página fictícia em rascunho', null, 'draft', true, null, null)
+on conflict (id) do nothing;
+
+insert into public.blocks (id, page_id, type, content, sort_order) values
+  (md5('page-ficticia-areas:bloco-0')::uuid, md5('page-ficticia-areas')::uuid, 'rich-text', '{"title":"Bloco de texto fictício","paragraphs":["Texto fictício do seed de desenvolvimento, para testar os blocos das páginas."]}'::jsonb, 0),
+  (md5('page-ficticia-areas:bloco-1')::uuid, md5('page-ficticia-areas')::uuid, 'list', '{"title":"Lista fictícia","items":[{"title":"Primeiro item fictício","text":"Descrição fictícia."},{"title":"Segundo item fictício"}]}'::jsonb, 1),
+  (md5('page-ficticia-areas:bloco-2')::uuid, md5('page-ficticia-areas')::uuid, 'team', '{"title":"Time fictício","members":[{"name":"Pessoa Fictícia A","role":"Função fictícia"},{"name":"Pessoa Fictícia B"}]}'::jsonb, 2),
+  (md5('page-ficticia-areas:bloco-3')::uuid, md5('page-ficticia-areas')::uuid, 'cta', '{"title":"Chamada fictícia","text":"Texto fictício.","label":"Fale com a gente","href":"/contato"}'::jsonb, 3),
+  (md5('page-ficticia-rascunho:bloco-0')::uuid, md5('page-ficticia-rascunho')::uuid, 'rich-text', '{"paragraphs":["Texto fictício de um rascunho: nunca aparece no site."]}'::jsonb, 0)
+on conflict (id) do nothing;
+
+commit;
