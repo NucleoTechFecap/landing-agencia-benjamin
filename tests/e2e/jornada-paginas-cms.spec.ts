@@ -18,9 +18,11 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 01/11/2026 Vinícius Nishimura Reis  Sufixo de teste com node:crypto (CodeQL).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
+import { randomBytes } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
@@ -39,7 +41,7 @@ test.describe("Painel · páginas e blocos @cms", () => {
   test.skip(!SUPABASE_URL || !SERVICE_KEY, "Requer o Supabase local: npm run test:e2e:cms");
   test.skip(({ isMobile }) => isMobile, "Painel no celular é avaliado em ADM-16.");
 
-  const suffix = Math.random().toString(36).slice(2, 8);
+  const suffix = randomBytes(3).toString("hex");
   const accounts = {
     editor: { email: `paginas-editor-${suffix}@teste.local`, password: `Senha-e2e-${suffix}-ed1`, id: "" },
     viewer: { email: `paginas-viewer-${suffix}@teste.local`, password: `Senha-e2e-${suffix}-vw1`, id: "" },
