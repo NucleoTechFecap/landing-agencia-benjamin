@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
+ 01/11/2026 Vinícius Nishimura Reis  Mock com getPage, usado pelas páginas a partir do INT-03.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -33,6 +34,8 @@ import { siteSettings } from "@/content";
 vi.mock("next/cache", () => ({ cacheTag: () => {}, cacheLife: () => {} }));
 vi.mock("@/lib/server/content/repository", () => ({
   getSiteSettings: async () => siteSettings,
+  // Sem página publicada no painel: as rotas mostram só as seções fixas (INT-03).
+  getPage: async () => null,
   listAreas: async () => [],
   listServices: async () => [],
   listCtas: async () => [],
