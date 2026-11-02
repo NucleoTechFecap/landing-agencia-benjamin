@@ -56,7 +56,7 @@ daquela rota, sempre como rascunho.
 | ----- | ---------------- | ---------- |
 | Título interno | salvar | Identifica a página no painel e na API |
 | Descrição | — | Até 300 caracteres |
-| Texto provisório | — | Nasce marcado. Desmarque só depois da aprovação da Benjamin: o site mostra um selo e o go-live fica bloqueado enquanto houver texto provisório publicado |
+| Texto provisório | — | Nasce marcado. Desmarque só depois da aprovação da Benjamin: o site não mostra aviso ao visitante, mas o go-live fica bloqueado enquanto houver texto provisório publicado |
 | Blocos | publicar | Ao menos um |
 
 Os blocos são editados um de cada vez, com **Editar**, **Subir**, **Descer** e **Excluir**. Em página

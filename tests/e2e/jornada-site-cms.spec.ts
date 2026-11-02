@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
  01/11/2026 Vinícius Nishimura Reis  Sufixo de teste com node:crypto (CodeQL).
  01/11/2026 Vinícius Nishimura Reis  Espera curta para o toPass recarregar a página (INT-03).
+ 02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -211,12 +212,13 @@ test.describe("Painel → site · Home e Sobre @cms", () => {
     await visitor.close();
   });
 
-  test("texto marcado como provisório mostra o selo no site", async ({ page }) => {
+  test("texto marcado como provisório não mostra selo no site", async ({ page }) => {
     await login(page);
     const visitor = await page.context().browser()!.newContext();
     const tab = await visitor.newPage();
     await tab.goto("/");
-    await expect(tab.locator("section", { hasText: manifesto }).getByText("Conteúdo provisório")).toBeVisible();
+    await expect(tab.locator("section", { hasText: manifesto })).toBeVisible();
+    await expect(tab.getByText("Conteúdo provisório")).toHaveCount(0);
     await visitor.close();
   });
 

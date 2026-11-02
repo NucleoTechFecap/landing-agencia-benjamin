@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -25,6 +25,7 @@
  30/10/2026 Caio Moraes              Galeria mostra a peça inteira, sem corte (CASE-04).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
  01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -125,7 +126,6 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
         description={<p>{item.summary}</p>}
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Cases", href: "/cases" }, { label: item.client }]}
         tone="azul"
-        provisional={item.provisional}
       >
         <div className="mt-6 flex flex-wrap gap-2">
           {category ? (
@@ -140,7 +140,7 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
 
       {item.cover ? (
         <div className="border-b-2 border-benja-noite bg-benja-noite">
-          <div className="relative mx-auto aspect-[16/9] max-h-[640px] w-full max-w-6xl">
+          <div data-motion="image" className="relative mx-auto aspect-[16/9] max-h-[640px] w-full max-w-6xl">
             <Image
               src={item.cover.src}
               alt={item.cover.alt}
@@ -161,7 +161,7 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
           <div className="space-y-10">
             {story.length > 0 ? (
               story.map((block) => (
-                <article key={block.id} aria-labelledby={`${block.id}-titulo`}>
+                <article key={block.id} data-motion="reveal" aria-labelledby={`${block.id}-titulo`}>
                   <div className="flex items-center gap-3">
                     <BrandIcon name={block.icon} color="lima" size={40} />
                     <h3 id={`${block.id}-titulo`} className="text-2xl font-black text-benja-verde">
@@ -179,6 +179,7 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
           </div>
           <aside
             aria-label="Ficha do projeto"
+            data-motion="reveal"
             className="h-fit space-y-6 rounded-3xl border-2 border-benja-noite bg-benja-claro p-6 shadow-sticker"
           >
             <div>
@@ -245,10 +246,10 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
 
       {item.gallery.length > 0 ? (
         <Section tone="creme" labelledBy="galeria-titulo">
-          <h2 id="galeria-titulo" className="text-3xl font-black text-benja-verde">
+          <h2 id="galeria-titulo" data-motion="lines" className="text-3xl font-black text-benja-verde">
             Galeria
           </h2>
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul data-motion="cards" className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {item.gallery.map((image) => (
               <li
                 key={image.src}
@@ -269,10 +270,10 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
 
       {related.length > 0 ? (
         <Section tone="verde" halftone labelledBy="relacionados-titulo">
-          <h2 id="relacionados-titulo" className="text-3xl font-black">
+          <h2 id="relacionados-titulo" data-motion="lines" className="text-3xl font-black">
             Mais cases de {category?.name}
           </h2>
-          <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ul data-motion="cards" className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((entry) => (
               <li key={entry.id}>
                 <CaseCard item={entry} />

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -73,7 +74,8 @@ export function PageForm({
             defaultValue={value("description", page?.description)}
           />
           <CheckboxField name="provisional" defaultChecked={page ? page.provisional : true}>
-            Texto provisório: ainda espera a aprovação da Benjamin. O site mostra um selo e o go-live fica bloqueado.
+            Texto provisório: ainda espera a aprovação da Benjamin. O site não mostra nenhum aviso ao visitante, mas o
+            go-live fica bloqueado.
           </CheckboxField>
         </>
       )}

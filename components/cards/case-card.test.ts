@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Foco visível no card e testes do portfólio (CASE-01).
+ 02/11/2026 Vinícius Nishimura Reis  Ajuste às animações GSAP e à remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -62,8 +63,8 @@ describe("card de case (CASE-01)", () => {
     expect(markup).not.toContain("aspect-[16/10]");
   });
 
-  it("selo de provisório só no conteúdo provisório", () => {
-    expect(render({ provisional: true })).toContain("Conteúdo provisório");
+  it("não exibe selo de provisório: o item provisório fica sinalizado só no painel", () => {
+    expect(render({ provisional: true })).not.toContain("Conteúdo provisório");
     expect(render({ provisional: false })).not.toContain("Conteúdo provisório");
   });
 });

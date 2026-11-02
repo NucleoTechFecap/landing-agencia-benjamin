@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Foco visível no card e testes do portfólio (CASE-01).
+ 02/11/2026 Vinícius Nishimura Reis  Ajuste às animações GSAP e à remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -45,9 +46,13 @@ test.describe("Portfólio de cases", () => {
     const cards = page.getByRole("main").locator("article");
     await expect(cards.first()).toBeVisible();
     expect(await cards.count()).toBeGreaterThanOrEqual(2);
-    const [first, second] = [(await cards.nth(0).boundingBox())!, (await cards.nth(1).boundingBox())!];
-    if (isMobile) expect(second.x).toBe(first.x);
-    else expect(second.y).toBe(first.y);
+    // Os cards entram com transformação (ADR-0008): a posição vale depois da entrada.
+    await expect
+      .poll(async () => {
+        const [first, second] = [(await cards.nth(0).boundingBox())!, (await cards.nth(1).boundingBox())!];
+        return Math.abs(isMobile ? second.x - first.x : second.y - first.y);
+      })
+      .toBeLessThan(1);
     await noHorizontalScroll(page);
   });
 
