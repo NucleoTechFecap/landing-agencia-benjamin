@@ -94,7 +94,6 @@ export default async function ServicePage({ params }: PageProps<"/servicos/[slug
           { label: service.name },
         ]}
         icon={service.icon}
-        provisional={service.provisional}
       >
         <div className="mt-8">
           <ButtonLink href={contactHref} variant="lima">

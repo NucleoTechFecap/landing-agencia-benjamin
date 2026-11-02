@@ -31,7 +31,6 @@ import Link from "next/link";
 import { ClosingCta } from "@/components/sections/closing-cta";
 import { PageBlocks } from "@/components/sections/page-blocks";
 import { PageHero } from "@/components/sections/page-hero";
-import { ProvisionalBadge } from "@/components/ui/badge";
 import { BrandIcon, type BrandIconColor } from "@/components/ui/brand-icon";
 import { Container } from "@/components/ui/container";
 import { SECTION_TONES, Section, type SectionTone } from "@/components/ui/section";
@@ -128,7 +127,6 @@ export default async function AreasPage() {
                   {area.name}
                 </h2>
                 <p className="mt-4 max-w-2xl text-lg leading-relaxed">{area.description}</p>
-                {area.provisional ? <ProvisionalBadge className="mt-3" /> : null}
                 {area.highlights.length > 0 ? (
                   <ul className="mt-6 flex flex-wrap gap-2">
                     {area.highlights.map((highlight) => (

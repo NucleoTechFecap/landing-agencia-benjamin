@@ -26,7 +26,6 @@
 
 import Image from "next/image";
 import type { SiteSettings } from "@/lib/domain/content/types";
-import { ProvisionalBadge } from "../ui/badge";
 import { ButtonLink } from "../ui/button-link";
 import { Container } from "../ui/container";
 import { Sticker } from "../ui/sticker";
@@ -61,7 +60,6 @@ export function HeroManifesto({ settings, ctas }: { settings: SiteSettings; ctas
               <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
-          {manifesto.provisional ? <ProvisionalBadge className="mt-4" /> : null}
           <div className="mt-8 flex flex-wrap gap-3">
             {ctas.map((cta, index) => (
               <ButtonLink

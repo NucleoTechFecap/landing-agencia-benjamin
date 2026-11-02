@@ -25,7 +25,6 @@ componente reutilizável, atualize esta lista.
 | `SectionHeading` | Título de seção com sobretítulo e descrição | `title`, `eyebrow`, `description`, `align`, `as` (`h1` \| `h2`), `id` | 4 |
 | `ButtonLink` | Link com visual de botão "sticker" (interno ou externo) | `href`, `variant` (`primary`, `secondary`, `lima`, `ghost`), `external`, `prefetch` | 10 |
 | `Badge` | Etiqueta arredondada (categoria, tipo, data) | `className` | 4 |
-| `ProvisionalBadge` | Selo "Conteúdo provisório" para textos ainda não aprovados | `className` | 10 |
 | `BrandIcon` | Ícone oficial do brandbook (`public/brand/icons`), decorativo por padrão | `name`, `color`, `size`, `alt` | 12 |
 | `Sticker` | Sticker da identidade (`public/brand/stickers`), sempre decorativo | `name`, `color`, `width`, `anchor` (`top` \| `bottom`) | 7 |
 | `Breadcrumbs` | Trilha de navegação; a última entrada é a página atual | `items` (`{ label, href? }[]`) | 9 |
@@ -42,7 +41,7 @@ componente reutilizável, atualize esta lista.
 
 | Componente | Para que serve | Telas |
 | ---------- | -------------- | ----- |
-| `PageHero` | Topo das páginas internas: breadcrumbs, `h1`, descrição, ícone e selo provisório | 9 |
+| `PageHero` | Topo das páginas internas: breadcrumbs, `h1`, descrição e ícone | 9 |
 | `ClosingCta` | Faixa final laranja de conversão (contato/projeto) | 7 |
 | `HeroManifesto` | Primeira dobra da Home: manifesto e CTAs principais | Home |
 | `AboutPreview` | Bloco "Quem é a Benjamin" | Home |
@@ -71,4 +70,5 @@ com as peças compartilhadas de `fields.tsx` (`TextField`, `TextArea`, `SelectFi
 - **Imagens decorativas** (`BrandIcon`, `Sticker`) usam caixa fixa com `object-contain`; não
   passe altura por CSS, para não reintroduzir o aviso "width or height modified" do
   `next/image` (LAY-06).
-- **Conteúdo provisório** deve sempre exibir `ProvisionalBadge` até a aprovação da agência.
+- **Conteúdo provisório** não tem selo no site público: fica sinalizado no painel (`StatusBadge`) e o
+  gate de release (`npm run check:release-content`) barra o go-live.

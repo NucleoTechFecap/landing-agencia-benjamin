@@ -87,8 +87,8 @@ plataforma é a vitrine da agência e também a ferramenta de trabalho da equipe
 > [!NOTE]
 > Com o Supabase configurado, o site mostra o que foi **publicado no painel** (CMS) e cada
 > publicação aparece na hora, sem novo deploy. **Sem banco configurado** (desenvolvimento), ele usa
-> o conteúdo provisório versionado em [`content/`](content/), marcado com o selo "Conteúdo
-> provisório" — homologação e produção sempre leem o CMS. O gate de release
+> o conteúdo provisório versionado em [`content/`](content/) — homologação e produção sempre leem
+> o CMS. O painel sinaliza o que ainda é provisório, e o gate de release
 > (`npm run release:check`) impede a publicação enquanto existir conteúdo provisório.
 
 ---

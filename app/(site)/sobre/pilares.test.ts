@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Testes de aceite da proposta de valor (SOB-02).
+ 02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -69,9 +70,9 @@ describe("proposta de valor e modelo de atuação (SOB-02)", () => {
     }
   });
 
-  it("o selo acompanha o estado de aprovação do texto", async () => {
+  it("não exibe selo de provisório, qualquer que seja o estado de aprovação do texto", async () => {
     about.current = { provisional: true };
-    expect(await render()).toContain("Conteúdo provisório");
+    expect(await render()).not.toContain("Conteúdo provisório");
     about.current = { provisional: false };
     expect(await render()).not.toContain("Conteúdo provisório");
   });

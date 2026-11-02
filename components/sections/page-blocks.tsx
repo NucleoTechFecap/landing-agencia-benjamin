@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -27,7 +28,6 @@ import { publicEnv } from "@/lib/config/public-env";
 import { isValidExternalUrl } from "@/lib/domain/content/integrity";
 import { isSectionBlock, type BlockContent, type PageBlock } from "@/lib/domain/content/blocks";
 import type { Page } from "@/lib/domain/content/types";
-import { ProvisionalBadge } from "../ui/badge";
 import { ButtonLink } from "../ui/button-link";
 import { Section, type SectionTone } from "../ui/section";
 import { SectionHeading } from "../ui/section-heading";
@@ -137,16 +137,5 @@ function Block({ block, tone }: { block: PageBlock; tone: SectionTone }) {
 export function PageBlocks({ page }: { page: Page | null }) {
   const blocks = page?.blocks.filter((block) => !isSectionBlock(block.type)) ?? [];
   if (!blocks.length) return null;
-  return (
-    <>
-      {page?.provisional ? (
-        <div className="bg-benja-nyanza pt-8 text-center">
-          <ProvisionalBadge />
-        </div>
-      ) : null}
-      {blocks.map((block, index) => (
-        <Block key={block.id} block={block} tone={TONES[index % TONES.length]} />
-      ))}
-    </>
-  );
+  return blocks.map((block, index) => <Block key={block.id} block={block} tone={TONES[index % TONES.length]} />);
 }
