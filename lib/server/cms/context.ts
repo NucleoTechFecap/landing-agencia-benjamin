@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
 28/10/2026 Codex                     Usa códigos de aviso fechados (TECH-13).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 02/11/2026 Vinícius Nishimura Reis  Envio de mídia em dois passos no servidor, sem receber o arquivo (TECH-13, #313).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,20 +30,20 @@ import "server-only";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { publicEnv } from "@/lib/config/public-env";
 import { safeAdminRedirect } from "@/lib/domain/auth/redirect";
-import { MEDIA_BUCKET } from "@/lib/domain/media/policy";
 import type { Action, Resource } from "@/lib/domain/auth/rbac";
-import type { CmsFlash, CmsFormState, CmsWarning } from "@/lib/domain/content/cms-form";
+import type { CmsFlash, CmsFormState, CmsWarning, MediaUploadTicket } from "@/lib/domain/content/cms-form";
 import { COMMAND_PERMISSION, type PublicationCommand } from "@/lib/domain/content/publication";
 import { recordAuditEvent } from "../audit";
 import { requirePermission } from "../auth/guards";
 import type { SessionUser } from "../auth/session";
 import { invalidateContentFromAction } from "../content/invalidate";
-import { AppError, newRequestId, toPublicError } from "../errors";
+import { newRequestId, toPublicError } from "../errors";
 import { createSessionClient } from "../supabase/server";
 import { runContentCommand, saveContent, type CmsDeps } from "./content-service";
 import type { CmsItem, EntityDefinition } from "./entities";
 import { checked, command, itemRef, text, typedValues } from "./form-data";
-import { uploadMedia, type MediaStorage } from "./media-service";
+import { finalizeMediaUpload, prepareMediaUpload } from "./media-service";
+import { createSupabaseMediaStorage } from "./media-storage";
 import type { CmsSnapshot } from "./store";
 import { createSupabaseCmsStore } from "./supabase-store";
 
@@ -160,48 +161,61 @@ export async function cmsCommandAction<I extends { slug: string }, T extends Cms
   });
 }
 
-/** Bucket "media" do Supabase Storage, com a sessão de quem envia (políticas media:*). */
-function supabaseStorage(client: Awaited<ReturnType<typeof createSessionClient>>): MediaStorage {
-  const bucket = client.storage.from(MEDIA_BUCKET);
-  return {
-    async upload(path, bytes, contentType) {
-      const { error } = await bucket.upload(path, bytes, { contentType, upsert: false, cacheControl: "31536000" });
-      if (error)
-        throw new AppError("SERVICE_UNAVAILABLE", {
-          message: "Não foi possível enviar o arquivo. Tente de novo.",
-          cause: error,
-        });
-    },
-    async remove(path) {
-      await bucket.remove([path]);
-    },
-  };
+const mediaMeta = (form: FormData) => ({ alt: text(form, "alt"), decorative: checked(form, "decorative") });
+const typedMediaMeta = (form: FormData) => ({
+  alt: text(form, "alt"),
+  decorative: checked(form, "decorative") ? "on" : "",
+});
+
+async function mediaStorage() {
+  return createSupabaseMediaStorage(await createSessionClient(), publicEnv.NEXT_PUBLIC_SUPABASE_URL!);
 }
 
 /**
- * Server Action de envio para a biblioteca de mídia (ADR-0005). Volta para `voltar` quando é
- * um caminho seguro do painel (ex.: o case que pediu a imagem) ou para a própria biblioteca.
+ * Primeiro passo do envio para a biblioteca (ADR-0005): confere permissão, formato, tamanho e
+ * texto alternativo declarados e devolve a autorização para o navegador mandar os bytes direto
+ * ao Storage. A Server Action nunca recebe o arquivo, porque a Vercel recusa corpo acima de 4,5 MB.
  */
-export async function cmsUploadAction(form: FormData): Promise<CmsFormState> {
+export async function cmsRequestMediaUpload(form: FormData): Promise<MediaUploadTicket> {
+  const requestId = newRequestId();
+  try {
+    const user = await requirePermission("media", "create");
+    const ticket = await prepareMediaUpload(
+      { ...(await cmsDeps()), storage: await mediaStorage(), newId: () => crypto.randomUUID() },
+      user,
+      { name: text(form, "name"), type: text(form, "type"), size: Number(text(form, "size")), ...mediaMeta(form) },
+    );
+    return { status: "ready", ...ticket };
+  } catch (error) {
+    unstable_rethrow(error);
+    return {
+      status: "error",
+      ...toPublicError(error, requestId, "cms.action.unexpected_error"),
+      values: typedMediaMeta(form),
+    };
+  }
+}
+
+/**
+ * Último passo: confere os bytes que chegaram ao Storage e registra na biblioteca. Volta para
+ * `voltar` quando é um caminho seguro do painel (ex.: o case que pediu a imagem) ou para a
+ * própria biblioteca.
+ */
+export async function cmsFinishMediaUpload(form: FormData): Promise<CmsFormState> {
   const back = safeAdminRedirect(form.get("voltar"));
   const destination = back === "/admin" ? "/admin/midia" : back;
   return cmsFormAction(
     "media",
     "create",
     async (user, deps) => {
-      const file = form.get("file");
-      if (!(file instanceof File) || file.size === 0) {
-        throw new AppError("VALIDATION_FAILED", { fieldErrors: { file: ["Escolha um arquivo."] } });
-      }
-      const client = await createSessionClient();
-      await uploadMedia(
-        { ...deps, storage: supabaseStorage(client), newId: () => crypto.randomUUID() },
-        user,
-        { name: file.name, type: file.type, bytes: new Uint8Array(await file.arrayBuffer()) },
-        { alt: text(form, "alt"), decorative: checked(form, "decorative") },
-      );
+      await finalizeMediaUpload({ ...deps, storage: await mediaStorage() }, user, {
+        path: text(form, "path"),
+        name: text(form, "name"),
+        type: text(form, "type"),
+        ...mediaMeta(form),
+      });
       return withFlash(destination, "enviado");
     },
-    { alt: text(form, "alt"), decorative: checked(form, "decorative") ? "on" : "" },
+    typedMediaMeta(form),
   );
 }
