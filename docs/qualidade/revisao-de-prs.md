@@ -4,8 +4,8 @@
 | ------------ | ----------------------------------------------------------------------- |
 | Issue        | TECH-13 (#177)                                                          |
 | Responsável  | Vinícius Nishimura Reis (`@Vinishireis`)                                |
-| Versão       | 1.1.0 — revisão de segurança da entrega do CMS (27/10/2026)             |
-| Data         | 13/10/2026                                                              |
+| Versão       | 1.2.0 — revisão de 02/11/2026 e situação real das aprovações             |
+| Data         | 13/10/2026 · revisão 27/10/2026 · revisão 02/11/2026                    |
 | Depende de   | INT-02 (#168), INT-03 (#169), ADM-03 (#79)                              |
 | Automação    | `.github/CODEOWNERS` (revisão solicitada automaticamente em caminhos críticos) |
 
@@ -74,9 +74,15 @@ Qualquer PR que altere ao menos um dos itens abaixo (os caminhos estão no `CODE
 | PR | Escopo | Revisor | Resultado | Riscos aceitos |
 | -- | ------ | ------- | --------- | -------------- |
 | INT-02 (#282) e pilha do CMS #276–#285 | Leitura do Supabase, CMS de áreas, serviços, cases e mídia, site na base publicada, login | Revisão independente de segurança (27/10/2026), ver §5 | Sem achado alto; 4 médios e 3 baixos, corrigidos em #301, #312 e #316 | Gravação não atômica (#314), envio limitado a 4 MB (#313), baixos (#315) |
-| INT-03 (#169) | Home e institucional editáveis | — | Pendente (PR ainda não aberto) | — |
-| ADM-03 (#237) | Proteção de rotas e RBAC no banco | Vinícius Binda (solicitada) | Pendente | — |
-| #301 e #312 (migrations da TECH-13) | Auditoria e Storage | Vinícius Binda (solicitada) | Pendente | — |
+| INT-03 (#348) e ADM-05 (#347) | Home, institucional e páginas editáveis | Revisão automatizada (02/11/2026), ver §6. Aprovação no GitHub: só da conta `NucleoTechFecap` | Aprovado com ressalvas; falta revisão humana | Achados baixos em #369 |
+| DB-08 (#342) e DBX-03 (#341) | Endereços antigos, índices e RLS de leitura | Vinícius Nishimura Reis no GitHub; revisão automatizada (02/11/2026), ver §6 | Aprovado com ressalvas | Achados baixos em #369 |
+| Guarda de auditoria (#337) | `record_audit_event` por papel | Vinícius Nishimura Reis no GitHub; revisão automatizada (02/11/2026), ver §6 | Aprovado | — |
+| SEG-09 (#351) | Imagem de compartilhamento e URLs de capa | Revisão automatizada (02/11/2026), ver §6. Aprovação no GitHub: só da conta `NucleoTechFecap` | Aprovado com ressalvas; falta revisão humana | Achados baixos em #369 |
+| TECH-06 (#365, aberto) | Captação, fila de reenvio e `update` do painel | Revisão automatizada (02/11/2026), ver §6; Vinícius Binda (solicitada) | Dois achados baixos, corrigidos no próprio PR; aguarda revisão humana | — |
+| ADM-03 (#237) | Proteção de rotas e RBAC no banco | Nenhuma registrada no GitHub | **Mesclado sem revisão registrada** | Ver §6.3 |
+| #301 (exclusão de conta auditada) | Auditoria | Vinícius Binda (aprovado no GitHub) | Aprovado | — |
+| #312 e #316 (correções da TECH-13) | Storage, limite de envio e gravação parcial | Nenhuma registrada no GitHub | **Mesclados sem revisão registrada** | Ver §6.3 |
+| #366 (gravação atômica), #367 (envio direto) e #368 (dependências) | Em aberto em 02/11/2026 | Vinícius Binda (solicitada em #366 e #367) | Pendente | — |
 
 ## 5. Revisão de segurança da entrega do CMS (27/10/2026)
 
@@ -89,8 +95,8 @@ leu o código, rodou os testes e consultou o Supabase local como `anon`, `viewer
 | - | ------ | ---------- | -------- |
 | 1 | Bucket `media` listável com a chave anon: expunha arquivos de cases em rascunho | Média | Corrigido em #312 (listagem exige `media:view`) |
 | 2 | Envio que falhava no registro deixava o arquivo órfão (o editor não podia apagá-lo) | Média | Corrigido em #312 (quem enviou apaga o próprio arquivo sem registro) |
-| 3 | Salvar não é atômico: falha nos vínculos gravava só o texto, sem auditoria nem cache | Média | Mitigado em #316 (ids sem repetição, auditoria da falha, cache e mensagem clara); transação em #314 |
-| 4 | `bodySizeLimit` de 11 MB não vale na Vercel (teto de 4,5 MB) | Média | Corrigido em #316 (limite de 4 MB conferido no navegador e no servidor); envio direto em #313 |
+| 3 | Salvar não é atômico: falha nos vínculos gravava só o texto, sem auditoria nem cache | Média | Mitigado em #316 (ids sem repetição, auditoria da falha, cache e mensagem clara); transação no PR #366, aguardando revisão |
+| 4 | `bodySizeLimit` de 11 MB não vale na Vercel (teto de 4,5 MB) | Média | Corrigido em #316 (limite de 4 MB conferido no navegador e no servidor); envio direto no PR #367, aguardando revisão |
 | 5 | Páginas relacionadas mostravam o item arquivado na primeira visita | Média | Corrigido em #316 (`relatedPaths` no aquecimento) |
 | 6 | Conta com evento auditado não podia ser excluída (achado na validação integrada) | Média | Corrigido em #301 |
 | 7 | `record_audit_event` aceita evento de qualquer papel; `?aviso=` com texto livre; `revoke from anon` sem efeito | Baixa | `revoke` corrigido em #312; os outros dois em #315 |
@@ -102,5 +108,58 @@ vale no serviço e no `UPDATE`; o upload confere a assinatura dos bytes; o `next
 redireciona para fora (10 tentativas de bypass); a leitura pública tem três barreiras (RLS,
 filtro de status e data); os cabeçalhos de segurança estão ativos. A CSP continua prevista em
 SEG-06.
+
+## 6. Revisão técnica de 02/11/2026
+
+Escopo: `git diff 5d1bc35..7be685f`, restrito aos caminhos críticos (migrations, CMS, leitura
+pública, API v1, `proxy.ts` e `next.config.ts`), e o diff do PR aberto #365.
+
+**O que esta revisão é:** automatizada e só por leitura de código. Não executou testes nem acessou
+banco ou ambiente remoto, e não substitui a revisão humana que o ruleset exige. Os testes foram
+rodados à parte, no registro de go/no-go de 02/11.
+
+### 6.1 Achados
+
+Nenhum alto ou médio. **Confirmado:** o defeito está no código. **Plausível:** o efeito ainda precisa
+ser reproduzido, em geral na Vercel.
+
+| # | Achado | Severidade | Situação |
+| - | ------ | ---------- | -------- |
+| 1 | Segunda expiração do cache só vale depois do reaquecimento: pode chegar a cerca de 8 s, acima da meta de 5 s do ADR-0006 | Baixa | Ordem confirmada; efeito plausível. Em #369 |
+| 2 | 301 permanente com slug reversível: a→b→a pode dar loop para quem guardou o 301 | Baixa | Código confirmado; loop plausível. Em #369 |
+| 3 | Blocos de página sem transação, nem a mitigação que `saveContent` tinha | Baixa | Confirmado. Em #369 |
+| 4 | Rollback da DBX-03 cita a versão errada no `migration repair` | Baixa | Confirmado. Em #369 |
+| 5 | Slug chega ao `use cache` sem validar formato em API e imagens de compartilhamento | Baixa | Código confirmado; impacto plausível. Em #369 |
+| 6 | `stale-while-revalidate=3600` contradiz a meta de 5 min do ADR-0006 | Baixa | Cabeçalho confirmado; efeito plausível. Em #369 |
+| 7 | #365: categoria ainda forjável em formato de slug (`lead:urgente-diretoria`), embora o documento dissesse que era recusada | Baixa | Corrigido no próprio #365 |
+| 8 | #365: nome e empresa aceitavam quebra de linha e forjavam linhas no e-mail interno | Baixa | Corrigido no próprio #365 |
+
+### 6.2 Verificado e correto
+
+As políticas da DBX-03 equivalem às anteriores; `slug_redirects` não aceita escrita direta;
+`track_slug` é `security definer` com `search_path` vazio e sem execução pública; rascunho, arquivado
+e agendado não saem por página, API, sitemap, imagem de compartilhamento nem resolução de slug; as
+Server Actions de páginas checam permissão antes de ler; bloco só muda se pertencer à página informada;
+o site não renderiza HTML do banco; `cta.href` recusa `javascript:`; os 301 não permitem
+redirecionamento aberto; não há dado pessoal em tag de cache, URL ou metadado de auditoria.
+
+### 6.3 Aprovações: situação real
+
+O critério da TECH-13 é "PRs críticos com revisão registrada", e o ruleset só existe desde 28/10.
+Conferindo o GitHub em 02/11:
+
+- **Sem revisão registrada:** #237, #312 e #316, mesclados antes do ruleset.
+- **Aprovados só pela conta `NucleoTechFecap`:** #347, #348 e #351, de autoria de `Vinishireis`. A
+  conta é institucional. Se quem a opera também é o autor, isso não atende "revisor ≠ autor".
+
+Para fechar o critério, falta a coordenação decidir entre uma revisão posterior de Vinícius Binda
+nesses PRs ou a aceitação do risco por escrito (§3). Esta revisão automatizada não preenche essa
+lacuna.
+
+### 6.4 O que não foi verificado
+
+Comportamento real da CDN da Vercel, cache de 301, `after()` com espera e a reação da Resend a
+quebra de linha no assunto. O estado da produção (migrations aplicadas, cadastro público desligado,
+configuração do bucket) também ficou de fora: não houve conexão com ambiente remoto.
 
 Atualizar esta tabela a cada PR crítico revisado (data e link do comentário de revisão).
