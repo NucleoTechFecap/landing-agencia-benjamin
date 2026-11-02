@@ -68,7 +68,7 @@ publicada, salvar um bloco muda o site na hora. A última exclusão é recusada:
 | Sobre a Benjamin | Só em Sobre, um | **Substitui** os textos de quem somos, proposta, modelo de atuação e FECAP, em Sobre e na Home |
 | Texto | Qualquer página | Título opcional e parágrafos, um por linha (até 12) |
 | Lista de destaques | Qualquer página | Um item por linha: `Título \| texto opcional` (até 12) |
-| Nosso time | Qualquer página | Nome, cargo e foto da biblioteca. Publique só o que a pessoa autorizou |
+| Nosso time | Qualquer página | Nome, cargo e foto da biblioteca, na ordem da tela. Publique só o que a pessoa autorizou. Sem esse bloco, a seção não existe no site. A foto fica gravada no bloco: se trocar a imagem na biblioteca, escolha de novo |
 | Chamada para ação | Qualquer página | Título, texto, botão e destino (rota do site ou link https) |
 
 Sem página publicada, o site continua com os textos atuais de cada seção. Despublicar ou arquivar a

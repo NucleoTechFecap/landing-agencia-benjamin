@@ -19,11 +19,12 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { describe, expect, it } from "vitest";
-import { BLOCK_TYPES, pagePath, parseBlock } from "./blocks";
+import { BLOCK_SCHEMAS, BLOCK_TYPES, pagePath, parseBlock } from "./blocks";
 
 const block = (type: string, content: unknown) => ({ id: "b1", type, content, order: 1 });
 
@@ -79,5 +80,17 @@ describe("catálogo de blocos (DB-03)", () => {
     expect(pagePath("privacidade")).toBe("/privacidade");
     expect(pagePath("landing-campanha")).toBeNull();
     expect(pagePath("toString")).toBeNull();
+  });
+
+  it("foto do time: aceita /public, https e o Storage local; recusa o resto", () => {
+    const photo = (src: string) =>
+      BLOCK_SCHEMAS.team.safeParse({ members: [{ name: "Ana", photo: { src, alt: "Ana" } }] }).success;
+    expect(photo("/brand/foto.jpg")).toBe(true);
+    expect(photo("https://projeto.supabase.co/storage/v1/object/public/media/foto.jpg")).toBe(true);
+    expect(photo("http://127.0.0.1:54321/storage/v1/object/public/media/foto.jpg")).toBe(true);
+    expect(photo("http://exemplo.com/foto.jpg")).toBe(false);
+    expect(photo("http://127.0.0.1:54321/outra/foto.jpg")).toBe(false);
+    expect(photo("//exemplo.com/foto.jpg")).toBe(false);
+    expect(photo("javascript:alert(1)")).toBe(false);
   });
 });

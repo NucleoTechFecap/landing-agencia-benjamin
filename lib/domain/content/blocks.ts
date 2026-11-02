@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -67,11 +68,17 @@ const text = (max: number) =>
   z.string({ error: FILL_IN }).trim().min(1, FILL_IN).max(max, `Use no máximo ${max} caracteres.`);
 const optionalTitle = text(120).optional();
 
+/** Storage do Supabase local (`npx supabase start`) é http; nos demais ambientes vale o https. */
+const LOCAL_STORAGE = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/storage\/v1\/object\/public\//;
+
 /** Caminho em /public (ex.: /brand/...) ou URL https do bucket de mídia. */
 const mediaSrc = z
   .string()
   .max(500)
-  .refine((src) => (src.startsWith("/") && !src.startsWith("//")) || isValidExternalUrl(src), "Imagem inválida.");
+  .refine(
+    (src) => (src.startsWith("/") && !src.startsWith("//")) || isValidExternalUrl(src) || LOCAL_STORAGE.test(src),
+    "Imagem inválida.",
+  );
 
 /*
  * Conteúdo de cada tipo de bloco. Só texto puro e listas: o site nunca renderiza HTML
