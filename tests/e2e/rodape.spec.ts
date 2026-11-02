@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Endereço sem mapa e redes vazias no rodapé (LAY-03).
+ 02/11/2026 Vinícius Nishimura Reis  Ajuste às animações GSAP e à remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -40,9 +41,9 @@ test.describe("Rodapé", () => {
       await expect(link).toBeVisible();
       expect(new URL((await link.getAttribute("href"))!).host).toBe(host);
       await expect(link).toHaveAttribute("target", "_blank");
-      const box = (await link.boundingBox())!;
-      expect(box.width).toBeGreaterThanOrEqual(44);
-      expect(box.height).toBeGreaterThanOrEqual(44);
+      // O tamanho vale depois da entrada animada do rodapé (ADR-0008).
+      await expect.poll(async () => (await link.boundingBox())!.width).toBeGreaterThanOrEqual(44);
+      await expect.poll(async () => (await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
       await link.focus();
       await expect(link).toBeFocused();
     }

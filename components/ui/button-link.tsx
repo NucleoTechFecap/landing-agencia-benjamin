@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 28/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  28/10/2026 Caio Moraes              Classes do botão exportadas para reuso em <button> (INT-01).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,9 +35,12 @@ const VARIANTS = {
 
 export type ButtonVariant = keyof typeof VARIANTS;
 
-/** Classes do botão "sticker", para usar também em <button> com o mesmo visual dos links. */
+/**
+ * Classes do botão "sticker", para usar também em <button> com o mesmo visual dos links. A transição
+ * não inclui `transform`: o efeito magnético (GSAP) escreve nessa propriedade a cada quadro.
+ */
 export function buttonClasses(variant: ButtonVariant = "primary", className = "") {
-  return `inline-flex items-center justify-center gap-2 rounded-full border-2 px-6 py-3 text-base font-bold shadow-sticker transition hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${VARIANTS[variant]} ${className}`;
+  return `inline-flex items-center justify-center gap-2 rounded-full border-2 px-6 py-3 text-base font-bold shadow-sticker transition-[background-color,color,box-shadow,translate] hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${VARIANTS[variant]} ${className}`;
 }
 
 /** Link com aparência de botão "sticker" (borda grossa e sombra deslocada). */
@@ -58,14 +62,14 @@ export function ButtonLink({
   const classes = buttonClasses(variant, className);
   if (external) {
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className={classes}>
+      <a href={href} target="_blank" rel="noopener noreferrer" className={classes} data-magnetic>
         {children}
         <span className="sr-only"> (abre em nova aba)</span>
       </a>
     );
   }
   return (
-    <Link href={href} className={classes} prefetch={prefetch}>
+    <Link href={href} className={classes} prefetch={prefetch} data-magnetic>
       {children}
     </Link>
   );

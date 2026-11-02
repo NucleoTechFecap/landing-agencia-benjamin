@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -35,10 +36,15 @@ describe("readImageDimensions (ADM-08)", () => {
       width: 1200,
       height: 750,
     });
-    expect(readImageDimensions(file("public/brand/icons/estrela-azul.webp"), "image/webp")).toEqual({
-      width: 157,
-      height: 160,
-    });
+  });
+
+  it("lê WebP estendido (VP8X, com transparência) pelo cabeçalho", () => {
+    // RIFF + tamanho + WEBP + VP8X + tamanho do bloco + opções + largura-1 (156) e altura-1 (159).
+    const webp = new Uint8Array([
+      0x52, 0x49, 0x46, 0x46, 0xc8, 0x0f, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50, 0x56, 0x50, 0x38, 0x58, 0x0a, 0x00, 0x00,
+      0x00, 0x10, 0x00, 0x00, 0x00, 0x9c, 0x00, 0x00, 0x9f, 0x00, 0x00,
+    ]);
+    expect(readImageDimensions(webp, "image/webp")).toEqual({ width: 157, height: 160 });
   });
 
   it("lê JPEG pelo marcador de início de quadro", () => {

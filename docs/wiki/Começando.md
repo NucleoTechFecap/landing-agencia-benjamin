@@ -18,7 +18,7 @@ cp .env.example .env.local   # só nomes e valores fictícios
 npm run dev                  # http://localhost:3000
 ```
 
-Sem Supabase, o site usa o conteúdo versionado em `content/`, com o selo "Conteúdo provisório". Os
+Sem Supabase, o site usa o conteúdo provisório versionado em `content/`. Os
 formulários gravam em memória e a notificação vai para o log. O painel `/admin` fica bloqueado.
 
 ## Com o banco local (painel, RLS e mídia)

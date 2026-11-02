@@ -79,7 +79,7 @@ alimentam o site a partir de `content/`. Quando as tabelas existirem, só a cama
 | Textos | `text` + `check (char_length(...))`, sem `varchar(n)`. Os limites seguem os schemas Zod |
 | Listas simples | `text[]` com limite de `cardinality` (destaques, exemplos, equipe, palavras-chave) |
 | Listas com estrutura ou ordem | Tabela filha (galeria e links do case) |
-| Conteúdo provisório | `provisional boolean`: o site mostra o selo e o gate de release bloqueia ([GO-01](../operacao/release-e-rollback.md)) |
+| Conteúdo provisório | `provisional boolean`: o painel sinaliza, o site não exibe selo e o gate de release bloqueia ([GO-01](../operacao/release-e-rollback.md)) |
 | Exclusão | **Não há soft delete.** O arquivamento (`archived`) faz esse papel; a exclusão definitiva só vale para item arquivado |
 | Constraints | Sempre **nomeadas** (`cases_publish_requires_fields`), para a aplicação traduzir o erro em mensagem de campo |
 | Erros próprios | SQLSTATE da classe `BJ` (tabela abaixo) |

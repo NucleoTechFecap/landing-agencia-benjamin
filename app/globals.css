@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,10 +21,16 @@
  13/10/2026 Vinícius Nishimura Reis  Tokens do brandbook e estilos base (estrutura da landing).
  25/10/2026 Caio Moraes              Tokens de erro dos formulários (LAY-04).
  29/10/2026 Caio Moraes              Tokens do painel administrativo (ADM-04).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 @import "tailwindcss";
+
+/* html.motion: animações ligadas (MotionGate). Sem ela (sem JavaScript, movimento reduzido, falha ao
+   carregar o motor) o site usa as transições simples em CSS e mostra tudo direto. */
+@custom-variant motion-on (html.motion &);
+@custom-variant motion-off (html:not(.motion) &);
 
 /*
  * Paleta oficial do Guia de Marca 2025 da Agência Benjamin.
@@ -114,6 +120,106 @@ body {
 
 @utility text-balance {
   text-wrap: balance;
+}
+
+/* Estado inicial das animações, antes de o motor carregar. Opacidade, e não visibility: o conteúdo
+   continua na ordem de tabulação e na árvore de acessibilidade enquanto espera a entrada. */
+html.motion [data-motion] {
+  opacity: 0;
+}
+
+html.motion [data-motion-halftone] {
+  clip-path: circle(0% at 78% 45%);
+}
+
+/* Tela de carregamento (MotionLoader): só na primeira página da sessão. Toda em CSS, porque precisa
+   estar em movimento antes de o JavaScript chegar; a saída é do GSAP (loader.ts). */
+html.motion-loading [data-loader] {
+  /* !important: o estado padrão é `display: none` inline, para ela ficar oculta mesmo sem CSS. Não use o
+     atributo `hidden`: o !important dele no Tailwind fica em camada CSS e venceria esta regra. */
+  display: flex !important;
+}
+
+.motion-loader-logo {
+  animation: motion-logo 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.motion-loader-pop {
+  animation: motion-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.motion-loader-fill {
+  animation: motion-fill 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.motion-loader-band {
+  animation: motion-band 24s linear infinite;
+}
+
+/* A textura se repete a cada 12 px (utilitário halftone): andar exatamente isso não dá salto. */
+.motion-drift {
+  animation: motion-drift 2.4s linear infinite;
+}
+
+@keyframes motion-logo {
+  from {
+    clip-path: inset(100% 0% 0% 0%);
+    transform: translateY(26px);
+  }
+  to {
+    clip-path: inset(0% 0% 0% 0%);
+    transform: none;
+  }
+}
+
+@keyframes motion-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.2) rotate(-26deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-fill {
+  from {
+    transform: scaleX(0.05);
+  }
+  to {
+    transform: scaleX(0.85);
+  }
+}
+
+@keyframes motion-band {
+  to {
+    transform: translateX(-16.666%);
+  }
+}
+
+@keyframes motion-drift {
+  to {
+    transform: translate(12px, 12px);
+  }
+}
+
+/* A máscara de linha do SplitText sobra um pouco na vertical para não cortar acentos e descendentes,
+   sem mudar a altura do título. A margem fica só embaixo: margens de linhas vizinhas colapsam, e
+   metade da compensação se perderia, empurrando a página (CLS). */
+.motion-line-mask {
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+  overflow-clip-margin: 0.14em;
+}
+
+@media print {
+  [data-motion],
+  [data-motion] * {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
