@@ -2,8 +2,8 @@
 
 Cada item de conteúdo do MVP tem uma ficha com os campos exatos do painel (CMS), o texto atual,
 as relações com outros itens e o checklist do que a Agência Benjamin precisa aprovar. O texto
-provisório fica no site com o selo "Conteúdo provisório" até a aprovação (CON-05), e o go-live é
-bloqueado enquanto houver item provisório publicado (GO-01).
+provisório fica no site, sem selo público, até a aprovação (CON-05); o painel sinaliza esses itens e o
+go-live é bloqueado enquanto houver item provisório publicado (GO-01).
 
 Como usar: a Benjamin revisa a ficha e devolve aprovada (ou com o texto final); a equipe cadastra
 no painel — o [guia do painel](../cms/guia-do-painel.md) explica cada campo — e publica. Os testes

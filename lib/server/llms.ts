@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -86,7 +87,7 @@ export async function buildLlmsTxt(): Promise<string> {
     `- [API pública de cases (JSON)](${siteUrl}/api/v1/cases): dados estruturados somente leitura.`,
     `- [Sitemap](${siteUrl}/sitemap.xml)`,
     "",
-    "Observações: o painel em /admin é restrito à equipe e não deve ser acessado nem indexado. Itens marcados como provisórios no site ainda aguardam texto final da agência.",
+    "Observações: o painel em /admin é restrito à equipe e não deve ser acessado nem indexado.",
   ]);
 }
 

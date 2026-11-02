@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
+ 02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -87,9 +88,9 @@ describe("blocos de página no site (INT-03)", () => {
     expect(cta("/contato")).not.toContain('target="_blank"');
   });
 
-  it("página provisória mostra o selo", () => {
+  it("página provisória não mostra selo no site: fica sinalizada no painel", () => {
     const blocks: Page["blocks"] = [{ id: "b1", type: "rich-text", content: { paragraphs: ["Texto."] }, order: 0 }];
-    expect(render(page(blocks, true))).toContain("Conteúdo provisório");
+    expect(render(page(blocks, true))).not.toContain("Conteúdo provisório");
     expect(render(page(blocks, false))).not.toContain("Conteúdo provisório");
   });
 

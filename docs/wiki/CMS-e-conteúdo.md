@@ -42,7 +42,8 @@ requisição). Toda imagem precisa de texto alternativo, salvo as decorativas. S
 
 ## Conteúdo provisório e aprovação da agência
 
-Os textos atuais são provisórios e aparecem com o selo "Conteúdo provisório" até a Benjamin aprovar.
+Os textos atuais são provisórios até a Benjamin aprovar. O painel sinaliza esses itens; o site público
+não exibe selo.
 Cada item tem uma ficha de aprovação em
 [`docs/conteudo/`](https://github.com/NucleoTechFecap/landing-agencia-benjamin/tree/main/docs/conteudo).
 O gate de release (`npm run check:release-content`) **bloqueia a publicação** enquanto houver item

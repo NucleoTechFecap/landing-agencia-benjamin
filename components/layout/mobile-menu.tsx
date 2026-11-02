@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  25/10/2026 Caio Moraes              Fecha o menu quando o foco sai dele (LAY-02).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,16 +27,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { MAIN_NAVIGATION, SECONDARY_NAVIGATION } from "@/lib/config/navigation";
 import { isActivePath } from "./nav-links";
+
+type MenuMotion = typeof import("@/components/motion/menu");
+
+let menuMotion: MenuMotion | null = null;
+
+/** As animações do menu só valem com o motor ligado; sem ele, abre e fecha na hora. */
+const activeMenuMotion = () => (document.documentElement.classList.contains("motion") ? menuMotion : null);
 
 /**
  * Menu mobile acessível: botão com aria-expanded/aria-controls, fecha com Esc, ao
  * navegar e ao clicar fora; devolve o foco ao botão ao fechar (LAY-02 / SEG-07).
+ * Durante a animação de saída o painel fica `inert`: visível, mas sem receber foco nem cliques.
  */
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
   const pathname = usePathname();
   const panelId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -46,20 +56,42 @@ export function MobileMenu() {
   if (pathname !== lastPathname) {
     setLastPathname(pathname);
     setOpen(false);
+    setVisible(false);
   }
+
+  const close = useCallback(() => {
+    setOpen(false);
+    const panel = panelRef.current;
+    const motion = activeMenuMotion();
+    if (panel && motion) motion.closeMenu(panel, () => setVisible(false));
+    else setVisible(false);
+  }, []);
+
+  useEffect(() => {
+    if (!document.documentElement.classList.contains("motion")) return;
+    import("@/components/motion/menu")
+      .then((module) => {
+        menuMotion = module;
+      })
+      .catch(() => undefined);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (open && panelRef.current) activeMenuMotion()?.openMenu(panelRef.current);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setOpen(false);
+        close();
         buttonRef.current?.focus();
       }
     };
     // Fecha ao clicar fora ou quando o foco sai do menu pelo teclado (Tab após o último link) (LAY-02).
     const closeIfOutside = (event: Event) => {
       const target = event.target as Node;
-      if (!panelRef.current?.contains(target) && !buttonRef.current?.contains(target)) setOpen(false);
+      if (!panelRef.current?.contains(target) && !buttonRef.current?.contains(target)) close();
     };
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("mousedown", closeIfOutside);
@@ -70,16 +102,23 @@ export function MobileMenu() {
       document.removeEventListener("mousedown", closeIfOutside);
       document.removeEventListener("focusin", closeIfOutside);
     };
-  }, [open]);
+  }, [open, close]);
 
   return (
-    <div className="lg:hidden">
+    <div data-motion="chrome" className="lg:hidden">
       <button
         ref={buttonRef}
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          if (open) {
+            close();
+          } else {
+            setOpen(true);
+            setVisible(true);
+          }
+        }}
         className="flex size-11 items-center justify-center rounded-full border-2 border-benja-noite bg-benja-nyanza shadow-sticker"
       >
         <span className="sr-only">{open ? "Fechar menu" : "Abrir menu"}</span>
@@ -91,13 +130,22 @@ export function MobileMenu() {
           strokeWidth={2.5}
           strokeLinecap="round"
         >
-          {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+          <path
+            d="M4 7h16"
+            className={`origin-center transition-transform duration-300 ${open ? "[transform:rotate(45deg)_translateY(5px)]" : ""}`}
+          />
+          <path d="M4 12h16" className={`transition-opacity duration-200 ${open ? "opacity-0" : ""}`} />
+          <path
+            d="M4 17h16"
+            className={`origin-center transition-transform duration-300 ${open ? "[transform:rotate(-45deg)_translateY(-5px)]" : ""}`}
+          />
         </svg>
       </button>
       <div
         id={panelId}
         ref={panelRef}
-        hidden={!open}
+        hidden={!visible}
+        inert={!open}
         className="absolute inset-x-4 top-[calc(100%+0.5rem)] rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-4 shadow-sticker-lg"
       >
         <nav aria-label="Menu principal">

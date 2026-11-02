@@ -10,4 +10,5 @@
 | `explain-queries.mjs` | `npm run perf:queries`: planos de execução das consultas do site e do painel, vazio e com volume sintético, no Supabase local (DBX-03) |
 | `content-seed.mjs` | `npm run seed:write` / `seed:check`: gera `supabase/seed.sql`, com áreas e serviços de `content/` e cases e páginas fictícios (DBX-02, ARC-11) |
 | `seed-users.mjs` | `npm run seed:users`: uma conta de teste por papel, só no Supabase local, com senhas geradas a cada execução (ARC-11) |
+| `brand-vectors.mjs` | `node scripts/brand-vectors.mjs`: gera os SVGs de ícones, stickers e redes sociais a partir dos `.ai` de `assets/brand` (requer Inkscape e `scour`) |
 | `e2e-cms.mjs` | `npm run test:e2e:cms`: build contra o Supabase local e jornadas E2E do CMS (`@cms`, TECH-12) |

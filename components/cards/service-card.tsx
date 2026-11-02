@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  01/11/2026 Vinícius Nishimura Reis  Foco visível no card e testes do portfólio (CASE-01).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -40,8 +41,13 @@ export function ServiceCard({
 }) {
   const Heading = headingLevel;
   return (
-    <article className="group relative flex h-full flex-col rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-6 text-benja-noite shadow-sticker transition hover:-translate-y-1 hover:shadow-sticker-lg has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-benja-azul">
-      <BrandIcon name={service.icon ?? "estrela"} color={ICON_COLORS[index % ICON_COLORS.length]} size={64} />
+    <article
+      data-card
+      className="group relative flex h-full flex-col rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-6 text-benja-noite shadow-sticker has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-benja-azul motion-off:transition motion-off:hover:-translate-y-1 motion-off:hover:shadow-sticker-lg"
+    >
+      <span data-card-icon className="w-fit">
+        <BrandIcon name={service.icon ?? "estrela"} color={ICON_COLORS[index % ICON_COLORS.length]} size={64} />
+      </span>
       <Heading className="mt-4 text-xl font-black text-benja-verde">
         <Link
           href={`/servicos/${service.slug}`}
@@ -52,7 +58,10 @@ export function ServiceCard({
       </Heading>
       <p className="mt-2 flex-1 text-sm leading-relaxed text-benja-grafite">{service.summary}</p>
       <span aria-hidden className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-benja-verde">
-        Saiba mais <span className="transition group-hover:translate-x-1">→</span>
+        Saiba mais{" "}
+        <span data-card-arrow className="motion-off:transition motion-off:group-hover:translate-x-1">
+          →
+        </span>
       </span>
     </article>
   );

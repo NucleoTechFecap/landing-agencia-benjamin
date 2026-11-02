@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -43,14 +44,20 @@ export function ClosingCta({
   links: ClosingLink[];
 }) {
   return (
-    <Section tone="laranja" halftone labelledBy="cta-final-titulo">
-      <Sticker name="benja" color="verde" width={150} className="absolute top-6 right-6 hidden rotate-6 md:block" />
+    <Section tone="laranja" halftone labelledBy="cta-final-titulo" data-clip-reveal>
+      <div data-parallax="-36" className="absolute top-6 right-6 hidden md:block">
+        <div data-motion="pop" className="rotate-6">
+          <Sticker name="benja" color="verde" width={150} />
+        </div>
+      </div>
       <div className="max-w-2xl">
-        <h2 id="cta-final-titulo" className="text-balance text-4xl font-black sm:text-5xl">
+        <h2 id="cta-final-titulo" data-motion="lines" className="text-balance text-4xl font-black sm:text-5xl">
           {title}
         </h2>
-        <p className="mt-4 text-lg">{description}</p>
-        <div className="mt-8 flex flex-wrap gap-3">
+        <p data-motion="reveal" className="mt-4 text-lg">
+          {description}
+        </p>
+        <div data-motion="group" className="mt-8 flex flex-wrap gap-3">
           {links.map((link, index) => (
             <ButtonLink
               key={link.id}
