@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,6 +23,7 @@
  26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
  29/10/2026 Vinicius Binda             Serviço e case com endereço antigo redirecionando (DB-08).
+ 01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,6 +35,8 @@ import { caseInputSchema, type CaseInput } from "@/lib/domain/content/case-input
 import { validateCaseForPublish } from "@/lib/domain/content/case-schema";
 import { categoryInputSchema, type CategoryInput } from "@/lib/domain/content/category-schema";
 import { serviceInputSchema, validateServiceForPublish, type ServiceInput } from "@/lib/domain/content/service-schema";
+import { pagePath } from "@/lib/domain/content/blocks";
+import { pageInputSchema, type PageInput } from "@/lib/domain/content/page-schema";
 import { isPubliclyVisible } from "@/lib/domain/content/visibility";
 import type {
   Area,
@@ -42,10 +45,11 @@ import type {
   ContentEntityType,
   ContentSnapshot,
   MediaRef,
+  Page,
   Publishable,
   Service,
 } from "@/lib/domain/content/types";
-import type { CmsStore, EntityTable, LinkTable, RedirectEntity, Row } from "./store";
+import type { CmsSnapshot, CmsStore, EntityTable, LinkTable, RedirectEntity, Row } from "./store";
 
 /** Item editável: publicável e com endereço próprio. */
 export type CmsItem = Publishable & { id: string; slug: string };
@@ -67,14 +71,14 @@ export interface EntityDefinition<I extends { slug: string }, T extends CmsItem>
    */
   redirectEntity?: RedirectEntity;
   /** Coleção correspondente no snapshot de conteúdo. */
-  key: Exclude<keyof ContentSnapshot, "ctas">;
+  key: Exclude<keyof CmsSnapshot, "ctas">;
   /** Para mensagens: "a área", "o serviço". */
   noun: { singular: string; article: "a" | "o" };
   /** Caminho do painel (lista) e da página pública do item. */
   adminPath: string;
   publicPath(item: T): string;
   inputSchema: z.ZodType<I, unknown>;
-  list(snapshot: ContentSnapshot): T[];
+  list(snapshot: CmsSnapshot): T[];
   /** Colunas do banco a partir do formulário validado (sem campos de controle). */
   toValues(input: I): Row;
   /**
@@ -336,4 +340,36 @@ export const CASE: EntityDefinition<CaseInput, CaseStudy> = {
       .filter((other) => other.id !== item.id && other.categoryId === item.categoryId)
       .map((other) => `/cases/${other.slug}`),
   ],
+};
+
+/**
+ * Página do CMS (ADM-05). O conteúdo mora nos blocos, gravados em page-blocks.ts; aqui ficam só
+ * os dados da página. Publicada, ela aparece na rota do mesmo slug (PAGE_ROUTES); o slug fica
+ * fixo depois da primeira publicação, como nas demais entidades sem redirecionamento.
+ */
+export const PAGE: EntityDefinition<PageInput, Page> = {
+  type: "page",
+  resource: "page",
+  table: "pages",
+  slugSource: "title",
+  key: "pages",
+  noun: { singular: "página", article: "a" },
+  adminPath: "/admin/paginas",
+  publicPath: (page) => pagePath(page.slug) ?? "/",
+  inputSchema: pageInputSchema,
+  list: (snapshot) => snapshot.pages,
+  toValues: (input) => ({
+    slug: input.slug,
+    title: input.title,
+    description: input.description ?? null,
+    provisional: input.provisional,
+  }),
+  merge: (current, input, id) => ({
+    ...(current ?? { ...draftControl, id, blocks: [] }),
+    slug: input.slug,
+    title: input.title,
+    description: input.description,
+    provisional: input.provisional,
+  }),
+  validateForPublish: (page) => (page.blocks.length ? [] : ["Inclua ao menos um bloco de conteúdo."]),
 };

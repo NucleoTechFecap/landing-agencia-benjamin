@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,14 +21,28 @@
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
  29/10/2026 Vinicius Binda             Endereços antigos e reservados (retiredSlugs) (DB-08).
+ 01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
-import type { ContentSnapshot, MediaRef } from "@/lib/domain/content/types";
+import type { ContentSnapshot, MediaRef, Page } from "@/lib/domain/content/types";
 
 /** Tabelas de itens editáveis no painel. */
-export type EntityTable = "areas" | "services" | "case_categories" | "cases" | "ctas";
+export type EntityTable = "areas" | "services" | "case_categories" | "cases" | "ctas" | "pages";
+
+/** Conteúdo do painel: o do site mais as páginas, que só o painel lê em conjunto. */
+export interface CmsSnapshot extends ContentSnapshot {
+  pages: Page[];
+}
+
+/** Colunas de um bloco de página; o conteúdo já chega validado por BLOCK_SCHEMAS. */
+export interface BlockValues {
+  page_id: string;
+  type: string;
+  content: unknown;
+  sort_order: number;
+}
 
 /** Tabelas de vínculo N:M (sem estado próprio). */
 export type LinkTable = "service_areas" | "case_services";
@@ -86,7 +100,7 @@ export interface LinkSync {
  */
 export interface CmsStore {
   /** Conteúdo em qualquer estado: base das listagens do painel e das regras de integridade. */
-  snapshot(): Promise<ContentSnapshot>;
+  snapshot(): Promise<CmsSnapshot>;
   /** Biblioteca de mídia inteira (imagens e PDFs), mais recentes primeiro. */
   listMedia(): Promise<MediaAsset[]>;
   /**
@@ -107,4 +121,8 @@ export interface CmsStore {
    * etapa falhar, sobra um vínculo a mais (corrigido no próximo save), nunca um a menos.
    */
   syncLinks(sync: LinkSync): Promise<void>;
+  /** Blocos não têm estado nem versão próprios: a versão que vale é a da página (page-blocks.ts). */
+  insertBlock(values: BlockValues): Promise<void>;
+  updateBlock(id: string, values: Partial<BlockValues>): Promise<void>;
+  removeBlock(id: string): Promise<void>;
 }
