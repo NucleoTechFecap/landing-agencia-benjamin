@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case Aventura de Construir (CASE-05).
+ 01/11/2026 Vinícius Nishimura Reis  Conformidade do case Meridiano (CASE-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -28,7 +29,10 @@ import { expect, test } from "@playwright/test";
  * não chega (CASE-05 a CASE-07): filtro, selo de provisório e nada de campo vazio como resultado real.
  * Quando o case receber o material, ajuste a entrada dele aqui.
  */
-const CASES = [{ slug: "aventura-de-construir", category: "copywriting", client: "Aventura de Construir" }];
+const CASES = [
+  { slug: "aventura-de-construir", category: "copywriting", client: "Aventura de Construir" },
+  { slug: "meridiano", category: "social-media-e-criacao", client: "Meridiano" },
+];
 
 for (const { slug, category, client } of CASES) {
   test.describe(`Case ${client}`, () => {
