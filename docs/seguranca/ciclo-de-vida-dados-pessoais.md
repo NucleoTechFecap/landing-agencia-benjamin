@@ -47,7 +47,7 @@ stateDiagram-v2
 | Servidor | Toda listagem/consulta/exportação chama `requirePermission("lead"|"feedback", ação)` |
 | Papéis | Somente `admin` (Benjamin) lê/exporta. `super_admin` não lê por padrão (acesso emergencial = atribuição temporária de `admin`, auditada) |
 | Service role | Usada só por rotinas operacionais (retenção, provisionamento); nunca em rotas públicas |
-| Ambientes | Dados reais só em produção; dev/hml usam dados fictícios (ARC-06/ARC-11) |
+| Ambientes | Dados reais só em produção; o banco local usa o seed fictício, e homologação usa só conteúdo provisório aprovado (ARC-06/ARC-11) |
 
 ## 4. Consulta restrita e exportação
 
