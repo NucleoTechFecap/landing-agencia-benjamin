@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
+ 01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,12 +37,21 @@ export interface PageSeo {
   path: string;
   keywords?: string[];
   type?: "website" | "article";
-  /** Imagem Open Graph específica; sem ela vale a do segmento (opengraph-image). */
+  /** Imagem de compartilhamento específica; sem ela vale a da marca (app/opengraph-image). */
   image?: { url: string; alt: string; width?: number; height?: number };
+  /** A rota tem opengraph-image próprio: nada aqui pode encobrir o arquivo do segmento. */
+  segmentImage?: boolean;
   noindex?: boolean;
   /** Ignora o template "%s | Agência Benjamin" (Home). */
   absoluteTitle?: boolean;
 }
+
+/*
+ * O `openGraph` da página substitui o do segmento pai por inteiro: sem `images`, o arquivo
+ * app/opengraph-image some do HTML (medido no SEG-09). Por isso a imagem da marca vem declarada.
+ */
+const BRAND_IMAGE = { url: "/opengraph-image", alt: DEFAULT_TITLE, width: 1200, height: 630 };
+const BRAND_TWITTER_IMAGE = "/twitter-image";
 
 /** URL absoluta a partir de um caminho interno. */
 export function absoluteUrl(path = "/"): string {
@@ -55,6 +65,8 @@ export function absoluteUrl(path = "/"): string {
 export function buildMetadata(page: PageSeo, settings?: Pick<SiteSettings, "keywords">): Metadata {
   const keywords = [...new Set([...(page.keywords ?? []), ...(settings?.keywords ?? [])])];
   const index = isIndexable && !page.noindex;
+  const openGraphImage = page.segmentImage ? {} : { images: [page.image ?? BRAND_IMAGE] };
+  const twitterImage = page.segmentImage ? {} : { images: [page.image?.url ?? BRAND_TWITTER_IMAGE] };
   return {
     title: page.absoluteTitle ? { absolute: page.title } : page.title,
     description: page.description,
@@ -72,13 +84,13 @@ export function buildMetadata(page: PageSeo, settings?: Pick<SiteSettings, "keyw
       url: page.path,
       title: page.title,
       description: page.description,
-      ...(page.image ? { images: [page.image] } : {}),
+      ...openGraphImage,
     },
     twitter: {
       card: "summary_large_image",
       title: page.title,
       description: page.description,
-      ...(page.image ? { images: [page.image.url] } : {}),
+      ...twitterImage,
     },
   };
 }

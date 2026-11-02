@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,8 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-05).
  26/10/2026 Vinícius Nishimura Reis  Ambiente no mock da configuração pública (INT-02).
+ 01/11/2026 Vinícius Nishimura Reis  Testes de aceite dos cases em destaque (HOME-04).
+ 01/11/2026 Vinícius Nishimura Reis  Sufixo de teste com node:crypto (CodeQL).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -183,6 +185,44 @@ describe("repositório sobre o Supabase (DB-05)", () => {
     expect(await repository.getCaseDetail("meridiano")).toBeNull();
     expect(await repository.getServiceDetail("social-media")).toBeNull();
     expect(await repository.listPublishedSlugs()).toEqual({ services: [], cases: [] });
+  });
+
+  it("cases em destaque da Home: só os publicados e marcados, no máximo 6 (HOME-04)", async () => {
+    tables = populated();
+    const base = tables.cases.data![0];
+    tables.cases = {
+      data: [
+        base,
+        { ...base, id: "k3", slug: "rascunho", status: "draft", published_at: null },
+        { ...base, id: "k4", slug: "arquivado", status: "archived", archived_at: "2026-10-21T00:00:00+00:00" },
+        { ...base, id: "k5", slug: "agendado", published_at: "2999-01-01T00:00:00+00:00" },
+        { ...base, id: "k6", slug: "sem-destaque", featured: false },
+      ],
+    };
+    expect((await repository.listFeaturedCases()).map((item) => item.slug)).toEqual(["meridiano"]);
+
+    tables.cases = {
+      data: Array.from({ length: 8 }, (_, index) => ({
+        ...base,
+        id: `k${index}`,
+        slug: `case-${index}`,
+        sort_order: index,
+      })),
+    };
+    expect((await repository.listFeaturedCases()).map((item) => item.slug)).toEqual([
+      "case-0",
+      "case-1",
+      "case-2",
+      "case-3",
+      "case-4",
+      "case-5",
+    ]);
+  });
+
+  it("sem nenhum case em destaque, a lista da Home vem vazia, sem erro (HOME-04)", async () => {
+    tables = populated();
+    tables.cases = { data: tables.cases.data!.map((item) => ({ ...item, featured: false })) };
+    expect(await repository.listFeaturedCases()).toEqual([]);
   });
 
   it("banco populado: lista, filtra por categoria e monta o detalhe com galeria", async () => {

@@ -46,6 +46,34 @@ stateDiagram-v2
 
 Matriz completa em [perfis e permissões](../seguranca/perfis-e-permissoes.md).
 
+## Páginas e textos (`/admin/paginas`)
+
+Cada rota do site (Home, Sobre, Áreas de atuação, Serviços, Cases, Contato e Privacidade) tem seções
+fixas e pode ter uma página no painel. A lista mostra todas as rotas; **Criar conteúdo** abre a página
+daquela rota, sempre como rascunho.
+
+| Campo | Obrigatório para | Observação |
+| ----- | ---------------- | ---------- |
+| Título interno | salvar | Identifica a página no painel e na API |
+| Descrição | — | Até 300 caracteres |
+| Texto provisório | — | Nasce marcado. Desmarque só depois da aprovação da Benjamin: o site mostra um selo e o go-live fica bloqueado enquanto houver texto provisório publicado |
+| Blocos | publicar | Ao menos um |
+
+Os blocos são editados um de cada vez, com **Editar**, **Subir**, **Descer** e **Excluir**. Em página
+publicada, salvar um bloco muda o site na hora. A última exclusão é recusada: despublique a página antes.
+
+| Bloco | Onde | O que faz |
+| ----- | ---- | --------- |
+| Manifesto | Só na Home, um | **Substitui** o manifesto do topo da Home |
+| Sobre a Benjamin | Só em Sobre, um | **Substitui** os textos de quem somos, proposta, modelo de atuação e FECAP, em Sobre e na Home |
+| Texto | Qualquer página | Título opcional e parágrafos, um por linha (até 12) |
+| Lista de destaques | Qualquer página | Um item por linha: `Título \| texto opcional` (até 12) |
+| Nosso time | Qualquer página | Nome, cargo e foto da biblioteca. Publique só o que a pessoa autorizou |
+| Chamada para ação | Qualquer página | Título, texto, botão e destino (rota do site ou link https) |
+
+Sem página publicada, o site continua com os textos atuais de cada seção. Despublicar ou arquivar a
+página devolve esses textos. Contato, redes sociais e CTAs têm telas próprias (ADM-10 e ADM-11).
+
 ## Áreas de atuação (`/admin/areas`)
 
 | Campo | Obrigatório para | Observação |

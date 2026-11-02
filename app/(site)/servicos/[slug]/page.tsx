@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  25/10/2026 Caio Moraes              Permite navegação bloqueante (instant = false) (LAY-01).
  26/10/2026 Vinícius Nishimura Reis  Parâmetro estático para banco vazio (DB-03).
+ 01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -61,6 +62,7 @@ export async function generateMetadata({ params }: PageProps<"/servicos/[slug]">
       description: service.summary,
       path: `/servicos/${service.slug}`,
       keywords: [service.name, ...areas.map((area) => area.name), ...service.examples],
+      segmentImage: true,
     },
     await getSiteSettings(),
   );
