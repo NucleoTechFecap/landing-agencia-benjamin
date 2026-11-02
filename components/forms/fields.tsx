@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  25/10/2026 Caio Moraes              Cores de erro via tokens do tema (LAY-04).
  26/10/2026 Vinícius Nishimura Reis  SelectField exibe a dica do campo (ADM-06).
+ 01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -64,6 +65,8 @@ function FieldError({ name, errors }: { name: string; errors?: string[] }) {
 
 interface BaseProps {
   name: string;
+  /** Necessário quando o mesmo `name` se repete no formulário (linhas de uma lista). */
+  id?: string;
   label: string;
   required?: boolean;
   errors?: string[];
@@ -82,11 +85,12 @@ export function TextField({
   ...props
 }: BaseProps & { type?: string; autoComplete?: string; inputMode?: "email" | "tel" | "text"; maxLength?: number }) {
   const invalid = Boolean(props.errors?.length);
+  const id = props.id ?? props.name;
   return (
     <div>
-      <Label name={props.name} label={props.label} required={props.required} />
+      <Label name={id} label={props.label} required={props.required} />
       <input
-        id={props.name}
+        id={id}
         name={props.name}
         type={type}
         required={props.required}
@@ -95,15 +99,15 @@ export function TextField({
         maxLength={maxLength}
         defaultValue={props.defaultValue}
         aria-invalid={invalid || undefined}
-        aria-describedby={describedBy(props.name, props.errors, props.hint)}
+        aria-describedby={describedBy(id, props.errors, props.hint)}
         className={`${control} ${invalid ? "border-benja-erro" : "border-benja-noite"}`}
       />
       {props.hint ? (
-        <p id={`${props.name}-dica`} className="mt-1 text-xs text-benja-grafite/80">
+        <p id={`${id}-dica`} className="mt-1 text-xs text-benja-grafite/80">
           {props.hint}
         </p>
       ) : null}
-      <FieldError name={props.name} errors={props.errors} />
+      <FieldError name={id} errors={props.errors} />
     </div>
   );
 }
@@ -140,16 +144,17 @@ export function SelectField({
   ...props
 }: BaseProps & { options: { value: string; label: string }[]; placeholder?: string }) {
   const invalid = Boolean(props.errors?.length);
+  const id = props.id ?? props.name;
   return (
     <div>
-      <Label name={props.name} label={props.label} required={props.required} />
+      <Label name={id} label={props.label} required={props.required} />
       <select
-        id={props.name}
+        id={id}
         name={props.name}
         required={props.required}
         defaultValue={props.defaultValue ?? ""}
         aria-invalid={invalid || undefined}
-        aria-describedby={describedBy(props.name, props.errors, props.hint)}
+        aria-describedby={describedBy(id, props.errors, props.hint)}
         className={`${control} ${invalid ? "border-benja-erro" : "border-benja-noite"}`}
       >
         {placeholder ? <option value="">{placeholder}</option> : null}
@@ -160,11 +165,11 @@ export function SelectField({
         ))}
       </select>
       {props.hint ? (
-        <p id={`${props.name}-dica`} className="mt-1 text-xs text-benja-grafite/80">
+        <p id={`${id}-dica`} className="mt-1 text-xs text-benja-grafite/80">
           {props.hint}
         </p>
       ) : null}
-      <FieldError name={props.name} errors={props.errors} />
+      <FieldError name={id} errors={props.errors} />
     </div>
   );
 }
