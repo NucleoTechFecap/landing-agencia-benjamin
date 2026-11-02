@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,13 +18,16 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
+ 01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { z } from "zod";
 import type { SiteSettings } from "./types";
 
-const text = (max: number) => z.string().trim().min(1).max(max);
+const FILL_IN = "Preencha este campo.";
+const text = (max: number) =>
+  z.string({ error: FILL_IN }).trim().min(1, FILL_IN).max(max, `Use no máximo ${max} caracteres.`);
 const httpsUrl = z.url({ protocol: /^https$/, error: "Use um link https." });
 
 /*
@@ -34,7 +37,7 @@ const httpsUrl = z.url({ protocol: /^https$/, error: "Use um link https." });
  */
 export const manifestoSchema = z.object({
   title: text(160),
-  paragraphs: z.array(text(600)).min(1).max(6),
+  paragraphs: z.array(text(600)).min(1, "Escreva ao menos um parágrafo.").max(6, "Use no máximo 6 parágrafos."),
   provisional: z.boolean().optional(),
 });
 

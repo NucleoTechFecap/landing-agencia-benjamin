@@ -257,9 +257,16 @@ descartado na leitura (o restante da página continua no ar) e registrado em log
 | `list` | `{ title?, items: { title, text? }[1..12] }` |
 | `team` | `{ title?, members: { name, role?, photo?: { src, alt } }[1..40] }` — foto exige autorização de imagem |
 | `cta` | `{ title, text?, label, href }` — `href` é rota pública conhecida (R10) ou `https` |
+| `manifesto` | `{ title, paragraphs: string[1..6] }` — só na página `home`, um por página; substitui `site_settings.manifesto` |
+| `about` | `{ title, intro, valueProposition, howWeWork, fecapRelation }` — só na página `sobre`, um por página; substitui `site_settings.about` |
+
+Manifesto e "Sobre" ficam em blocos, e não em `site_settings`, para o `editor` (`page:edit`) poder
+alterá-los com rascunho e publicação; `site_settings` exige `settings:edit` e grava direto no ar. Sem
+página publicada, vale o valor de `site_settings`. O bloco não tem versão própria: toda alteração
+avança `pages.updated_at`, e é essa a versão conferida na concorrência otimista (ADM-05).
 
 **Páginas × rotas fixas.** No MVP as rotas do site são fixas. Uma página cujo slug coincide com uma
-rota pública (`sobre`, `areas`, `servicos`, `cases`, `contato`, `privacidade` — `PAGE_ROUTES`)
+rota pública (`home`, `sobre`, `areas`, `servicos`, `cases`, `contato`, `privacidade` — `PAGE_ROUTES`)
 acrescenta seus blocos depois das seções fixas daquela rota (renderização: INT-03). Páginas com
 outro slug ficam salvas, mas sem rota pública até uma decisão de produto sobre páginas livres.
 
