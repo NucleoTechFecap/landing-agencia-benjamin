@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  25/10/2026 Caio Moraes              Última área sem laranja, distinta do CTA final (SOB-04).
+ 01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -31,7 +32,8 @@ import { PageHero } from "@/components/sections/page-hero";
 import { ProvisionalBadge } from "@/components/ui/badge";
 import { BrandIcon, type BrandIconColor } from "@/components/ui/brand-icon";
 import { Container } from "@/components/ui/container";
-import { SECTION_TONES, type SectionTone } from "@/components/ui/section";
+import { SECTION_TONES, Section, type SectionTone } from "@/components/ui/section";
+import { EmptyState } from "@/components/ui/states";
 import { getSiteSettings, listAreas, listServices } from "@/lib/server/content/repository";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -80,21 +82,29 @@ export default async function AreasPage() {
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Áreas de atuação" }]}
         icon="estrela"
       >
-        <nav aria-label="Ir para a área" className="mt-6">
-          <ul className="flex flex-wrap gap-2">
-            {areas.map((area) => (
-              <li key={area.id}>
-                <a
-                  href={`#${area.slug}`}
-                  className="inline-block rounded-full border-2 border-current px-3 py-1 text-sm font-bold hover:bg-benja-lima hover:text-benja-verde"
-                >
-                  {area.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        {areas.length > 0 ? (
+          <nav aria-label="Ir para a área" className="mt-6">
+            <ul className="flex flex-wrap gap-2">
+              {areas.map((area) => (
+                <li key={area.id}>
+                  <a
+                    href={`#${area.slug}`}
+                    className="inline-block rounded-full border-2 border-current px-3 py-1 text-sm font-bold hover:bg-benja-lima hover:text-benja-verde"
+                  >
+                    {area.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ) : null}
       </PageHero>
+
+      {areas.length === 0 ? (
+        <Section tone="nyanza">
+          <EmptyState>As áreas de atuação estão sendo atualizadas. Volte em breve!</EmptyState>
+        </Section>
+      ) : null}
 
       {areas.map((area, index) => {
         const { tone, icon } = TONES[index % TONES.length];

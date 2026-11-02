@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  25/10/2026 Caio Moraes              Serviço pré-selecionado também após navegar (SERV-02).
+ 01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -33,6 +34,7 @@ import { SocialLinks } from "@/components/layout/social-links";
 import { PageHero } from "@/components/sections/page-hero";
 import { BrandIcon } from "@/components/ui/brand-icon";
 import { Section } from "@/components/ui/section";
+import { LoadingState } from "@/components/ui/states";
 import { CONTACT_SUBJECTS } from "@/lib/domain/forms/schemas";
 import { getSiteSettings, listServices } from "@/lib/server/content/repository";
 import { submitContact, submitLead } from "../actions";
@@ -113,7 +115,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contato"
             <h2 id="formulario-titulo" className="sr-only">
               Formulário de contato
             </h2>
-            <Suspense fallback={<p className="font-bold">Carregando formulário…</p>}>
+            <Suspense fallback={<LoadingState label="Carregando formulário…" />}>
               <ContactForms searchParams={searchParams} />
             </Suspense>
           </div>

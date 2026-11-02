@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  26/10/2026 Vinícius Nishimura Reis  Logotipo horizontal em SVG (UX-14).
+ 01/11/2026 Vinícius Nishimura Reis  Endereço sem mapa e redes vazias no rodapé (LAY-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -67,7 +68,7 @@ export function SiteFooter({ settings, year }: { settings: SiteSettings; year: n
               </a>
             ) : null}
             {settings.contact.phone ? <p>{settings.contact.phone}</p> : null}
-            {settings.contact.address ? (
+            {settings.contact.address && settings.contact.mapsUrl ? (
               <a
                 href={settings.contact.mapsUrl}
                 target="_blank"
@@ -77,6 +78,8 @@ export function SiteFooter({ settings, year }: { settings: SiteSettings; year: n
                 {settings.contact.address}
                 <span className="sr-only"> (abre o mapa em nova aba)</span>
               </a>
+            ) : settings.contact.address ? (
+              <p>{settings.contact.address}</p>
             ) : null}
             <Link href="/contato" className="inline-block font-bold underline underline-offset-4">
               Envie uma mensagem

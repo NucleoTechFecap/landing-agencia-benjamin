@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 01/11/2026 Vinícius Nishimura Reis  Foco visível no card e testes do portfólio (CASE-01).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,7 +31,10 @@ export interface CaseCardData extends CaseStudy {
   categoryName: string;
 }
 
-/** Card de case com capa, cliente, categoria e resumo. */
+/**
+ * Card de case com capa, cliente, categoria e resumo. O link cobre o card inteiro, então o
+ * contorno de foco do teclado fica no card, que é a área clicável.
+ */
 export function CaseCard({
   item,
   headingLevel = "h3",
@@ -42,7 +46,7 @@ export function CaseCard({
 }) {
   const Heading = headingLevel;
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border-2 border-benja-noite bg-benja-nyanza text-benja-noite shadow-sticker transition hover:-translate-y-1 hover:shadow-sticker-lg">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border-2 border-benja-noite bg-benja-nyanza text-benja-noite shadow-sticker transition hover:-translate-y-1 hover:shadow-sticker-lg has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-benja-azul">
       {item.cover ? (
         <div className="relative aspect-[16/10] overflow-hidden border-b-2 border-benja-noite">
           <Image

@@ -25,6 +25,18 @@
 | 404 real | `proxy.ts` | Slug inexistente/arquivado responde HTTP 404 (evita *soft 404*) |
 | HTML semântico | Páginas | Um `h1` por página, `lang="pt-BR"`, `alt` em imagens informativas, breadcrumbs |
 
+
+## Imagem de compartilhamento
+
+`buildMetadata()` declara a imagem da marca (`/opengraph-image` e `/twitter-image`) em toda página. Sem
+isso a imagem some: o `openGraph` da página substitui o do segmento pai por inteiro, e o arquivo
+`app/opengraph-image` não chega ao HTML (achado do SEG-09). Rota com `opengraph-image` próprio, como o
+detalhe de serviço e de case, usa `segmentImage: true`. `tests/e2e/seo-e-compartilhamento.spec.ts` confere
+título, descrição, canonical e imagem de **toda** rota do sitemap.
+
+Capa de case pode ser caminho em `/public` ou URL absoluta do Storage: no sitemap e no JSON-LD, use
+`new URL(src, siteUrl)`, nunca a concatenação com o domínio.
+
 ## 2. Palavras-chave
 
 Globais (editáveis no conteúdo): Agência Benjamin, Benja, agência experimental FECAP, agência de

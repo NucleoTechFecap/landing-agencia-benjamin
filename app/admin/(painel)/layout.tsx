@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,12 +21,14 @@
  13/10/2026 Vinícius Nishimura Reis  Bloqueio de contas pendentes (ADM-03).
  26/10/2026 Vinícius Nishimura Reis  Páginas do painel só por requisição (connection) (ADM-07).
  29/10/2026 Caio Moraes              Cores via tokens do tema (ADM-04).
+ 01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense, type ReactNode } from "react";
+import { LoadingState } from "@/components/ui/states";
 import { ROLE_LABELS } from "@/lib/domain/auth/rbac";
 import { PENDING_ACCESS_PATH } from "@/lib/server/auth/guards";
 import { getSessionUser } from "@/lib/server/auth/session";
@@ -38,7 +40,7 @@ import { signOut } from "../actions";
  */
 export default function PanelLayout({ children }: LayoutProps<"/admin">) {
   return (
-    <Suspense fallback={<p className="p-8 text-sm">Carregando painel…</p>}>
+    <Suspense fallback={<LoadingState label="Carregando painel…" className="p-8 text-sm" />}>
       <PanelGate>{children}</PanelGate>
     </Suspense>
   );
