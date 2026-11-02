@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 27/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,10 +21,11 @@
  26/10/2026 Vinícius Nishimura Reis  Tags e invalidação de páginas do CMS (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Aquecimento da página de detalhe após invalidar (INT-02).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
+ 01/11/2026 Vinícius Nishimura Reis  Segunda expiração contra regeneração em andamento (INT-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { updateTag, revalidateTag } = vi.hoisted(() => ({ updateTag: vi.fn(), revalidateTag: vi.fn() }));
 vi.mock("next/cache", () => ({ updateTag, revalidateTag }));
@@ -36,6 +37,7 @@ const {
   invalidateContentFromAction,
   invalidateContentFromRoute,
   MAX_WARMED_PATHS,
+  SECOND_EXPIRATION_DELAY_MS,
   tagsForChange,
 } = await import("./invalidate");
 
@@ -116,8 +118,74 @@ describe("aquecimento das páginas de detalhe (INT-02)", () => {
     vi.spyOn(console, "log").mockImplementation(() => {});
     after.mockReset();
     invalidateContentFromAction({ entity: "case", slug: "meridiano" });
-    expect(after).toHaveBeenCalledTimes(1);
+    // Aquecimento e segunda expiração.
+    expect(after).toHaveBeenCalledTimes(2);
+    after.mockReset();
     invalidateContentFromAction({ entity: "settings" });
+    // Sem página de detalhe para aquecer: só a segunda expiração.
     expect(after).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("segunda expiração (ADR-0006)", () => {
+  const fetchMock = vi.fn(async () => new Response());
+  const secondPass = () => (after.mock.calls.at(-1)![0] as () => Promise<void>)();
+
+  beforeEach(() => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", fetchMock);
+    [after, updateTag, revalidateTag, fetchMock].forEach((mock) => mock.mockClear());
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    revalidateTag.mockReset();
+  });
+
+  it("depois do prazo, expira de novo as mesmas tags, para descartar regeneração em andamento", async () => {
+    invalidateContentFromAction({ entity: "page", slug: "sobre" });
+    const pass = secondPass();
+    await vi.advanceTimersByTimeAsync(SECOND_EXPIRATION_DELAY_MS - 1);
+    expect(revalidateTag).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    await pass;
+    expect(revalidateTag).toHaveBeenCalledWith("content:pages", { expire: 0 });
+    expect(revalidateTag).toHaveBeenCalledWith("content:page:sobre", { expire: 0 });
+  });
+
+  it("vale também para o que vem de fora do painel", async () => {
+    invalidateContentFromRoute({ entity: "category" });
+    const pass = secondPass();
+    await vi.advanceTimersByTimeAsync(SECOND_EXPIRATION_DELAY_MS);
+    await pass;
+    expect(revalidateTag.mock.calls.filter(([tag]) => tag === "content:categories")).toHaveLength(2);
+  });
+
+  it("reaquece as páginas de detalhe depois de expirar", async () => {
+    invalidateContentFromAction({ entity: "case", slug: "meridiano" });
+    const pass = secondPass();
+    await vi.advanceTimersByTimeAsync(SECOND_EXPIRATION_DELAY_MS);
+    await pass;
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(String((fetchMock.mock.calls[0] as unknown[])[0])).toMatch(/\/cases\/meridiano$/);
+  });
+
+  it("falha aqui não afeta a operação já concluída e não aquece versão velha", async () => {
+    revalidateTag.mockImplementation(() => {
+      throw new Error("indisponível");
+    });
+    invalidateContentFromAction({ entity: "case", slug: "meridiano" });
+    const pass = secondPass();
+    await vi.advanceTimersByTimeAsync(SECOND_EXPIRATION_DELAY_MS);
+    await expect(pass).resolves.toBeUndefined();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("cabe na meta de refletir no site em até 5 s", () => {
+    expect(SECOND_EXPIRATION_DELAY_MS).toBeLessThan(5_000);
   });
 });
