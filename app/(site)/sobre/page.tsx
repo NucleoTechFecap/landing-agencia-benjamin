@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
+ 01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
@@ -27,11 +28,12 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/server/seo";
 import { AreaCard } from "@/components/cards/area-card";
 import { ClosingCta } from "@/components/sections/closing-cta";
+import { PageBlocks } from "@/components/sections/page-blocks";
 import { PageHero } from "@/components/sections/page-hero";
 import { BrandIcon, type BrandIconColor } from "@/components/ui/brand-icon";
 import { Section } from "@/components/ui/section";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { getSiteSettings, listAreas } from "@/lib/server/content/repository";
+import { getPage, getSiteSettings, listAreas } from "@/lib/server/content/repository";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata(
@@ -50,7 +52,7 @@ const AREA_COLORS: BrandIconColor[] = ["verde", "laranja", "azul", "rosa", "verd
 
 /** Página Sobre: agência experimental, proposta, modelo de atuação e FECAP (PRJ §8 / SOB-01, SOB-02). */
 export default async function AboutPage() {
-  const [settings, areas] = await Promise.all([getSiteSettings(), listAreas()]);
+  const [settings, areas, page] = await Promise.all([getSiteSettings(), listAreas(), getPage("sobre")]);
   const { about } = settings;
   const pillars = [
     { icon: "estrela", color: "lima" as const, title: "Proposta de valor", text: about.valueProposition },
@@ -102,6 +104,7 @@ export default async function AboutPage() {
       ) : null}
 
       {/* "Nosso time" é opcional (SOB-03): só aparece quando a Benjamin enviar as informações (CON-09). */}
+      <PageBlocks page={page} />
 
       <ClosingCta
         title="Quer construir algo com a gente?"

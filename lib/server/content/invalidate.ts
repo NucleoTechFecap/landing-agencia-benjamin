@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 27/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Tags e invalidação de páginas do CMS (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Aquecimento da página de detalhe após invalidar (INT-02).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
+ 01/11/2026 Vinícius Nishimura Reis  Segunda expiração contra regeneração em andamento (INT-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -50,6 +51,9 @@ export interface ContentChange {
 
 /** Teto de páginas aquecidas por alteração, para uma edição não disparar dezenas de requisições. */
 export const MAX_WARMED_PATHS = 12;
+
+/** Dentro da meta de 5 s do ADR-0006 e folgado para uma regeneração em andamento terminar. */
+export const SECOND_EXPIRATION_DELAY_MS = 3_000;
 
 /**
  * Tags afetadas por uma alteração. Como listas e detalhes cruzam entidades (case mostra
@@ -113,14 +117,35 @@ export function detailPathsForChange(change: ContentChange): string[] {
 function warmDetailPages(change: ContentChange) {
   const paths = detailPathsForChange(change);
   if (!paths.length) return;
-  after(async () => {
-    await Promise.all(
-      paths.map((path) =>
-        fetch(`${siteUrl}${path}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).catch((error) =>
-          logger.warn("content.cache.warm_failed", { path, error }),
-        ),
+  after(() => warmPaths(paths));
+}
+
+async function warmPaths(paths: string[]) {
+  await Promise.all(
+    paths.map((path) =>
+      fetch(`${siteUrl}${path}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).catch((error) =>
+        logger.warn("content.cache.warm_failed", { path, error }),
       ),
-    );
+    ),
+  );
+}
+
+/**
+ * Uma regeneração em andamento durante a gravação lê o dado antigo e grava o resultado depois da
+ * invalidação: o site ficaria com a versão velha até o fim do cacheLife (ADR-0006). Expirar de novo
+ * depois desse prazo descarta o resultado atrasado. Falha aqui não afeta a operação já concluída.
+ */
+function expireAgainLater(change: ContentChange, tags: string[]) {
+  after(async () => {
+    await new Promise((resolve) => setTimeout(resolve, SECOND_EXPIRATION_DELAY_MS));
+    try {
+      tags.forEach((tag) => revalidateTag(tag, { expire: 0 }));
+      logger.info("content.cache.invalidated", { source: "second-pass", entity: change.entity, tags });
+    } catch (error) {
+      logger.warn("content.cache.second_pass_failed", { entity: change.entity, error });
+      return;
+    }
+    await warmPaths(detailPathsForChange(change));
   });
 }
 
@@ -133,6 +158,7 @@ export function invalidateContentFromAction(change: ContentChange): string[] {
   tags.forEach((tag) => updateTag(tag));
   logger.info("content.cache.invalidated", { source: "action", entity: change.entity, tags });
   warmDetailPages(change);
+  expireAgainLater(change, tags);
   return tags;
 }
 
@@ -145,5 +171,6 @@ export function invalidateContentFromRoute(change: ContentChange): string[] {
   tags.forEach((tag) => revalidateTag(tag, { expire: 0 }));
   logger.info("content.cache.invalidated", { source: "route", entity: change.entity, tags });
   warmDetailPages(change);
+  expireAgainLater(change, tags);
   return tags;
 }

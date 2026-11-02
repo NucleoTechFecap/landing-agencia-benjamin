@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  26/10/2026 Vinícius Nishimura Reis  Lê da fonte ativa (content/ ou Supabase) e expõe páginas (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Detalhe de área com serviços (DB-04).
+ 01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,6 +37,7 @@ import type {
   Service,
   SiteSettings,
 } from "@/lib/domain/content/types";
+import { withPublishedTexts } from "@/lib/domain/content/page-texts";
 import { isPubliclyVisible, visibleSorted } from "@/lib/domain/content/visibility";
 import { CONTENT_TAGS } from "./cache-tags";
 import { getContentSource } from "./sources";
@@ -97,9 +99,15 @@ function toCaseCards(snapshot: ContentSnapshot, items: CaseStudy[], now: Date): 
 
 export async function getSiteSettings(): Promise<SiteSettings> {
   "use cache";
-  cacheTag(CONTENT_TAGS.all, CONTENT_TAGS.settings);
+  cacheTag(CONTENT_TAGS.all, CONTENT_TAGS.settings, CONTENT_TAGS.page("home"), CONTENT_TAGS.page("sobre"));
   cacheLife("hours");
-  return getContentSource().settings();
+  const source = getContentSource();
+  const [settings, home, about] = await Promise.all([source.settings(), source.page("home"), source.page("sobre")]);
+  // Manifesto e "Sobre" publicados no painel valem sobre site_settings (INT-03).
+  return withPublishedTexts(
+    settings,
+    [home, about].filter((page): page is Page => page !== null && isPubliclyVisible(page)),
+  );
 }
 
 /** Página editável publicada (blocos extras das rotas fixas — DB-03); `null` se não houver. */

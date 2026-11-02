@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
+ 01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
@@ -27,6 +28,7 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/server/seo";
 import { ServiceCard } from "@/components/cards/service-card";
 import { ClosingCta } from "@/components/sections/closing-cta";
+import { PageBlocks } from "@/components/sections/page-blocks";
 import { PageHero } from "@/components/sections/page-hero";
 import { ProcessSteps } from "@/components/sections/process-steps";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -34,7 +36,7 @@ import { Section } from "@/components/ui/section";
 import { EmptyState } from "@/components/ui/states";
 import { siteUrl } from "@/lib/config/public-env";
 import { itemListSchema } from "@/lib/domain/seo/structured-data";
-import { getSiteSettings, listServices } from "@/lib/server/content/repository";
+import { getPage, getSiteSettings, listServices } from "@/lib/server/content/repository";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata(
@@ -57,7 +59,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Listagem dos serviços publicados (SERV-01). */
 export default async function ServicesPage() {
-  const services = await listServices();
+  const [services, page] = await Promise.all([listServices(), getPage("servicos")]);
   return (
     <>
       <JsonLd
@@ -100,6 +102,7 @@ export default async function ServicesPage() {
         )}
       </Section>
       <ProcessSteps />
+      <PageBlocks page={page} />
       <ClosingCta
         title="Não sabe qual serviço escolher?"
         description="Conte o seu desafio. A equipe indica a combinação certa de áreas para o seu projeto."

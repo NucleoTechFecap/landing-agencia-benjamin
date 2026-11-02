@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -56,6 +57,9 @@ export function ItemPanel({
           <Link
             href={publicHref}
             target="_blank"
+            // Sem prefetch: regenerar a rota enquanto o item é despublicado gravaria a versão antiga
+            // depois da invalidação, e o site ficaria com ela até o fim do cacheLife.
+            prefetch={false}
             className="inline-block font-bold text-benja-verde underline underline-offset-4"
           >
             Ver no site<span className="sr-only"> (abre em nova aba)</span>
