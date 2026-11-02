@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
  01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -74,12 +75,19 @@ export default async function AboutPage() {
 
       <Section tone="nyanza" labelledBy="pilares-titulo">
         <SectionHeading id="pilares-titulo" eyebrow="Agência experimental" title="Como a Benjamin funciona" />
-        <ul className="mt-10 grid gap-6 md:grid-cols-3">
+        <ul data-motion="cards" className="mt-10 grid gap-6 md:grid-cols-3">
           {pillars.map((pillar) => (
-            <li key={pillar.title} className="rounded-3xl border-2 border-benja-noite bg-white/70 p-7 shadow-sticker">
-              <BrandIcon name={pillar.icon} color={pillar.color} size={64} />
-              <h3 className="mt-4 text-2xl font-black text-benja-verde">{pillar.title}</h3>
-              <p className="mt-3 leading-relaxed text-benja-grafite">{pillar.text}</p>
+            <li key={pillar.title}>
+              <div
+                data-card="soft"
+                className="h-full rounded-3xl border-2 border-benja-noite bg-white/70 p-7 shadow-sticker"
+              >
+                <span data-card-icon className="block w-fit">
+                  <BrandIcon name={pillar.icon} color={pillar.color} size={64} />
+                </span>
+                <h3 className="mt-4 text-2xl font-black text-benja-verde">{pillar.title}</h3>
+                <p className="mt-3 leading-relaxed text-benja-grafite">{pillar.text}</p>
+              </div>
             </li>
           ))}
         </ul>
@@ -93,7 +101,7 @@ export default async function AboutPage() {
             title="Seis áreas que trabalham juntas"
             description="Cada área tem especialistas próprios e se combina com as demais conforme o projeto."
           />
-          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul data-motion="cards" className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {areas.map((area, index) => (
               <li key={area.id}>
                 <AreaCard area={area} color={AREA_COLORS[index % AREA_COLORS.length]} />

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  28/10/2026 Caio Moraes              Estado vazio com link para limpar os filtros (CASE-03).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -156,7 +157,7 @@ async function FilteredCases({ searchParams }: Pick<PageProps<"/cases">, "search
         {cases.length === 1 ? "1 case encontrado" : `${cases.length} cases encontrados`}
       </p>
       {cases.length > 0 ? (
-        <ul className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul data-motion="cards" className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {cases.map((item, index) => (
             <li key={item.id}>
               <CaseCard item={item} priority={index === 0} />

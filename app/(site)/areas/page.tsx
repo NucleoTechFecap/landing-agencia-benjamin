@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  25/10/2026 Caio Moraes              Última área sem laranja, distinta do CTA final (SOB-04).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -90,7 +91,7 @@ export default async function AreasPage() {
                 <li key={area.id}>
                   <a
                     href={`#${area.slug}`}
-                    className="inline-block rounded-full border-2 border-current px-3 py-1 text-sm font-bold hover:bg-benja-lima hover:text-benja-verde"
+                    className="inline-block rounded-full border-2 border-current px-3 py-1 text-sm font-bold transition hover:bg-benja-lima hover:text-benja-verde"
                   >
                     {area.name}
                   </a>
@@ -118,17 +119,25 @@ export default async function AreasPage() {
             className={`scroll-mt-24 border-t-2 border-benja-noite py-16 sm:py-20 ${SECTION_TONES[tone]}`}
           >
             <Container className="grid gap-10 md:grid-cols-[auto_1fr] md:items-start">
-              <BrandIcon name={area.icon ?? "estrela"} color={icon} size={120} />
+              <div data-parallax="-24" className="w-fit">
+                <div data-motion="pop">
+                  <BrandIcon name={area.icon ?? "estrela"} color={icon} size={120} />
+                </div>
+              </div>
               <div>
-                <p className="text-sm font-bold tracking-widest uppercase opacity-80">
-                  Área {String(index + 1).padStart(2, "0")}
-                </p>
-                <h2 id={`${area.slug}-titulo`} className="mt-1 text-4xl font-black sm:text-5xl">
+                <div data-motion="reveal">
+                  <p className="text-sm font-bold tracking-widest uppercase opacity-80">
+                    Área {String(index + 1).padStart(2, "0")}
+                  </p>
+                </div>
+                <h2 id={`${area.slug}-titulo`} data-motion="lines" className="mt-1 text-4xl font-black sm:text-5xl">
                   {area.name}
                 </h2>
-                <p className="mt-4 max-w-2xl text-lg leading-relaxed">{area.description}</p>
+                <p data-motion="reveal" className="mt-4 max-w-2xl text-lg leading-relaxed">
+                  {area.description}
+                </p>
                 {area.highlights.length > 0 ? (
-                  <ul className="mt-6 flex flex-wrap gap-2">
+                  <ul data-motion="group" className="mt-6 flex flex-wrap gap-2">
                     {area.highlights.map((highlight) => (
                       <li
                         key={highlight}
@@ -140,14 +149,14 @@ export default async function AreasPage() {
                   </ul>
                 ) : null}
                 {related.length > 0 ? (
-                  <div className="mt-8">
+                  <div data-motion="reveal" className="mt-8">
                     <h3 className="text-sm font-black tracking-widest uppercase">Serviços desta área</h3>
                     <ul className="mt-3 flex flex-wrap gap-3">
                       {related.map((service) => (
                         <li key={service.id}>
                           <Link
                             href={`/servicos/${service.slug}`}
-                            className="inline-flex items-center gap-1 rounded-full border-2 border-benja-noite bg-benja-nyanza px-4 py-2 text-sm font-bold text-benja-verde shadow-sticker hover:-translate-y-0.5"
+                            className="inline-flex items-center gap-1 rounded-full border-2 border-benja-noite bg-benja-nyanza px-4 py-2 text-sm font-bold text-benja-verde shadow-sticker transition hover:-translate-y-0.5"
                           >
                             {service.name} →
                           </Link>

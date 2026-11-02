@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  25/10/2026 Caio Moraes              Cores de erro via tokens do tema (LAY-04).
  29/10/2026 Caio Moraes              Botão "Enviar outra mensagem" com o estilo padrão (INT-01).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -62,6 +63,7 @@ export function FormErrorBanner({ state }: { state: FormActionState }) {
   return (
     <div
       data-form-error
+      data-nudge
       tabIndex={-1}
       role="alert"
       className="rounded-2xl border-2 border-benja-erro bg-benja-erro-fundo p-4 text-sm text-benja-erro-texto outline-none"
@@ -81,6 +83,7 @@ export function FormSuccess({ protocol, title, onReset }: { protocol: string; ti
   return (
     <div
       role="status"
+      data-nudge
       className="rounded-3xl border-2 border-benja-noite bg-benja-claro p-8 text-center text-benja-verde shadow-sticker"
     >
       <p className="text-3xl font-black">{title}</p>

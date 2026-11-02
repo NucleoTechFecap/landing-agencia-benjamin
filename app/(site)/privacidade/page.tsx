@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -109,7 +110,7 @@ export default async function PrivacyPage() {
             Agência Benjamin e da FECAP e pode mudar antes da publicação oficial.
           </p>
           {SECTIONS.map((section) => (
-            <section key={section.id} aria-labelledby={`${section.id}-titulo`} className="mt-10">
+            <section key={section.id} data-motion="reveal" aria-labelledby={`${section.id}-titulo`} className="mt-10">
               <h2 id={`${section.id}-titulo`} className="text-2xl font-black text-benja-verde">
                 {section.title}
               </h2>

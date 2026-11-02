@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  26/10/2026 Vinícius Nishimura Reis  Logotipo horizontal em SVG (UX-14).
  01/11/2026 Vinícius Nishimura Reis  Endereço sem mapa e redes vazias no rodapé (LAY-03).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,8 +35,15 @@ import { SocialLinks } from "./social-links";
 export function SiteFooter({ settings, year }: { settings: SiteSettings; year: number }) {
   return (
     <footer className="relative overflow-hidden border-t-2 border-benja-noite bg-benja-verde text-benja-nyanza">
-      <div aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-40" />
-      <Container className="relative grid gap-10 py-14 md:grid-cols-[1.3fr_1fr_1fr]">
+      <div
+        aria-hidden
+        data-wave
+        className="halftone pointer-events-none absolute inset-0 opacity-40 motion-on:bg-none motion-on:opacity-100"
+      />
+      <div
+        data-motion="group"
+        className="relative mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.3fr_1fr_1fr] lg:px-8"
+      >
         <div>
           <Image
             src="/brand/logos/logo-horizontal.svg"
@@ -87,7 +95,7 @@ export function SiteFooter({ settings, year }: { settings: SiteSettings; year: n
           </address>
           <SocialLinks socials={settings.socials} className="mt-6" />
         </div>
-      </Container>
+      </div>
       <Container className="relative flex flex-col gap-2 border-t border-benja-nyanza/25 py-6 text-xs opacity-90 sm:flex-row sm:justify-between">
         <p>© {year} Agência Benjamin · Agência experimental da FECAP.</p>
         <p>
