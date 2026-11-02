@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 28/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Biblioteca de mídia no store e opções de imagem (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, galeria e envio de mídia (ADM-08).
 28/10/2026 Codex                     Usa códigos de aviso fechados (TECH-13).
+ 01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -32,7 +33,6 @@ import { MEDIA_BUCKET } from "@/lib/domain/media/policy";
 import type { Action, Resource } from "@/lib/domain/auth/rbac";
 import type { CmsFlash, CmsFormState, CmsWarning } from "@/lib/domain/content/cms-form";
 import { COMMAND_PERMISSION, type PublicationCommand } from "@/lib/domain/content/publication";
-import type { ContentSnapshot } from "@/lib/domain/content/types";
 import { recordAuditEvent } from "../audit";
 import { requirePermission } from "../auth/guards";
 import type { SessionUser } from "../auth/session";
@@ -43,6 +43,7 @@ import { runContentCommand, saveContent, type CmsDeps } from "./content-service"
 import type { CmsItem, EntityDefinition } from "./entities";
 import { checked, command, itemRef, text, typedValues } from "./form-data";
 import { uploadMedia, type MediaStorage } from "./media-service";
+import type { CmsSnapshot } from "./store";
 import { createSupabaseCmsStore } from "./supabase-store";
 
 /** Store do CMS com a sessão de quem está logado: toda leitura e gravação passa pela RLS. */
@@ -57,7 +58,7 @@ export async function cmsDeps(): Promise<CmsDeps> {
 }
 
 /** Snapshot do painel (todos os estados) para as páginas de listagem e edição. */
-export async function loadCmsSnapshot(): Promise<ContentSnapshot> {
+export async function loadCmsSnapshot(): Promise<CmsSnapshot> {
   return (await cmsDeps()).store.snapshot();
 }
 
@@ -70,6 +71,14 @@ export async function loadImageOptions(): Promise<{ id: string; label: string }[
       id: asset.id,
       label: asset.decorative ? `Decorativa — ${asset.src.split("/").pop()}` : asset.alt || asset.src.split("/").pop()!,
     }));
+}
+
+/** Fotos que podem entrar no "Nosso time": imagens da biblioteca com texto alternativo. */
+export async function loadPhotoOptions(): Promise<{ id: string; label: string; src: string }[]> {
+  const media = await (await cmsDeps()).store.listMedia();
+  return media
+    .filter((asset) => asset.mimeType.startsWith("image/") && asset.alt)
+    .map((asset) => ({ id: asset.id, label: asset.alt, src: asset.src }));
 }
 
 /**
