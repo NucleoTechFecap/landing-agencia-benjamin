@@ -304,7 +304,7 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 
 | Regra | Motivo de não ser constraint | Onde reforçar depois |
 | ----- | ---------------------------- | -------------------- |
-| R03 — serviço com ≥ 1 área | Serviço e vínculos são gravados em requisições separadas | RPC transacional (ADM-07) ou trigger *deferrable* (DBX-04) |
+| R03 — serviço com ≥ 1 área | Só vale ao publicar; rascunho pode não ter área. Serviço e vínculos já são gravados numa transação (`save_service`, TECH-13) | Trigger *deferrable* (DBX-04) |
 | R05/R06/R07 — dependências publicadas | Depende do estado de outra tabela | Trigger de publicação (DBX-04) |
 | R10 — rota interna conhecida | A lista de rotas está em `integrity.ts` | — |
 | R11 — até 6 destaques | É aviso, não erro | — |
@@ -348,6 +348,8 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | `npm run test:migrations` com a `20261030000100`: upgrade da `20261029000100` com dados, 9 rollbacks em ordem inversa (cada um duas vezes) e reaplicação | `Files=4, Tests=110, Result: PASS` em cada etapa |
 | `next start` sobre o Supabase local, case renomeado de `meridiano` para `meridiano-2026` (DB-08): `/cases/meridiano?utm=x` → 301 com a query; `/cases/Meridiano` → 301 direto ao atual; `/cases/meridiano-2026` → 200; rascunho e inexistente → 404; `/servicos/Audiovisual` → 301; `/api/v1/cases/meridiano` → 301; `/api/v1/cases/nao-existe` → 404 | Conferido com `curl` |
 | `npm run test:migrations` (DB-08, 29/10/2026): 9 migrations, todas com rollback; upgrade de `20261028000100` com dados; os 9 `.down.sql` em ordem inversa, duas vezes cada; reaplicação e pgTAP. À parte: com endereço antigo registrado, `20261029000100_db08_slugs_e_urls.down.sql` para sem `benjamin.confirmar_rollback` e mantém a tabela; com a confirmação, remove tabela, triggers e funções | `Files=5, Tests=148, Result: PASS` em cada etapa |
+| `supabase/tests/database/cms_gravacao_atomica.test.sql` e `tests/integration/supabase/cms-gravacao-atomica.test.ts` (TECH-13, #314, 02/11/2026): 25 testes pgTAP e 6 de integração. FK inválida em qualquer etapa (área, serviço, galeria, criação) desfaz texto e vínculos; versão desatualizada (`40001`), item inexistente (`P0002`), coluna a mais ou a menos (`22023`) e leitor (`42501`) são recusados; funções `security invoker`, sem execução para `anon`, com `search_path` vazio | `Files=7, Tests=179, Result: PASS`; `npm run test:supabase` 62/62; `npm run test:e2e:cms` 18/18 |
+| `npm run test:migrations` com a `20261102000200`: instalação limpa, upgrade com dados, rollbacks em ordem inversa (duas vezes cada) e reaplicação | Verde em 02/11/2026 |
 
 ## 9. Como aplicar, testar e reverter
 
@@ -368,7 +370,7 @@ npx supabase db push
 
 **Ordem das migrations.** Sequência por timestamp, sem pular: perfis e papéis (0100) → matriz
 RBAC e bucket (0200) → auditoria (0300) → formulários (0400) → conteúdo do CMS (20261025000100)
-→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03). Cada uma
+→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03) → gravação atômica (20261102000200, TECH-13). Cada uma
 depende só das anteriores. Mudança
 destrutiva em banco com dados é feita em duas releases: primeiro a coluna nova, depois a remoção
 da antiga.
