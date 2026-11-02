@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 30/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,6 +23,7 @@
  26/10/2026 Vinícius Nishimura Reis  Parâmetro estático para banco vazio (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
  30/10/2026 Caio Moraes              Galeria mostra a peça inteira, sem corte (CASE-04).
+ 01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -62,6 +63,7 @@ export async function generateMetadata({ params }: PageProps<"/cases/[slug]">): 
       description: item.summary,
       path: `/cases/${item.slug}`,
       type: "article",
+      segmentImage: true,
       keywords: [item.client, category?.name ?? "", ...services.map((service) => service.name)].filter(Boolean),
     },
     await getSiteSettings(),

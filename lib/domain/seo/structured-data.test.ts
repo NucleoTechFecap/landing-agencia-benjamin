@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
  26/10/2026 Vinícius Nishimura Reis  Logotipo em /brand/logos (UX-14).
+ 01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -62,5 +63,12 @@ describe("dados estruturados", () => {
       about: { name: item.client },
       image: `${URL}${item.cover!.src}`,
     });
+  });
+
+  it("capa do Storage mantém a URL absoluta na imagem do case (SEG-09)", () => {
+    const src = "https://projeto.supabase.co/storage/v1/object/public/media/capa.webp";
+    const item = { ...seedSnapshot.cases[0], cover: { src, alt: "Capa" } };
+    const schema = caseSchema(item, "Copywriting", [seedSnapshot.services[0]], URL);
+    expect(schema.image).toBe(src);
   });
 });

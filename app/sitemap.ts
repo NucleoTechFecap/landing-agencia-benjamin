@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
+ 01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -63,7 +64,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(item.updatedAt),
       changeFrequency: "monthly" as const,
       priority: 0.7,
-      ...(item.cover ? { images: [`${siteUrl}${item.cover.src}`] } : {}),
+      // A capa do Storage já é uma URL absoluta; só a de /public recebe o domínio do site.
+      ...(item.cover ? { images: [new URL(item.cover.src, siteUrl).href] } : {}),
     })),
   ];
 }
