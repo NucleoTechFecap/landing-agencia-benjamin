@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,8 @@
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  25/10/2026 Caio Moraes              Permite navegação bloqueante (instant = false) (LAY-01).
  26/10/2026 Vinícius Nishimura Reis  Parâmetro estático para banco vazio (DB-03).
+ 01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
+ 01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,6 +36,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { BrandIcon } from "@/components/ui/brand-icon";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Section } from "@/components/ui/section";
+import { EmptyState } from "@/components/ui/states";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { siteUrl } from "@/lib/config/public-env";
 import { serviceSchema } from "@/lib/domain/seo/structured-data";
@@ -61,6 +64,7 @@ export async function generateMetadata({ params }: PageProps<"/servicos/[slug]">
       description: service.summary,
       path: `/servicos/${service.slug}`,
       keywords: [service.name, ...areas.map((area) => area.name), ...service.examples],
+      segmentImage: true,
     },
     await getSiteSettings(),
   );
@@ -155,13 +159,9 @@ export default async function ServicePage({ params }: PageProps<"/servicos/[slug
             ))}
           </ul>
         ) : (
-          <p className="mt-8 rounded-3xl border-2 border-dashed border-benja-nyanza/60 p-8 text-center">
-            Os cases deste serviço estão sendo preparados. Enquanto isso, veja{" "}
-            <Link href="/cases" className="font-bold underline underline-offset-4">
-              todo o portfólio
-            </Link>
-            .
-          </p>
+          <EmptyState className="mt-8" action={{ href: "/cases", label: "Ver todo o portfólio" }}>
+            Os cases deste serviço estão sendo preparados.
+          </EmptyState>
         )}
       </Section>
 

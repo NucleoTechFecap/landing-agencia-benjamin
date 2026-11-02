@@ -24,3 +24,5 @@ painel exige para publicar.
 | Copywriting | Categoria de cases | CASE-08 | [categorias/copywriting.md](categorias/copywriting.md) | Aprovada (PRJ §12) — materiais dos cases pendentes |
 | Social Media & Criação | Categoria de cases | CASE-09 | [categorias/social-media-e-criacao.md](categorias/social-media-e-criacao.md) | Aprovada (PRJ §12) — materiais dos cases pendentes |
 | Assessoria de Imprensa | Categoria de cases | CASE-10 | [categorias/assessoria-de-imprensa.md](categorias/assessoria-de-imprensa.md) | Aprovada (PRJ §12) — materiais dos cases pendentes |
+| Aventura de Construir | Case | CASE-05 | [cases/aventura-de-construir.md](cases/aventura-de-construir.md) | Bloqueado — aguardando material e autorização (CON-06) |
+| Meridiano | Case | CASE-06 | [cases/meridiano.md](cases/meridiano.md) | Bloqueado — aguardando material e autorização (CON-07) |
