@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
+ 01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -82,21 +83,23 @@ export default async function AboutPage() {
         </ul>
       </Section>
 
-      <Section tone="claro" halftone labelledBy="sobre-areas-titulo">
-        <SectionHeading
-          id="sobre-areas-titulo"
-          eyebrow="Estrutura"
-          title="Seis áreas que trabalham juntas"
-          description="Cada área tem especialistas próprios e se combina com as demais conforme o projeto."
-        />
-        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {areas.map((area, index) => (
-            <li key={area.id}>
-              <AreaCard area={area} color={AREA_COLORS[index % AREA_COLORS.length]} />
-            </li>
-          ))}
-        </ul>
-      </Section>
+      {areas.length > 0 ? (
+        <Section tone="claro" halftone labelledBy="sobre-areas-titulo">
+          <SectionHeading
+            id="sobre-areas-titulo"
+            eyebrow="Estrutura"
+            title="Seis áreas que trabalham juntas"
+            description="Cada área tem especialistas próprios e se combina com as demais conforme o projeto."
+          />
+          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {areas.map((area, index) => (
+              <li key={area.id}>
+                <AreaCard area={area} color={AREA_COLORS[index % AREA_COLORS.length]} />
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
 
       {/* "Nosso time" é opcional (SOB-03): só aparece quando a Benjamin enviar as informações (CON-09). */}
 

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,35 +19,17 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  29/10/2026 Caio Moraes              Botão "Tentar novamente" com o estilo padrão (INT-01).
+ 01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
-import { BrandIcon } from "@/components/ui/brand-icon";
-import { ButtonLink, buttonClasses } from "@/components/ui/button-link";
-import { Section } from "@/components/ui/section";
+import { ErrorState } from "@/components/ui/states";
 
 /** Erro inesperado em páginas públicas: mensagem amigável + código para atendimento (ARC-09). */
 export default function SiteError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   return (
-    <Section tone="rosa" containerClassName="flex flex-col items-center text-center">
-      <BrandIcon name="xicara" color="verde" size={110} />
-      <h1 className="mt-6 text-balance text-4xl font-black">Algo deu errado por aqui.</h1>
-      <p className="mt-3 max-w-lg text-lg">Já registramos o problema. Tente de novo em instantes.</p>
-      {error.digest ? (
-        <p className="mt-2 text-sm">
-          Código de atendimento: <code className="font-mono font-bold">{error.digest}</code>
-        </p>
-      ) : null}
-      <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <button type="button" onClick={() => retry()} className={buttonClasses("primary")}>
-          Tentar novamente
-        </button>
-        <ButtonLink href="/" variant="secondary">
-          Ir para o início
-        </ButtonLink>
-      </div>
-    </Section>
+    <ErrorState error={error} retry={retry} description="Já registramos o problema. Tente de novo em instantes." />
   );
 }
