@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,10 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-07).
+ 02/11/2026 Vinícius Nishimura Reis  Tentativas esgotadas fora da fila de reenvio (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
+import { NOTIFICATION_RETRY } from "@/lib/domain/forms/idempotency";
 import { DuplicateSubmissionError, type SubmissionRecord, type SubmissionStore } from "./types";
 
 /**
@@ -62,7 +64,11 @@ export class MemorySubmissionStore implements SubmissionStore {
 
   async listNotificationBacklog(limit: number) {
     return [...this.records.values()]
-      .filter((record) => record.notificationStatus === "pending" || record.notificationStatus === "failed")
+      .filter(
+        (record) =>
+          (record.notificationStatus === "pending" || record.notificationStatus === "failed") &&
+          record.notificationAttempts < NOTIFICATION_RETRY.maxAttempts,
+      )
       .slice(0, limit);
   }
 

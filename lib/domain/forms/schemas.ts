@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,10 +18,13 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (FORM-01).
+ 02/11/2026 Vinícius Nishimura Reis  Serviço de interesse só aceita slug (TECH-06).
+ 02/11/2026 Vinícius Nishimura Reis  Nome e empresa em uma linha; lista de serviços conferida no servidor (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { z } from "zod";
+import { SLUG_MAX_LENGTH, SLUG_PATTERN } from "../content/slug";
 
 /** Tipos de envio — registros distintos por regra de negócio (RN-02 / TECH-06). */
 export const SUBMISSION_KINDS = ["lead", "contact", "feedback"] as const;
@@ -74,7 +77,13 @@ const optionalText = (max: number, label: string) =>
     trimmed(max, label).optional(),
   );
 
-const name = trimmed(LIMITS.name, "seu nome").min(2, "Informe seu nome.");
+/**
+ * Nome e empresa entram no assunto e em linhas fixas do e-mail interno: uma quebra de linha enviada
+ * direto ao servidor forjaria linhas como "Prioridade sugerida: baixa" (TECH-06).
+ */
+const singleLine = (value: unknown) => (typeof value === "string" ? value.replace(/\s+/g, " ") : value);
+
+const name = z.preprocess(singleLine, trimmed(LIMITS.name, "seu nome").min(2, "Informe seu nome."));
 const email = z
   .string({ error: "Informe seu e-mail." })
   .trim()
@@ -121,8 +130,14 @@ export const leadSchema = technicalFieldsSchema.extend({
   name,
   email,
   phone,
-  company: optionalText(LIMITS.company, "a empresa"),
-  serviceInterest: optionalText(80, "o serviço"),
+  company: z.preprocess(singleLine, optionalText(LIMITS.company, "a empresa")),
+  // Formato, não a lista: o serviço pode sair do ar com o formulário aberto, e isso não pode
+  // recusar o pedido. Quem confere a lista é processSubmission: serviço que não existe não vira
+  // categoria (TECH-06).
+  serviceInterest: z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    trimmed(SLUG_MAX_LENGTH, "o serviço").regex(SLUG_PATTERN, "Escolha um serviço da lista.").optional(),
+  ),
   projectDescription: trimmed(LIMITS.message, "a descrição do projeto").min(
     20,
     "Conte um pouco mais sobre o projeto (mín. 20 caracteres).",
@@ -152,7 +167,7 @@ export const feedbackSchema = technicalFieldsSchema
     ),
     message: trimmed(LIMITS.feedback, "o feedback").min(10, "Escreva seu feedback (mín. 10 caracteres)."),
     // Feedback pode ser anônimo: nome e e-mail são opcionais.
-    name: optionalText(LIMITS.name, "seu nome"),
+    name: z.preprocess(singleLine, optionalText(LIMITS.name, "seu nome")),
     email: z.preprocess((value) => (value === "" ? undefined : value), email.optional()),
     allowContact: optionalCheckbox,
     privacyConsent,

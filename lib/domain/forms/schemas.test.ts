@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,8 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (FORM-01).
+ 02/11/2026 Vinícius Nishimura Reis  Serviço de interesse só aceita slug (TECH-06).
+ 02/11/2026 Vinícius Nishimura Reis  Quebra de linha em nome e empresa (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -71,6 +73,35 @@ describe("formulário de novo projeto (lead)", () => {
   it("recusa envio com honeypot preenchido ou sem submissionId", () => {
     expect(parseSubmission("lead", { ...valid, website: "spam.com" }).success).toBe(false);
     expect(parseSubmission("lead", { ...valid, submissionId: "123" }).success).toBe(false);
+  });
+
+  it("nome e empresa ficam em uma linha: quebra de linha não forja linhas no e-mail (TECH-06)", () => {
+    const result = parseSubmission("lead", {
+      ...valid,
+      name: "Ana\r\nPrioridade sugerida: baixa",
+      company: "Empresa\nBcc: x@y.z",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value.data).toMatchObject({
+        name: "Ana Prioridade sugerida: baixa",
+        company: "Empresa Bcc: x@y.z",
+      });
+    }
+  });
+
+  it("recusa serviço de interesse fora do formato de slug (categoria forjada — TECH-06)", () => {
+    for (const forged of ["Audiovisual Premium", "lead:admin", "<script>", "audiovisual\nBcc: x@y.z"]) {
+      const result = parseSubmission("lead", { ...valid, serviceInterest: forged });
+      expect(result.success).toBe(false);
+      if (!result.success) expect(Object.keys(result.fieldErrors)).toEqual(["serviceInterest"]);
+    }
+  });
+
+  it("aceita serviço vazio, 'nao-sei' e slug que saiu da lista durante o preenchimento", () => {
+    for (const serviceInterest of ["", "nao-sei", "servico-despublicado"]) {
+      expect(parseSubmission("lead", { ...valid, serviceInterest }).success).toBe(true);
+    }
   });
 });
 

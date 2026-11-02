@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-07).
+ 02/11/2026 Vinícius Nishimura Reis  Contrato da fila de reenvio (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -67,6 +68,10 @@ export interface SubmissionStore {
       "notificationStatus" | "notificationAttempts" | "lastNotificationError" | "updatedAt"
     >,
   ): Promise<void>;
+  /**
+   * `pending`/`failed` que ainda têm tentativas, do mais antigo ao mais novo. Quem esgotou fica
+   * de fora: senão, 20 esgotados ocupariam a fila inteira e nada mais seria reenviado (TECH-06).
+   */
   listNotificationBacklog(limit: number): Promise<SubmissionRecord[]>;
 }
 

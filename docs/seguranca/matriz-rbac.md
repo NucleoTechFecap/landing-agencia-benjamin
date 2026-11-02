@@ -45,7 +45,8 @@ Legenda: **V** visualizar · **C** criar · **E** editar · **P** publicar · **
 Notas:
 
 - `lead`/`feedback` → **E** significa alterar o status de atendimento (ex.: "respondido"), nunca o
-  conteúdo enviado pelo visitante; **A**/**D** atendem a retenção (TECH-08).
+  conteúdo enviado pelo visitante: no banco, `authenticated` só tem `update` na coluna `status`
+  (TECH-06); **A**/**D** atendem a retenção (TECH-08).
 - `user` → **C** convidar, **E** desativar/reativar, **M** atribuir papéis `admin`/`super_admin`.
   Regras adicionais em `canAssignRole()`: ninguém altera o próprio papel; `admin` só gerencia
   `editor`, `viewer` e `pending`.
@@ -81,4 +82,5 @@ Notas:
 | N13 | Sessão expirada em ação de escrita | 401 e redirecionamento ao login, nada gravado |
 
 N04–N10 estão automatizados em `lib/domain/auth/rbac.test.ts`; N01–N03, N11–N13 dependem do
-servidor/banco e entram nos testes de ADM-03 e QA-06.
+servidor/banco e entram nos testes de ADM-03 e QA-06. N05, N08 e N12 também são provados no banco por
+`supabase/tests/database/form_submissions_rls.test.sql` (TECH-06).

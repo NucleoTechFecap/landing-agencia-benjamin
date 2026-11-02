@@ -7,7 +7,7 @@
 | Revisão técnica | Vinícius Nishimura Reis (`@Vinishireis`)                                     |
 | Versão          | 1.0.0                                                                        |
 | Data            | 25/10/2026                                                                   |
-| Migration       | `supabase/migrations/20261025000100_cms_content.sql`, `20261029000100_db08_slugs_e_urls.sql` (§10) e `20261030000100_dbx03_indices_rls.sql` (§11) |
+| Migration       | `supabase/migrations/20261025000100_cms_content.sql`, `20261029000100_db08_slugs_e_urls.sql` (§10), `20261030000100_dbx03_indices_rls.sql` (§11) e `20261102000300_tech06_status_de_atendimento.sql` |
 | Reversão        | `supabase/rollbacks/<migration>.down.sql` (uma por migration, §9)            |
 | Seed            | `supabase/seed.sql`, gerado por `scripts/content-seed.mjs` (só banco local, §9) |
 | Testes          | `supabase/tests/database/cms_content.test.sql` (pgTAP, 84 testes), `slugs_e_urls.test.sql` (pgTAP, 33 testes) e `lib/server/content/content-sql.test.ts` (SQL × regras de domínio) |
@@ -20,7 +20,7 @@ O banco tem três grupos de tabelas. Este documento cobre o grupo de conteúdo e
 | Grupo | Tabelas | Migration |
 | ----- | ------- | --------- |
 | Usuários e acesso | `profiles`, `role_permissions`, `audit_log` | 0100, 0200, 0300 |
-| Formulários (leads, contatos, feedbacks) | `form_submissions` | 0400 |
+| Formulários (leads, contatos, feedbacks) | `form_submissions` | 0400, 20261102000300 (`update` do painel só em `status`) |
 | **Conteúdo do CMS** | `pages`, `blocks`, `areas`, `services`, `service_areas`, `case_categories`, `cases`, `case_services`, `case_media`, `ctas`, `media_assets`, `site_settings` | **20261025000100** |
 | Endereços antigos (DB-08) | `slug_redirects` | 20261029000100 |
 | Marcação de produção (ARC-11) | `ambiente_banco` | 20261102000100 |
@@ -358,6 +358,9 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | `supabase/tests/database/indices_rls.test.sql` (DBX-03): toda FK indexada; uma política de leitura por papel nas 11 tabelas do CMS; `has_permission` em `(select …)`; para `anon`, `pending`, `viewer`, `editor` e `admin`, as mesmas linhas visíveis com as políticas novas e com as antigas recriadas na transação | `Files=4, Tests=110, Result: PASS` |
 | `tests/integration/supabase/filtros-paginacao.test.ts` (DBX-03): repositório real sobre a RLS real — filtros combinados (categoria + serviço/área/cliente), serviço em rascunho não filtra nada, ordem por `sort_order`, páginas somadas = lista inteira, página além da última vazia com os totais | 9 arquivos, 44 testes, `PASS` |
 | `npm run test:migrations` com a `20261030000100`: upgrade da `20261029000100` com dados, 9 rollbacks em ordem inversa (cada um duas vezes) e reaplicação | `Files=4, Tests=110, Result: PASS` em cada etapa |
+| `npm run test:migrations` com a `20261102000300` (TECH-06, 02/11/2026): upgrade da `20261030000100` com dados, 11 rollbacks em ordem inversa (cada um duas vezes) e reaplicação | `Files=7, Tests=180, Result: PASS` em cada etapa |
+| `supabase/tests/database/form_submissions_rls.test.sql` (TECH-06): consulta e alteração de envios papel por papel, regra por `kind` com permissões isoladas, `update` só em `status`; com o `grant` antigo, os casos de `payload`, `kind`, `category` e `notification_status` falham | 26 testes, `PASS` |
+| `tests/integration/supabase/formularios.test.ts` (TECH-06): três tipos pelo serviço real até o banco, contas reais de cada papel, corrida do mesmo `submissionId` e fila de reenvio | 6 testes, `PASS` (12 arquivos, 62 testes no total) |
 | `next start` sobre o Supabase local, case renomeado de `meridiano` para `meridiano-2026` (DB-08): `/cases/meridiano?utm=x` → 301 com a query; `/cases/Meridiano` → 301 direto ao atual; `/cases/meridiano-2026` → 200; rascunho e inexistente → 404; `/servicos/Audiovisual` → 301; `/api/v1/cases/meridiano` → 301; `/api/v1/cases/nao-existe` → 404 | Conferido com `curl` |
 | `npm run test:migrations` (DB-08, 29/10/2026): 9 migrations, todas com rollback; upgrade de `20261028000100` com dados; os 9 `.down.sql` em ordem inversa, duas vezes cada; reaplicação e pgTAP. À parte: com endereço antigo registrado, `20261029000100_db08_slugs_e_urls.down.sql` para sem `benjamin.confirmar_rollback` e mantém a tabela; com a confirmação, remove tabela, triggers e funções | `Files=5, Tests=148, Result: PASS` em cada etapa |
 | `npm run test:migrations` (ARC-11, 02/11/2026): 11 migrations, todas com rollback. Seed: 6 áreas, 10 serviços, 5 cases, 2 itens de galeria, 5 CTAs, 4 mídias, 2 páginas, 5 blocos, 1 configuração. Com a marcação real em `public.ambiente_banco`, o seed é recusado sem inserir nada; os 11 `.down.sql` rodam em ordem inversa, duas vezes cada, e reaplicam. À parte: o rollback da marcação para em banco marcado e só segue com `benjamin.confirmar_rollback` | `Files=7, Tests=163, Result: PASS` em cada etapa |
@@ -385,7 +388,7 @@ npx supabase db push
 
 **Ordem das migrations.** Sequência por timestamp, sem pular: perfis e papéis (0100) → matriz
 RBAC e bucket (0200) → auditoria (0300) → formulários (0400) → conteúdo do CMS (20261025000100)
-→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03) → marcação de produção (20261102000100, ARC-11) → gravação atômica (20261102000200, TECH-13). Cada uma
+→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03) → marcação de produção (20261102000100, ARC-11) → gravação atômica (20261102000200, TECH-13) → `update` do painel só em `status` (20261102000300, TECH-06). Cada uma
 depende só das anteriores. Mudança
 destrutiva em banco com dados é feita em duas releases: primeiro a coluna nova, depois a remoção
 da antiga.

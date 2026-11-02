@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,8 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-06).
+ 02/11/2026 Vinícius Nishimura Reis  Prioridade sugerida no e-mail interno (TECH-06).
+ 02/11/2026 Vinícius Nishimura Reis  Serviço fora da lista não vira categoria (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -53,13 +55,17 @@ const RECIPIENT_BY_KIND: Record<SubmissionKind, RecipientKey> = {
   feedback: "FEEDBACK_NOTIFICATION_TO",
 };
 
-/** Decide categoria, destinatário e permissão de consulta de um envio validado (TECH-06). */
-export function routeSubmission(input: SubmissionInput): RoutingDecision {
+/**
+ * Decide categoria, destinatário e permissão de consulta de um envio validado (TECH-06).
+ * `serviceExists: false` diz que o serviço de interesse não está na lista do site: o pedido segue,
+ * mas o valor enviado não vira categoria, para ninguém criar `lead:<o que quiser>`.
+ */
+export function routeSubmission(input: SubmissionInput, serviceExists = true): RoutingDecision {
   switch (input.kind) {
     case "lead":
       return {
         kind: "lead",
-        category: `lead:${input.data.serviceInterest || UNKNOWN_SERVICE}`,
+        category: `lead:${(serviceExists && input.data.serviceInterest) || UNKNOWN_SERVICE}`,
         recipientKey: RECIPIENT_BY_KIND.lead,
         viewResource: "lead",
         priority: "alta",
@@ -86,7 +92,9 @@ export function routeSubmission(input: SubmissionInput): RoutingDecision {
 
 /**
  * Destinatários configurados para a decisão. Contato e feedback caem para a lista de
- * leads quando não houver configuração própria; lista vazia = notificação pendente.
+ * leads quando não houver configuração própria. Lista vazia só acontece em desenvolvimento
+ * e preview: o envio é salvo como `skipped`, sem e-mail (em homologação e produção a falta
+ * de `LEAD_NOTIFICATION_TO` barra o build — `parseServerEnv`).
  */
 export function resolveRecipients(decision: RoutingDecision, config: RecipientConfig): string[] {
   const own = config[decision.recipientKey];
@@ -112,7 +120,12 @@ export function buildNotification(
   meta: { protocol: string; receivedAt: Date; siteUrl: string; serviceName?: string },
 ): NotificationContent {
   const when = meta.receivedAt.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
-  const header = [`Protocolo: ${meta.protocol}`, `Recebido em: ${when}`, `Categoria: ${decision.category}`];
+  const header = [
+    `Protocolo: ${meta.protocol}`,
+    `Recebido em: ${when}`,
+    `Categoria: ${decision.category}`,
+    `Prioridade sugerida: ${decision.priority}`,
+  ];
   const footer = [
     "",
     `Consulte no painel: ${meta.siteUrl}/admin`,

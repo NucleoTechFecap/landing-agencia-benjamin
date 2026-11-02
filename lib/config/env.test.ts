@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-05).
+ 02/11/2026 Vinícius Nishimura Reis  Regras de CRON_SECRET e destinatário (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -59,7 +60,20 @@ describe("parseServerEnv", () => {
     RESEND_API_KEY: "re_123456789",
     NOTIFICATION_FROM: "Agência Benjamin <nao-responda@exemplo.com.br>",
     LEAD_NOTIFICATION_TO: "comercial@exemplo.com.br, coordenacao@exemplo.com.br",
+    CRON_SECRET: "c".repeat(40),
   };
+
+  it("exige o segredo do reenvio de notificações só em produção (TECH-06)", () => {
+    const withoutSecret = { ...productionBase, CRON_SECRET: "" };
+    expect(() => parseServerEnv(withoutSecret, "production")).toThrow(/CRON_SECRET/);
+    expect(parseServerEnv(withoutSecret, "homologation").CRON_SECRET).toBeUndefined();
+  });
+
+  it("recusa destinatário inválido em qualquer lista e aponta a variável (TECH-06)", () => {
+    expect(() => parseServerEnv({ ...productionBase, FEEDBACK_NOTIFICATION_TO: "nao-e-email" }, "production")).toThrow(
+      /FEEDBACK_NOTIFICATION_TO/,
+    );
+  });
 
   it("aplica padrões em desenvolvimento", () => {
     const env = parseServerEnv({}, "development");

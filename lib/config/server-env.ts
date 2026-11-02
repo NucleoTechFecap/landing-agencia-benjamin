@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  13/10/2026 Vinícius Nishimura Reis  Segredo dos jobs agendados (GO-02).
  26/10/2026 Vinícius Nishimura Reis  Variável CONTENT_SOURCE (DB-03).
  26/10/2026 Vinícius Nishimura Reis  CMS como fonte padrão com Supabase; provisório recusado em hml/prd (INT-02).
+ 02/11/2026 Vinícius Nishimura Reis  CRON_SECRET obrigatório em produção: sem ele não há reenvio (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -85,6 +86,8 @@ export function parseServerEnv(raw: Record<string, string | undefined>, environm
       problems.push("RESEND_API_KEY: obrigatória com Resend.");
     if (!env.NOTIFICATION_FROM) problems.push("NOTIFICATION_FROM: obrigatória fora do desenvolvimento.");
     if (env.LEAD_NOTIFICATION_TO.length === 0) problems.push("LEAD_NOTIFICATION_TO: informe ao menos um destinatário.");
+    // Sem o segredo o job responde 401 e notificação com falha nunca é reenviada (TECH-06).
+    if (environment === "production" && !env.CRON_SECRET) problems.push("CRON_SECRET: obrigatória em produção.");
   }
 
   if (problems.length > 0) {

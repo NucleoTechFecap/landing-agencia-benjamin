@@ -4,10 +4,10 @@
 | ------------ | ----------------------------------------------------------------------- |
 | Issue        | TECH-07 (#108)                                                          |
 | Responsável  | Vinícius Nishimura Reis (`@Vinishireis`)                                |
-| Versão       | 1.0.0                                                                   |
-| Data         | 13/10/2026                                                              |
+| Versão       | 1.1.0                                                                   |
+| Data         | 02/11/2026                                                              |
 | Depende de   | [TECH-06](captacao-e-roteamento.md), [TECH-02](../api/contratos.md)     |
-| Código       | `lib/domain/forms/idempotency.ts`, `lib/server/forms/*` + `submission-service.test.ts` (cenários S1–S10) |
+| Código       | `lib/domain/forms/idempotency.ts`, `lib/server/forms/*` + `submission-service.test.ts` (cenários S1–S10 e S13) |
 | Encaminhado a | FORM-03/04/05 (formulários), FORM-07 (antispam), FORM-08 (estados), DB-06/DB-07 (persistência) |
 
 ## 1. Garantias
@@ -40,12 +40,13 @@
 | S7 | Banco indisponível | Erro "Serviço temporariamente indisponível" + código de atendimento; pode reenviar (mesmo `submissionId`) | — | — | `app.error.service_unavailable` |
 | S8 | Resend falha | **Sucesso** (lead já está salvo) | Criado, `failed`, tentativas 1 | Reenviada pela rotina com backoff 1, 2, 4, 8 min (máx. 5) | `forms.notification.failed` |
 | S9 | > 5 envios da mesma origem em 10 min | Erro "Muitas tentativas…" | — | — | `app.error.rate_limited` |
-| S10 | Sem destinatário configurado | Sucesso | Criado, `skipped` | Não enviada (alerta no log) | `forms.notification.skipped` |
+| S10 | Sem destinatário configurado (só desenvolvimento e preview; em homologação e produção a falta barra o build, ver [TECH-06 §6](captacao-e-roteamento.md)) | Sucesso | Criado, `skipped` | Não enviada nem reenviada (alerta no log) | `forms.notification.skipped` |
 | S11 | Dois envios simultâneos do mesmo id | Ambos sucesso, um `duplicate` | Um registro (constraint única) | Uma | `persisted` |
 | S12 | Produção sem armazenamento persistente configurado | Erro 503 | — | — | `app.error.service_unavailable` (nunca grava em memória fora do dev) |
+| S13 | Notificação esgotou as 5 tentativas | (Já viu sucesso) | Mantido, `failed`, tentativas 5 | Sai da fila, sem bloquear os envios novos; reenvio manual ([handoff](../operacao/handoff-e-manutencao.md)) | `forms.notification.failed` |
 
-S1–S10 são testes automatizados; S11 é garantido pela constraint `unique` e pelo tratamento de
-`DuplicateSubmissionError`; S12 por `resolveStore()`.
+S1–S10 e S13 são testes automatizados; S11 é garantido pela constraint `unique` e pelo tratamento de
+`DuplicateSubmissionError`, testado no banco real (`formularios.test.ts`); S12 por `resolveStore()`.
 
 ## 4. Fluxo
 
@@ -79,9 +80,11 @@ sequenceDiagram
 
 ## 5. Rotina de reenvio
 
-`retryPendingNotifications()` processa até 20 registros `pending/failed` respeitando o backoff.
-Agendamento proposto: Vercel Cron a cada 5 min chamando um Route Handler protegido por segredo
-(`CRON_SECRET`), ou `pg_cron` no Supabase — implementação junto a FORM-06/DB-06.
+`retryPendingNotifications()` processa até 20 registros `pending/failed` que ainda têm tentativas,
+do mais antigo ao mais novo, respeitando o backoff. Roda em `GET /api/internal/jobs/notificacoes`,
+protegido por `CRON_SECRET` (obrigatório em produção). O agendamento é o Vercel Cron a cada 15 min,
+[passo manual do provisionamento](../operacao/provisionamento-producao.md): não está em `vercel.json`,
+e a espera real entre tentativas nunca é menor que esse intervalo.
 
 ## 6. Persistência (encaminhado a DB-06/DB-07)
 

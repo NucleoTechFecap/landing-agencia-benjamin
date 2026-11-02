@@ -3,14 +3,14 @@
  Sistema      : Agência Benjamin Landing Page
  Módulo       : Lib
  Arquivo      : submission-service.test.ts
- Descrição    : Cenários S1–S10 de sucesso, erro, duplicidade e falhas dos formulários.
+ Descrição    : Cenários S1–S13 de sucesso, erro, duplicidade e falhas dos formulários.
 
  Desenvolvedor: Vinícius Nishimura Reis
 
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,8 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-07).
+ 02/11/2026 Vinícius Nishimura Reis  Tentativas esgotadas fora da fila (TECH-06).
+ 02/11/2026 Vinícius Nishimura Reis  Serviço forjado e falha ao consultar a lista (TECH-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -78,6 +80,33 @@ beforeEach(() => {
     now: () => now,
     siteUrl: "https://benjamin.test",
   };
+});
+
+describe("serviço de interesse (TECH-06)", () => {
+  const withService = (serviceInterest: string) => lead({ serviceInterest });
+
+  it("serviço da lista vira categoria", async () => {
+    deps.serviceName = async (slug) => (slug === "audiovisual" ? "Audiovisual" : undefined);
+    await processSubmission("lead", withService("audiovisual"), context, deps);
+    expect((await store.findById(ID))?.category).toBe("lead:audiovisual");
+  });
+
+  it("valor forjado em formato de slug não vira categoria, nem no e-mail, e o pedido segue", async () => {
+    deps.serviceName = async () => undefined;
+    const result = await processSubmission("lead", withService("urgente-diretoria"), context, deps);
+    expect(result.status).toBe("success");
+    const record = await store.findById(ID);
+    expect(record?.category).toBe("lead:nao-sei");
+    expect(record?.payload).toMatchObject({ serviceInterest: "urgente-diretoria" });
+    expect(notifier.sent[0].text).toContain("Categoria: lead:nao-sei");
+  });
+
+  it("falha ao consultar a lista não perde o pedido", async () => {
+    deps.serviceName = async () => Promise.reject(new Error("CMS fora"));
+    const result = await processSubmission("lead", withService("audiovisual"), context, deps);
+    expect(result.status).toBe("success");
+    expect((await store.findById(ID))?.category).toBe("lead:nao-sei");
+  });
 });
 
 describe("processSubmission — cenários (TECH-07)", () => {
@@ -197,5 +226,34 @@ describe("processSubmission — cenários (TECH-07)", () => {
     deps.recipients = { LEAD_NOTIFICATION_TO: [], CONTACT_NOTIFICATION_TO: [], FEEDBACK_NOTIFICATION_TO: [] };
     await processSubmission("lead", lead(), context, deps);
     expect(store.all()[0].notificationStatus).toBe("skipped");
+  });
+
+  it("S13 tentativas esgotadas não travam a fila: envios novos continuam sendo reenviados", async () => {
+    for (let index = 0; index < 20; index += 1) {
+      await store.insert({
+        id: `1b6c2f0e-6f1d-4c8a-9a51-3d2f9f1b7e${String(index).padStart(2, "0")}`,
+        protocol: `AB-E${index}`,
+        kind: "lead",
+        category: "lead:nao-sei",
+        payload: {},
+        fingerprint: `esgotado-${index}`,
+        ipHash: null,
+        sourcePath: null,
+        status: "novo",
+        notificationStatus: "failed",
+        notificationAttempts: 5,
+        lastNotificationError: "Resend respondeu 503",
+        createdAt: new Date(T0.getTime() - 86_400_000).toISOString(),
+        updatedAt: new Date(T0.getTime() - 86_400_000).toISOString(),
+      });
+    }
+    notifier.failNext = 1;
+    await processSubmission("lead", lead(), context, deps);
+
+    now = new Date(T0.getTime() + 2 * 60_000);
+    expect(await retryPendingNotifications(deps)).toEqual({ retried: 1 });
+    expect(await store.findById(ID)).toMatchObject({ notificationStatus: "sent", notificationAttempts: 2 });
+    // Esgotados continuam registrados como falha, para a conferência semanal (handoff).
+    expect(store.all().filter((record) => record.notificationStatus === "failed")).toHaveLength(20);
   });
 });
