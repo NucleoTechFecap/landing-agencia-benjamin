@@ -2,7 +2,8 @@
 
 O painel (`/admin`) deixa a equipe da Benjamin manter **páginas e blocos, manifesto, texto Sobre, áreas
 de atuação, serviços, categorias, cases e a biblioteca de mídia** sem deploy. O site lê do Supabase só o que está publicado. O conteúdo
-versionado em `content/` serve de fallback de desenvolvimento e de fonte do seed.
+versionado em `content/` serve de fallback de desenvolvimento e de fonte de parte do seed (os cases do
+seed são fictícios).
 
 ## Páginas e textos do site
 

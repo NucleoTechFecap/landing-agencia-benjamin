@@ -51,7 +51,7 @@
 ## 4. Ordem de implantação em homologação
 
 1. **Banco**: `supabase db push` no projeto `benjamin-hml` (auth/RBAC → auditoria → formulários → conteúdo de DB-02).
-2. **Seed fictício** de desenvolvimento/homologação (ARC-11) e usuários de teste por papel (INT-08).
+2. **Conteúdo e contas**: o seed fictício só roda no banco local (ARC-11). Em homologação, o conteúdo entra pelo painel e as contas por convite (INT-08).
 3. **Variáveis** do ambiente Preview/`main` na Vercel (ARC-05).
 4. **Repositório**: trocar `loadSnapshot()` e `publishedSlugExists()` para Supabase (DB-03/04/05) — PR único, com testes do repositório.
 5. **Front-end** e **CMS** (PRs de LAY/HOME/SOB/SERV/CASE/ADM) sobre o contrato já publicado.
