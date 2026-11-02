@@ -42,10 +42,10 @@ describe("estados globais (LAY-07)", () => {
 
   it("vazio mostra o próximo passo só quando ele existe", () => {
     const withAction = renderToStaticMarkup(
-      createElement(EmptyState, { action: { href: "/cases", label: "Ver todos" }, children: "Nada aqui." }),
+      EmptyState({ action: { href: "/cases", label: "Ver todos" }, children: "Nada aqui." }),
     );
     expect(withAction).toContain('href="/cases"');
-    expect(renderToStaticMarkup(createElement(EmptyState, { children: "Nada aqui." }))).not.toContain("<a");
+    expect(renderToStaticMarkup(EmptyState({ children: "Nada aqui." }))).not.toContain("<a");
   });
 
   it("erro mostra o código de atendimento só quando existe, e oferece as saídas", () => {
