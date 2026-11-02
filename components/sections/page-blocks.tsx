@@ -38,7 +38,10 @@ function RichTextBlock({ id, content, tone }: { id: string; content: BlockConten
   return (
     <Section tone={tone} labelledBy={content.title ? id : undefined}>
       {content.title ? <SectionHeading id={id} title={content.title} /> : null}
-      <div className={`max-w-3xl space-y-4 text-lg leading-relaxed ${content.title ? "mt-6" : ""}`}>
+      <div
+        data-motion="reveal"
+        className={`max-w-3xl space-y-4 text-lg leading-relaxed ${content.title ? "mt-6" : ""}`}
+      >
         {content.paragraphs.map((paragraph, index) => (
           <p key={index}>{paragraph}</p>
         ))}
@@ -51,7 +54,7 @@ function ListBlock({ id, content, tone }: { id: string; content: BlockContent<"l
   return (
     <Section tone={tone} labelledBy={content.title ? id : undefined}>
       {content.title ? <SectionHeading id={id} title={content.title} /> : null}
-      <ul className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 ${content.title ? "mt-10" : ""}`}>
+      <ul data-motion="cards" className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 ${content.title ? "mt-10" : ""}`}>
         {content.items.map((item, index) => (
           <li key={index} className="rounded-3xl border-2 border-benja-noite bg-white/70 p-7 shadow-sticker">
             <h3 className="text-xl font-black text-benja-verde">{item.title}</h3>
@@ -73,7 +76,7 @@ function TeamBlock({ id, content, tone }: { id: string; content: BlockContent<"t
   return (
     <Section tone={tone} labelledBy={id}>
       <SectionHeading id={id} title={content.title ?? "Nosso time"} />
-      <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <ul data-motion="cards" className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {content.members.map((member, index) => (
           <li
             key={index}

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -40,7 +41,7 @@ export function SectionHeading({
 }) {
   const centered = align === "center";
   return (
-    <header className={`max-w-3xl ${centered ? "mx-auto text-center" : ""}`}>
+    <header data-motion="heading" className={`max-w-3xl ${centered ? "mx-auto text-center" : ""}`}>
       {eyebrow ? (
         <p className="mb-3 inline-block rounded-full border-2 border-current px-3 py-1 text-xs font-bold tracking-widest uppercase">
           {eyebrow}

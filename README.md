@@ -104,7 +104,9 @@ plataforma é a vitrine da agência e também a ferramenta de trabalho da equipe
 - Home com manifesto, prévia da agência, serviços em destaque e CTA final
 - Páginas **Sobre**, **Áreas**, **Serviços** e **Cases**, com páginas de detalhe
 - Portfólio com **filtros** por categoria, serviço, área e cliente
-- Identidade do brandbook: paleta, Poppins, ícones e *stickers* da marca
+- Identidade do brandbook: paleta, Poppins, ícones e *stickers* da marca, em vetor
+- Motion com **GSAP**: tela de carregamento, fundo verde animado, entradas por rolagem, cards e cortina
+  entre páginas, com movimento reduzido respeitado ([ADR-0008](docs/adr/0008-animacoes-com-gsap.md))
 - Layout responsivo, menu mobile acessível, *skip link* e foco visível
 - Páginas de erro e 404 com a linguagem da agência
 
@@ -378,7 +380,7 @@ A matriz por ambiente (local, preview, homologação e produção) e as regras d
 │   ├── config/                  # Ambiente público/servidor validado e navegação
 │   ├── domain/                  # content · auth (RBAC) · forms · media · api · audit · seo
 │   └── server/                  # content · forms · auth · supabase · logger · errors · http · og · llms
-├── public/brand/                # Logos em SVG (e PNG para OG/JSON-LD), ícones (14 × 6 cores), stickers e capas
+├── public/brand/                # Logos, ícones, stickers e redes sociais em SVG (PNG só para OG/JSON-LD) e capas
 ├── assets/fonts/                # Poppins (OFL) para as imagens OG
 ├── assets/brand/                # Pacote oficial da marca: brandbook, .ai, .psd e exportações (fora do deploy)
 ├── supabase/migrations/         # Perfis, RBAC, auditoria e envios de formulário
