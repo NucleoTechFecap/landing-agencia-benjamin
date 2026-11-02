@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
+ 01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
  01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
@@ -85,21 +86,23 @@ export default async function AboutPage() {
         </ul>
       </Section>
 
-      <Section tone="claro" halftone labelledBy="sobre-areas-titulo">
-        <SectionHeading
-          id="sobre-areas-titulo"
-          eyebrow="Estrutura"
-          title="Seis áreas que trabalham juntas"
-          description="Cada área tem especialistas próprios e se combina com as demais conforme o projeto."
-        />
-        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {areas.map((area, index) => (
-            <li key={area.id}>
-              <AreaCard area={area} color={AREA_COLORS[index % AREA_COLORS.length]} />
-            </li>
-          ))}
-        </ul>
-      </Section>
+      {areas.length > 0 ? (
+        <Section tone="claro" halftone labelledBy="sobre-areas-titulo">
+          <SectionHeading
+            id="sobre-areas-titulo"
+            eyebrow="Estrutura"
+            title="Seis áreas que trabalham juntas"
+            description="Cada área tem especialistas próprios e se combina com as demais conforme o projeto."
+          />
+          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {areas.map((area, index) => (
+              <li key={area.id}>
+                <AreaCard area={area} color={AREA_COLORS[index % AREA_COLORS.length]} />
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
 
       {/* "Nosso time" é um bloco da página (SOB-03): sem pessoas autorizadas (CON-09), a seção não existe. */}
       <PageBlocks page={page} />
