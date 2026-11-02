@@ -4,8 +4,8 @@
 | ------------ | ----------------------------------------------------------------------- |
 | Issue        | GO-09 (#199)                                                            |
 | Responsável  | Vinícius Nishimura Reis (`@Vinishireis`)                                |
-| Versão       | 1.1.0 — revisada após a entrega do CMS; nova revisão após a publicação (GO-06) |
-| Data         | 13/10/2026 · revisão 27/10/2026                                         |
+| Versão       | 1.2.0 — revisada em 02/11/2026; nova revisão após a publicação (GO-06)  |
+| Data         | 13/10/2026 · revisão 27/10/2026 · revisão 02/11/2026                    |
 | Depende de   | [ARC-12](../arquitetura/documentacao-tecnica.md), GO-06                 |
 | Público      | Quem assume a manutenção técnica no NúcleoTech                          |
 
@@ -55,35 +55,45 @@ As rotinas com frequência fixa já são issues no Project 4, com a label `manut
 As rotinas recorrentes da seção 3 estão nas issues #302 a #309 (label `manutencao`, uma por
 rotina, com checklist e responsável). Começam a valer com a publicação (GO-06).
 
-Pendências conhecidas em 27/10/2026:
+Pendências conhecidas em 02/11/2026:
 
-- Produção (GO-02) nas contas institucionais da Vercel e do Supabase, publicando no endereço
-  `*.vercel.app` até o domínio oficial (GO-03) existir.
-- Merge do #301 (exclusão de conta com eventos auditados), depois da revisão de quem responde pelo
-  banco.
-- Ativar o ruleset da `main` (CONTRIBUTING §6) e "Require review from Code Owners". Hoje a `main`
-  não tem proteção.
-- Evoluções planejadas, todas fora do MVP e à espera de aprovação: CRM
+- **Produção (GO-02):** decidir o papel do único projeto Supabase e o fluxo da Vercel, que hoje publica
+  a `main` como Production ([provisionamento §6](provisionamento-producao.md)). O domínio oficial
+  (GO-03) segue pendente, com publicação em `*.vercel.app` até ele existir.
+- **Release de segurança do Next.js em 03/11/2026:** atualizar assim que sair, antes de publicar.
+- **PRs abertos:** #365 (TECH-06), #366 (gravação atômica, #314), #367 (envio direto de mídia, #313)
+  e #368 (dependências). As migrations `20261102000100` e `20261102000200` não foram aplicadas em
+  nenhum ambiente remoto.
+- **Achados baixos da revisão técnica de 02/11:** #369.
+- **PRs críticos sem revisão registrada:** ver [revisão de PRs §6.3](../qualidade/revisao-de-prs.md).
+- **Evoluções planejadas**, todas fora do MVP e à espera de aprovação: CRM
   ([FUT-01](../roadmap/evolucao-crm.md)), histórico de versões
   ([FUT-04](../roadmap/historico-de-versoes.md)), integrações
   ([FUT-07](../roadmap/integracoes-externas.md)) e módulos internos
   ([FUT-08](../roadmap/modulos-internos.md)).
 
-Resolvidas na entrega do CMS (27/10/2026): o site lê o conteúdo publicado no Supabase
-(DB-03/04/05, INT-02), e `publishedSlugExists` consulta a fonte ativa. Com o Next.js 16.4.3 (#300),
-`npm audit` não acusa mais vulnerabilidades, nem nas dependências de desenvolvimento.
+Resolvidas: o site lê o conteúdo publicado no Supabase (DB-03/04/05, INT-02, INT-03), e
+`publishedSlugExists` consulta a fonte ativa; o #301 foi mesclado; os rulesets da `main` e da
+`production` estão ativos desde 28/10. `npm audit --omit=dev` não acusa vulnerabilidades. Com as
+dependências de desenvolvimento, há 17 moderadas de um único aviso (`minimatch`, via ESLint 9), que só
+corrige com o ESLint 10.
 
-## 5. Reprodutibilidade (verificada em 27/10/2026)
+## 5. Reprodutibilidade (verificada em 02/11/2026)
 
-A partir de um checkout limpo da `main`, com o Node 22 do `.nvmrc`:
+A partir de um checkout limpo da `main` (`7be685f`), com o Node 22 do `.nvmrc`. As linhas marcadas
+rodaram no PR #368, que é a mesma `main` com o Next.js 16.4.4 e o Vitest 5.1.0:
 
 | Passo | Resultado |
 | ----- | --------- |
-| `npm ci` e `npm run verify` (cabeçalhos, formatação, tipos, lint, testes e build) | 625 testes; build com 63 páginas |
-| `npx supabase start`, `npx supabase db reset` e `npx supabase test db` | 93 testes pgTAP (com o #301) |
-| `npm run test:supabase` (RLS, Storage e visibilidade pública) | 40/40 |
-| `npm run test:e2e` (jornadas do site com o conteúdo versionado) | 8/8 |
-| `npm run test:e2e:cms` (jornada do editor contra o Supabase local) | 2/2 |
+| `npm ci` e `npm run verify` (cabeçalhos, formatação, tipos, lint, testes e build) | 763 testes (57 ignorados por exigirem o Supabase); build com 68 páginas |
+| `npx supabase start`, `npx supabase db reset` e `npx supabase test db` (no #368) | 154 testes pgTAP |
+| `npm run test:supabase` (RLS, Storage e visibilidade pública; no #368) | 56/56 |
+| `npm run test:e2e` (jornadas do site com o conteúdo versionado; no #368) | 96 passaram, 42 ignorados |
+| `npm run test:e2e:cms` (jornadas do editor contra o Supabase local; no #368) | 18/18 |
+
+`tests/integration/supabase/slugs-e-urls.test.ts` ("excluído, os endereços ficam reservados") é
+instável: depende da ordenação do sufixo aleatório e falha em parte das execuções, sem relação com o
+código testado.
 
 ## 6. Checklist de handoff (concluir após GO-06)
 
