@@ -87,6 +87,17 @@ flowchart LR
 
 Fronteiras detalhadas: [ADR-0003](../adr/0003-limites-de-dominio.md).
 
+### Estados de interface (LAY-07)
+
+`components/ui/states.tsx` é o único lugar dos estados de espera, lista vazia e erro: `LoadingState` e
+`CardsSkeleton` nos fallbacks de `Suspense`, `EmptyState` nas listas e `ErrorState` nos `error.tsx` do
+site e do painel. Usam `currentColor`, então valem em qualquer tom de seção.
+
+**Não há `loading.tsx` de rota, de propósito.** Com ele a resposta começa com status 200 antes de a
+página existir, e `/cases/<slug-inexistente>` viraria um "soft 404" para buscadores. As rotas públicas
+são pré-renderizadas; só as partes que dependem da URL (filtros de `/cases`, formulário de `/contato`)
+esperam, e cada uma tem seu `Suspense`.
+
 ## 4. Segurança (resumo)
 
 | Tema | Implementação | Documento |

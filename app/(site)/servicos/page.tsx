@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  13/10/2026 Vinícius Nishimura Reis  Metadados completos e dados estruturados (SEO da landing).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
+ 01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -32,6 +33,7 @@ import { PageHero } from "@/components/sections/page-hero";
 import { ProcessSteps } from "@/components/sections/process-steps";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Section } from "@/components/ui/section";
+import { EmptyState } from "@/components/ui/states";
 import { siteUrl } from "@/lib/config/public-env";
 import { itemListSchema } from "@/lib/domain/seo/structured-data";
 import { getPage, getSiteSettings, listServices } from "@/lib/server/content/repository";
@@ -70,7 +72,13 @@ export default async function ServicesPage() {
       <PageHero
         eyebrow="Serviços"
         title="Comunicação completa, feita por quem está chegando com tudo"
-        description={<p>{services.length} serviços que se combinam conforme o objetivo do seu projeto.</p>}
+        description={
+          <p>
+            {services.length > 0
+              ? `${services.length} serviços que se combinam conforme o objetivo do seu projeto.`
+              : "Nossa lista de serviços está sendo atualizada."}
+          </p>
+        }
         path="/servicos"
         breadcrumbs={[{ label: "Início", href: "/" }, { label: "Serviços" }]}
         icon="megafone"
@@ -79,13 +87,19 @@ export default async function ServicesPage() {
         <h2 id="lista-servicos" className="sr-only">
           Lista de serviços
         </h2>
-        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map((service, index) => (
-            <li key={service.id}>
-              <ServiceCard service={service} index={index} />
-            </li>
-          ))}
-        </ul>
+        {services.length > 0 ? (
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {services.map((service, index) => (
+              <li key={service.id}>
+                <ServiceCard service={service} index={index} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState action={{ href: "/contato#formulario", label: "Conte o que você precisa" }}>
+            Os serviços estão sendo atualizados. Enquanto isso, a equipe responde pelo formulário de contato.
+          </EmptyState>
+        )}
       </Section>
       <ProcessSteps />
       <PageBlocks page={page} />

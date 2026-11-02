@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 01/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 01/11/2026 Vinícius Nishimura Reis  Foco visível no card e testes do portfólio (CASE-01).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -39,7 +40,7 @@ export function ServiceCard({
 }) {
   const Heading = headingLevel;
   return (
-    <article className="group relative flex h-full flex-col rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-6 text-benja-noite shadow-sticker transition hover:-translate-y-1 hover:shadow-sticker-lg">
+    <article className="group relative flex h-full flex-col rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-6 text-benja-noite shadow-sticker transition hover:-translate-y-1 hover:shadow-sticker-lg has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-benja-azul">
       <BrandIcon name={service.icon ?? "estrela"} color={ICON_COLORS[index % ICON_COLORS.length]} size={64} />
       <Heading className="mt-4 text-xl font-black text-benja-verde">
         <Link
