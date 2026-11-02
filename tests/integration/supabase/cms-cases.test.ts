@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
+ 02/11/2026 Vinícius Nishimura Reis  Capa enviada pelo fluxo direto ao Storage (TECH-13, #313).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -27,7 +28,8 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { MEDIA_BUCKET } from "@/lib/domain/media/policy";
 import { runContentCommand, saveContent } from "@/lib/server/cms/content-service";
 import { CASE, CATEGORY } from "@/lib/server/cms/entities";
-import { uploadMedia, type MediaStorage } from "@/lib/server/cms/media-service";
+import { finalizeMediaUpload, prepareMediaUpload } from "@/lib/server/cms/media-service";
+import { createSupabaseMediaStorage } from "@/lib/server/cms/media-storage";
 import { fetchCasesAndCategories } from "@/lib/server/content/supabase/queries";
 import {
   anonClient,
@@ -52,17 +54,6 @@ describe.runIf(hasSupabaseTestEnv)("CMS de cases, categorias e mídia no Supabas
   const users: { editor?: TestUser; viewer?: TestUser } = {};
   const ids = { service: "", category: "", case: "", media: "" };
   const paths: string[] = [];
-
-  const storageFor = (user: TestUser): MediaStorage => ({
-    async upload(path, bytes, contentType) {
-      const { error } = await user.client.storage.from(MEDIA_BUCKET).upload(path, bytes, { contentType });
-      if (error) throw new Error(error.message);
-      paths.push(path);
-    },
-    async remove(path) {
-      await user.client.storage.from(MEDIA_BUCKET).remove([path]);
-    },
-  });
 
   beforeAll(async () => {
     [users.editor, users.viewer] = await Promise.all([
@@ -100,12 +91,17 @@ describe.runIf(hasSupabaseTestEnv)("CMS de cases, categorias e mídia no Supabas
     (await serviceClient().from(table).select("updated_at").eq("id", id).single()).data!.updated_at as string;
 
   it("editor envia a capa: arquivo no bucket público e registro na biblioteca", async () => {
-    const asset = await uploadMedia(
-      { ...cmsDepsFor(users.editor!.client), storage: storageFor(users.editor!), newId: () => crypto.randomUUID() },
-      editor(),
-      { name: `capa-${suffix}.webp`, type: "image/webp", bytes: cover },
-      { alt: "Capa do case de teste", decorative: false },
-    );
+    const storage = createSupabaseMediaStorage(users.editor!.client);
+    const deps = { ...cmsDepsFor(users.editor!.client), storage, newId: () => crypto.randomUUID() };
+    const meta = { alt: "Capa do case de teste", decorative: false };
+    const name = `capa-${suffix}.webp`;
+    const ticket = await prepareMediaUpload(deps, editor(), { name, type: "image/webp", size: cover.length, ...meta });
+    paths.push(ticket.path);
+    const sent = await users
+      .editor!.client.storage.from(MEDIA_BUCKET)
+      .uploadToSignedUrl(ticket.path, ticket.token, cover, { contentType: "image/webp" });
+    expect(sent.error).toBeNull();
+    const asset = await finalizeMediaUpload(deps, editor(), { path: ticket.path, name, type: "image/webp", ...meta });
     ids.media = asset.id;
     expect(asset).toMatchObject({ width: 1200, height: 750, alt: "Capa do case de teste" });
     const response = await fetch(asset.src);
