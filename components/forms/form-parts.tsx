@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 03/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  25/10/2026 Caio Moraes              Cores de erro via tokens do tema (LAY-04).
  29/10/2026 Caio Moraes              Botão "Enviar outra mensagem" com o estilo padrão (INT-01).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 03/11/2026 Julia                    Asterisco com contraste e aviso de nova aba no link (SEG-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -47,9 +48,10 @@ export function PrivacyConsentText() {
       Li e estou ciente do{" "}
       <Link href="/privacidade" className="font-bold text-benja-verde underline underline-offset-4" target="_blank">
         aviso de privacidade
+        <span className="sr-only"> (abre em nova aba)</span>
       </Link>
       .{" "}
-      <span aria-hidden className="text-benja-laranja">
+      <span aria-hidden className="text-benja-erro">
         *
       </span>
     </>
