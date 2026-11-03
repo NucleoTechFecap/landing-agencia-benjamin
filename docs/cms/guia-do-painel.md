@@ -3,6 +3,64 @@
 Como a equipe da Agência Benjamin atualiza o site pelo painel, sem depender do NúcleoTech.
 Acesso em `/admin` com a conta convidada (INT-08).
 
+## Primeiros passos: entrar e sair do painel
+
+### Receber o convite (só na primeira vez)
+
+1. A coordenação da Benjamin indica quem deve ter acesso e o NúcleoTech envia um convite para o e-mail
+   institucional da pessoa.
+2. Abra o e-mail, clique no link e defina a sua senha na tela "Defina sua senha" (botão **Salvar senha**).
+   Ninguém da equipe conhece ou recebe a sua senha.
+3. Se o link disser "inválido ou expirou", peça um novo convite ao NúcleoTech.
+
+### Entrar
+
+1. Acrescente `/admin` ao endereço do site. A tela "Painel da Benjamin" pede e-mail e senha.
+2. Preencha e clique em **Entrar**.
+3. Confira no topo da tela o seu nome e o seu **papel** (Administrador, Editor ou Leitor).
+
+| O que aparece                         | O que significa                          | O que fazer                                                           |
+| ------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------- |
+| "Acesso pendente"                     | A conta existe, mas ainda não tem papel  | A coordenação da Benjamin pede ao NúcleoTech que atribua o papel      |
+| "Sem permissão"                       | O seu papel não permite aquela área      | Volte ao início; se precisar da área, peça outro papel                |
+| "Sua sessão expirou. Entre novamente" | A sessão acabou                          | Entre de novo; o que não foi salvo se perde                           |
+
+### Esqueci a senha
+
+Na tela de login, clique em **Esqueci minha senha**, informe o e-mail e clique em **Enviar link**. Abra o
+e-mail, defina a nova senha e entre.
+
+### Sair
+
+Clique em **Sair**, no canto superior direito. Faça isso sempre que usar um computador compartilhado.
+Não compartilhe a senha nem o link recebido por e-mail.
+
+No início do painel, módulos marcados como "Em construção" (como contato e redes sociais) ainda não podem
+ser editados por aqui.
+
+## Editar e publicar, passo a passo
+
+O fluxo é o mesmo para áreas, serviços, categorias e cases. O exemplo usa um serviço.
+
+1. **Abrir.** No início, clique em **Serviços** e depois no item. Para criar, use **Novo serviço**: todo
+   item novo nasce como Rascunho e não aparece no site.
+2. **Editar.** Altere os campos. Se precisar de imagem, envie-a antes na **Biblioteca de mídia** (com
+   texto alternativo) e escolha-a no formulário.
+3. **Salvar.** Clique em **Salvar alterações**. Em rascunho, nada vai ao ar. Em item **já publicado**,
+   salvar já muda o site.
+4. **Conferir o que falta.** A lista "Para publicar, falta:", ao lado do formulário, mostra o que ainda
+   precisa ser preenchido.
+5. **Publicar.** Com a lista vazia, clique em **Publicar**. O item passa a aparecer no site.
+6. **Conferir no site.** Abra a página pública do item (por exemplo, `/servicos/<endereço>`) e confira
+   texto, imagem e links.
+7. **Corrigir, se preciso.** Ajuste e salve de novo, ou clique em **Despublicar** para tirar o item do
+   site (ele volta a Rascunho).
+
+O painel não tem botão de pré-visualização: a conferência é feita na página pública depois de publicar.
+Conteúdo novo que ainda não deve aparecer fica em Rascunho até a aprovação da Benjamin.
+
+Se aparecer uma mensagem de erro, consulte "Mensagens comuns", mais abaixo.
+
 ## Estados de um conteúdo
 
 | Estado | O que significa | Aparece no site? |
