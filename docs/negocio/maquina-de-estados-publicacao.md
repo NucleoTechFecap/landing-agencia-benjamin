@@ -54,14 +54,17 @@ Entre parênteses: permissão RBAC exigida (`COMMAND_PERMISSION`).
 | # | Invariante | Garantia |
 | - | ---------- | -------- |
 | I1 | APIs e páginas públicas **jamais** retornam `draft` ou `archived` | `isPubliclyVisible()` no repositório + RLS `anon` só lê `published` |
-| I2 | `published` ⇒ `published_at` preenchido | `transition()` + `check` no banco + `checkInvariants()` |
+| I2 | `published` ⇒ `published_at` preenchido, e a data não muda depois | `transition()` + `check` e trigger no banco (DBX-04) + `checkInvariants()` |
 | I3 | `archived` ⇔ `archived_at` preenchido | `transition()` + `checkInvariants()` |
-| I4 | Exclusão só a partir de `archived` | Tabela de transições |
-| I5 | Nada é publicado incompleto (inclusive edição de item publicado) | `validateForPublish` em `publish` e `save` de publicado |
+| I4 | Exclusão só a partir de `archived` | Tabela de transições + RLS |
+| I5 | Nada é publicado incompleto (inclusive edição de item publicado) | `validateForPublish` em `publish` e `save` de publicado + `check` e triggers no banco (DBX-04) |
 | I6 | Toda transição respeita a matriz RBAC | `COMMAND_PERMISSION` + `can()` |
 | I7 | Toda transição é auditada | Server Action chama `recordAuditEvent` (TECH-10) |
 | I8 | Toda transição que afeta o público invalida o cache | `invalidateContent()` (TECH-09) |
-| I9 | Integridade entre entidades preservada | `assessRemovalImpact()` antes de `archive`/`delete` (TECH-05) |
+| I9 | Integridade entre entidades preservada | `assessRemovalImpact()` antes de `archive`/`delete` (TECH-05) + triggers adiados no banco (DBX-04) |
+
+A tabela de transições também é verificada no banco, com a mesma lista de `TRANSITIONS`
+([dicionário de dados](../banco/dicionario-de-dados.md) §12).
 
 ## 5. Comportamentos específicos
 
