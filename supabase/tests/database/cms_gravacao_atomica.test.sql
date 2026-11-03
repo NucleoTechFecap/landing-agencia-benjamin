@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  02/11/2026 Vinícius Nishimura Reis  Criação inicial (TECH-13, #314).
+ 02/11/2026 Vinicius Binda             Versão desatualizada com BJ002, sem retentativa do PostgREST (DBX-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -167,7 +168,7 @@ select is(
 -- ─── Concorrência e parâmetros ───────────────────────────────────────────────
 select throws_ok(
   $$select * from public.save_service('00000000-0000-4000-8000-000000000d01', '2000-01-01', pg_temp.service_values('Atrasado'), '{}')$$,
-  '40001', 'O conteúdo foi alterado por outra pessoa.', 'versão desatualizada é recusada');
+  'BJ002', 'O conteúdo foi alterado por outra pessoa.', 'versão desatualizada é recusada');
 select throws_ok(
   $$select * from public.save_service('00000000-0000-4000-8000-0000000000ff', '2000-01-01', pg_temp.service_values('Sumiu'), '{}')$$,
   'P0002', 'Serviço não encontrado.', 'item inexistente é informado');

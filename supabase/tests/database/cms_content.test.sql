@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 25/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  25/10/2026 Vinícius Binda             Criação inicial (DB-02).
+ 02/11/2026 Vinicius Binda             Blocos dentro do catálogo (DBX-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -85,8 +86,8 @@ insert into public.pages (id, slug, title, status, published_at) values
   ('60000000-0000-4000-8000-000000000001', 'sobre', 'Sobre', 'published', now() - interval '1 day'),
   ('60000000-0000-4000-8000-000000000002', 'nova-pagina-teste', 'Rascunho', 'draft', null);
 insert into public.blocks (page_id, type, content, sort_order) values
-  ('60000000-0000-4000-8000-000000000001', 'hero', '{"title":"Oi"}', 0),
-  ('60000000-0000-4000-8000-000000000002', 'texto', '{"body":"segredo"}', 0);
+  ('60000000-0000-4000-8000-000000000001', 'rich-text', '{"title":"Oi"}', 0),
+  ('60000000-0000-4000-8000-000000000002', 'list', '{"body":"segredo"}', 0);
 
 insert into public.ctas (id, label, placement, target_kind, target_path, status, published_at) values
   ('70000000-0000-4000-8000-000000000001', 'Ver cases', 'home-highlight', 'internal', '/cases', 'published', now() - interval '1 day');
@@ -131,7 +132,7 @@ select throws_ok($$insert into public.media_assets (path, mime_type, width) valu
 select throws_ok($$insert into public.media_assets (path, mime_type) values ('2026/10/a-b.svg', 'image/svg+xml')$$, '23514', null, 'SVG recusado');
 select throws_ok($$insert into public.media_assets (path, mime_type) values ('https://x.supabase.co/a.png', 'image/png')$$, '23514', null, 'URL em vez de caminho');
 select throws_ok($$insert into public.media_assets (path, mime_type, width) values ('2026/10/a-b.png', 'image/png', 4001)$$, '23514', null, 'imagem > 4000 px');
-select throws_ok($$insert into public.blocks (page_id, type, content) values ('60000000-0000-4000-8000-000000000001', 'hero', '[]')$$, '23514', null, 'bloco com content que não é objeto');
+select throws_ok($$insert into public.blocks (page_id, type, content) values ('60000000-0000-4000-8000-000000000001', 'rich-text', '[]')$$, '23514', null, 'bloco com content que não é objeto');
 select throws_ok($$insert into public.blocks (page_id, type) values ('60000000-0000-4000-8000-000000000001', 'Hero Grande')$$, '23514', null, 'bloco com tipo inválido');
 select throws_ok($$insert into public.site_settings (id, name, short_name, tagline, description) values (false, 'X1', 'X1', 'x', 'x')$$, '23514', null, 'segunda linha de configuração');
 select throws_ok($$insert into public.site_settings (name, short_name, tagline, description) values ('X1', 'X1', 'x', 'x')$$, '23505', null, 'configuração duplicada');
@@ -210,7 +211,7 @@ select results_eq($$with u as (update public.areas set status = 'archived', arch
 select results_eq($$with d as (delete from public.areas where id = '20000000-0000-4000-8000-0000000000e1' returning 1) select count(*) from d$$, $$values (0::bigint)$$, 'editor: não exclui (sem area:delete)');
 select results_eq($$with d as (delete from public.media_assets where id = '10000000-0000-4000-8000-000000000004' returning 1) select count(*) from d$$, $$values (0::bigint)$$, 'editor: não exclui mídia (sem media:delete)');
 select lives_ok($$insert into public.media_assets (path, mime_type, size_bytes) values ('2026/10/6f1c2a3b-0000-4000-8000-0000000000e1-foto.jpg', 'image/jpeg', 100)$$, 'editor: registra mídia');
-select lives_ok($$insert into public.blocks (page_id, type) values ('60000000-0000-4000-8000-000000000002', 'texto')$$, 'editor: adiciona bloco');
+select lives_ok($$insert into public.blocks (page_id, type) values ('60000000-0000-4000-8000-000000000002', 'rich-text')$$, 'editor: adiciona bloco');
 select results_eq($$with u as (update public.site_settings set tagline = 'hack' returning 1) select count(*) from u$$, $$values (0::bigint)$$, 'editor: não altera configuração (sem settings:edit)');
 reset role;
 
