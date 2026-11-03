@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 30/10/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 30/10/2026 Julia Damásio            Proposta de manifesto, provisória até aprovação da agência (CON-02).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,12 +35,14 @@ export const siteSettings: SiteSettings = {
   description:
     "Agência experimental de comunicação da FECAP. Estratégia, conteúdo, criação, eventos e assessoria de imprensa feitos por estudantes em projetos reais para marcas e organizações.",
   manifesto: {
-    title: "Comunicação que soma diferenças.",
+    title: "Somando diferenças para comunicar melhor.",
     paragraphs: [
-      "Toda marca tem algo a dizer. Nem toda marca é ouvida.",
-      "A Benjamin nasce dentro da FECAP para provar que comunicação boa é feita de gente diferente pensando junto: estratégia, texto, imagem, evento e relacionamento trabalhando pelo mesmo objetivo.",
-      "Aqui, cada projeto é real, cada entrega é aprendizado e cada ideia é testada no mundo — não só na sala de aula.",
+      "Toda marca tem algo a dizer. A Benjamin ajuda a dizer isso bem.",
+      "Somos a agência experimental de comunicação da FECAP: estudantes de áreas diferentes, trabalhando juntos em estratégia, conteúdo, criação, eventos e assessoria de imprensa.",
+      "Cada projeto é real, feito para marcas e organizações de verdade, com briefing, planejamento e validação em cada etapa.",
+      "Aqui, aprender é fazer, e fazer é entregar.",
     ],
+    // Proposta aprovada pela equipe NúcleoTech; segue provisória até a aprovação da Agência Benjamin (CON-02).
     provisional: true,
   },
   about: {
