@@ -79,6 +79,7 @@ Qualquer PR que altere ao menos um dos itens abaixo (os caminhos estão no `CODE
 | Guarda de auditoria (#337) | `record_audit_event` por papel | Vinícius Nishimura Reis no GitHub; revisão automatizada (02/11/2026), ver §6 | Aprovado | — |
 | SEG-09 (#351) | Imagem de compartilhamento e URLs de capa | Revisão automatizada (02/11/2026), ver §6. Aprovação no GitHub: só da conta `NucleoTechFecap` | Aprovado com ressalvas; falta revisão humana | Achados baixos em #369 |
 | TECH-06 (#365, aberto) | Captação, fila de reenvio e `update` do painel | Revisão automatizada (02/11/2026), ver §6; Vinícius Binda (solicitada) | Dois achados baixos, corrigidos no próprio PR; aguarda revisão humana | — |
+| DBX-04 (#115) | Transições, integridade de publicação e código de conflito de `save_service`/`save_case` | Vinícius Nishimura Reis (a solicitar) | Pendente | — |
 | ADM-03 (#237) | Proteção de rotas e RBAC no banco | Nenhuma registrada no GitHub | **Mesclado sem revisão registrada** | Ver §6.3 |
 | #301 (exclusão de conta auditada) | Auditoria | Vinícius Binda (aprovado no GitHub) | Aprovado | — |
 | #312 e #316 (correções da TECH-13) | Storage, limite de envio e gravação parcial | Nenhuma registrada no GitHub | **Mesclados sem revisão registrada** | Ver §6.3 |

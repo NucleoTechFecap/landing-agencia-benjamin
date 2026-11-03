@@ -6,7 +6,7 @@ Supabase CLI:
 ```bash
 npx supabase start && npx supabase db reset   # banco local limpo: migrations + seed
 supabase link --project-ref <ref-do-ambiente>
-supabase db push --dry-run && supabase db push   # remoto: só migrations, nunca o seed
+supabase db push --remote --dry-run && supabase db push --remote   # remoto: só migrations, nunca o seed
 ```
 
 Regras: toda tabela nova habilita RLS na mesma migration; toda migration nova traz o seu

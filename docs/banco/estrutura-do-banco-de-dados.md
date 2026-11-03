@@ -347,6 +347,10 @@ A tabela é preenchida **só por trigger** (§7). Ninguém grava nela pela API.
 
 ## 5. Integridade: banco × aplicação (DBX-04)
 
+> **Implementado em 02/11/2026 com diferenças desta proposta (DBX-04).** As regras entre tabelas valem
+> só para `authenticated`, a exclusão de arquivados ficou na RLS e R06 e R12 são triggers adiados.
+> Regras em vigor: [dicionário de dados](dicionario-de-dados.md) §12.
+
 O banco garante a **estrutura**. A aplicação garante regras que dependem de várias linhas ou de
 contexto (`findIntegrityIssues`, `transition()`, schemas Zod). As duas camadas usam os mesmos
 limites.
@@ -373,8 +377,8 @@ limites.
 | Publicar exige campos | `*_publish_requires_fields` (mínimo estrutural) | `validateForPublish` (completo) |
 | Concorrência | `updated_at` em ms | `update … where updated_at = esperado` → `CONFLICT` |
 
-> **Dica:** como a transição é validada no banco, `UPDATE` direto pelo SQL Editor do Supabase
-> também respeita as regras. Para corrigir dados como `postgres`, use uma transação e prefira
+> **Dica:** `UPDATE` direto pelo SQL Editor respeita as transições e a data de publicação, mas não as
+> regras entre tabelas. Para corrigir dados como `postgres`, use uma transação e prefira
 > restaurar → editar → publicar a desligar triggers.
 
 ---
