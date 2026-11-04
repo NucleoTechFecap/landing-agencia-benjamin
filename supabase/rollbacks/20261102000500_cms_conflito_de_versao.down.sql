@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 02/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  02/11/2026 Vinicius Binda             Criação inicial (DBX-04).
+ 04/11/2026 Vinícius Nishimura Reis  O store também traduz 40001 como conflito (DBX-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,7 +27,8 @@
 --   npx supabase migration repair --status reverted 20261102000500
 --
 -- Não apaga dados, mas devolve o 40001, com o qual a chamada desatualizada fica sem resposta. O
--- store (toCmsError) só traduz BJ002: reverter a aplicação junto. Pode rodar de novo sem erro.
+-- store (toCmsError) traduz BJ002 e 40001 como conflito, então a aplicação não precisa ser revertida
+-- junto. Pode rodar de novo sem erro.
 
 begin;
 
