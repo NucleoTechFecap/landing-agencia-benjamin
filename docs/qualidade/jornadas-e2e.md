@@ -52,7 +52,7 @@ Legenda de tipo: **E2E** navegador real · **INT** teste integrado de domínio/s
 | # | Cenário | Pos/Neg | Tipo | Responsável | Situação |
 | - | ------- | ------- | ---- | ----------- | -------- |
 | J3.1 | Lead persistido, notificado (e-mail com serviço), consulta só por `admin`, retenção dentro do prazo | Pos | INT | Formulários + coordenação | ✅ automatizado |
-| J3.2 | Duplo clique, reenvio, honeypot, falha de banco, falha de e-mail, limite | Neg | INT (S1–S10, S13, S14 e S16, TECH-07) | Formulários | ✅ automatizado |
+| J3.2 | Duplo clique, reenvio, honeypot, falha de banco, falha de e-mail, limite | Neg | INT (S1–S10, S12 a S14 e S16, TECH-07) | Formulários | ✅ automatizado |
 | J3.3 | Envio real em homologação chega ao destinatário de teste via Resend | Pos | MAN | Formulários | ⛔ **gap**: Supabase/Resend de homologação (GO-02) e destinatários (CON-10) |
 | J3.4 | `admin` abre o lead no painel e gera `lead.viewed` na auditoria | Pos | E2E/MAN | Formulários | ⛔ **gap**: tela de leads (FORM-09) |
 | J3.5 | Contato e feedback válidos com protocolo; inválidos com erro no campo e foco, sem POST | Pos/Neg | E2E (`formularios.spec.ts`) | Formulários | ✅ automatizado |

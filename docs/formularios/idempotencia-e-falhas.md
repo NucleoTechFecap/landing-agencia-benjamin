@@ -7,7 +7,7 @@
 | Versão       | 1.2.0                                                                   |
 | Data         | 04/11/2026                                                              |
 | Depende de   | [TECH-06](captacao-e-roteamento.md), [TECH-02](../api/contratos.md)     |
-| Código       | `lib/domain/forms/idempotency.ts`, `lib/server/forms/*` + `submission-service.test.ts` (cenários S1–S10, S13, S14 e S16), `components/forms/use-submission.ts` + `tests/e2e/formularios.spec.ts` (S14 e S15) |
+| Código       | `lib/domain/forms/idempotency.ts`, `lib/server/forms/*` + `submission-service.test.ts` (cenários S1–S10, S13, S14 e S16) e `deps.test.ts` (S12), `components/forms/use-submission.ts` + `tests/e2e/formularios.spec.ts` (S14 e S15) |
 | Encaminhado a | FORM-03/04/05 (formulários), FORM-07 (antispam), FORM-08 (estados), DB-06/DB-07 (persistência) |
 
 ## 1. Garantias
@@ -51,7 +51,7 @@
 | S15 | Rede cai, resposta se perde ou a plataforma responde com erro antes da aplicação | Aviso no próprio formulário, sem código de atendimento, com tudo o que foi digitado; pode reenviar com o mesmo `submissionId` | Criado só se o POST chegou ao servidor | Como S1 ou, no reenvio, S3 | Nenhum no servidor quando o POST não chega |
 | S16 | Falha ao gravar o resultado da notificação | **Sucesso** (envio já salvo) | Criado, com a notificação como estava (`pending`) | Rotina tenta de novo; o `Idempotency-Key` evita e-mail repetido por 24 h | `forms.notification.status_update_failed` |
 
-S1–S10, S13, S14 e S16 são testes automatizados, e S14 e S15 têm E2E em `tests/e2e/formularios.spec.ts`; S11 é garantido pela constraint `unique` e pelo tratamento de
+S1–S10, S12 a S14 e S16 são testes automatizados, e S14 e S15 têm E2E em `tests/e2e/formularios.spec.ts`; S11 é garantido pela constraint `unique` e pelo tratamento de
 `DuplicateSubmissionError`, testado no banco real (`formularios.test.ts`); S12 por `resolveStore()`, com
 testes em `deps.test.ts`, `store-policy.test.ts` e `actions.test.ts`.
 
