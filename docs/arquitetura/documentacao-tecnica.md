@@ -102,14 +102,14 @@ esperam, e cada uma tem seu `Suspense`.
 
 | Tema | Implementação | Documento |
 | ---- | ------------- | --------- |
-| Autenticação | Supabase Auth (convite, senha ≥ 12, cookies httpOnly, renovação no proxy) | [autenticacao.md](../seguranca/autenticacao.md) |
+| Autenticação | Supabase Auth (convite, senha ≥ 12, cookies `HttpOnly`, `SameSite=Lax` e `Secure` em https, renovação no proxy) | [autenticacao.md](../seguranca/autenticacao.md) |
 | Autorização | RBAC em código (`rbac.ts`) + `has_permission()` no banco + guardas | [matriz-rbac.md](../seguranca/matriz-rbac.md), [protecao-de-rotas.md](../seguranca/protecao-de-rotas.md) |
 | Dados pessoais | Minimização, RLS por tipo, retenção, IP só em HMAC | [ciclo-de-vida-dados-pessoais.md](../seguranca/ciclo-de-vida-dados-pessoais.md) |
 | Auditoria | `audit_log` append-only, eventos críticos abortam sem registro | [trilha-de-auditoria.md](../seguranca/trilha-de-auditoria.md) |
 | Logs | JSON estruturado com mascaramento de PII | [ADR-0004](../adr/0004-logs-e-tratamento-de-erros.md) |
 | Formulários | Zod no servidor, honeypot, tempo mínimo, limite por origem, idempotência | [idempotencia-e-falhas.md](../formularios/idempotencia-e-falhas.md) |
-| Mídia | Tipos/limites, assinatura de bytes, SVG recusado | [ADR-0005](../adr/0005-armazenamento-de-midia.md) |
-| Cabeçalhos | nosniff, Referrer-Policy, X-Frame-Options, Permissions-Policy, HSTS, `X-Robots-Tag` fora de produção | `next.config.ts` |
+| Mídia | Tipos/limites, assinatura de bytes, SVG recusado; riscos residuais registrados | [ADR-0005](../adr/0005-armazenamento-de-midia.md) |
+| Cabeçalhos | CSP (com `'unsafe-inline'` em `script-src`, limitação documentada), nosniff, Referrer-Policy, X-Frame-Options, Permissions-Policy, HSTS, `X-Robots-Tag` fora de produção | [protecao-de-rotas.md §5](../seguranca/protecao-de-rotas.md#5-cabeçalhos-de-segurança-e-csp-seg-06) |
 | Segredos | `.env*` fora do Git, validação por ambiente | [variaveis-de-ambiente.md](../ambientes/variaveis-de-ambiente.md) |
 
 ## 5. Banco de dados

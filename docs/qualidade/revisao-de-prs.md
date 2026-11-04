@@ -15,12 +15,12 @@ Qualquer PR que altere ao menos um dos itens abaixo (os caminhos estão no `CODE
 
 | Categoria | Exemplos | Revisores |
 | --------- | -------- | --------- |
-| Autenticação, sessão e permissões | `proxy.ts`, `lib/*/auth/`, `app/admin/actions.ts` | Coordenação técnica |
+| Autenticação, sessão e permissões | `proxy.ts`, `lib/*/auth/`, `lib/domain/security/`, `app/admin/actions.ts` | Coordenação técnica |
 | Publicação e cache | `lib/*/content/`, Server Actions do CMS | Coordenação técnica + banco |
 | Integrações (CMS ↔ site ↔ API) | INT-02, INT-03, `app/api/`, `lib/domain/api/` | Coordenação técnica |
 | Dados pessoais | `lib/*/forms/`, `form_submissions`, exportação de leads | Coordenação técnica |
 | Banco e RLS | `supabase/migrations/` | Vinícius Binda + coordenação técnica |
-| Configuração/segredos | `lib/config/`, `.env.example`, `next.config.ts` | Coordenação técnica |
+| Configuração/segredos | `lib/config/`, `.env.example`, `next.config.ts`, `instrumentation-client.ts` | Coordenação técnica |
 
 ## 2. Checklist de revisão
 
@@ -56,6 +56,7 @@ Qualquer PR que altere ao menos um dos itens abaixo (os caminhos estão no `CODE
 ### Segurança geral
 - [ ] Entradas validadas com Zod no servidor; uploads pela política de mídia (ARC-10).
 - [ ] Links externos com `rel="noopener noreferrer"`; redirecionamentos internos validados.
+- [ ] Origem nova na CSP é a mínima, na diretiva certa, sem `*`, `https:` ou `'unsafe-eval'`; cliente Supabase novo usa `sessionCookieOptions()` (SEG-06).
 - [ ] Sem segredos no diff.
 
 ## 3. Fluxo
@@ -106,8 +107,10 @@ Verificado e correto: anônimo não lê rascunho, arquivado nem agendado (nem pe
 ler o banco; não há IDOR nem atribuição em massa de campos de controle; a concorrência otimista
 vale no serviço e no `UPDATE`; o upload confere a assinatura dos bytes; o `next` do login não
 redireciona para fora (10 tentativas de bypass); a leitura pública tem três barreiras (RLS,
-filtro de status e data); os cabeçalhos de segurança estão ativos. A CSP continua prevista em
-SEG-06.
+filtro de status e data); os cabeçalhos de segurança estão ativos. A CSP ficou para SEG-06, que a
+entregou depois desta revisão, com os atributos do cookie de sessão: ver
+[proteção de rotas §5](../seguranca/protecao-de-rotas.md#5-cabeçalhos-de-segurança-e-csp-seg-06) e
+[autenticação §2.1](../seguranca/autenticacao.md#21-cookies-da-sessão-seg-06).
 
 ## 6. Revisão técnica de 02/11/2026
 
