@@ -20,6 +20,7 @@
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-08).
  04/11/2026 Vinícius Nishimura Reis  Contato institucional: válido e inválido (FORM-04).
  04/11/2026 Vinícius Nishimura Reis  Duplo clique e novo envio depois da confirmação (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Feedback: anônimo, pedido de retorno e perfil (FORM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -338,5 +339,44 @@ test.describe("FORM-08 · duplo envio", () => {
     await expect(page.locator('input[name="submissionId"]')).not.toHaveValue("");
     await expect(page.locator('input[name="submissionId"]')).not.toHaveValue(firstId);
     await expect(page.getByLabel(/^Seu feedback/)).toHaveValue("");
+  });
+});
+
+test.describe("FORM-05 · feedback", () => {
+  test("anônimo válido mostra confirmação e protocolo", async ({ page }) => {
+    await page.goto("/feedback");
+    await waitUntilHumanlyReady(page);
+    await fillFeedback(page, uniqueText("Feedback anônimo"));
+    await page.getByLabel(/aviso de privacidade/).check();
+    await page.getByRole("button", { name: "Enviar feedback" }).click();
+
+    await expect(page.getByRole("status").filter({ hasText: "Obrigado pelo feedback!" })).toBeVisible();
+    await expect(page.getByText(/AB-[0-9A-F]{6}/)).toBeVisible();
+  });
+
+  test("'quero retorno' sem e-mail dá erro no campo de e-mail, sem ir ao servidor", async ({ page }) => {
+    const posts = trackActionPosts(page);
+    await page.goto("/feedback");
+    await expect(page.locator('input[name="submissionId"]')).not.toHaveValue("");
+    await fillFeedback(page, uniqueText("Feedback com pedido de retorno"));
+    await page.getByLabel(/Quero receber um retorno/).check();
+    await page.getByLabel(/aviso de privacidade/).check();
+    await page.getByRole("button", { name: "Enviar feedback" }).click();
+
+    await expect(page.getByText("Informe o e-mail para que possamos responder.")).toBeVisible();
+    await expect(page.getByLabel(/^E-mail/)).toBeFocused();
+    await expect(page.getByLabel(/Quero receber um retorno/)).toBeChecked();
+    expect(posts).toHaveLength(0);
+  });
+
+  test("sem perfil, o erro aparece e o foco vai para a primeira opção", async ({ page }) => {
+    await page.goto("/feedback");
+    await expect(page.locator('input[name="submissionId"]')).not.toHaveValue("");
+    await page.getByLabel(/^Seu feedback/).fill(uniqueText("Feedback sem perfil"));
+    await page.getByLabel(/aviso de privacidade/).check();
+    await page.getByRole("button", { name: "Enviar feedback" }).click();
+
+    await expect(page.getByText("Conte quem você é.")).toBeVisible();
+    await expect(page.getByRole("radio", { name: "Cliente" })).toBeFocused();
   });
 });
