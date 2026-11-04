@@ -489,6 +489,8 @@ interface Attempt {
   /** Tela que traz a Server Action no build: é para ela que o navegador envia. */
   path: (mass: Mass) => string;
   fields: (mass: Mass, client: SupabaseClient) => Promise<Fields>;
+  /** Corpo do controle, quando o da recusa não pode ser gravado de verdade. */
+  controlFields?: (mass: Mass, client: SupabaseClient) => Promise<Fields>;
   withState?: boolean;
   /** Prova de que o mesmo pedido, com o papel certo, grava. Sem isto, a recusa poderia ser de formato. */
   control: (mass: Mass, client: SupabaseClient, response: APIResponse) => Promise<void>;
@@ -728,8 +730,29 @@ const OTHER_ATTEMPTS: Attempt[] = [
         expectedUpdatedAt: data!.updated_at as string,
       };
     },
-    // Só confere a passagem pela guarda: gravar de verdade atrapalharia as jornadas em paralelo.
-    control: async (_mass, _client, response) => expect(await response.text()).not.toContain("FORBIDDEN"),
+    // Controle sem gravar: os mesmos valores passam pela guarda e chegam a "sem alteração". Gravar de verdade
+    // atrapalharia as jornadas em paralelo, e o conflito com uma delas também prova que a guarda foi vencida.
+    controlFields: async (_mass, client) => {
+      const { data } = await client.from("site_settings").select("*").single();
+      const contact = (data!.contact ?? {}) as Record<string, string | undefined>;
+      const socials = (data!.socials ?? {}) as Record<string, string | undefined>;
+      return {
+        tagline: data!.tagline as string,
+        description: data!.description as string,
+        email: contact.email ?? "",
+        phone: contact.phone ?? "",
+        address: contact.address ?? "",
+        mapsUrl: contact.mapsUrl ?? "",
+        instagram: socials.instagram ?? "",
+        tiktok: socials.tiktok ?? "",
+        linkedin: socials.linkedin ?? "",
+        expectedUpdatedAt: data!.updated_at as string,
+      };
+    },
+    control: async (_mass, _client, response) => {
+      const outcome = `${response.headers()["x-action-redirect"] ?? ""} ${await response.text()}`;
+      expect(outcome).toMatch(/ok=sem-alteracao|"CONFLICT"/);
+    },
   },
   {
     label: "changeSubmissionStatusAction",
@@ -1062,7 +1085,7 @@ test.describe("QA-06 · Server Actions do painel @cms", () => {
         // Os testes desta massa têm uma ordem natural: o rascunho é publicado, despublicado, arquivado e excluído.
         // Cada um prepara o estado de que precisa, para rodar sozinho.
         await prepareState(client, own, attempt);
-        const fields = await attempt.fields(own, client);
+        const fields = await (attempt.controlFields ?? attempt.fields)(own, client);
         const response = await post(sessions.admin!, baseURL!, attempt, attempt.path(own), fields);
         expect(response.status(), attempt.label).toBeLessThan(400);
         expect(await response.text()).not.toContain("FORBIDDEN");

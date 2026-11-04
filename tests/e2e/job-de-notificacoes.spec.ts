@@ -32,6 +32,12 @@ import { REQUIRES_SUPABASE, SERVICE_KEY, SUPABASE_URL, newSuffix, serviceClient 
  */
 const CRON_SECRET = process.env.CRON_SECRET;
 const JOB = "/api/internal/jobs/notificacoes";
+/**
+ * Sem destinatário no ambiente, o envio sai da fila como `skipped`, sem contar tentativa: é o caso de
+ * `npm run test:e2e:cms`, e J3.4 depende dele. Com `CONTACT_NOTIFICATION_TO`, o `LogNotifier` registra a entrega.
+ */
+const HAS_RECIPIENT = Boolean(process.env.CONTACT_NOTIFICATION_TO);
+const DELIVERED = HAS_RECIPIENT ? "sent" : "skipped";
 
 test.describe("QA-05 · rota do job de reenvio @cms", () => {
   test.skip(!SUPABASE_URL || !SERVICE_KEY, REQUIRES_SUPABASE);
@@ -91,9 +97,9 @@ test.describe("QA-05 · rota do job de reenvio @cms", () => {
     const id = await seed({ notification_status: "pending" });
     const before = await notificationOf(id);
     expect(await runJob(request)).toBeGreaterThanOrEqual(1);
-    await expect.poll(async () => (await notificationOf(id)).notification_status).toBe("sent");
+    await expect.poll(async () => (await notificationOf(id)).notification_status).toBe(DELIVERED);
     const after = await notificationOf(id);
-    expect(after.notification_attempts).toBe(before.notification_attempts + 1);
+    expect(after.notification_attempts).toBe(before.notification_attempts + (HAS_RECIPIENT ? 1 : 0));
     expect(after.status).toBe("novo");
     expect(after.payload).toEqual(before.payload);
 
@@ -109,7 +115,7 @@ test.describe("QA-05 · rota do job de reenvio @cms", () => {
     const exhausted = await seed({ notification_status: "failed", notification_attempts: 5, updated_at: longAgo });
 
     await runJob(request);
-    await expect.poll(async () => (await notificationOf(old)).notification_status).toBe("sent");
+    await expect.poll(async () => (await notificationOf(old)).notification_status).toBe(DELIVERED);
     expect(await notificationOf(recent)).toMatchObject({ notification_status: "failed", notification_attempts: 1 });
     expect(await notificationOf(exhausted)).toMatchObject({ notification_status: "failed", notification_attempts: 5 });
   });
