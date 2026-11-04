@@ -21,6 +21,7 @@
  02/11/2026 Vinícius Nishimura Reis  Tentativas esgotadas fora da fila (TECH-06).
  02/11/2026 Vinícius Nishimura Reis  Serviço forjado e falha ao consultar a lista (TECH-06).
  04/11/2026 Vinícius Nishimura Reis  Envio sem JavaScript: antispam sem o tempo de preenchimento (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Falha ao registrar o resultado da notificação não chega ao visitante (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -166,6 +167,71 @@ describe("envio sem JavaScript: campos técnicos vazios (FORM-08)", () => {
     );
     expect(again).toMatchObject({ status: "success", protocol: "AB-0B6C2F", duplicate: true });
     expect(store.all()).toHaveLength(1);
+  });
+});
+
+describe("falha ao registrar o resultado da notificação (FORM-08)", () => {
+  /** Eventos registrados no console desde o início do teste. */
+  const loggedEvents = () =>
+    [console.log, console.warn, console.error].flatMap((method) =>
+      vi.mocked(method).mock.calls.map(([line]) => (JSON.parse(String(line)) as { event: string }).event),
+    );
+
+  let attemptedStatuses: string[];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    attemptedStatuses = [];
+    store.updateNotification = async (_id, patch) => {
+      attemptedStatuses.push(String(patch.notificationStatus));
+      throw new Error("connection refused");
+    };
+  });
+
+  it("e-mail enviado: o visitante vê sucesso, e o envio não é marcado como falha", async () => {
+    const result = await processSubmission("lead", lead(), context, deps);
+    expect(result).toEqual({ status: "success", protocol: "AB-0B6C2F", duplicate: false });
+    expect(notifier.sent).toHaveLength(1);
+    expect(attemptedStatuses).toEqual(["sent"]);
+    expect(loggedEvents()).toEqual(expect.arrayContaining(["forms.notification.status_update_failed"]));
+    expect(loggedEvents()).not.toContain("forms.notification.failed");
+    expect(loggedEvents()).not.toContain("forms.submission.unexpected_error");
+  });
+
+  it("e-mail recusado: o visitante vê sucesso e os dois problemas ficam no log", async () => {
+    notifier.failNext = 1;
+    const result = await processSubmission("lead", lead(), context, deps);
+    expect(result).toMatchObject({ status: "success", duplicate: false });
+    expect(attemptedStatuses).toEqual(["failed"]);
+    expect(loggedEvents()).toEqual(
+      expect.arrayContaining(["forms.notification.failed", "forms.notification.status_update_failed"]),
+    );
+  });
+
+  it("sem destinatário: o visitante vê sucesso", async () => {
+    deps.recipients = { LEAD_NOTIFICATION_TO: [], CONTACT_NOTIFICATION_TO: [], FEEDBACK_NOTIFICATION_TO: [] };
+    const result = await processSubmission("lead", lead(), context, deps);
+    expect(result).toMatchObject({ status: "success", duplicate: false });
+    expect(attemptedStatuses).toEqual(["skipped"]);
+    expect(loggedEvents()).toEqual(expect.arrayContaining(["forms.notification.status_update_failed"]));
+  });
+
+  it("o reenvio agendado não para no primeiro registro com problema", async () => {
+    const update = store.updateNotification;
+    store.updateNotification = async () => {};
+    notifier.failNext = 2;
+    await processSubmission("lead", lead(), context, deps);
+    await processSubmission(
+      "lead",
+      lead({ submissionId: "9d1e8f20-1111-4c8a-9a51-3d2f9f1b7e10", projectDescription: "Outro projeto com detalhes." }),
+      context,
+      deps,
+    );
+    store.updateNotification = update;
+
+    now = new Date(T0.getTime() + 2 * 60_000);
+    expect(await retryPendingNotifications(deps)).toEqual({ retried: 2 });
+    expect(notifier.sent).toHaveLength(2);
   });
 });
 

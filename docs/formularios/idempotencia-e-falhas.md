@@ -15,7 +15,8 @@
 1. **Validação sempre no servidor** — o navegador valida para ajudar, o servidor decide.
 2. **Persistir antes de notificar** — o e-mail é consequência do registro, nunca o contrário.
 3. **Nenhum lead válido é perdido silenciosamente** — falha de banco vira erro visível com
-   código de atendimento; falha de e-mail fica pendente e é reenviada.
+   código de atendimento; falha de e-mail fica pendente e é reenviada. Depois de salvar, nenhum erro
+   chega ao visitante: nem da notificação, nem da gravação do resultado dela.
 4. **Reenviar é seguro** — o mesmo envio nunca vira dois registros nem dois e-mails.
 5. **Robôs não aprendem** — honeypot/tempo mínimo respondem como sucesso, sem gravar nada.
 
@@ -46,8 +47,9 @@
 | S13 | Notificação esgotou as 5 tentativas | (Já viu sucesso) | Mantido, `failed`, tentativas 5 | Sai da fila, sem bloquear os envios novos; reenvio manual ([handoff](../operacao/handoff-e-manutencao.md)) | `forms.notification.failed` |
 | S14 | Envio sem JavaScript ou antes da hidratação (campos técnicos vazios) | Página recarrega com o resultado: confirmação, ou erro por campo com os valores repreenchidos | Criado, sem `source_path` | Enviada | `persisted`; sem o tempo mínimo (seção 7) |
 | S15 | Rede cai, resposta se perde ou a plataforma responde com erro antes da aplicação | Aviso no próprio formulário, sem código de atendimento, com tudo o que foi digitado; pode reenviar com o mesmo `submissionId` | Criado só se o POST chegou ao servidor | Como S1 ou, no reenvio, S3 | Nenhum no servidor quando o POST não chega |
+| S16 | Falha ao gravar o resultado da notificação | **Sucesso** (envio já salvo) | Criado, com a notificação como estava (`pending`) | Rotina tenta de novo; o `Idempotency-Key` evita e-mail repetido por 24 h | `forms.notification.status_update_failed` |
 
-S1–S10, S13 e S14 são testes automatizados, e S14 e S15 têm E2E em `tests/e2e/formularios.spec.ts`; S11 é garantido pela constraint `unique` e pelo tratamento de
+S1–S10, S13, S14 e S16 são testes automatizados, e S14 e S15 têm E2E em `tests/e2e/formularios.spec.ts`; S11 é garantido pela constraint `unique` e pelo tratamento de
 `DuplicateSubmissionError`, testado no banco real (`formularios.test.ts`); S12 por `resolveStore()`.
 
 S15 é o motivo de o formulário hidratado chamar a action dentro de `try/catch`, no `onSubmit` de
