@@ -17,7 +17,7 @@
 | Resumo | Engajamento e alinhamento de times. | 10 a 200 caracteres (atual: 35) |
 | Descrição | Diagnóstico de comunicação interna, campanhas para colaboradores, canais internos e ações de clima e engajamento. | Mínimo de 20 caracteres (atual: 113) |
 | Exemplos de entregas | Campanhas internas · Canais e rituais · Ações de engajamento | Até 12, um por linha |
-| Áreas de atuação | Comunicação Interna | Ao menos uma publicada |
+| Áreas de atuação | [Comunicação Interna](../areas/comunicacao-interna.md) | Ao menos uma publicada |
 | Ícone | Comentário (`comentario`) | Um dos 14 ícones oficiais |
 | Imagem | Nenhuma (o site usa o ícone) | Da biblioteca de mídia, com texto alternativo |
 | Destaque na Home | Não | Até 6 serviços em destaque |
