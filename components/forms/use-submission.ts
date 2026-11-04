@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 04/11/2026 Vinícius Nishimura Reis  Envio nativo vai à página estática do formulário (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,9 +35,13 @@ export type FormAction = (state: FormActionState, formData: FormData) => Promise
  *   prerenderizado não pode carregar um identificador compartilhado entre visitantes);
  * - o mesmo `submissionId` é reutilizado em novas tentativas após erro (idempotência);
  * - foco vai para o primeiro campo inválido ou para a mensagem de erro geral.
+ *
+ * `permalink` é a página estática do formulário, para quem envia sem JavaScript ou antes da hidratação.
+ * Com Partial Prerendering o Next renderiza a resposta do POST por `resume`, que não recebe o estado da
+ * action: em /contato o resultado sumiria. Em página estática ele chega no HTML (FORM-08).
  */
-export function useSubmission(action: FormAction) {
-  const [state, formAction, pending] = useActionState(action, INITIAL_FORM_STATE);
+export function useSubmission(action: FormAction, permalink?: string) {
+  const [state, formAction, pending] = useActionState(action, INITIAL_FORM_STATE, permalink);
   const [meta, setMeta] = useState({ submissionId: "", startedAt: "", sourcePath: "" });
   const formRef = useRef<HTMLFormElement>(null);
 

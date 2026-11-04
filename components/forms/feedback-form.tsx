@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  25/10/2026 Caio Moraes              Cores de erro via tokens do tema (LAY-04).
+ 04/11/2026 Vinícius Nishimura Reis  Botão disponível antes da hidratação (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -142,9 +143,7 @@ function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: (
       <CheckboxField name="privacyConsent" required errors={errors.privacyConsent}>
         <PrivacyConsentText />
       </CheckboxField>
-      <SubmitButton pending={pending} ready={Boolean(meta.submissionId)}>
-        Enviar feedback
-      </SubmitButton>
+      <SubmitButton pending={pending}>Enviar feedback</SubmitButton>
     </form>
   );
 }

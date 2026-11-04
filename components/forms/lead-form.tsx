@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,12 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 04/11/2026 Vinícius Nishimura Reis  Página estática para o envio sem JavaScript (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
 import { useState } from "react";
+import { STANDALONE_FORM_PATHS } from "@/lib/config/navigation";
 import { UNKNOWN_SERVICE } from "@/lib/domain/forms/schemas";
 import { CheckboxField, HoneypotField, SelectField, TextArea, TextField } from "./fields";
 import { FormErrorBanner, FormSuccess, PrivacyConsentText, SubmitButton, TechnicalFields } from "./form-parts";
@@ -51,7 +53,10 @@ function LeadFormInner({
   preselectedService?: string;
   onReset: () => void;
 }) {
-  const { state, formAction, pending, meta, formRef, errors, values } = useSubmission(action);
+  const { state, formAction, pending, meta, formRef, errors, values } = useSubmission(
+    action,
+    STANDALONE_FORM_PATHS.lead,
+  );
   if (state.status === "success") {
     return <FormSuccess protocol={state.protocol} title="Pedido recebido!" onReset={onReset} />;
   }
@@ -120,9 +125,7 @@ function LeadFormInner({
       <CheckboxField name="privacyConsent" required errors={errors.privacyConsent}>
         <PrivacyConsentText />
       </CheckboxField>
-      <SubmitButton pending={pending} ready={Boolean(meta.submissionId)}>
-        Enviar pedido
-      </SubmitButton>
+      <SubmitButton pending={pending}>Enviar pedido</SubmitButton>
     </form>
   );
 }

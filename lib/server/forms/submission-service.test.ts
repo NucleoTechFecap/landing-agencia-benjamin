@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-07).
  02/11/2026 Vinícius Nishimura Reis  Tentativas esgotadas fora da fila (TECH-06).
  02/11/2026 Vinícius Nishimura Reis  Serviço forjado e falha ao consultar a lista (TECH-06).
+ 04/11/2026 Vinícius Nishimura Reis  Envio sem JavaScript: antispam sem o tempo de preenchimento (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -106,6 +107,66 @@ describe("serviço de interesse (TECH-06)", () => {
     const result = await processSubmission("lead", withService("audiovisual"), context, deps);
     expect(result.status).toBe("success");
     expect((await store.findById(ID))?.category).toBe("lead:nao-sei");
+  });
+});
+
+describe("envio sem JavaScript: campos técnicos vazios (FORM-08)", () => {
+  const noScript = (overrides: Record<string, unknown> = {}) => lead({ startedAt: "", sourcePath: "", ...overrides });
+
+  it("é aceito e gravado, sem origem", async () => {
+    const result = await processSubmission("lead", noScript(), context, deps);
+    expect(result).toMatchObject({ status: "success", protocol: "AB-0B6C2F", duplicate: false });
+    expect(store.all()).toHaveLength(1);
+    expect(store.all()[0].sourcePath).toBeNull();
+  });
+
+  it("o tempo mínimo não se aplica, como a quem omite o campo: não é uma brecha nova", async () => {
+    const { startedAt: _omitted, ...withoutField } = lead();
+    expect((await processSubmission("lead", withoutField, context, deps)).status).toBe("success");
+    expect(store.all()).toHaveLength(1);
+  });
+
+  it("honeypot preenchido continua recusado em silêncio", async () => {
+    const result = await processSubmission("lead", noScript({ website: "spam.com" }), context, deps);
+    expect(result).toMatchObject({ status: "success", duplicate: false });
+    expect(store.all()).toHaveLength(0);
+    expect(notifier.sent).toHaveLength(0);
+  });
+
+  it("o limite por origem continua valendo", async () => {
+    for (let index = 0; index < 5; index += 1) {
+      await processSubmission(
+        "lead",
+        noScript({
+          submissionId: `0b6c2f0e-6f1d-4c8a-9a51-3d2f9f1b7e1${index}`,
+          projectDescription: `Projeto número ${index} com detalhes.`,
+        }),
+        context,
+        deps,
+      );
+    }
+    const blocked = await processSubmission(
+      "lead",
+      noScript({
+        submissionId: "0b6c2f0e-6f1d-4c8a-9a51-3d2f9f1b7e19",
+        projectDescription: "Projeto número 9 com detalhes.",
+      }),
+      context,
+      deps,
+    );
+    expect(blocked).toMatchObject({ status: "error", code: "RATE_LIMITED" });
+  });
+
+  it("o mesmo conteúdo com outro identificador volta como duplicado", async () => {
+    await processSubmission("lead", noScript(), context, deps);
+    const again = await processSubmission(
+      "lead",
+      noScript({ submissionId: "9d1e8f20-1111-4c8a-9a51-3d2f9f1b7e10" }),
+      context,
+      deps,
+    );
+    expect(again).toMatchObject({ status: "success", protocol: "AB-0B6C2F", duplicate: true });
+    expect(store.all()).toHaveLength(1);
   });
 });
 
