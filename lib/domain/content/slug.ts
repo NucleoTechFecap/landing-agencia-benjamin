@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-05).
+ 04/11/2026 Vinícius Nishimura Reis  301 de endereço antigo com cache curto (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -25,6 +26,12 @@
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const SLUG_MIN_LENGTH = 3;
 export const SLUG_MAX_LENGTH = 80;
+
+/**
+ * Cache do 301 de endereço antigo. O slug pode voltar a um valor já usado (a → b → a): sem isso, quem
+ * guardou o 301 entraria em loop. O navegador sempre revalida, e a CDN guarda só por 1 min.
+ */
+export const REDIRECT_CACHE_CONTROL = "public, max-age=0, s-maxage=60";
 
 /** Segmentos que conflitam com rotas ou ações e não podem ser usados como slug. */
 export const RESERVED_SLUGS = new Set([
