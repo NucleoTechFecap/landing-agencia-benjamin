@@ -59,7 +59,7 @@ Tipo: `T` técnico, `I` institucional.
 | [CA-17](#ca-17) Aviso de privacidade | T + I | Parcial | Texto validado (SEG-02) |
 | [CA-18](#ca-18) Login e sessão | T | Parcial | Logout, renovação de sessão, cadastro público desligado |
 | [CA-19](#ca-19) Permissões N01 a N13 | T | Parcial | N11 e N13 de ponta a ponta; N09 e N10 no banco |
-| [CA-20](#ca-20) Autonomia da Benjamin | I | Sem cobertura | Só homologação; faltam as telas ADM-10 e ADM-11 |
+| [CA-20](#ca-20) Autonomia da Benjamin | I | Sem cobertura | Só homologação; falta a tela ADM-11 |
 | [CA-21](#ca-21) Rascunho e publicação | T | Coberto | — |
 | [CA-22](#ca-22) Upload de imagem | T | Coberto | — |
 | [CA-23](#ca-23) Leads só para `admin` | T | Parcial | Tela FORM-09 e `lead.viewed` em fluxo real |
@@ -353,7 +353,7 @@ Permissões por papel aplicadas no servidor e no banco (casos N01 a N13 de [TECH
 | N03 | N | Conta `pending` | `lib/server/auth/guards.test.ts` › «N03 — conta pendente vai para o aviso de acesso pendente». `lib/domain/auth/rbac.test.ts` › «pending não tem nenhuma permissão» | U | Coberto |
 | N04 | N | `editor` exclui | `lib/server/auth/guards.test.ts` › «N04 — editor excluindo case lança FORBIDDEN (403)». `lib/domain/auth/rbac.test.ts` › «editor não pode service:delete»; «editor não pode case:delete»; «editor não pode media:delete». `tests/integration/supabase/cms-areas.test.ts` › «editor arquiva, mas só admin exclui definitivamente — e só arquivado» | U, S | Coberto |
 | N05 | N | `editor` abre leads | `lib/server/auth/guards.test.ts` › «N05 — editor abrindo leads vai para 'sem permissão'». `supabase/tests/database/form_submissions_rls.test.sql` › «editor não consulta (N05)» | U, D | Coberto |
-| N06 | N | `editor` altera contato ou redes | `lib/domain/auth/rbac.test.ts` › «editor não pode settings:edit» | U | Parcial: só a regra; a tela é da ADM-10 |
+| N06 | N | `editor` altera contato ou redes | `lib/domain/auth/rbac.test.ts` › «editor não pode settings:edit». `tests/integration/supabase/configuracao-institucional.test.ts` › «editor não altera pela API REST direta». `tests/e2e/jornada-configuracoes-cms.spec.ts` › «editor vê em modo leitura e o servidor recusa o envio forçado» | U, S, C | Coberto |
 | N07 | N | `viewer` edita ou publica | `lib/domain/content/publication.test.ts` › «viewer não salva nem publica». `tests/integration/supabase/cms-areas.test.ts` › «leitor não consegue gravar nem pelo banco (RLS)». `tests/e2e/jornada-editor-cms.spec.ts` › «J2.6 leitor vê o CMS só para leitura e não cria conteúdo» | U, S, C | Coberto |
 | N08 | N | `super_admin` abre leads | `lib/server/auth/guards.test.ts` › «N08 — super_admin não lê leads». `supabase/tests/database/form_submissions_rls.test.sql` › «super_admin não consulta (minimização, N08)» | U, D | Coberto |
 | N09 | N | `admin` promove alguém a `admin` | `lib/domain/auth/rbac.test.ts` › «admin só gerencia editor, viewer e pending». `supabase/tests/database/storage_media.test.sql` › «anon: sem EXECUTE em assign_role» | U, D | Parcial: a regra de `assign_role` para `admin` no banco, **sem cobertura** |
@@ -377,7 +377,7 @@ só mostram que as telas funcionam, e não que a equipe consegue usá-las sozinh
 | Cases | `tests/e2e/jornada-editor-cms.spec.ts` › «J2.5 rascunho → publicar → editar → arquivar, refletindo no site sem redeploy» | C | |
 | Serviços | `tests/integration/supabase/cms-servicos.test.ts` › «editor cria o serviço com áreas e imagem; vínculo gravado pela RLS do editor» | S | Sem E2E |
 | Mídia | `tests/e2e/jornada-midia-cms.spec.ts` › «imagem de 5 MB entra na biblioteca» | C | |
-| Contato e redes | **Sem cobertura** | — | Tela inexistente na `main` (ADM-10): o critério não pode ser atendido hoje |
+| Contato e redes | `tests/e2e/jornada-configuracoes-cms.spec.ts` › «admin altera rede e contato; rodapé e /contato mudam sem deploy, e a restauração volta tudo» | C | Salvar vai direto ao ar, sem rascunho |
 | CTAs e destaques | **Sem cobertura** | — | Tela inexistente na `main` (ADM-11) |
 
 ### CA-21
@@ -533,7 +533,7 @@ Resumo do que está marcado como **sem cobertura**, para virar teste ou ser acei
 | Rota do job de reenvio | CA-16 | QA-05 | — |
 | Cabeçalhos HTTP e cookies | Seção 8 | SEG-06 | — |
 | Tela de leads e `lead.viewed` | CA-23 | FORM-09, SEG-04 | — |
-| Telas de contato, redes e CTAs | CA-20 | ADM-10, ADM-11 | — |
+| Tela de CTAs | CA-20 | ADM-11 | — |
 | `/api/v1/health` | CA-29 | QA-11 | — |
 | Contraste e Lighthouse | CA-07 | QA-07, SEG-07 | — |
 | Envio real de e-mail | CA-15 | FORM-10, GO-05 | CON-10, GO-02 |

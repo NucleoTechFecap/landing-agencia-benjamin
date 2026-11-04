@@ -71,6 +71,8 @@ Todos foram encontrados durante a execução, corrigidos e retestados nos PRs in
 
 - Reexecutar CT-02 a CT-15 em **homologação** com o Supabase de homologação (GO-02) — roteiro
   manual do QA (QA-11).
-- Telas de CTAs e configuração (ADM-10, ADM-11) entram nesta matriz quando existirem; as regras de
-  servidor já são as mesmas (`content-service.ts`). A tela de páginas e blocos (ADM-05) ainda precisa
-  entrar nesta matriz na próxima execução.
+- A tela de CTAs (ADM-11) entra nesta matriz quando existir; as regras de servidor já são as mesmas
+  (`content-service.ts`). As telas de páginas e blocos (ADM-05) e de contato e redes (ADM-10, testes
+  próprios em `lib/server/cms/settings-service.test.ts` e
+  `tests/integration/supabase/configuracao-institucional.test.ts`) ainda precisam entrar nesta matriz na
+  próxima execução.
