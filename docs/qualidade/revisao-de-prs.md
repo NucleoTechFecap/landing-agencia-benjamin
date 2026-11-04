@@ -159,6 +159,16 @@ Para fechar o critério, falta a coordenação decidir entre uma revisão poster
 nesses PRs ou a aceitação do risco por escrito (§3). Esta revisão automatizada não preenche essa
 lacuna.
 
+**Atualização de 04/11/2026.** Por decisão explícita do coordenador técnico, Vinícius Nishimura Reis, #378, #379, #380,
+#381, #382, #383, #384, #385, #386, #387, #388, #389 e #390 foram aprovados com a conta `NucleoTechFecap` e mesclados.
+Cada aprovação registra isso. Quem opera essa conta responde também pela autoria, então **elas não atendem "revisor ≠
+autor"**, e nenhum desses PRs teve revisão de outra pessoa. Houve leitura independente automatizada em #372, #377, #380,
+#382, #385 e #386, que também não substitui a revisão humana. O #377 (DB-10) foi aprovado e mesclado pela mesma conta,
+sem registro de quem a operava.
+
+São PRs críticos #381 (sessão e headers), #383 e #388 (dados pessoais), #382 (rascunho) e #380 (exclusão de mídia):
+vale começar por eles a revisão posterior de Vinícius Binda, se a coordenação escolher esse caminho.
+
 ### 6.4 O que não foi verificado
 
 Comportamento real da CDN da Vercel, cache de 301, `after()` com espera e a reação da Resend a
