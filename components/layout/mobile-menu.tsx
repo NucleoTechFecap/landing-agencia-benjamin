@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  25/10/2026 Caio Moraes              Fecha o menu quando o foco sai dele (LAY-02).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Menu rola por dentro em tela baixa: no celular deitado, o fim ficava inalcançável (QA-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -146,7 +147,7 @@ export function MobileMenu() {
         ref={panelRef}
         hidden={!visible}
         inert={!open}
-        className="absolute inset-x-4 top-[calc(100%+0.5rem)] rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-4 shadow-sticker-lg"
+        className="absolute inset-x-4 top-[calc(100%+0.5rem)] max-h-[calc(100dvh-6.5rem)] overflow-y-auto overscroll-contain rounded-3xl border-2 border-benja-noite bg-benja-nyanza p-4 shadow-sticker-lg"
       >
         <nav aria-label="Menu principal">
           <ul className="flex flex-col">
