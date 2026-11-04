@@ -245,6 +245,10 @@ async function auditAt(page: Page, label: string, path: string, width: number) {
   await page.setViewportSize({ width, height: HEIGHT });
   await page.goto(path, { waitUntil: "networkidle" });
   await settle(page);
+  // A faixa final abre conforme a rolagem: na captura da página inteira, feita do topo, ela sairia recortada.
+  if (process.env.E2E_EVIDENCE === "1") {
+    await page.addStyleTag({ content: "[data-clip-reveal] { clip-path: none !important; }" });
+  }
   await saveEvidence(page, `site-${label}-${width}`);
   return problemsOf(await page.evaluate(auditPage, { minTarget: MIN_TARGET, minControl: MIN_CONTROL }), width);
 }
@@ -428,6 +432,24 @@ test.describe("QA-03 · site público em 360, 768, 1280 e 1920 px", () => {
       const audit = await page.evaluate(auditPage, { minTarget: MIN_TARGET, minControl: MIN_CONTROL });
       await saveEvidence(page, `site-${label}-erros-360`);
       expect(problemsOf(audit, 360)).toEqual({});
+    });
+  }
+
+  for (const [width, height] of [
+    [768, 1024],
+    [1024, 1366],
+    [1280, 800],
+    [1920, 1080],
+  ] as const) {
+    test(`faixa final em ${width} × ${height}: ao fim da rolagem, nada fica recortado`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto("/", { waitUntil: "networkidle" });
+      await settle(page);
+      const band = page.locator("[data-clip-reveal]").last();
+      await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
+      await expect
+        .poll(() => band.evaluate((element) => getComputedStyle(element).clipPath))
+        .toMatch(/^(inset\(0%\)|none)$/);
     });
   }
 

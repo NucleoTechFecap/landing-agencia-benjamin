@@ -1116,6 +1116,9 @@ test.describe("QA-06 · erro não vaza detalhe interno @cms", () => {
 test.describe("QA-06 · arquivos e segredos no que é entregue ao navegador @cms", () => {
   test.skip(({ isMobile }) => isMobile, "O conteúdo entregue não depende do tamanho da tela.");
 
+  /** `.next` é o build desta máquina: contra um ambiente publicado, ele não diz nada sobre o que foi ao ar. */
+  const REMOTE = Boolean(process.env.E2E_BASE_URL);
+
   /** Nomes de variáveis que só existem no servidor (`NEXT_PUBLIC_*` é público por definição). */
   const SECRET_NAMES = [
     "SUPABASE_SERVICE_ROLE_KEY",
@@ -1154,6 +1157,7 @@ test.describe("QA-06 · arquivos e segredos no que é entregue ao navegador @cms
   });
 
   test(".next/static não traz segredo nem mapa de código", () => {
+    test.skip(REMOTE, "Confere o build local.");
     const files = filesUnder(".next/static");
     expect(files.length).toBeGreaterThan(10);
     expect(scanFiles(files)).toEqual([]);
@@ -1161,6 +1165,7 @@ test.describe("QA-06 · arquivos e segredos no que é entregue ao navegador @cms
   });
 
   test("o id das funções `use cache` não chega ao navegador", () => {
+    test.skip(REMOTE, "Confere o build local.");
     const ids = cacheFunctionIds();
     expect(ids.length).toBeGreaterThan(0);
     const delivered = [
@@ -1172,6 +1177,7 @@ test.describe("QA-06 · arquivos e segredos no que é entregue ao navegador @cms
   });
 
   test("HTML e RSC pré-renderizados não trazem segredo", () => {
+    test.skip(REMOTE, "Confere o build local.");
     const files = filesUnder(".next/server/app").filter((file) => /\.(html|rsc|meta|body)$/.test(file));
     expect(files.length).toBeGreaterThan(10);
     expect(scanFiles(files)).toEqual([]);
