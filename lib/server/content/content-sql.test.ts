@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 25/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,12 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  25/10/2026 Vinícius Binda             Criação inicial (DB-01/DBX-01).
+ 04/11/2026 Vinícius Nishimura Reis  Posições, destinos e limites do CTA conferidos com o banco (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { CTA_LIMITS, CTA_PLACEMENTS, CTA_TARGET_KINDS } from "@/lib/domain/content/cta-schema";
 import { PUBLICATION_STATUSES } from "@/lib/domain/content/publication-status";
 import { RESERVED_SLUGS, SLUG_MAX_LENGTH, SLUG_MIN_LENGTH, SLUG_PATTERN } from "@/lib/domain/content/slug";
 import { MEDIA_RULES } from "@/lib/domain/media/policy";
@@ -66,6 +68,15 @@ describe("consistência conteúdo código × banco (DB-01/DBX-01)", () => {
     const limits = sql.match(/when mime_type = 'application\/pdf' then (\d+) else (\d+) end/);
     expect(Number(limits?.[1])).toBe(MEDIA_RULES["application/pdf"].maxBytes);
     expect(Number(limits?.[2])).toBe(MEDIA_RULES["image/jpeg"].maxBytes);
+  });
+
+  it("ctas aceita as mesmas posições, tipos de destino e limites do formulário do painel", () => {
+    const placements = sql.match(/placement text not null check \(placement in \(([^)]+)\)\)/)?.[1] ?? "";
+    expect(quoted(placements)).toEqual([...CTA_PLACEMENTS]);
+    const kinds = sql.match(/target_kind text not null check \(target_kind in \(([^)]+)\)\)/)?.[1] ?? "";
+    expect(quoted(kinds)).toEqual([...CTA_TARGET_KINDS]);
+    expect(sql).toContain(`char_length(label) between ${CTA_LIMITS.labelMin} and ${CTA_LIMITS.label}`);
+    expect(sql).toContain(`char_length(target_url) <= ${CTA_LIMITS.url}`);
   });
 
   it("toda tabela de public habilita RLS (supabase/README.md)", () => {
