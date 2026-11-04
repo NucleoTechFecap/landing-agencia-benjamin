@@ -23,12 +23,14 @@
  01/11/2026 Vinícius Nishimura Reis  Espera curta para o toPass recarregar a página (INT-03).
  02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
  04/11/2026 Vinícius Nishimura Reis  Edição de manifesto e resumo já publicados chega à Home (HOME-07).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { randomBytes } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { acceptConfirmation } from "./painel-helpers";
 
 /**
  * O que o editor publica no painel aparece no site, sem deploy (INT-03). Precisa do app construído
@@ -91,8 +93,8 @@ test.describe("Painel → site · Home e Sobre @cms", () => {
 
   const unpublish = async (page: Page, editor: string) => {
     await page.goto(editor);
-    page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Despublicar" }).click();
+    await acceptConfirmation(page, "Despublicar");
     await expect(page.getByRole("status").getByText("Despublicado")).toBeVisible();
   };
 

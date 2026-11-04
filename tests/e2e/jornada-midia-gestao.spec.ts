@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,6 +27,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Page } from "@playwright/test";
+import { acceptConfirmation } from "./painel-helpers";
 
 /** Precisa do app construído contra o Supabase local: rode `npm run test:e2e:cms`. */
 const SUPABASE_URL = process.env.E2E_SUPABASE_URL;
@@ -137,15 +139,11 @@ test.describe("Biblioteca de mídia · detalhe, edição e exclusão @cms", () =
 
     const button = page.getByRole("button", { name: "Excluir arquivo" });
     await expect(button).toBeEnabled();
-    const dialogs: string[] = [];
-    page.once("dialog", (dialog) => {
-      dialogs.push(dialog.message());
-      void dialog.accept();
-    });
     await button.click();
+    await expect(page.locator("dialog[open]")).toContainText("definitivamente");
+    await acceptConfirmation(page, "Excluir arquivo");
     await expect(page).toHaveURL(/\/admin\/midia\?ok=excluido/);
     await expect(page.getByRole("status")).toContainText("Excluído");
-    expect(dialogs[0]).toContain("definitivamente");
     expect((await admin.from("media_assets").select("id").eq("id", file.id)).data).toEqual([]);
     expect(await fileExists(file.path)).toBe(false);
   });
@@ -156,8 +154,9 @@ test.describe("Biblioteca de mídia · detalhe, edição e exclusão @cms", () =
     await page.goto(`/admin/midia/${file.id}`);
     const button = page.getByRole("button", { name: "Excluir arquivo" });
     await expect(button).toBeEnabled();
-    page.once("dialog", (dialog) => void dialog.dismiss());
     await button.click();
+    await page.locator("dialog[open]").getByRole("button", { name: "Cancelar" }).click();
+    await expect(page.locator("dialog[open]")).toHaveCount(0);
     await expect(page).toHaveURL(new RegExp(`/admin/midia/${file.id}$`));
     expect((await admin.from("media_assets").select("id").eq("id", file.id)).data).toHaveLength(1);
     expect(await fileExists(file.path)).toBe(true);

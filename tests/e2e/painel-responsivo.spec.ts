@@ -20,6 +20,7 @@
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Telas de leads e feedbacks (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Telas de CTAs e destaques da Home (ADM-11).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -373,7 +374,7 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
   // Tela nova em app/admin entra aqui, em uma linha: o último teste do arquivo falha enquanto faltar.
   const ADMIN_ROUTES = [
     screen("inicio", "", /Bem-vindo/),
-    screen("visao-geral", "conteudos", /Visão geral/),
+    screen("visao-geral", "conteudos", /Revisão de conteúdos/),
     screen("configuracoes", "configuracoes", /Contato, links e redes sociais/),
     screen("paginas", "paginas", /Páginas e textos/),
     screen("pagina-nova", "paginas/nova", /Criar conteúdo: Contato/, () => "/admin/paginas/nova?rota=contato"),
@@ -404,12 +405,12 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
     screen("ctas", "ctas", /CTAs e destaques da Home/),
     screen("cta-novo", "ctas/novo", /Novo CTA/),
     screen("cta-editar", "ctas/[id]", /^Cta-/, () => `/admin/ctas/${ids.cta}`),
-    screen("midia", "midia", /Biblioteca de mídia/),
+    screen("midia", "midia", /Imagens e arquivos/),
     screen("previa-servico", "previa/[tipo]/[id]", /^Servico-/, () => `/admin/previa/servico/${ids.service}`),
     screen("previa-case", "previa/[tipo]/[id]", /^Case-/, () => `/admin/previa/case/${ids.case}`),
     screen("previa-pagina", "previa/[tipo]/[id]", /^Pagina-/, () => `/admin/previa/pagina/${ids.page}`),
     screen("midia-detalhe", "midia/[id]", /\.(webp|png|jpe?g|avif)$/, () => `/admin/midia/${ids.media}`),
-    screen("leads", "leads", /Leads e feedbacks/),
+    screen("leads", "leads", /Contatos e feedbacks/),
     screen("lead-detalhe", "leads/[id]", /^AB-/, () => `/admin/leads/${ids.submission}`),
     screen("lead-arquivado", "leads/[id]", /^AB-/, () => `/admin/leads/${ids.submissionArchived}`),
     screen("sem-permissao", "sem-permissao", /Sem permissão/),
@@ -477,7 +478,7 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
     ]) {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-      await expect(page.getByRole("button", { name: "Sair" })).toBeEnabled();
+      await expect(page.getByRole("button", { name: "Abrir menu" })).toBeEnabled();
 
       const expected = await page.evaluate(() =>
         [...document.querySelectorAll("a[href], button, summary, select, textarea, input:not([type=hidden])")]
@@ -485,7 +486,9 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
             const box = element.getBoundingClientRect();
             // Conteúdo de <details> fechado só entra na ordem de foco depois de abrir, pelo próprio <summary>.
             const collapsed = element.closest("details:not([open])") && !element.matches("summary");
-            return box.width > 1 && box.height > 1 && !element.matches(":disabled") && !collapsed;
+            // A gaveta fechada tem tamanho, mas está fora da tela e `invisible`: não é parada de Tab.
+            const hidden = getComputedStyle(element).visibility === "hidden";
+            return box.width > 1 && box.height > 1 && !element.matches(":disabled") && !collapsed && !hidden;
           })
           .map((element, index) => {
             element.setAttribute("data-teclado", String(index));

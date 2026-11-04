@@ -18,12 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-11, HOME-07).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { randomBytes } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { acceptConfirmation } from "./painel-helpers";
 
 /**
  * CTAs e destaques editados no painel chegam à Home sem deploy (ADM-11, HOME-07). Usa só dados
@@ -92,9 +94,9 @@ test.describe("Home · CTAs e destaques pelo painel @cms", () => {
   };
 
   const runCommand = async (page: Page, button: string, flash: string) => {
-    // Só publicar não pede confirmação; um `once` que sobra responderia ao diálogo seguinte duas vezes.
-    if (button !== "Publicar") page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: button, exact: true }).click();
+    // Só publicar não pede confirmação.
+    if (button !== "Publicar") await acceptConfirmation(page, button);
     await expect(page.getByRole("status").getByText(flash)).toBeVisible();
   };
 

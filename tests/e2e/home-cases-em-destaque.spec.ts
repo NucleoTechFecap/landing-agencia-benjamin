@@ -21,13 +21,14 @@
  01/11/2026 Vinícius Nishimura Reis  Sufixo de teste com node:crypto (CodeQL).
  01/11/2026 Vinícius Nishimura Reis  Espera curta para o toPass recarregar a página (HOME-04).
  04/11/2026 Vinícius Nishimura Reis  Prazos que distinguem produto lento de máquina carregada (QA-06).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { randomBytes } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { ACTION_TIMEOUT_MS, publishBudgetMs } from "./painel-helpers";
+import { acceptConfirmation, ACTION_TIMEOUT_MS, publishBudgetMs } from "./painel-helpers";
 
 /**
  * Cases em destaque da Home (HOME-04): o bloco em celular e desktop, com o conteúdo versionado, e
@@ -224,8 +225,8 @@ test.describe("Home · cases em destaque no painel @cms", () => {
   test("arquivado, sai da Home", async ({ page }) => {
     await login(page);
     await page.goto(`/admin/cases/${ids.case}`);
-    page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Arquivar" }).click();
+    await acceptConfirmation(page, "Arquivar");
     await expect(page.getByRole("status").getByText("Arquivado")).toBeVisible({ timeout: ACTION_TIMEOUT_MS });
     await expectOnHome(page, renamed, false);
   });
