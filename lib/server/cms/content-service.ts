@@ -28,6 +28,7 @@
  02/11/2026 Vinícius Nishimura Reis  Item e relações gravados numa transação (TECH-13, #314).
  04/11/2026 Vinícius Nishimura Reis  Conteúdo sem endereço próprio, como o CTA (ADM-11).
  04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
+ 04/11/2026 Vinícius Nishimura Reis  Restauração que falha ao gravar fica registrada como falha na auditoria.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -287,18 +288,27 @@ export async function saveContent<I extends { slug?: string }, T extends CmsItem
   // Evento crítico é auditado antes de gravar (TECH-10): sem registro, a restauração não acontece.
   if (restored) await deps.audit({ event, resourceId: current?.id, outcome: "success", metadata: auditMetadata });
 
-  // Item e relações entram juntos ou não entram (TECH-13): se falhar, nada mudou, então não há o
-  // que auditar nem cache a renovar.
+  // Item e relações entram juntos ou não entram (TECH-13): se falhar, nada mudou, então não há cache
+  // a renovar. Só a restauração, já auditada como sucesso, precisa registrar a falha (TECH-10).
   const values = def.toValues(input);
-  const saved = def.relations
-    ? await deps.store.saveWithRelations(
-        def.relations(input),
-        values,
-        current && { id: current.id, expectedUpdatedAt: current.updatedAt },
-      )
-    : current
-      ? await deps.store.update(def.table, current.id, values, current.updatedAt)
-      : await deps.store.insert(def.table, { ...values, status: "draft" });
+  const write = () =>
+    def.relations
+      ? deps.store.saveWithRelations(
+          def.relations(input),
+          values,
+          current && { id: current.id, expectedUpdatedAt: current.updatedAt },
+        )
+      : current
+        ? deps.store.update(def.table, current.id, values, current.updatedAt)
+        : deps.store.insert(def.table, { ...values, status: "draft" });
+  const saved = await write().catch(async (error: unknown) => {
+    if (restored) {
+      await deps
+        .audit({ event, resourceId: current?.id, outcome: "failure", metadata: auditMetadata })
+        .catch(() => undefined);
+    }
+    throw error;
+  });
 
   if (!restored) await deps.audit({ event, resourceId: saved.id, outcome: "success", metadata: auditMetadata });
   await recordVersion(

@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (editor do site).
+ 04/11/2026 Vinícius Nishimura Reis  Restauração sem meio-termo, comparação estável e invalidação garantida.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -432,6 +433,55 @@ describe("restauração", () => {
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 
+  /** Página publicada com duas versões de conteúdo: a 2 é a que traz o bloco "Primeiro". */
+  async function pageWithHistory() {
+    const context = setup(seedPage({ status: "published" }));
+    const { deps, store } = context;
+    const page = (await store.readPage("p1"))!;
+    await saveBlock(
+      deps,
+      admin,
+      { id: "p1", expectedUpdatedAt: page.updatedAt },
+      {
+        type: "rich-text",
+        input: { fields: { title: "" }, paragraphs: ["Primeiro"], items: [], members: [] },
+      },
+    );
+    const withBlock = (await store.readPage("p1"))!;
+    await saveBlock(
+      deps,
+      admin,
+      { id: "p1", expectedUpdatedAt: withBlock.updatedAt },
+      {
+        blockId: withBlock.blocks[0].id,
+        type: "rich-text",
+        input: { fields: { title: "" }, paragraphs: ["Segundo"], items: [], members: [] },
+      },
+    );
+    return { ...context, edited: (await store.readPage("p1"))! };
+  }
+
+  it("falha ao gravar a página fica registrada como falha na auditoria", async () => {
+    const { deps, store, audit, edited } = await pageWithHistory();
+    store.savePageDocument = vi.fn().mockRejectedValue(new Error("banco fora"));
+    await expect(
+      restoreVersion(deps, admin, { entity: "page", entityId: "p1", version: 2, expectedUpdatedAt: edited.updatedAt }),
+    ).rejects.toThrow("banco fora");
+    expect(audit).toHaveBeenCalledWith(
+      expect.objectContaining({ event: "content.version_restored", outcome: "failure" }),
+    );
+  });
+
+  it("SEO da versão fora das regras atuais é recusado, em vez de virar vazio", async () => {
+    const { deps, store, tables, edited } = await pageWithHistory();
+    const version = tables.content_versions.find((entry) => entry.entity === "page" && entry.version === 2)!;
+    version.snapshot = { ...version.snapshot, seo: { title: 123 } };
+    await expect(
+      restoreVersion(deps, admin, { entity: "page", entityId: "p1", version: 2, expectedUpdatedAt: edited.updatedAt }),
+    ).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+    expect((await store.readPage("p1"))!.updatedAt).toBe(edited.updatedAt);
+  });
+
   it("leitor vê, mas não restaura", async () => {
     const { deps } = setup();
     const created = await saveContent(deps, admin, AREA, AREA_INPUT);
@@ -473,6 +523,47 @@ describe("aparência", () => {
       expectedUpdatedAt: second.updatedAt,
     });
     expect((await store.readSettings())!.settings.theme).toEqual({ colors: { laranja: "#ff0000" } });
+  });
+
+  it("versão fora das regras atuais é recusada, sem apagar a aparência de hoje", async () => {
+    const { deps, tables, store } = setup();
+    await saveThemeValues(deps, admin, { colors: { laranja: "#ff0000" } }, null);
+    const first = (await store.readSettings())!;
+    await saveThemeValues(deps, admin, { colors: { laranja: "#ff8800" } }, first.updatedAt);
+    const version = tables.content_versions.find((entry) => entry.entity === "theme" && entry.version === 2)!;
+    version.snapshot = { colors: { laranja: "não é uma cor" } };
+    const second = (await store.readSettings())!;
+    await expect(
+      restoreVersion(deps, admin, {
+        entity: "theme",
+        entityId: "site",
+        version: 2,
+        expectedUpdatedAt: second.updatedAt,
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+    expect((await store.readSettings())!.settings.theme).toEqual({ colors: { laranja: "#ff8800" } });
+  });
+
+  it("a mesma aparência com as chaves em outra ordem não vira versão nova", async () => {
+    const { deps, tables, store } = setup();
+    await saveThemeValues(deps, admin, { colors: { laranja: "#ff0000", azul: "#0000aa" } }, null);
+    const saved = (await store.readSettings())!;
+    const before = tables.content_versions.length;
+    const changed = await saveThemeValues(
+      deps,
+      admin,
+      { colors: { azul: "#0000aa", laranja: "#ff0000" } },
+      saved.updatedAt,
+    );
+    expect(changed).toBe(false);
+    expect(tables.content_versions).toHaveLength(before);
+  });
+
+  it("leitura que falha depois de gravar não impede a invalidação do cache", async () => {
+    const { deps, store, invalidate } = setup();
+    store.snapshot = vi.fn().mockRejectedValue(new Error("banco fora"));
+    await expect(saveThemeValues(deps, admin, { colors: { laranja: "#ff0000" } }, null)).resolves.toBe(true);
+    expect(invalidate).toHaveBeenCalledWith(expect.objectContaining({ entity: "settings", relatedPaths: [] }));
   });
 
   it("recusa contraste ilegível, inclusive ao restaurar", async () => {
@@ -609,8 +700,8 @@ describe("blocos descritos por campos", () => {
 });
 
 describe("serviço", () => {
-  it("restaurar volta as áreas e o SEO", async () => {
-    const { deps, store } = setup({
+  async function serviceWithSeo() {
+    const context = setup({
       areas: [
         {
           id: "00000000-0000-4000-8000-0000000000a1",
@@ -629,6 +720,7 @@ describe("serviço", () => {
         },
       ],
     });
+    const { deps, store } = context;
     const created = await saveContent(deps, admin, SERVICE, {
       name: "Serviço",
       slug: "servico-um",
@@ -645,6 +737,44 @@ describe("serviço", () => {
     );
     const withSeo = (await store.snapshot()).services[0];
     expect(withSeo.seo?.title).toBe("SEO novo");
+    return { ...context, created, withSeo };
+  }
+
+  it("falha ao gravar devolve o SEO e fica registrada como falha na auditoria", async () => {
+    const { deps, store, audit, created, withSeo } = await serviceWithSeo();
+    store.saveWithRelations = vi.fn().mockRejectedValue(new Error("banco fora"));
+    await expect(
+      restoreVersion(deps, admin, {
+        entity: "service",
+        entityId: created.id,
+        version: 1,
+        expectedUpdatedAt: withSeo.updatedAt,
+      }),
+    ).rejects.toThrow("banco fora");
+    expect((await store.snapshot()).services[0].seo?.title).toBe("SEO novo");
+    expect(audit).toHaveBeenCalledWith(
+      expect.objectContaining({ event: "content.version_restored", outcome: "failure" }),
+    );
+  });
+
+  it("item arquivado não é restaurado, nem em parte", async () => {
+    const { deps, store, tables, created } = await serviceWithSeo();
+    const row = tables.services.find((entry) => entry.id === created.id)!;
+    row.status = "archived";
+    const archived = (await store.snapshot()).services[0];
+    await expect(
+      restoreVersion(deps, admin, {
+        entity: "service",
+        entityId: created.id,
+        version: 1,
+        expectedUpdatedAt: archived.updatedAt,
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+    expect((await store.snapshot()).services[0].seo?.title).toBe("SEO novo");
+  });
+
+  it("restaurar volta as áreas e o SEO", async () => {
+    const { deps, store, created, withSeo } = await serviceWithSeo();
     const version = await store.listVersions({ entity: "service", entityId: created.id, limit: 10 });
     expect(version.map((item) => item.action)).toEqual(["updated", "created"]);
     await restoreVersion(deps, admin, {

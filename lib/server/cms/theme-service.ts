@@ -18,12 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (editor do site).
+ 04/11/2026 Vinícius Nishimura Reis  Comparação sem depender da ordem das chaves que volta do jsonb.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import { can } from "@/lib/domain/auth/rbac";
 import { fieldErrorsOf } from "@/lib/domain/content/cms-schema";
+import { stableJson } from "@/lib/domain/content/fields";
 import { compactTheme, contrastProblems, themeSchema, type SiteTheme } from "@/lib/domain/content/theme";
 import { SINGLE_ENTITY_ID } from "@/lib/domain/content/versions";
 import { AppError } from "../errors";
@@ -63,7 +65,7 @@ export async function saveThemeValues(
 
   const { settings, updatedAt } = await loadSettingsForEdit(deps);
   if (updatedAt !== expectedUpdatedAt) throw new AppError("CONFLICT");
-  if (JSON.stringify(settings.theme ?? {}) === JSON.stringify(theme)) return false;
+  if (stableJson(settings.theme ?? {}) === stableJson(theme)) return false;
 
   const version = { entity: "theme" as const, entityId: SINGLE_ENTITY_ID, status: null, label: LABEL };
   await recordBaseline(deps, { ...version, snapshot: { ...(settings.theme ?? {}) } });

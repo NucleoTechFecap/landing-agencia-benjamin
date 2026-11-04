@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (editor do site).
+ 04/11/2026 Vinícius Nishimura Reis  Comparação sem depender da ordem das chaves que volta do jsonb.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -28,6 +29,7 @@ import { fieldErrorsOf } from "@/lib/domain/content/cms-schema";
 import {
   fieldDefault,
   readFields,
+  stableJson,
   type FieldErrors,
   type FormEntries,
   type ImageValue,
@@ -118,7 +120,7 @@ export async function savePageFields(
     });
   }
   const fields = { values: diffFromDefaults(page.slug, values, settings), hidden: hiddenSections(catalog, hidden) };
-  if (JSON.stringify(fields) === JSON.stringify(page.fields ?? { values: {}, hidden: [] })) return false;
+  if (stableJson(fields) === stableJson(page.fields ?? { values: {}, hidden: [] })) return false;
 
   await recordBaseline(deps, itemVersion("page", page, "baseline"));
   const saved = await deps.store.update("pages", page.id, { fields }, page.updatedAt);
@@ -178,7 +180,7 @@ export async function saveItemSeo<I extends { slug?: string }, T extends CmsItem
   if (!parsed.success) throw new AppError("VALIDATION_FAILED", { fieldErrors: fieldErrorsOf(parsed.error) });
   const seo = compactSeo(parsed.data);
   const current = (item as { seo?: object }).seo ?? {};
-  if (JSON.stringify(seo) === JSON.stringify(current)) return false;
+  if (stableJson(seo) === stableJson(current)) return false;
 
   await recordBaseline(deps, itemVersion(entity, item, "baseline"));
   const saved = await deps.store.update(def.table, item.id, { seo }, item.updatedAt);

@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (editor do site).
+ 04/11/2026 Vinícius Nishimura Reis  Restauração recusa versão inválida, registra a falha e não fica pela metade.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -25,11 +26,13 @@ import "server-only";
 import { can } from "@/lib/domain/auth/rbac";
 import { BLOCK_SCHEMAS, isBlockType, isFreePageSlug } from "@/lib/domain/content/blocks";
 import { catalogFieldLabel, parsePageFields } from "@/lib/domain/content/catalog";
+import { stableJson } from "@/lib/domain/content/fields";
 import { parseSeo } from "@/lib/domain/content/seo-schema";
 import { THEME_COLORS, THEME_IMAGES, parseTheme, type ThemeColor, type ThemeImage } from "@/lib/domain/content/theme";
 import type { Page } from "@/lib/domain/content/types";
 import { toSnapshot, versionResource, type ContentVersion, type VersionEntity } from "@/lib/domain/content/versions";
 import { AppError } from "../errors";
+import { logger } from "../logger";
 import type { CmsActor, CmsDeps, ItemRef } from "./content-service";
 import { saveContent } from "./content-service";
 import { AREA, CASE, CATEGORY, CTA, PAGE, SERVICE, type CmsItem, type EntityDefinition } from "./entities";
@@ -75,6 +78,16 @@ async function assertImagesExist(deps: Pick<CmsDeps, "store">, content: unknown)
   }
 }
 
+/** A leitura tolerante serve para o site não cair. Ao restaurar, ela gravaria o conteúdo vazio no lugar: recusa. */
+function assertRestorable(problems: readonly string[]) {
+  if (problems.length) {
+    throw new AppError("VALIDATION_FAILED", {
+      message: "Esta versão não atende às regras atuais e não pode ser restaurada.",
+      fieldErrors: { impacto: [...problems] },
+    });
+  }
+}
+
 async function restorePage(deps: CmsDeps, actor: CmsActor, ref: ItemRef, version: ContentVersion) {
   const current = await deps.store.readPage(ref.id);
   if (!current) throw new AppError("NOT_FOUND");
@@ -94,8 +107,9 @@ async function restorePage(deps: CmsDeps, actor: CmsActor, ref: ItemRef, version
     }
     return { type: block.type, content: parsed.data };
   });
-  const { fields } = parsePageFields(current.slug, snapshot.fields);
-  const { seo } = parseSeo(snapshot.seo);
+  const { fields, problems: fieldProblems } = parsePageFields(current.slug, snapshot.fields);
+  const { seo, problems: seoProblems } = parseSeo(snapshot.seo);
+  assertRestorable([...fieldProblems, ...seoProblems]);
   await assertImagesExist(deps, { blocks, fields, seo });
 
   // Rota fixa sem nada gravado mostra os textos originais: voltar a esse estado é legítimo. Só a página
@@ -115,16 +129,23 @@ async function restorePage(deps: CmsDeps, actor: CmsActor, ref: ItemRef, version
   const description = typeof snapshot.description === "string" ? snapshot.description : null;
   const provisional = snapshot.provisional ?? current.provisional ?? false;
 
-  await deps.audit({
-    event: "content.version_restored",
-    resourceId: current.id,
-    outcome: "success",
-    metadata: { entity: "page", slug: current.slug, fromStatus: current.status, count: version.version },
-  });
-  await deps.store.savePageDocument(current.id, current.updatedAt, {
-    values: { title, description, provisional, fields, seo },
-    blocks,
-  });
+  const audit = (outcome: "success" | "failure") =>
+    deps.audit({
+      event: "content.version_restored",
+      resourceId: current.id,
+      outcome,
+      metadata: { entity: "page", slug: current.slug, fromStatus: current.status, count: version.version },
+    });
+  await audit("success");
+  try {
+    await deps.store.savePageDocument(current.id, current.updatedAt, {
+      values: { title, description, provisional, fields, seo },
+      blocks,
+    });
+  } catch (error) {
+    await audit("failure").catch(() => undefined);
+    throw error;
+  }
   const after = await deps.store.readPage(current.id);
   if (after) {
     await recordVersion(deps, itemVersion("page", after, "version_restored", { restoredFrom: version.version }));
@@ -144,24 +165,39 @@ async function restoreItem<I extends { slug?: string }, T extends CmsItem>(
   const item = def.list(await deps.store.snapshot()).find((entry) => entry.id === ref.id);
   if (!item) throw new AppError("NOT_FOUND");
   if (!def.toRawInput) throw new AppError("BAD_REQUEST", { message: "Este conteúdo não pode ser restaurado." });
+  if (item.status === "archived") {
+    throw new AppError("VALIDATION_FAILED", { message: "Item arquivado: restaure como rascunho antes." });
+  }
   // Restaurar não troca o endereço: a troca é feita no campo, com 301 em serviço e case (DB-08).
   const raw = { ...(def.toRawInput(snapshot) as object), ...(item.slug ? { slug: item.slug } : {}) };
 
   let expected = ref.expectedUpdatedAt;
-  const { seo: restoredSeo } = parseSeo((snapshot as { seo?: unknown }).seo);
+  const { seo: restoredSeo, problems } = parseSeo((snapshot as { seo?: unknown }).seo);
+  if (def.hasSeo) assertRestorable(problems);
   const currentSeo = (item as { seo?: unknown }).seo ?? {};
-  if (def.hasSeo && JSON.stringify(restoredSeo) !== JSON.stringify(currentSeo)) {
+  const seoChanges = def.hasSeo && stableJson(restoredSeo) !== stableJson(currentSeo);
+  if (seoChanges) {
     await assertImagesExist(deps, restoredSeo);
     expected = (await deps.store.update(def.table, ref.id, { seo: restoredSeo }, expected)).updatedAt;
   }
-  await saveContent(
-    deps,
-    actor,
-    def,
-    raw,
-    { id: ref.id, expectedUpdatedAt: expected },
-    { restoredFrom: version.version },
-  );
+  try {
+    await saveContent(
+      deps,
+      actor,
+      def,
+      raw,
+      { id: ref.id, expectedUpdatedAt: expected },
+      { restoredFrom: version.version },
+    );
+  } catch (error) {
+    // O SEO não cabe na função que grava item e relações. Se o resto for recusado, ele volta ao que era.
+    if (seoChanges) {
+      await deps.store.update(def.table, ref.id, { seo: currentSeo }, expected).catch((undoError: unknown) => {
+        logger.error("cms.version_restore.seo_undo_failed", { resourceId: ref.id, error: undoError });
+      });
+    }
+    throw error;
+  }
 }
 
 /** O que está valendo hoje, para comparar; `null` quando o item foi excluído. */
@@ -266,7 +302,8 @@ export async function restoreVersion(deps: CmsDeps, actor: CmsActor, request: Re
     return;
   }
   if (entity === "theme") {
-    const { theme } = parseTheme(version.snapshot);
+    const { theme, problems } = parseTheme(version.snapshot);
+    assertRestorable(problems);
     await assertImagesExist(deps, theme);
     await saveThemeValues(deps, actor, theme, expectedUpdatedAt, number);
     return;
