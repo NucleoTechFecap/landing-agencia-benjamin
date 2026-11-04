@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-11).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -33,6 +34,7 @@ import { can } from "@/lib/domain/auth/rbac";
 import { CTA_PLACEMENTS_ON_SITE, ctaTargetOptions } from "@/lib/domain/content/cta-schema";
 import { findIntegrityIssues, resolveCtaHref } from "@/lib/domain/content/integrity";
 import { allowedCommands } from "@/lib/domain/content/publication";
+import { historyPath } from "@/lib/domain/content/versions";
 import { requirePageAccess } from "@/lib/server/auth/guards";
 import { publishProblems } from "@/lib/server/cms/content-service";
 import { loadCmsSnapshot } from "@/lib/server/cms/context";
@@ -74,6 +76,7 @@ export default async function EditCtaPage({ params, searchParams }: PageProps<"/
         </div>
         <ItemPanel
           item={cta}
+          historyHref={historyPath("cta", cta.id)}
           publicHref={onSite ? CTA.publicPath(cta) : undefined}
           missing={publishProblems(CTA, cta, snapshot, now)}
           warnings={warnings}

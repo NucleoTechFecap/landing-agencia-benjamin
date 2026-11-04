@@ -22,6 +22,7 @@
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Link para a prévia protegida (ADM-14).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -39,6 +40,8 @@ export function ItemPanel({
   item,
   publicHref,
   previewHref,
+  historyHref,
+  lastChange,
   missing,
   warnings,
   children,
@@ -47,6 +50,10 @@ export function ItemPanel({
   publicHref?: string;
   /** Prévia protegida (ADM-14); só para os tipos com página própria no site. */
   previewHref?: string;
+  /** Linha do tempo do item: quem alterou, quando, e o caminho para voltar atrás. */
+  historyHref?: string;
+  /** Última alteração registrada no histórico. */
+  lastChange?: { author: string; createdAt: string };
   missing: string[];
   warnings: string[];
   children?: ReactNode;
@@ -56,6 +63,12 @@ export function ItemPanel({
       <section className="studio-card space-y-2 p-5 text-sm">
         <StatusBadge status={item.status} provisional={item.provisional} />
         <p className="text-studio-suave">Atualizado em {formatDateTime(item.updatedAt)}</p>
+        {lastChange ? (
+          <p className="text-studio-suave">
+            Última alteração por <strong className="font-semibold">{lastChange.author}</strong> em{" "}
+            {formatDateTime(lastChange.createdAt)}
+          </p>
+        ) : null}
         {item.publishedAt ? (
           <p className="text-studio-suave">Publicado pela primeira vez em {formatDateTime(item.publishedAt)}</p>
         ) : null}
@@ -74,6 +87,11 @@ export function ItemPanel({
         {previewHref && item.status !== "archived" ? (
           <Link href={previewHref} target="_blank" prefetch={false} className="studio-link block py-1">
             Ver prévia<span className="sr-only"> (abre em nova aba)</span>
+          </Link>
+        ) : null}
+        {historyHref ? (
+          <Link href={historyHref} prefetch={false} className="studio-link block py-1">
+            Ver histórico e restaurar
           </Link>
         ) : null}
         {item.provisional ? (

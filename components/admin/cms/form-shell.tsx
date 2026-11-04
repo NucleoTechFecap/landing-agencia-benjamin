@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Campos remontados após erro preservam seleções (ADM-08).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -39,6 +40,14 @@ export interface FieldHelpers {
   errors: (name: string) => string[] | undefined;
   /** Valor digitado (após erro) ou o valor salvo. */
   value: (name: string, saved?: string) => string | undefined;
+  /** Algum campo com este nome, ou dentro dele, voltou com erro? */
+  hasErrors: (name: string) => boolean;
+  /** Valores digitados de um campo repetido, se houve erro. */
+  values: (name: string) => string[] | undefined;
+  /** Quantas linhas de uma lista foram enviadas, se houve erro. */
+  count: (name: string) => number | undefined;
+  /** Mudança que o formulário não percebe sozinho: botão que remonta um campo ou mexe numa lista. */
+  markEdited: () => void;
 }
 
 interface CmsFormShellProps {
@@ -68,6 +77,20 @@ function FormBody({ action, item, readOnly, submitLabel, cancelHref, children }:
   const fields: FieldHelpers = {
     errors: (name) => (state.status === "error" ? state.fieldErrors?.[name] : undefined),
     value: (name, saved) => typed?.[name] ?? saved,
+    hasErrors: (name) =>
+      state.status === "error" &&
+      Object.keys(state.fieldErrors ?? {}).some((key) => key === name || key.startsWith(`${name}.`)),
+    values: (name) => (typed ? (typed[name]?.split("\n") ?? []) : undefined),
+    count: (name) => {
+      if (!typed) return undefined;
+      const indexes = new Set<string>();
+      for (const key of Object.keys(typed)) {
+        const match = key.startsWith(`${name}.`) ? /^(\d+)\./.exec(key.slice(name.length + 1)) : null;
+        if (match) indexes.add(match[1]);
+      }
+      return indexes.size;
+    },
+    markEdited: () => setEdited(true),
   };
   // O que o servidor recusou continua só no formulário: conta como não salvo.
   const unsaved = !readOnly && !pending && (edited || state.status === "error");
