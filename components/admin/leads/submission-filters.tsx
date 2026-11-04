@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,6 +27,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   INBOX_PATH,
+  NOTIFICATION_STATUSES,
+  NOTIFICATION_STATUS_LABELS,
   SUBMISSION_STATUSES,
   SUBMISSION_STATUS_LABELS,
   categoryOptions,
@@ -80,7 +83,7 @@ export function SubmissionFilters({
       prefetch={false}
       role="search"
       aria-label="Filtrar envios"
-      className="mb-6 grid items-end gap-4 rounded-3xl border-2 border-benja-noite/15 bg-white p-5 sm:grid-cols-2 lg:grid-cols-4"
+      className="mb-6 grid items-end gap-4 rounded-3xl border-2 border-benja-noite/15 bg-white p-5 sm:grid-cols-2 lg:grid-cols-5"
     >
       <Filter name="tipo" label="Tipo" value={query.kind}>
         <option value="">Todos</option>
@@ -108,6 +111,14 @@ export function SubmissionFilters({
               </option>
             ))}
           </optgroup>
+        ))}
+      </Filter>
+      <Filter name="notificacao" label="Notificação" value={query.notification}>
+        <option value="">Todas</option>
+        {NOTIFICATION_STATUSES.map((status) => (
+          <option key={status} value={status}>
+            {NOTIFICATION_STATUS_LABELS[status]}
+          </option>
         ))}
       </Filter>
       <div className="flex items-center gap-4">

@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,7 +27,11 @@ import { notFound } from "next/navigation";
 import { CmsHeader } from "@/components/admin/cms/cms-header";
 import { FlashMessage } from "@/components/admin/cms/flash-message";
 import { StatusForm } from "@/components/admin/leads/status-form";
-import { SubmissionContent, SubmissionRecordPanel } from "@/components/admin/leads/submission-detail";
+import {
+  NotificationPanel,
+  SubmissionContent,
+  SubmissionRecordPanel,
+} from "@/components/admin/leads/submission-detail";
 import { INBOX_PATH, canOnKind, isSubmissionId, statusOptions } from "@/lib/domain/forms/inbox";
 import { listServices } from "@/lib/server/content/repository";
 import { openSubmission, requireInboxPage } from "@/lib/server/forms/inbox-context";
@@ -56,6 +61,7 @@ export default async function SubmissionPage({ params, searchParams }: PageProps
         <SubmissionContent record={record} />
         <aside className="space-y-4">
           <SubmissionRecordPanel record={record} services={services} />
+          <NotificationPanel record={record} />
           {canOnKind(user.role, record.kind, "edit") ? (
             <StatusForm
               action={changeSubmissionStatusAction}

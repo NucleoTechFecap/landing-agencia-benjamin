@@ -18,17 +18,20 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import Link from "next/link";
 import {
   INBOX_PATH,
+  NOTIFICATION_STATUS_LABELS,
   SUBMISSION_STATUS_LABELS,
   categoryLabel,
   inboxHref,
   type InboxPage,
   type InboxQuery,
+  type NotificationStatus,
   type SubmissionStatus,
 } from "@/lib/domain/forms/inbox";
 import { SUBMISSION_KIND_LABELS } from "@/lib/domain/forms/schemas";
@@ -51,6 +54,22 @@ export function AttendanceBadge({ status }: { status: SubmissionStatus }) {
   );
 }
 
+const NOTIFICATION_TONES: Record<NotificationStatus, string> = {
+  sent: "border-benja-verde bg-benja-claro text-benja-verde",
+  pending: "border-benja-laranja bg-white text-benja-noite",
+  failed: "border-benja-erro bg-benja-erro-fundo text-benja-erro-texto",
+  skipped: "border-dashed border-benja-noite bg-white text-benja-noite",
+};
+
+/** Situação do e-mail interno em texto, não só em cor (INT-07). */
+export function NotificationBadge({ status }: { status: NotificationStatus }) {
+  return (
+    <span className={`rounded-full border-2 px-2.5 py-0.5 text-xs font-bold ${NOTIFICATION_TONES[status]}`}>
+      {NOTIFICATION_STATUS_LABELS[status]}
+    </span>
+  );
+}
+
 /**
  * O protocolo é o link de abertura. Sem prefetch, porque abrir um envio gera evento na trilha de acesso:
  * passar o mouse não pode contar como leitura (TECH-08).
@@ -64,11 +83,11 @@ export function SubmissionTable({
 }) {
   return (
     <div className="overflow-x-auto rounded-3xl border-2 border-benja-noite/15 bg-white">
-      <table className="w-full min-w-[720px] text-left text-sm">
+      <table className="w-full min-w-[820px] text-left text-sm">
         <caption className="sr-only">Envios recebidos, do mais novo ao mais antigo</caption>
         <thead className="border-b-2 border-benja-noite/10 text-xs tracking-wider text-benja-grafite/80 uppercase">
           <tr>
-            {["Protocolo", "Nome", "Tipo", "Categoria", "Status", "Recebido em"].map((column) => (
+            {["Protocolo", "Nome", "Tipo", "Categoria", "Status", "Notificação", "Recebido em"].map((column) => (
               <th key={column} scope="col" className="px-4 py-3">
                 {column}
               </th>
@@ -92,6 +111,9 @@ export function SubmissionTable({
               <td className="px-4 py-3">{categoryLabel(item.category, services)}</td>
               <td className="px-4 py-3">
                 <AttendanceBadge status={item.status} />
+              </td>
+              <td className="px-4 py-3 whitespace-nowrap">
+                <NotificationBadge status={item.notificationStatus} />
               </td>
               <td className="px-4 py-3 whitespace-nowrap text-benja-grafite/80">{formatDateTime(item.createdAt)}</td>
             </tr>

@@ -18,13 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
-import { categoryLabel, presentPayload, type SubmissionDetail } from "@/lib/domain/forms/inbox";
+import { categoryLabel, describeNotification, presentPayload, type SubmissionDetail } from "@/lib/domain/forms/inbox";
 import { SUBMISSION_KIND_LABELS } from "@/lib/domain/forms/schemas";
 import { formatDateTime } from "../cms/cms-table";
-import { AttendanceBadge } from "./submission-table";
+import { AttendanceBadge, NotificationBadge } from "./submission-table";
 
 /**
  * O que o visitante enviou. Tudo aqui é conteúdo não confiável: é exibido como texto, com o escape do
@@ -103,6 +104,25 @@ export function SubmissionRecordPanel({
           </div>
         ))}
       </dl>
+    </section>
+  );
+}
+
+/**
+ * Situação do e-mail interno (INT-07): quem atende descobre aqui que o contato não chegou por e-mail.
+ * O erro devolvido pelo provedor não aparece: pode citar destinatários, e não muda o que fazer.
+ */
+export function NotificationPanel({ record }: { record: SubmissionDetail }) {
+  return (
+    <section
+      aria-labelledby="notificacao-titulo"
+      className="space-y-3 rounded-3xl border-2 border-benja-noite/15 bg-white p-5 text-sm"
+    >
+      <h2 id="notificacao-titulo" className="text-sm font-black tracking-widest text-benja-verde uppercase">
+        Notificação por e-mail
+      </h2>
+      <NotificationBadge status={record.notificationStatus} />
+      <p>{describeNotification(record.notificationStatus, record.notificationAttempts)}</p>
     </section>
   );
 }
