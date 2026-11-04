@@ -86,6 +86,8 @@ describe("consistência conteúdo código × banco (DB-01/DBX-01)", () => {
   it("blocks aceita os mesmos tipos de BLOCK_TYPES (DBX-04)", () => {
     const types = sql.match(/constraint blocks_type_catalog\s+check \(type in \(([^)]+)\)\)/)?.[1] ?? "";
     expect(quoted(types).sort()).toEqual([...BLOCK_TYPES].sort());
+  });
+  
   it("ctas aceita as mesmas posições, tipos de destino e limites do formulário do painel", () => {
     const placements = sql.match(/placement text not null check \(placement in \(([^)]+)\)\)/)?.[1] ?? "";
     expect(quoted(placements)).toEqual([...CTA_PLACEMENTS]);
