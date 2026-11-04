@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 28/10/2026
- Modificado em: 28/10/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  28/10/2026 Vinicius Binda             Criação inicial (DBX-03).
+ 02/11/2026 Vinicius Binda             Blocos dentro do catálogo (DBX-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -89,8 +90,8 @@ insert into public.pages (id, slug, title, status, published_at) values
   ('00000000-0000-4000-8000-000000000301', 'pagina-dbx03-no-ar', 'No ar', 'published', now() - interval '1 day'),
   ('00000000-0000-4000-8000-000000000302', 'pagina-dbx03-rascunho', 'Rascunho', 'draft', null);
 insert into public.blocks (page_id, type) values
-  ('00000000-0000-4000-8000-000000000301', 'texto'),
-  ('00000000-0000-4000-8000-000000000302', 'texto');
+  ('00000000-0000-4000-8000-000000000301', 'rich-text'),
+  ('00000000-0000-4000-8000-000000000302', 'rich-text');
 insert into public.case_media (case_id, media_id, sort_order)
 select (select id from public.cases where status = 'draft' limit 1), m.id, 0
 from public.media_assets m where m.path like '/brand/logos/%' limit 1;

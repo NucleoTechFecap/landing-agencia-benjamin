@@ -136,6 +136,6 @@ saem em `/api/v1/ctas`, mas nenhuma página os lê, e o painel avisa isso.
 | Slug | `check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and length(slug) between 3 and 80)` + `unique (slug)` por tabela |
 | Estados | `check (status in ('draft','published','archived'))` |
 | Publicado tem data | `check (status <> 'published' or published_at is not null)` |
-| Serviço ≥ 1 área | Validação na aplicação + trigger `deferrable` opcional em `service_areas` |
+| Serviço ≥ 1 área | Validação na aplicação + trigger adiado para quem grava pelo painel (DBX-04, [dicionário](../banco/dicionario-de-dados.md) §12) |
 | Junções | `service_areas(service_id, area_id)` e `case_services(case_id, service_id)` com `on delete cascade` |
 | Categoria do case | FK `on delete restrict` (exclusão só após remover cases da categoria) |

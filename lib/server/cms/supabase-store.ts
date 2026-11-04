@@ -23,8 +23,10 @@
  29/10/2026 Vinicius Binda             Leitura de public.slug_redirects (DB-08).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  Serviço e case gravados pelas funções do banco (TECH-13, #314).
+ 02/11/2026 Vinicius Binda             Erros de transição e de integridade de publicação do banco (DBX-04).
  04/11/2026 Vinícius Nishimura Reis  Leitura e gravação da configuração institucional (ADM-10).
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Mantém 40001 como conflito junto de BJ002 (DBX-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -90,10 +92,20 @@ export function toCmsError(error: PostgrestError, context: { table: string; oper
       });
     case "42501":
       return new AppError("FORBIDDEN", { internal });
+    // BJ002 é o código atual; 40001 cobre banco sem a migration 20261102000500 ou com ela revertida.
+    case "BJ002":
     case "40001":
       return new AppError("CONFLICT", { internal });
     case "P0002":
       return new AppError("NOT_FOUND", { internal });
+    case "BJ001":
+      return new AppError("INVALID_TRANSITION", { internal });
+    case "BJ003":
+      return new AppError("CONFLICT", {
+        message:
+          "Esta alteração deixaria conteúdo publicado sem área, categoria, serviço ou texto alternativo. Nada foi salvo: recarregue a página e confira.",
+        internal,
+      });
     default:
       return new AppError("SERVICE_UNAVAILABLE", { internal, cause: error });
   }

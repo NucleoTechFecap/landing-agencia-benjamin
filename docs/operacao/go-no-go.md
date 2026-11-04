@@ -150,7 +150,7 @@ perdia. Os logs da Vercel não foram consultados, então não se sabe se houve e
 Supabase ser configurado. Sem ele, o painel publicado também não tem como funcionar, e o site lê `content/`.
 
 **Migrations remotas:** ficam com Vinícius Binda (GO-04), por decisão da coordenação técnica. Nenhuma foi aplicada nem
-consultada por esta rodada. O #372 segue aberto, aguardando a correção do `40001`, a cópia e as migrations.
+consultada por esta rodada. O #372 segue aberto, aguardando a cópia e as migrations; a correção do `40001` entrou no próprio PR.
 
 ## 7. Ata da decisão final (preencher em 03–04/11/2026)
 

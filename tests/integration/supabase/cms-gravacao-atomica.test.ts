@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  02/11/2026 Vinícius Nishimura Reis  Criação inicial (TECH-13, #314).
+ 02/11/2026 Vinicius Binda             Versão desatualizada com BJ002, sem retentativa do PostgREST (DBX-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -190,7 +191,7 @@ describe.runIf(hasSupabaseTestEnv)("gravação atômica do CMS (TECH-13, #314)",
         p_values: SERVICE.toValues(SERVICE.inputSchema.parse(serviceInput([ids.area]))),
         p_area_ids: [ids.area],
       }),
-    ).resolves.toMatchObject({ error: { code: "40001" } });
+    ).resolves.toMatchObject({ error: { code: "BJ002" } });
   });
 
   it("leitor: a RLS e a função barram a chamada direta, sem passar pelo serviço", async () => {

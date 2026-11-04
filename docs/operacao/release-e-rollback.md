@@ -52,7 +52,7 @@
 ## 4. Execução
 
 1. Criar a tag: `git tag -a vX.Y.Z -m "Release vX.Y.Z" && git push origin vX.Y.Z`.
-2. Aplicar migrations em produção: `supabase link --project-ref <prd> && supabase db push` (condutor + backup acompanhando).
+2. Aplicar migrations em produção: `supabase link --project-ref <prd> && supabase db push --remote` (condutor + backup acompanhando). Na CLI 3.x, sem `--remote` o comando vale para o banco local.
 3. Mesclar o PR `main → production` → deploy automático de produção na Vercel.
 4. Anotar o ID do deployment **anterior** (para rollback) e o novo.
 5. Rodar o smoke test (seção 5) e comunicar o resultado.
