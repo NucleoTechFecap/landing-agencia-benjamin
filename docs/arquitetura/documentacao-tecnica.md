@@ -59,7 +59,8 @@ flowchart LR
 | `/admin/login`, `/admin/recuperar-senha`, `/admin/auth/callback` | Público | Login, recuperação, retorno dos e-mails |
 | `/admin/nova-senha` | Sessão | Definir senha (convite/recuperação) |
 | `/admin/acesso-pendente`, `/admin/sem-permissao` | Sessão | Avisos de acesso |
-| `/admin` (grupo `(painel)`) | `dashboard:view` | Início do painel; módulos CRUD em ADM-04…ADM-11 |
+| `/admin` (grupo `(painel)`) | `dashboard:view` | Início do painel e menu, os dois a partir do registro `lib/config/admin-modules.ts` (ADM-04); módulos CRUD em ADM-05…ADM-11 |
+| `/admin/conteudos` | `dashboard:view` e, por grupo, `<recurso>:view` | Visão geral: estado dos conteúdos e fila de revisão, com uma única leitura do conteúdo (`lib/server/cms/overview.ts`, ADM-18) |
 
 ### APIs e arquivos especiais
 

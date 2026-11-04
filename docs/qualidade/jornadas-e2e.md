@@ -46,6 +46,9 @@ Legenda de tipo: **E2E** navegador real · **INT** teste integrado de domínio/s
 | J2.4 | Painel sem sessão redireciona ao login com `next` | Neg | E2E | Coordenação | ✅ automatizado |
 | J2.5 | Login → novo case (slug gerado) → rascunho invisível (404) → completar → publicar → página no ar em ≤ 5 s → editar → página atualizada → arquivar → 404 | Pos | E2E `@cms` (Supabase local) + MAN em homologação | CMS (Murilo) + coordenação | ✅ automatizado (`jornada-editor-cms.spec.ts`) |
 | J2.6 | Leitor (`viewer`) vê o CMS sem "Novo case" e `/admin/cases/novo` → "sem permissão" | Neg | E2E `@cms` | Coordenação | ✅ automatizado |
+| J2.7 | Menu do painel por papel: página atual marcada, "Em construção" sem link, abrir e fechar no celular por toque e teclado (ADM-04) | Pos/Neg | E2E `@cms` | Coordenação | ✅ automatizado (`painel-menu-e-visao-geral.spec.ts`) |
+| J2.8 | Visão geral: fila de revisão, leitor sem edição, editor completa o rascunho e ele sai da fila; visitante e conta pendente não leem (ADM-18) | Pos/Neg | E2E `@cms` + INT | Coordenação | ✅ automatizado (`painel-menu-e-visao-geral.spec.ts`, `cms-visao-geral.test.ts`) |
+| J2.9 | Todas as telas de `/admin` em 360, 768 e 1280 px: sem rolagem lateral nem tabela com rolagem própria, alvos de toque, teclado alcança todos os controles com foco visível (ADM-16) | Pos | E2E `@cms` | Coordenação | ✅ automatizado (`painel-responsivo.spec.ts`; tela nova sem verificação faz o teste falhar) |
 
 ### J3 — Envio → persistência → notificação → consulta interna
 
