@@ -69,6 +69,10 @@ create policy "services: exclui" on public.services
   for delete to authenticated using (public.has_permission('service', 'delete') and status = 'archived');
 ```
 
+**Tela de dois recursos** — `/admin/leads` serve a `lead` e a `feedback`, e o tipo do registro só é conhecido
+depois de lê-lo. `requireInboxPage()` entra com ao menos uma das permissões, e a RLS e o tipo real decidem cada
+linha. Roda antes de validar o id, para não revelar se um registro existe.
+
 **Menu e botões** — `can(user.role, recurso, ação)` apenas para esconder; nunca como proteção.
 
 ## 3. Banco (`20261013000200_rbac_permissions.sql`)
@@ -91,7 +95,8 @@ create policy "services: exclui" on public.services
 | Smoke local (build de produção, sem Supabase) | `/admin`, `/admin/cases`, `/admin/nova-senha`, `/admin/sem-permissao` → 307 para login com `next`; `/admin/login` e `/admin/recuperar-senha` → 200 |
 
 Casos N11–N13 (papel forjado no cliente, `select` anônimo em leads, sessão expirada em escrita)
-dependem do banco de homologação e estão no roteiro de QA-06.
+dependem do banco de homologação e estão no roteiro de QA-06. N05, N08 e N12 já têm prova com Auth e RLS
+reais, no Supabase local, em [SEG-04](../qualidade/seg-04-autorizacao-dados-pessoais.md).
 
 ## 5. Cabeçalhos de segurança e CSP (SEG-06)
 
