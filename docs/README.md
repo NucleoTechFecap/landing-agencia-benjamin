@@ -82,6 +82,7 @@
 
 | Documento | Issue |
 | --------- | ----- |
+| [Matriz de testes alinhada aos critérios de aceite](qualidade/matriz-de-testes.md) | QA-01 |
 | [Jornadas críticas e testes E2E](qualidade/jornadas-e2e.md) | TECH-12 |
 | [Testes de CRUD e estados de publicação do CMS](qualidade/qa-04-cms.md) | QA-04 |
 | [Roteiro e checklist de homologação da Benjamin](qualidade/homologacao.md) | QA-08 |
