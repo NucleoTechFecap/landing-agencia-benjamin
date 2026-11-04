@@ -473,7 +473,8 @@ de item que já foi ao ar **nunca** passa a abrir outro conteúdo.
 | Rascunho que nunca foi publicado troca de slug | Livre, sem registro (ninguém tem o link) | `track_slug` |
 | Serviço/case que já foi publicado troca de slug | O antigo vai para `slug_redirects` apontando para o **id** do item | `track_slug` |
 | Endereço antigo acessado, item no ar | **301** para o slug atual, mantendo a query string. Trocas seguidas (a → b → c) levam direto ao atual, sem cadeia | `resolve_public_slug`, `proxy.ts`, API |
-| Endereço com maiúsculas (`/cases/Meridiano`) | **301** para as minúsculas, já no slug atual (um só redirecionamento) | `resolveDetailSlug` |
+| Endereço com maiúsculas (`/cases/Meridiano`) | **301** para as minúsculas, já no slug atual (um só redirecionamento) |
+| Cache do 301 | `max-age=0, s-maxage=60`: como o slug pode voltar a um valor já usado, ninguém guarda o redirecionamento (#369). O comportamento na CDN da Vercel ainda não foi medido | `resolveDetailSlug` |
 | Item despublicado, arquivado, agendado ou excluído | **404** no endereço atual e nos antigos | `resolve_public_slug` (RLS) |
 | O próprio item volta a um endereço antigo | Permitido: o registro daquele endereço sai e o abandonado passa a redirecionar | `track_slug` |
 | Outro item tenta usar endereço antigo ou reservado | Recusado (`23505`); o painel avisa antes de gravar | `track_slug`, `content-service.ts` |

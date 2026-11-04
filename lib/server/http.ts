@@ -20,12 +20,14 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-02).
  29/10/2026 Vinicius Binda             301 para o endereço atual do recurso (DB-08).
  04/11/2026 Vinícius Nishimura Reis  Stale de 60 s, dentro da meta de 5 min do ADR-0006 (TECH-13, #369).
+ 04/11/2026 Vinícius Nishimura Reis  301 de endereço antigo com cache curto (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import type { z } from "zod";
 import { searchParamsToObject, zodFieldErrors, type ApiErrorBody, type ApiSuccess } from "@/lib/domain/api/contracts";
+import { REDIRECT_CACHE_CONTROL } from "@/lib/domain/content/slug";
 import { AppError, newRequestId, toPublicError } from "./errors";
 
 /**
@@ -50,14 +52,14 @@ export function jsonOk<T>(body: ApiSuccess<T>, init: { requestId: string; cacheC
 
 /**
  * 301 para o endereço atual do recurso (slug antigo ou com maiúsculas — DB-08), mantendo a
- * query string. Fica no cache da CDN como as leituras públicas.
+ * query string. Com cache curto, porque o slug pode voltar a um valor já usado.
  */
 export function movedPermanently(request: Request, path: string, requestId: string) {
   const location = new URL(path, request.url);
   location.search = new URL(request.url).search;
   return new Response(null, {
     status: 301,
-    headers: { Location: location.toString(), "X-Request-Id": requestId, "Cache-Control": PUBLIC_CACHE_CONTROL },
+    headers: { Location: location.toString(), "X-Request-Id": requestId, "Cache-Control": REDIRECT_CACHE_CONTROL },
   });
 }
 

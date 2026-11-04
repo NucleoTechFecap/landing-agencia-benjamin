@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-12).
  29/10/2026 Vinicius Binda             Maiúsculas no endereço respondem 301 (DB-08).
+ 04/11/2026 Vinícius Nishimura Reis  301 de endereço antigo com cache curto (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -91,6 +92,7 @@ test.describe("J1 · visitante encontra um serviço, vê um case e pede um proje
     const response = await request.get("/cases/Meridiano?origem=e2e", { maxRedirects: 0 });
     expect(response.status()).toBe(301);
     expect(response.headers().location).toMatch(/\/cases\/meridiano\?origem=e2e$/);
+    expect(response.headers()["cache-control"]).toContain("max-age=0");
     await page.goto("/servicos/AUDIOVISUAL");
     await expect(page).toHaveURL(/\/servicos\/audiovisual$/);
   });
