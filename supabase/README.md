@@ -20,6 +20,7 @@ plano de rollback (GO-01); seeds de produção só com autorização (GO-04).
 | `seed.sql` | Dados de desenvolvimento gerados por `npm run seed:write`: áreas, serviços, categorias e CTAs de `content/`, cases e páginas **fictícios**. Só o `db reset` local roda; recusa banco marcado em `public.ambiente_banco` |
 | `tests/` | Testes pgTAP (`npx supabase db reset && npx supabase test db`) |
 | `perf/` | `planos-de-consulta.sql`: EXPLAIN ANALYZE das consultas com volume sintético, numa transação desfeita (`npm run perf:queries`, DBX-03) |
+| `restore/` | `preparar-restauracao.sql`: prepara um projeto novo para receber a cópia ([DB-10](../docs/operacao/backup-e-recuperacao.md)) |
 
 `npm run test:migrations` verifica no banco local a instalação limpa, a trava do seed, o upgrade
 com dados e a reversão completa seguida de reaplicação. Nunca use `supabase db reset --linked`:

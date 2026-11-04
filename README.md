@@ -550,6 +550,7 @@ npm run release:check   # antes de publicar em produção
 | Provisionamento de produção (Vercel + Supabase + Resend) | [GO-02](docs/operacao/provisionamento-producao.md) |
 | Domínio, DNS e HTTPS | [GO-03](docs/operacao/dominio-dns-https.md) |
 | Checklist de release e rollback | [GO-01](docs/operacao/release-e-rollback.md) |
+| Backup e recuperação | [DB-10](docs/operacao/backup-e-recuperacao.md) |
 | Decisão de go/no-go | [TECH-14](docs/operacao/go-no-go.md) |
 | Publicação do MVP | [GO-06](docs/operacao/publicacao-mvp.md) |
 | Handoff e manutenção | [GO-09](docs/operacao/handoff-e-manutencao.md) |

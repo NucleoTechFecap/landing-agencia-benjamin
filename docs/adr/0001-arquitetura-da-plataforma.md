@@ -116,7 +116,7 @@ flowchart LR
 | ----- | --------- |
 | Acoplamento entre site e painel no mesmo deploy | Fronteiras de domínio + revisão de PRs críticos (TECH-13) |
 | Dependência de fornecedores (Vercel, Supabase) | Postgres padrão e Storage compatível com S3 permitem migração; nada de recurso proprietário no domínio |
-| Limites/termos de planos gratuitos (pausa de projeto inativo no Supabase Free; uso comercial no Vercel Hobby) | Decidir plano/conta institucional antes de GO-02 (registrado em ADR-0002) |
+| Limites/termos de planos gratuitos (pausa de projeto inativo no Supabase Free; uso comercial no Vercel Hobby) | Decidir plano/conta institucional antes de GO-02 (registrado em ADR-0002). Em 04/11/2026, a produção ficou no Supabase Free: limitações em [backup e recuperação](../operacao/backup-e-recuperacao.md) |
 | APIs novas do Next.js 16 (Cache Components, `proxy.ts`) pouco conhecidas | Documentação versionada em `node_modules/next/dist/docs` + exemplos no repositório |
 
 ## Revisão

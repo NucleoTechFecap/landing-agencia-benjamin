@@ -8,6 +8,7 @@
 | `npx supabase test db` | Testes pgTAP em `supabase/tests/database/`: constraints, integridade referencial, RLS por papel, auditoria e Storage | Supabase local |
 | `npm run test:supabase` | Integração real: RLS com usuários de cada papel, upload no Storage, visibilidade pública | Supabase local |
 | `npm run test:migrations` | Instalação limpa, upgrade com dados, seed e reversão das migrations | Supabase local (**apaga o banco local**) |
+| `npm run test:restore` | Cópia criptografada e restauração em stack nova, com conferência de dados, arquivos, RLS e pgTAP | Supabase local, Git Bash no Windows |
 | `npm run test:e2e` | Jornadas do visitante no navegador, com o conteúdo versionado | Build (`npm run build`) e Chrome |
 | `npm run test:e2e:cms` | Jornada do editor: cria, publica, edita e arquiva um case, e confere o site | Supabase local e Chrome (faz o próprio build) |
 | `npm run verify` | Cabeçalhos, formatação, tipos, lint, `npm test` e build: o mesmo do CI | Nada |

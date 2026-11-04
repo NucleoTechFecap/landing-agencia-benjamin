@@ -37,7 +37,7 @@
 ### Banco e dados
 - [ ] Migrations novas aplicadas e validadas em homologação; lista das que irão para produção.
 - [ ] Cada migration tem **reversão** escrita (SQL de rollback no PR) ou é puramente aditiva.
-- [ ] Backup de produção recente (< 24 h) e restauração testada no ciclo (DB-10).
+- [ ] Cópia de produção feita no mesmo dia, antes das migrations, e restauração testada no ciclo ([DB-10](backup-e-recuperacao.md)). No plano Free não há backup do Supabase: sem essa cópia, volta-se à cópia da semana.
 - [ ] Seed de produção somente autorizado (GO-04).
 
 ### Ambiente
@@ -86,7 +86,7 @@ Fazer rollback **imediatamente** se qualquer um ocorrer e não houver correção
 | Aplicação | Vercel → Deployments → deployment anterior → **Instant Rollback / Promote to Production** | ≤ 5 min |
 | Cache | `POST /api/internal/revalidate` com `{"entity":"settings"}` e demais entidades, se necessário | ≤ 5 min |
 | Banco (migration aditiva) | Manter a migration (código anterior ignora colunas novas) | — |
-| Banco (migration não aditiva) | Executar o SQL de reversão do PR; se houver perda, restaurar backup (DB-10) em janela combinada | ≤ 60 min |
+| Banco (migration não aditiva) | Executar o SQL de reversão do PR; se houver perda, restaurar a cópia ([DB-10](backup-e-recuperacao.md)) em janela combinada, perdendo o que entrou depois dela | ≤ 120 min |
 | Configuração | Restaurar variáveis anteriores na Vercel (histórico) e redeploy | ≤ 10 min |
 | Domínio | Reverter registros DNS para o valor anterior (GO-03) | Conforme TTL |
 

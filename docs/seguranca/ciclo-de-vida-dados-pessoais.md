@@ -77,7 +77,8 @@ Regras em código (`RETENTION_RULES`, `retentionActionFor`, `planRetention`, `an
 2. `planRetention()` separa `delete`/`anonymize`.
 3. Execução em transação, com `service_role`, registrando **apenas a contagem** e os IDs na
    auditoria (`retention.executed`).
-4. Backups seguem a retenção do provedor; restauração de backup reaplica a rotina antes de
+4. Cópias semanais criptografadas no Drive institucional ([DB-10](../operacao/backup-e-recuperacao.md)), já que o plano Free
+   não tem backup do provedor. Quantas manter depende da aprovação destes prazos. Restauração de cópia reaplica a rotina antes de
    reabrir o acesso.
 
 ## 6. Proteção de PII em logs e notificações

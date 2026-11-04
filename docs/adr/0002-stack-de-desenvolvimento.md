@@ -50,7 +50,7 @@ Novas dependências exigem justificativa no PR (tamanho, manutenção, licença)
 
 | Item | Risco | Recomendação |
 | ---- | ----- | ------------ |
-| Supabase Free | Projeto pausa após inatividade; sem backups diários gerenciáveis | Produção em plano pago **ou** conta institucional do NúcleoTech; homologação pode ficar no Free |
+| Supabase Free | Projeto pausa após inatividade; sem backups diários gerenciáveis | **Decisão de 04/11/2026: a produção fica no Free por enquanto**, em organização institucional do NúcleoTech, com cópia semanal própria e perda aceita de até 7 dias ([backup e recuperação](../operacao/backup-e-recuperacao.md)). A recomendação de plano pago continua valendo para quando houver dados reais em volume |
 | Vercel Hobby | Termos restringem uso comercial | Usar time/conta do NúcleoTech com plano adequado para produção |
 | Resend Free | Limite diário de envios | Suficiente para o volume esperado de leads no MVP |
 | Domínio | Responsabilidade da Benjamin (CON-11) | Configuração em GO-03 |
