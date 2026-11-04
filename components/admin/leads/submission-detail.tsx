@@ -34,7 +34,10 @@ import { AttendanceBadge, NotificationBadge } from "./submission-table";
 export function SubmissionContent({ record }: { record: SubmissionDetail }) {
   const fields = presentPayload(record.payload);
   return (
-    <section aria-labelledby="conteudo-enviado" className="rounded-3xl border-2 border-benja-noite/15 bg-white p-6">
+    <section
+      aria-labelledby="conteudo-enviado"
+      className="h-fit rounded-3xl border-2 border-benja-noite/15 bg-white p-6"
+    >
       <h2 id="conteudo-enviado" className="mb-4 text-lg font-black text-benja-verde">
         Conteúdo enviado
       </h2>
@@ -95,7 +98,9 @@ export function SubmissionRecordPanel({
       <h2 id="registro-titulo" className="text-sm font-black tracking-widest text-benja-verde uppercase">
         Registro
       </h2>
-      <AttendanceBadge status={record.status} />
+      <p>
+        <AttendanceBadge status={record.status} />
+      </p>
       <dl className="space-y-2">
         {rows.map(([label, value]) => (
           <div key={label}>
@@ -121,7 +126,9 @@ export function NotificationPanel({ record }: { record: SubmissionDetail }) {
       <h2 id="notificacao-titulo" className="text-sm font-black tracking-widest text-benja-verde uppercase">
         Notificação por e-mail
       </h2>
-      <NotificationBadge status={record.notificationStatus} />
+      <p>
+        <NotificationBadge status={record.notificationStatus} />
+      </p>
       <p>{describeNotification(record.notificationStatus, record.notificationAttempts)}</p>
     </section>
   );

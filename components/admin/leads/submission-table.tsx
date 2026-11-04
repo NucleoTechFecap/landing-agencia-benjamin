@@ -48,7 +48,9 @@ const STATUS_TONES: Record<SubmissionStatus, string> = {
 /** Status de atendimento em texto, não só em cor. */
 export function AttendanceBadge({ status }: { status: SubmissionStatus }) {
   return (
-    <span className={`rounded-full border-2 px-2.5 py-0.5 text-xs font-bold ${STATUS_TONES[status]}`}>
+    <span
+      className={`inline-block rounded-full border-2 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap ${STATUS_TONES[status]}`}
+    >
       {SUBMISSION_STATUS_LABELS[status]}
     </span>
   );
@@ -64,7 +66,9 @@ const NOTIFICATION_TONES: Record<NotificationStatus, string> = {
 /** Situação do e-mail interno em texto, não só em cor (INT-07). */
 export function NotificationBadge({ status }: { status: NotificationStatus }) {
   return (
-    <span className={`rounded-full border-2 px-2.5 py-0.5 text-xs font-bold ${NOTIFICATION_TONES[status]}`}>
+    <span
+      className={`inline-block rounded-full border-2 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap ${NOTIFICATION_TONES[status]}`}
+    >
       {NOTIFICATION_STATUS_LABELS[status]}
     </span>
   );
