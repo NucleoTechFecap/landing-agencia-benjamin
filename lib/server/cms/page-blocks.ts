@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Falha ao gravar bloco é auditada e expira o cache (TECH-13, #369).
+ 04/11/2026 Vinícius Nishimura Reis  Foto do time só do bucket de mídia e só imagem (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -123,7 +124,7 @@ function withPhotos(content: unknown, media: readonly MediaAsset[]): unknown {
     members: members.map(({ photoId, ...member }) => {
       if (!photoId) return member;
       const asset = media.find((item) => item.id === photoId);
-      if (!asset?.alt) {
+      if (!asset?.alt || !asset.mimeType.startsWith("image/")) {
         throw new AppError("VALIDATION_FAILED", {
           fieldErrors: { members: [`Escolha para ${member.name || "esta pessoa"} uma foto com texto alternativo.`] },
         });
