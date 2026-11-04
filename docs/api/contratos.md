@@ -29,6 +29,10 @@ visibilidade é única (TECH-04, invariante I1).
 - Todo response traz `X-Request-Id` (o mesmo da mensagem de erro e do log).
 - Leituras públicas: `Cache-Control: public, s-maxage=300, stale-while-revalidate=3600`; erros e escritas: `no-store`.
 - Parâmetros desconhecidos são ignorados; parâmetros inválidos → `400 BAD_REQUEST` com `fieldErrors`.
+- Slug fora do formato responde `404 NOT_FOUND` sem consultar a fonte nem gravar no cache (DB-09). Com
+  maiúsculas, serviços e cases respondem `301` para o endereço em minúsculas.
+- Rotas internas (`/api/internal/*`): sem o segredo → `401 UNAUTHENTICATED`; corpo inválido → `400 BAD_REQUEST`,
+  sem efeito. Campos a mais no corpo são ignorados.
 - `status`, rascunhos e campos de controle **nunca** são parâmetros nem campos da API pública.
 
 ## 3. Paginação e filtros
