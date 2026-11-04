@@ -10,7 +10,7 @@
 | `npm run test:migrations` | Instalação limpa, upgrade com dados, seed e reversão das migrations | Supabase local (**apaga o banco local**) |
 | `npm run test:restore` | Cópia criptografada e restauração em stack nova, com conferência de dados, arquivos, RLS e pgTAP | Supabase local, Git Bash no Windows |
 | `npm run test:e2e` | Jornadas do visitante no navegador, com o conteúdo versionado | Build (`npm run build`) e Chrome |
-| `npm run test:e2e:cms` | Jornada do editor (cria, publica, edita e arquiva um case, e confere o site), menu, visão geral e todas as telas do painel em 360, 768 e 1280 px | Supabase local e Chrome (faz o próprio build) |
+| `npm run test:e2e:cms` | Jornadas do editor (publicam no painel e conferem o site), menu, visão geral e todas as telas do painel em 360, 768 e 1280 px. Roda em duas passadas: `@cms` e, depois, em série, `@home-global`, que mexe nos CTAs e destaques de todos | Supabase local e Chrome (faz o próprio build) |
 | `npm run verify` | Cabeçalhos, formatação, tipos, lint, `npm test` e build: o mesmo do CI | Nada |
 | `npm run release:check` | `verify` mais o gate que bloqueia conteúdo provisório publicado | Nada |
 

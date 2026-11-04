@@ -15,6 +15,7 @@
 npm run build && npm run test:e2e        # Playwright com o Chrome do sistema (desktop + mobile)
 npx supabase start && npx supabase db reset
 npm run test:e2e:cms                      # J2 com o CMS real: build contra o Supabase local + specs @cms
+                                          # e, depois, em série, @home-global (tira da Home os CTAs e destaques de todos)
 E2E_BASE_URL=https://hml-... npm run test:e2e   # contra homologação
 npm run test                              # inclui os testes integrados (Vitest)
 ```
