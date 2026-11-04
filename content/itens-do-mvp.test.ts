@@ -34,6 +34,7 @@
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case FECAP (CASE-07).
  04/11/2026 Vinícius Nishimura Reis  Item Eventos e Parcerias (SOB-05).
  04/11/2026 Vinícius Nishimura Reis  Item Social Media (SOB-06).
+ 04/11/2026 Vinícius Nishimura Reis  Item Comunicação Interna (SOB-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -221,6 +222,11 @@ describe("itens de conteúdo do MVP", () => {
   checkArea("social-media", {
     order: 2,
     services: ["estrategia-digital", "social-media", "producao-de-conteudo"],
+    provisional: true,
+  });
+  checkArea("comunicacao-interna", {
+    order: 3,
+    services: ["comunicacao-interna"],
     provisional: true,
   });
   checkArea("copywriting", {
