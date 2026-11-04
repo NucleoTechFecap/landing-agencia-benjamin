@@ -4,9 +4,9 @@
 | ------------ | -------------------------------------------------------------------------------------- |
 | Issue        | QA-01 (#179)                                                                           |
 | Responsável  | Rafael Morais Rocha (conforme `ownership-por-issue.csv`; backup: Julia Damásio)        |
-| Versão       | 1.0.0                                                                                  |
+| Versão       | 1.1.0                                                                                  |
 | Data         | 04/11/2026                                                                             |
-| Base         | Commit `6bc0f72` da `main`, mais os testes de conteúdo desta entrega; [critérios de aceite](../gestao/criterios-de-aceite.md) (GOV-13) |
+| Base         | Commit `6bc0f72` da `main`, mais os testes de conteúdo desta entrega; seção 5 atualizada com a entrega de FORM-08; [critérios de aceite](../gestao/criterios-de-aceite.md) (GOV-13) |
 | Relacionados | [Jornadas E2E](jornadas-e2e.md) (TECH-12), [CRUD do CMS](qa-04-cms.md) (QA-04), [homologação](homologacao.md) (QA-08), [go/no-go](../operacao/go-no-go.md) (TECH-14) |
 
 > Esta matriz diz **quais testes existem** para cada critério, e não que o critério foi atendido. Isso
@@ -53,10 +53,10 @@ Tipo: `T` técnico, `I` institucional.
 | [CA-11](#ca-11) Cases | T + I, condicionado | Parcial | Material real (CON-06 a CON-08) |
 | [CA-12](#ca-12) Filtros | T | Parcial | Filtros de serviço, área e cliente no navegador |
 | [CA-13](#ca-13) Case sem material | T | Parcial | A plataforma não sabe o que foi autorizado; o gate falha hoje |
-| [CA-14](#ca-14) Formulários | T | Parcial | Contato e feedback no navegador |
+| [CA-14](#ca-14) Formulários | T | Coberto | — |
 | [CA-15](#ca-15) Entrega do e-mail | T + I | Parcial | Envio real pelo Resend ao destinatário real |
-| [CA-16](#ca-16) Duplicidade e falhas | T | Parcial | S12 e duplo clique no navegador |
-| [CA-17](#ca-17) Aviso de privacidade | T + I | Parcial | Link nos três formulários; texto validado |
+| [CA-16](#ca-16) Duplicidade e falhas | T | Parcial | Rota do job de reenvio |
+| [CA-17](#ca-17) Aviso de privacidade | T + I | Parcial | Texto validado (SEG-02) |
 | [CA-18](#ca-18) Login e sessão | T | Parcial | Logout, renovação de sessão, cadastro público desligado |
 | [CA-19](#ca-19) Permissões N01 a N13 | T | Parcial | N11 e N13 de ponta a ponta; N09 e N10 no banco |
 | [CA-20](#ca-20) Autonomia da Benjamin | I | Sem cobertura | Só homologação; faltam as telas ADM-10 e ADM-11 |
@@ -268,7 +268,13 @@ Formulários de novo projeto, contato e feedback validam campos e confirmam com 
 | 14.6 | N | Erros na tela | `tests/e2e/jornada-visitante.spec.ts` › «negativo: campos inválidos mostram erros e focam o primeiro campo» | E |
 | 14.7 | B | Normalização e quebra de linha | `lib/domain/forms/schemas.test.ts` › «normaliza nome, e-mail e telefone»; «nome e empresa ficam em uma linha: quebra de linha não forja linhas no e-mail (TECH-06)» | U |
 | 14.8 | B | Feedback anônimo | `lib/domain/forms/schemas.test.ts` › «aceita feedback anônimo» | U |
-| — | Lacuna | Contato e feedback **no navegador: sem cobertura**. Só carregam a página, em `motion.spec.ts`. Ver a seção 10 | | |
+| 14.9 | P | Contato e feedback no navegador | `tests/e2e/formularios.spec.ts` › «válido mostra confirmação e protocolo»; «anônimo válido mostra confirmação e protocolo» | E |
+| 14.10 | N | Erro no campo, com foco, sem ir ao servidor | `tests/e2e/formularios.spec.ts` › «inválido mostra o erro no campo, com foco nele, sem ir ao servidor»; «'quero retorno' sem e-mail dá erro no campo de e-mail, sem ir ao servidor»; «sem perfil, o erro aparece e o foco vai para a primeira opção» | E |
+| 14.11 | N | Navegador valida com o esquema do servidor | `lib/domain/forms/browser-validation.test.ts` › «campo inválido devolve o mesmo erro do servidor, com o texto digitado»; «erro só em campo técnico não trava o visitante: quem decide é o servidor»; «honeypot preenchido segue para o servidor mesmo com outros erros: o robô não recebe pista» | U |
+| 14.12 | P | Sem JavaScript, nos três formulários | `tests/e2e/formularios.spec.ts` › «feedback válido mostra confirmação e protocolo»; «/contato leva ao formulário de novo projeto, que envia e confirma»; «/contato leva ao formulário de contato, que valida no servidor e confirma» | E |
+| 14.13 | N | Sem JavaScript, o servidor recusa e devolve o texto | `tests/e2e/formularios.spec.ts` › «feedback inválido destaca o campo e devolve o que foi digitado». `app/(site)/actions.test.ts` › «devolve o erro com o texto digitado, para o envio sem JavaScript repreencher o formulário» | E, U |
+| 14.14 | B | Envio antes da hidratação | `tests/e2e/formularios.spec.ts` › «/contato: o resultado aparece e a página hidrata sem erro»; «/feedback: erro de validação aparece com foco no campo e sem perder o texto» | E |
+| 14.15 | B | Campos técnicos vazios | `lib/domain/forms/schemas.test.ts` › «campos técnicos vazios (sem JavaScript) valem como ausentes (FORM-08)»; «campo técnico preenchido com valor forjado continua recusado (FORM-08)». `lib/server/forms/submission-service.test.ts` › «é aceito e gravado, sem origem» | U |
 
 ### CA-15
 
@@ -280,7 +286,9 @@ Envio chega ao destinatário institucional definido pela Benjamin.
 | 15.2 | N | Configuração inválida barra | `lib/config/env.test.ts` › «exige segredo, Resend e destinatário em produção»; «recusa destinatário inválido em qualquer lista e aponta a variável (TECH-06)» | U |
 | 15.3 | N | Feedback sem pedido de retorno não expõe resposta | `lib/domain/forms/routing.test.ts` › «não expõe reply-to em feedback sem pedido de retorno» | U |
 | 15.4 | B | Sem destinatário configurado | `lib/server/forms/submission-service.test.ts` › «S10 sem destinatário configurado: registro salvo com notificação 'skipped'» | U |
-| — | Lacuna | **Envio real pelo Resend ao destinatário real: sem cobertura.** Todos os testes usam um notificador falso. Depende de CON-10 e GO-02 (J3.3, FORM-10, GO-05) | | |
+| 15.5 | P | Chamada à API da Resend, com `fetch` falso | `lib/server/forms/notifier.test.ts` › «faz POST na API da Resend, com autorização e chave de idempotência»; «manda remetente, destinatários, assunto, texto e reply_to» | U |
+| 15.6 | N | Recusa do provedor vira exceção | `lib/server/forms/notifier.test.ts` › «resposta %i vira exceção com o status»; «falha de rede sobe para quem chamou, que a registra para o reenvio» | U |
+| — | Lacuna | **Envio real pelo Resend ao destinatário real: sem cobertura.** Todos os testes usam um notificador ou um `fetch` falso. Depende de CON-10 e GO-02 (J3.3, FORM-10, GO-05; registro em [FORM-10](form-10-entrega-de-contatos.md)) | | |
 
 ### CA-16
 
@@ -296,7 +304,13 @@ Envio duplicado não gera dois registros; falha de e-mail não perde o lead.
 | 16.6 | B | S11: envios simultâneos | `tests/integration/supabase/formularios.test.ts` › «corrida do mesmo submissionId vira DuplicateSubmissionError, não um segundo registro». `supabase/tests/database/form_submissions_rls.test.sql` › «mesmo submissionId não vira dois registros (S11)» | S, D |
 | 16.7 | B | S13: tentativas esgotadas não travam a fila | `lib/server/forms/submission-service.test.ts` › «S13 tentativas esgotadas não travam a fila: envios novos continuam sendo reenviados». `tests/integration/supabase/formularios.test.ts` › «fila de reenvio traz quem falhou e ainda tem tentativas, e deixa os esgotados de fora» | U, S |
 | 16.8 | B | Tipos diferentes não se confundem | `tests/integration/jornada-lead.test.ts` › «mesma pessoa e mesma mensagem em tipos diferentes geram registros distintos» | U |
-| — | Lacuna | **S12** (produção sem armazenamento persistente): **sem cobertura**, embora a TECH-07 cite `resolveStore()`. Duplo clique no navegador e a rota `/api/internal/jobs/notificacoes` em si: **sem cobertura** | | |
+| 16.9 | N | Duplo clique no navegador | `tests/e2e/formularios.spec.ts` › «duplo clique gera um único POST e um único protocolo» | E |
+| 16.10 | N | S15: rede cai, resposta se perde, erro da plataforma | `tests/e2e/formularios.spec.ts` › «conexão caiu: mostra o aviso, mantém o que foi digitado e o reenvio funciona»; «resposta perdida depois de salvar: o reenvio não duplica e devolve o mesmo protocolo»; «resposta que não é da aplicação (erro 500 da plataforma): mesmo aviso, formulário de pé» | E |
+| 16.11 | N | S16: falha ao gravar o resultado da notificação | `lib/server/forms/submission-service.test.ts` › «e-mail enviado: o visitante vê sucesso, e o envio não é marcado como falha»; «e-mail recusado: o visitante vê sucesso e os dois problemas ficam no log»; «sem destinatário: o visitante vê sucesso»; «o reenvio agendado não para no primeiro registro com problema» | U |
+| 16.12 | N | S12: ambiente real sem armazenamento persistente | `lib/server/forms/deps.test.ts` › «Production da Vercel com ambiente do site em %s: recusa, em vez de guardar em memória»; «ambiente do site em %s: recusa em qualquer hospedagem». `lib/domain/forms/store-policy.test.ts` › «site em %s e Vercel em %s: não pode, é um deploy real com o ambiente mal configurado» | U |
+| 16.13 | B | S12: desenvolvimento e preview continuam em memória | `lib/server/forms/deps.test.ts` › «preview da Vercel continua em memória»; «desenvolvimento, build e E2E locais, sem VERCEL_ENV, continuam em memória» | U |
+| 16.14 | B | S14: antispam sem o tempo de preenchimento | `lib/server/forms/submission-service.test.ts` › «o tempo mínimo não se aplica, como a quem omite o campo: não é uma brecha nova»; «honeypot preenchido continua recusado em silêncio»; «o limite por origem continua valendo»; «o mesmo conteúdo com outro identificador volta como duplicado» | U |
+| — | Lacuna | A rota `/api/internal/jobs/notificacoes` em si: **sem cobertura** | | |
 
 ### CA-17
 
@@ -307,7 +321,11 @@ Aviso de privacidade validado e linkado em todos os formulários.
 | 17.1 | P | Página abre | `tests/e2e/motion.spec.ts` › «/privacidade: tudo visível, imagens carregadas, sem overflow nem erro» | E |
 | 17.2 | P | Formulário de novo projeto pede ciência do aviso | `tests/e2e/jornada-visitante.spec.ts` › «fluxo positivo completo» | E |
 | 17.3 | N | Sem a ciência, o envio é recusado | `lib/domain/forms/schemas.test.ts` › «exige campos obrigatórios com mensagens em português» | U |
-| — | Lacuna | **Link nos três formulários: sem cobertura**. O navegador só passa pelo de novo projeto e não confere o destino, e a recusa sem ciência só é testada nesse formulário. **Texto validado** (SEG-02, SEG-10): **sem cobertura**, a página ainda é minuta | | |
+| 17.4 | P | Link nos três formulários, e sem a ciência nada é enviado | `tests/e2e/formularios.spec.ts` › «novo projeto: o aviso está linkado, e sem a ciência nada é enviado»; «contato: o aviso está linkado, e sem a ciência nada é enviado»; «feedback: o aviso está linkado, e sem a ciência nada é enviado» | E |
+| 17.5 | N | Recusa sem ciência em contato e feedback | `lib/domain/forms/schemas.test.ts` › «recusa envio sem a ciência do aviso de privacidade (SEG-03)»; «recusa envio sem a ciência do aviso de privacidade, mesmo anônimo (SEG-03)». `lib/server/forms/submission-service.test.ts` › «%s: sem a ciência nada é salvo nem notificado» | U |
+| 17.6 | P | O registro guarda a ciência | `lib/server/forms/submission-service.test.ts` › «%s: o registro guarda a ciência declarada» | U |
+| 17.7 | P | Aviso alcançável pelo rodapé e pelo formulário | `tests/e2e/formularios.spec.ts` › «o rodapé leva a /privacidade, que responde 200»; «o link do formulário abre o aviso em nova aba, sem perder o que foi digitado»; «sem JavaScript, os formulários em página própria também linkam o aviso» | E |
+| — | Lacuna | **Texto validado** (SEG-02, SEG-10): **sem cobertura**, a página ainda é minuta | | |
 
 ## 6. Painel administrativo (CMS)
 
@@ -487,7 +505,7 @@ Smoke test pós-publicação sem falhas (páginas, formulários, painel, API `/a
 | Erro sem detalhes internos | N | `lib/server/errors.test.ts` › «esconde detalhes de erros inesperados e registra no log». `lib/server/http.test.ts` › «esconde erro inesperado como INTERNAL_ERROR 500». `lib/server/content/supabase/queries.test.ts` › «falha do banco vira SERVICE_UNAVAILABLE com mensagem segura» | U |
 | Rotas internas exigem segredo | N | `tests/e2e/seo-e-compartilhamento.spec.ts` › «rotas internas recusam quem não tem credencial, sem expor detalhes». `lib/server/internal-auth.test.ts` › «aceita somente o Bearer exato»; «nega quando o segredo não está configurado» | E, U |
 | API pública não vaza campos internos | N | `lib/domain/api/contracts.test.ts` › «não expõem id interno, status nem campos de controle»; «o id interno da biblioteca de mídia nunca sai na API pública» | U |
-| Logs sem dado pessoal | N | `lib/server/logger.test.ts` › «mascara chaves sensíveis em qualquer profundidade»; «mascara e-mail, telefone e tokens dentro de textos livres». `lib/server/audit.test.ts` › «envia evento com metadados filtrados (sem PII)» | U |
+| Logs sem dado pessoal | N | `lib/server/forms/submission-service.test.ts` › «envio válido: forms.submission.persisted e forms.notification.sent»; «falha na notificação: forms.notification.failed, mesmo com o e-mail na mensagem do erro»; «honeypot: forms.submission.spam_suspected com o motivo». `lib/server/forms/notifier.test.ts` › «registra só metadados, nunca o conteúdo nem os endereços». `lib/server/logger.test.ts` › «mascara chaves sensíveis em qualquer profundidade»; «mascara e-mail, telefone e tokens dentro de textos livres». `lib/server/audit.test.ts` › «envia evento com metadados filtrados (sem PII)» | U |
 | Anti-abuso nos formulários | N | `lib/server/forms/submission-service.test.ts` › «S6 honeypot e envio rápido demais: sucesso silencioso sem persistir»; «S9 limite por origem: sexto envio em 10 min é bloqueado». `lib/domain/forms/schemas.test.ts` › «recusa envio com honeypot preenchido ou sem submissionId» | U |
 | RLS em todas as tabelas | N | `lib/server/content/content-sql.test.ts` › «toda tabela de public habilita RLS (supabase/README.md)» | U |
 | Visitante não grava | N | `tests/integration/supabase/conteudo-publico.test.ts` › «visitante não consegue gravar conteúdo (RLS)». `tests/integration/supabase/cms-paginas.test.ts` › «visitante não grava em páginas nem blocos» | S |
@@ -509,11 +527,10 @@ Resumo do que está marcado como **sem cobertura**, para virar teste ou ser acei
 | ------- | -------- | ------------------ | ----------------- |
 | Larguras 360, 768 e 1920 px | CA-06 | QA-03 | — |
 | Varredura de links internos | CA-04 | INT-06 | — |
-| Contato e feedback no navegador; link do aviso nos três formulários | CA-14, CA-17 | QA-05 | — |
 | Filtros de serviço, área e cliente no navegador | CA-12 | QA-02 | — |
 | Logout e renovação de sessão | CA-18 | ADM-02, QA-06 | Homologação (GO-02) |
 | N09, N10 no banco; N11 e N13 de ponta a ponta | CA-19 | QA-06 | — |
-| S12 e rota do job de reenvio | CA-16 | QA-05 | — |
+| Rota do job de reenvio | CA-16 | QA-05 | — |
 | Cabeçalhos HTTP e cookies | Seção 8 | SEG-06 | — |
 | Tela de leads e `lead.viewed` | CA-23 | FORM-09, SEG-04 | — |
 | Telas de contato, redes e CTAs | CA-20 | ADM-10, ADM-11 | — |
@@ -531,7 +548,6 @@ não mescladas. Quando chegarem à `main`, abra os testes e mova-os para as seç
 | Tema | Referência | Critério afetado |
 | ---- | ----------- | ------------------ |
 | Cabeçalhos HTTP, CSP e cookies de sessão | SEG-06 (#100), branch `fix/seg-06-cookies-csp-e-headers` | Seção 8, CA-25 |
-| Formulários: estados, reenvio, entrega | FORM-03 a FORM-10, QA-05 (#183), branch `fix/form-08-estados-e-entrega` | CA-14 a CA-17 |
 | Responsividade | QA-03 (#181) | CA-06 |
 | Menu e visão geral do painel | ADM-04 (#80), branch `feat/adm-04-menu-e-visao-geral` | CA-20 |
 | Links e CTAs ponta a ponta | INT-06 (#172), marcada como em andamento no Project | CA-04 |

@@ -5,7 +5,7 @@
 | Task | CASE-08 (#163) |
 | Situação | Nome e descrição aprovados no documento de requisitos (PRJ §12) |
 | No site | Filtro de `/cases?categoria=copywriting` |
-| No painel | **Cases e categorias** → **Categorias** → Copywriting |
+| No painel | **Categorias de cases** → Copywriting |
 
 ## Campos no painel
 

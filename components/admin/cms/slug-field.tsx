@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Sugestão a partir do campo de origem (título do case) (ADM-08).
  26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
  29/10/2026 Vinicius Binda             Aviso de redirecionamento ao trocar endereço publicado (DB-08).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -55,7 +56,7 @@ export function SlugField({
       <div>
         <p className="text-sm font-bold text-benja-noite">Endereço (slug)</p>
         <input type="hidden" name="slug" value={defaultValue} />
-        <p className="mt-1.5 rounded-2xl border-2 border-benja-noite/20 bg-benja-creme px-4 py-3 font-mono text-sm">
+        <p className="mt-1.5 rounded-2xl border-2 border-benja-noite/20 bg-benja-creme px-4 py-3 font-mono text-sm wrap-anywhere">
           {defaultValue}
         </p>
         <p className="mt-1 text-xs text-benja-grafite/80">Fixo depois da primeira publicação.</p>

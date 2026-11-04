@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -24,42 +24,23 @@
  26/10/2026 Vinícius Nishimura Reis  Links para cases e biblioteca de mídia (ADM-08).
  29/10/2026 Caio Moraes              Cores via tokens do tema (ADM-04).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 04/11/2026 Vinícius Nishimura Reis  Módulos vêm do registro único, com o card inteiro clicável (ADM-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { can, type Action, type Resource } from "@/lib/domain/auth/rbac";
+import { modulesFor } from "@/lib/config/admin-modules";
 import { requirePageAccess } from "@/lib/server/auth/guards";
 
 export const metadata: Metadata = { title: "Início" };
 
-const MODULES: { name: string; issue: string; resource: Resource; action: Action; href?: string }[] = [
-  {
-    name: "Páginas e textos institucionais",
-    issue: "ADM-05",
-    resource: "page",
-    action: "view",
-    href: "/admin/paginas",
-  },
-  { name: "Serviços", issue: "ADM-06", resource: "service", action: "view", href: "/admin/servicos" },
-  { name: "Áreas de atuação", issue: "ADM-07", resource: "area", action: "view", href: "/admin/areas" },
-  { name: "Cases e categorias", issue: "ADM-08", resource: "case", action: "view", href: "/admin/cases" },
-  { name: "Biblioteca de mídia", issue: "ADM-09", resource: "media", action: "view", href: "/admin/midia" },
-  { name: "Contato, links e redes sociais", issue: "ADM-10", resource: "settings", action: "view" },
-  { name: "CTAs e destaques da Home", issue: "ADM-11", resource: "cta", action: "view" },
-  { name: "Leads e feedbacks", issue: "FORM-09", resource: "lead", action: "view" },
-  { name: "Usuários e papéis", issue: "INT-08", resource: "user", action: "view" },
-  { name: "Trilha de auditoria", issue: "TECH-10", resource: "audit", action: "view" },
-];
-
 /**
- * Início do painel: módulos previstos no MVP (implementação nas issues indicadas).
- * O menu mostra só o que o papel pode abrir — a proteção real está em cada página/ação.
+ * Início do painel: os mesmos módulos do menu, filtrados pelo papel. Não lê conteúdo, então
+ * continua de pé se o banco falhar — quem lê é a tela de cada módulo.
  */
 export default async function AdminHomePage() {
   const user = await requirePageAccess("dashboard", "view", "/admin");
-  const modules = MODULES.filter((module) => can(user.role, module.resource, module.action));
   return (
     <section>
       <h1 className="text-3xl font-black text-benja-verde">Bem-vindo(a) ao painel</h1>
@@ -67,18 +48,25 @@ export default async function AdminHomePage() {
         Aqui a equipe da Agência Benjamin atualiza o site sem depender do NúcleoTech. Os módulos com link já funcionam;
         os demais estão em construção.
       </p>
-      <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {modules.map((module) => (
-          <li key={module.issue} className="rounded-2xl border-2 border-benja-verde/15 bg-white p-5">
+      <ul className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {modulesFor(user.role).map((module) => (
+          <li
+            key={module.name}
+            className="relative rounded-2xl border-2 border-benja-verde/15 bg-white p-5 has-[a:hover]:border-benja-verde"
+          >
             {module.href ? (
-              <Link href={module.href} className="font-bold text-benja-verde underline-offset-4 hover:underline">
+              <Link
+                href={module.href}
+                prefetch={false}
+                className="font-bold text-benja-verde underline-offset-4 after:absolute after:inset-0 hover:underline"
+              >
                 {module.name}
               </Link>
             ) : (
               <p className="font-bold">{module.name}</p>
             )}
-            <p className="mt-1 text-xs text-benja-grafite/60">
-              {module.href ? "Disponível" : "Em construção"} · {module.issue}
+            <p className="mt-1 text-xs text-benja-grafite/80">
+              {module.href ? "Disponível" : `Em construção · ${module.issue}`}
             </p>
           </li>
         ))}

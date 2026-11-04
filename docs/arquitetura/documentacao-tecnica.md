@@ -47,6 +47,7 @@ flowchart LR
 | `/cases` | `cases/page.tsx` | Shell estático + filtros por `searchParams` (Suspense) | Portfólio filtrável |
 | `/cases/[slug]` | `cases/[slug]/page.tsx` | `generateStaticParams` + ISR | Detalhe do case |
 | `/contato` | `contato/page.tsx` | Shell estático + abas por `searchParams` | Formulários de projeto e contato |
+| `/contato/projeto` · `/contato/mensagem` | `contato/projeto/page.tsx` · `contato/mensagem/page.tsx` | Estática, `noindex` | Os mesmos formulários para envio sem JavaScript ou antes da hidratação ([FORM-08](../formularios/idempotencia-e-falhas.md)) |
 | `/feedback` | `feedback/page.tsx` | Estática | Formulário de feedback |
 | `/privacidade` | `privacidade/page.tsx` | Estática | Aviso de privacidade (minuta) |
 | 404 | `app/not-found.tsx` | — | HTTP 404 real via `proxy.ts` para slugs inexistentes |
@@ -58,7 +59,8 @@ flowchart LR
 | `/admin/login`, `/admin/recuperar-senha`, `/admin/auth/callback` | Público | Login, recuperação, retorno dos e-mails |
 | `/admin/nova-senha` | Sessão | Definir senha (convite/recuperação) |
 | `/admin/acesso-pendente`, `/admin/sem-permissao` | Sessão | Avisos de acesso |
-| `/admin` (grupo `(painel)`) | `dashboard:view` | Início do painel; módulos CRUD em ADM-04…ADM-11 |
+| `/admin` (grupo `(painel)`) | `dashboard:view` | Início do painel e menu, os dois a partir do registro `lib/config/admin-modules.ts` (ADM-04); módulos CRUD em ADM-05…ADM-11 |
+| `/admin/conteudos` | `dashboard:view` e, por grupo, `<recurso>:view` | Visão geral: estado dos conteúdos e fila de revisão, com uma única leitura do conteúdo (`lib/server/cms/overview.ts`, ADM-18) |
 
 ### APIs e arquivos especiais
 

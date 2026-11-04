@@ -7,14 +7,14 @@
 | Versão       | 1.0.0 — **proposta para aprovação da Agência Benjamin**                  |
 | Data         | 13/10/2026                                                               |
 | Origem       | PRJ §14 (feedback), PRJ §15 (contato e prospecção — "lista definitiva deve ser validada") |
-| Código       | `lib/domain/forms/schemas.ts` (validação idêntica no navegador e no servidor) |
+| Código       | `lib/domain/forms/schemas.ts`: o mesmo esquema orienta no navegador (`browser-validation.ts`) e decide no servidor |
 
 ## 1. Formulários
 
 | Formulário | Onde aparece | Objetivo | Registro gerado |
 | ---------- | ------------ | -------- | --------------- |
-| **Novo projeto** (prospecção) | `/contato` (aba "Quero um projeto"), CTAs de serviços | Captar pedidos de novos clientes e projetos | `lead` |
-| **Contato institucional** | `/contato` (aba "Fale com a gente") | Parcerias, imprensa, dúvidas, interesse em participar | `contact` |
+| **Novo projeto** (prospecção) | `/contato` (aba "Quero um projeto"), CTAs de serviços; sem JavaScript, `/contato/projeto` | Captar pedidos de novos clientes e projetos | `lead` |
+| **Contato institucional** | `/contato` (aba "Fale com a gente"); sem JavaScript, `/contato/mensagem` | Parcerias, imprensa, dúvidas, interesse em participar | `contact` |
 | **Feedback** | `/feedback` | Ouvir clientes, parceiros, alunos e comunidade | `feedback` |
 
 ## 2. Matriz de campos
@@ -45,10 +45,10 @@ orçamento, prazo, "como nos conheceu". Podem ser incluídos se a Benjamin justi
 
 | Campo | Uso |
 | ----- | --- |
-| `submissionId` (UUID gerado no navegador) | Idempotência de reenvio (TECH-07) |
+| `submissionId` (UUID gerado no navegador; sem JavaScript, no servidor) | Idempotência de reenvio (TECH-07) |
 | `website` (honeypot) | Antispam: precisa chegar vazio |
-| `startedAt` | Antispam: envio em menos de 3 s é tratado como robô |
-| `sourcePath` | Página de origem (ex.: `/servicos/audiovisual`) |
+| `startedAt` | Antispam: envio em menos de 3 s é tratado como robô. Sem JavaScript fica vazio, e a regra não se aplica ([decisão](idempotencia-e-falhas.md)) |
+| `sourcePath` | Página de origem (ex.: `/servicos/audiovisual`). Sem JavaScript fica vazio |
 
 ## 3. Destinatários
 
@@ -65,9 +65,10 @@ Nenhum destinatário fica fixo no código (TECH-06). Os e-mails reais dependem d
 | Situação | Mensagem |
 | -------- | -------- |
 | Sucesso | "Recebemos sua mensagem! Protocolo **AB-XXXXXX**. Responderemos pelo e-mail informado." |
-| Campo inválido | Mensagem específica abaixo do campo (ex.: "Informe um e-mail válido.") |
+| Campo inválido | Mensagem específica abaixo do campo (ex.: "Informe um e-mail válido."), com o foco no primeiro campo inválido. Com JavaScript aparece antes do POST; sem ele, na resposta do servidor |
 | Envio repetido | Mesma confirmação e mesmo protocolo do primeiro envio (sem duplicar) |
 | Falha do servidor | "Algo deu errado do nosso lado. Tente novamente em instantes." + código de atendimento |
+| Falha de rede | "Não conseguimos enviar agora. Confira sua conexão e tente de novo: o que você digitou continua aqui." |
 
 ## 5. Aprovação com a Agência Benjamin
 

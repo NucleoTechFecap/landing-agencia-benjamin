@@ -117,6 +117,42 @@ stateDiagram-v2
 
 Matriz completa em [perfis e permissões](../seguranca/perfis-e-permissoes.md).
 
+## Menu do painel
+
+O menu fica à esquerda no computador. No celular e no tablet, use o botão **Abrir menu**, logo abaixo do
+cabeçalho; ele fecha com **Fechar menu**, com a tecla Esc ou ao escolher um módulo. O item da tela atual
+fica destacado.
+
+- Cada pessoa vê só os módulos que o papel permite: Editor e Leitor não veem Leads, Usuários nem
+  Auditoria. Isso é só o que aparece: cada tela e cada ação conferem de novo a permissão no servidor.
+- **Em construção** marca módulo sem tela ainda, como contato e CTAs. Não é link e nada pode ser editado
+  por ali.
+- Pelo teclado, o primeiro Tab da página oferece **Pular para o conteúdo**, sem passar pelo menu.
+
+O início do painel (`/admin`) mostra os mesmos módulos em cartões.
+
+## Visão geral dos conteúdos (`/admin/conteudos`)
+
+Reúne em uma tela páginas, áreas, serviços, categorias e cases: o que está publicado, o estado de cada
+item, quando foi atualizado e o link para abrir. Use aqui para saber o que falta antes de publicar ou de
+pedir aprovação.
+
+**Precisa de revisão** lista, primeiro o que já está no site:
+
+| O que aparece | O que significa | O que fazer |
+| ------------- | --------------- | ----------- |
+| "Para publicar, falta:" | Rascunho incompleto: a mesma lista que aparece ao lado do formulário | Complete quando o material chegar. Ninguém é obrigado a publicar |
+| "No ar com pendências:" | Item publicado que não passaria na conferência hoje (por exemplo, a categoria dele saiu do ar) | Corrija o item, ou o conteúdo de que ele depende |
+| "Avisos:" | Item publicado com algo a decidir: serviço sem área publicada, destaques acima do limite, página sem rota no site ou data de publicação futura | Avalie: o site segue de pé |
+| "Textos provisórios, sem outra pendência" | Item marcado como provisório, sem outro problema. A lista começa recolhida; clique para abrir | Desmarque só depois da aprovação da Benjamin. Enquanto houver texto provisório publicado, o go-live fica bloqueado |
+
+Ficam fora da fila: item publicado em dia, rascunho completo (na coluna **Revisão** aparece "Pronto para
+publicar") e arquivado, que já saiu do site. Publicar continua sendo decisão de quem edita.
+
+Editor e Administrador veem **Editar**; o Leitor vê **Ver**, que abre o item sem poder salvar. Se a tela
+mostrar "Algo deu errado", o conteúdo não foi lido e a lista não diz nada sobre ele: tente de novo e, se
+persistir, envie o código ao NúcleoTech.
+
 ## Páginas e textos (`/admin/paginas`)
 
 Cada rota do site (Home, Sobre, Áreas de atuação, Serviços, Cases, Contato e Privacidade) tem seções

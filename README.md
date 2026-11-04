@@ -422,6 +422,7 @@ com as convenções locais.
 | `/servicos` · `/servicos/[slug]` | Catálogo de serviços e detalhe com cases relacionados |
 | `/cases` · `/cases/[slug]` | Portfólio com filtros e detalhe do case |
 | `/contato` | Formulários de novo projeto e de contato |
+| `/contato/projeto` · `/contato/mensagem` | Os mesmos formulários para quem navega sem JavaScript (fora do menu e dos buscadores) |
 | `/feedback` | Formulário de feedback |
 | `/privacidade` | Aviso de privacidade |
 

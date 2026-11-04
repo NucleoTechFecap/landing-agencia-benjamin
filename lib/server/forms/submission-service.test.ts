@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,11 +20,15 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-07).
  02/11/2026 Vinícius Nishimura Reis  Tentativas esgotadas fora da fila (TECH-06).
  02/11/2026 Vinícius Nishimura Reis  Serviço forjado e falha ao consultar a lista (TECH-06).
+ 04/11/2026 Vinícius Nishimura Reis  Envio sem JavaScript: antispam sem o tempo de preenchimento (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Falha ao registrar o resultado da notificação não chega ao visitante (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Eventos de log, sem dados pessoais (FORM-06).
+ 04/11/2026 Vinícius Nishimura Reis  Registro guarda a ciência do aviso de privacidade (SEG-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { createHmac } from "node:crypto";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemorySubmissionStore } from "./memory-store";
 import { processSubmission, retryPendingNotifications, type SubmissionDeps } from "./submission-service";
 import type { Notifier, OutgoingEmail } from "./types";
@@ -61,10 +65,19 @@ let now: Date;
 let deps: SubmissionDeps;
 const context = { requestId: "req-1", ip: "203.0.113.10" };
 
+/** Linhas de log do teste atual, como saem no console. */
+const logLines = () =>
+  [console.log, console.warn, console.error].flatMap((method) =>
+    vi.mocked(method).mock.calls.map(([line]) => String(line)),
+  );
+const logEntries = () => logLines().map((line) => JSON.parse(line) as { event: string; [key: string]: unknown });
+const loggedEvents = () => logEntries().map((entry) => entry.event);
+
 beforeEach(() => {
   vi.spyOn(console, "log").mockImplementation(() => {});
   vi.spyOn(console, "warn").mockImplementation(() => {});
   vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.clearAllMocks();
   store = new MemorySubmissionStore();
   notifier = new FakeNotifier();
   now = T0;
@@ -106,6 +119,208 @@ describe("serviço de interesse (TECH-06)", () => {
     const result = await processSubmission("lead", withService("audiovisual"), context, deps);
     expect(result.status).toBe("success");
     expect((await store.findById(ID))?.category).toBe("lead:nao-sei");
+  });
+});
+
+describe("envio sem JavaScript: campos técnicos vazios (FORM-08)", () => {
+  const noScript = (overrides: Record<string, unknown> = {}) => lead({ startedAt: "", sourcePath: "", ...overrides });
+
+  it("é aceito e gravado, sem origem", async () => {
+    const result = await processSubmission("lead", noScript(), context, deps);
+    expect(result).toMatchObject({ status: "success", protocol: "AB-0B6C2F", duplicate: false });
+    expect(store.all()).toHaveLength(1);
+    expect(store.all()[0].sourcePath).toBeNull();
+  });
+
+  it("o tempo mínimo não se aplica, como a quem omite o campo: não é uma brecha nova", async () => {
+    expect((await processSubmission("lead", lead({ startedAt: undefined }), context, deps)).status).toBe("success");
+    expect(store.all()).toHaveLength(1);
+  });
+
+  it("honeypot preenchido continua recusado em silêncio", async () => {
+    const result = await processSubmission("lead", noScript({ website: "spam.com" }), context, deps);
+    expect(result).toMatchObject({ status: "success", duplicate: false });
+    expect(store.all()).toHaveLength(0);
+    expect(notifier.sent).toHaveLength(0);
+  });
+
+  it("o limite por origem continua valendo", async () => {
+    for (let index = 0; index < 5; index += 1) {
+      await processSubmission(
+        "lead",
+        noScript({
+          submissionId: `0b6c2f0e-6f1d-4c8a-9a51-3d2f9f1b7e1${index}`,
+          projectDescription: `Projeto número ${index} com detalhes.`,
+        }),
+        context,
+        deps,
+      );
+    }
+    const blocked = await processSubmission(
+      "lead",
+      noScript({
+        submissionId: "0b6c2f0e-6f1d-4c8a-9a51-3d2f9f1b7e19",
+        projectDescription: "Projeto número 9 com detalhes.",
+      }),
+      context,
+      deps,
+    );
+    expect(blocked).toMatchObject({ status: "error", code: "RATE_LIMITED" });
+  });
+
+  it("o mesmo conteúdo com outro identificador volta como duplicado", async () => {
+    await processSubmission("lead", noScript(), context, deps);
+    const again = await processSubmission(
+      "lead",
+      noScript({ submissionId: "9d1e8f20-1111-4c8a-9a51-3d2f9f1b7e10" }),
+      context,
+      deps,
+    );
+    expect(again).toMatchObject({ status: "success", protocol: "AB-0B6C2F", duplicate: true });
+    expect(store.all()).toHaveLength(1);
+  });
+});
+
+describe("falha ao registrar o resultado da notificação (FORM-08)", () => {
+  let attemptedStatuses: string[];
+
+  beforeEach(() => {
+    attemptedStatuses = [];
+    store.updateNotification = async (_id, patch) => {
+      attemptedStatuses.push(String(patch.notificationStatus));
+      throw new Error("connection refused");
+    };
+  });
+
+  it("e-mail enviado: o visitante vê sucesso, e o envio não é marcado como falha", async () => {
+    const result = await processSubmission("lead", lead(), context, deps);
+    expect(result).toEqual({ status: "success", protocol: "AB-0B6C2F", duplicate: false });
+    expect(notifier.sent).toHaveLength(1);
+    expect(attemptedStatuses).toEqual(["sent"]);
+    expect(loggedEvents()).toEqual(expect.arrayContaining(["forms.notification.status_update_failed"]));
+    expect(loggedEvents()).not.toContain("forms.notification.failed");
+    expect(loggedEvents()).not.toContain("forms.submission.unexpected_error");
+  });
+
+  it("e-mail recusado: o visitante vê sucesso e os dois problemas ficam no log", async () => {
+    notifier.failNext = 1;
+    const result = await processSubmission("lead", lead(), context, deps);
+    expect(result).toMatchObject({ status: "success", duplicate: false });
+    expect(attemptedStatuses).toEqual(["failed"]);
+    expect(loggedEvents()).toEqual(
+      expect.arrayContaining(["forms.notification.failed", "forms.notification.status_update_failed"]),
+    );
+  });
+
+  it("sem destinatário: o visitante vê sucesso", async () => {
+    deps.recipients = { LEAD_NOTIFICATION_TO: [], CONTACT_NOTIFICATION_TO: [], FEEDBACK_NOTIFICATION_TO: [] };
+    const result = await processSubmission("lead", lead(), context, deps);
+    expect(result).toMatchObject({ status: "success", duplicate: false });
+    expect(attemptedStatuses).toEqual(["skipped"]);
+    expect(loggedEvents()).toEqual(expect.arrayContaining(["forms.notification.status_update_failed"]));
+  });
+
+  it("o reenvio agendado não para no primeiro registro com problema", async () => {
+    const update = store.updateNotification;
+    store.updateNotification = async () => {};
+    notifier.failNext = 2;
+    await processSubmission("lead", lead(), context, deps);
+    await processSubmission(
+      "lead",
+      lead({ submissionId: "9d1e8f20-1111-4c8a-9a51-3d2f9f1b7e10", projectDescription: "Outro projeto com detalhes." }),
+      context,
+      deps,
+    );
+    store.updateNotification = update;
+
+    now = new Date(T0.getTime() + 2 * 60_000);
+    expect(await retryPendingNotifications(deps)).toEqual({ retried: 2 });
+    expect(notifier.sent).toHaveLength(2);
+  });
+});
+
+describe("ciência do aviso de privacidade (SEG-03)", () => {
+  const person = { name: "Maria", email: "maria@empresa.com" };
+  const validForms = {
+    lead: lead(),
+    contact: { ...lead(), ...person, subject: "duvida", message: "Mensagem com detalhes suficientes." },
+    feedback: { ...lead(), profile: "aluno", message: "Feedback com detalhes suficientes." },
+  };
+
+  it.each(["lead", "contact", "feedback"] as const)("%s: o registro guarda a ciência declarada", async (kind) => {
+    const result = await processSubmission(kind, validForms[kind], context, deps);
+    expect(result.status).toBe("success");
+    expect(store.all()[0].payload.privacyConsent).toBe(true);
+  });
+
+  it.each(["lead", "contact", "feedback"] as const)("%s: sem a ciência nada é salvo nem notificado", async (kind) => {
+    const result = await processSubmission(kind, { ...validForms[kind], privacyConsent: undefined }, context, deps);
+    expect(result).toMatchObject({ status: "error", code: "VALIDATION_FAILED" });
+    expect(result.status === "error" && result.fieldErrors?.privacyConsent).toBeTruthy();
+    expect(store.all()).toHaveLength(0);
+    expect(notifier.sent).toHaveLength(0);
+  });
+});
+
+describe("logs dos envios: eventos estáveis e sem dados pessoais (FORM-06)", () => {
+  /** Nada do que a pessoa digitou pode aparecer nas linhas de log. */
+  function expectNoPersonalData() {
+    const lines = logLines().join("\n");
+    expect(lines.length).toBeGreaterThan(0);
+    expect(lines).not.toMatch(/maria/i);
+    expect(lines).not.toContain("empresa.com");
+    expect(lines).not.toContain("vídeo institucional");
+    expect(lines).not.toContain("203.0.113.10");
+  }
+
+  it("envio válido: forms.submission.persisted e forms.notification.sent", async () => {
+    await processSubmission("lead", lead(), context, deps);
+    expect(logEntries()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ event: "forms.submission.persisted", level: "info", submissionId: ID }),
+        expect.objectContaining({ event: "forms.notification.sent", level: "info", submissionId: ID, attempts: 1 }),
+      ]),
+    );
+    expectNoPersonalData();
+  });
+
+  // O logger só inclui a pilha do erro fora de produção, e ela não é mascarada: aqui vale o que sai em produção.
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("falha na notificação: forms.notification.failed, mesmo com o e-mail na mensagem do erro", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    notifier.send = async () => {
+      throw new Error("Falha ao entregar para maria@empresa.com");
+    };
+    await processSubmission("lead", lead(), context, deps);
+    expect(logEntries()).toContainEqual(
+      expect.objectContaining({ event: "forms.notification.failed", level: "error", submissionId: ID, attempts: 1 }),
+    );
+    expectNoPersonalData();
+  });
+
+  it("honeypot: forms.submission.spam_suspected com o motivo", async () => {
+    await processSubmission("lead", lead({ website: "spam.com" }), context, deps);
+    expect(logEntries()).toContainEqual(
+      expect.objectContaining({ event: "forms.submission.spam_suspected", level: "warn", reason: "honeypot" }),
+    );
+    expectNoPersonalData();
+  });
+
+  it("envio rápido demais: forms.submission.spam_suspected com o motivo", async () => {
+    await processSubmission("lead", lead({ startedAt: String(T0.getTime() - 500) }), context, deps);
+    expect(logEntries()).toContainEqual(
+      expect.objectContaining({ event: "forms.submission.spam_suspected", level: "warn", reason: "too_fast" }),
+    );
+    expectNoPersonalData();
+  });
+
+  it("validação recusada: o log diz o que aconteceu, sem o que foi digitado", async () => {
+    await processSubmission("lead", lead({ email: "maria@" }), context, deps);
+    expect(loggedEvents()).toContain("app.error.validation_failed");
+    expectNoPersonalData();
   });
 });
 

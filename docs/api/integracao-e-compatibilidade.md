@@ -62,7 +62,7 @@
 | Recurso | Onde |
 | ------- | ---- |
 | Estrutura do MVP (6 áreas, 9 serviços, 3 categorias, 3 cases) | `content/` e `lib/domain/content/__fixtures__/snapshot.ts` |
-| Formulários (válidos/ inválidos/ duplicados) | `lib/server/forms/submission-service.test.ts` (cenários S1–S10) |
+| Formulários (válidos/ inválidos/ duplicados) | `lib/server/forms/submission-service.test.ts` (cenários de [TECH-07](../formularios/idempotencia-e-falhas.md)) e `tests/e2e/formularios.spec.ts` |
 | Usuários por papel (`super_admin`, `admin`, `editor`, `viewer`, `pending`) | Convites no `benjamin-hml` (INT-08) — nunca dados reais |
 | Endpoints | `GET /api/v1/{health,settings,areas,services,services/{slug},categories,cases,cases/{slug}}`, `POST /api/internal/revalidate`, `/sitemap.xml`, `/llms.txt` |
 

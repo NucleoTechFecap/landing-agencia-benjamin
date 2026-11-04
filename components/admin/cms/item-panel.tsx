@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Link para a prévia protegida (ADM-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
@@ -50,7 +51,7 @@ export function ItemPanel({
   children?: ReactNode;
 }) {
   return (
-    <aside className="space-y-4">
+    <aside className="min-w-0 space-y-4 wrap-anywhere">
       <section className="space-y-2 rounded-3xl border-2 border-benja-noite/15 bg-white p-5 text-sm">
         <StatusBadge status={item.status} provisional={item.provisional} />
         <p className="text-benja-grafite/80">Atualizado em {formatDateTime(item.updatedAt)}</p>
@@ -64,7 +65,7 @@ export function ItemPanel({
             // Sem prefetch: regenerar a rota enquanto o item é despublicado gravaria a versão antiga
             // depois da invalidação, e o site ficaria com ela até o fim do cacheLife.
             prefetch={false}
-            className="inline-block font-bold text-benja-verde underline underline-offset-4"
+            className="inline-block py-1 font-bold text-benja-verde underline underline-offset-4"
           >
             Ver no site<span className="sr-only"> (abre em nova aba)</span>
           </Link>

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -97,7 +98,7 @@ export function CommandBar({
               <button
                 type="submit"
                 disabled={pending}
-                className={`rounded-full px-5 py-2.5 text-sm font-bold transition disabled:cursor-wait disabled:opacity-60 ${config.tone}`}
+                className={`min-h-11 rounded-full px-5 py-2 text-sm font-bold transition disabled:cursor-wait disabled:opacity-60 ${config.tone}`}
               >
                 {config.label}
               </button>

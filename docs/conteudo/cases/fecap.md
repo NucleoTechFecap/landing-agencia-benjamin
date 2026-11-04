@@ -5,7 +5,7 @@
 | Task | CASE-07 (#162) |
 | Situação | **Bloqueado:** aguardando material e autorização da Benjamin (CON-08, #21) |
 | No site | `/cases/fecap`, no filtro `/cases?categoria=assessoria-de-imprensa` |
-| No painel | **Cases e categorias** → Assessoria de imprensa para a FECAP |
+| No painel | **Cases** → Assessoria de imprensa para a FECAP |
 
 ## Bloqueio
 

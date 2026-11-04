@@ -5,7 +5,7 @@
 | Task | CASE-10 (#165) |
 | Situação | Nome e descrição aprovados no documento de requisitos (PRJ §12) |
 | No site | Filtro de `/cases?categoria=assessoria-de-imprensa` |
-| No painel | **Cases e categorias** → **Categorias** → Assessoria de Imprensa |
+| No painel | **Categorias de cases** → Assessoria de Imprensa |
 
 ## Campos no painel
 
