@@ -52,11 +52,24 @@ O fluxo é o mesmo para áreas, serviços, categorias, cases e CTAs. O exemplo u
    precisa ser preenchido.
 5. **Publicar.** Com a lista vazia, clique em **Publicar**. O item passa a aparecer no site.
 6. **Conferir no site.** Abra a página pública do item (por exemplo, `/servicos/<endereço>`) e confira
-   texto, imagem e links.
+   texto, imagem e links. Para conferir **antes** de publicar, use **Ver prévia** (abaixo).
 7. **Corrigir, se preciso.** Ajuste e salve de novo, ou clique em **Despublicar** para tirar o item do
    site (ele volta a Rascunho).
 
-O painel não tem botão de pré-visualização: a conferência é feita na página pública depois de publicar.
+### Ver prévia
+
+Em serviços, cases e páginas, o link **Ver prévia**, ao lado do formulário, abre o item como o site o
+mostraria, mesmo em Rascunho. Salve antes: a prévia mostra o que está salvo.
+
+- Só quem entra no painel consegue abrir. O link não serve para enviar a quem não tem conta.
+- Ela mostra só o que o visitante veria: área, serviço ou categoria ainda em Rascunho não aparecem junto do
+  item.
+- Em páginas, aparecem os blocos editáveis, sem as seções fixas da rota.
+- A imagem enviada à biblioteca já tem endereço público, difícil de adivinhar. A prévia não muda isso:
+  não envie à biblioteca o que não pode vazar.
+- Em item já publicado, salvar já muda o site, então a prévia mostra a versão que está no ar. Para revisar
+  com calma, use antes **Despublicar**: o item sai do site enquanto isso.
+
 Conteúdo novo que ainda não deve aparecer fica em Rascunho até a aprovação da Benjamin.
 
 Se aparecer uma mensagem de erro, consulte "Mensagens comuns", mais abaixo.

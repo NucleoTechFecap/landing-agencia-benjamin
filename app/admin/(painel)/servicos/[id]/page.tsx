@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-06).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Link para a prévia protegida (ADM-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -33,6 +34,7 @@ import { ServiceForm } from "@/components/admin/cms/service-form";
 import { StatusBadge } from "@/components/admin/cms/status-badge";
 import { can } from "@/lib/domain/auth/rbac";
 import { findIntegrityIssues } from "@/lib/domain/content/integrity";
+import { previewPath } from "@/lib/domain/content/preview";
 import { allowedCommands } from "@/lib/domain/content/publication";
 import { requirePageAccess } from "@/lib/server/auth/guards";
 import { publishProblems } from "@/lib/server/cms/content-service";
@@ -82,6 +84,7 @@ export default async function EditServicePage({ params, searchParams }: PageProp
         <ItemPanel
           item={service}
           publicHref={SERVICE.publicPath(service)}
+          previewHref={previewPath("servico", service.id)}
           missing={publishProblems(SERVICE, service, snapshot, now)}
           warnings={warnings}
         >

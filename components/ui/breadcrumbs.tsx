@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 04/11/2026 Vinícius Nishimura Reis  Alvo de toque de 24 px nos links, exigido pela auditoria do painel (ADM-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -38,7 +39,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
           return (
             <li key={`${item.label}-${index}`} className="flex items-center gap-1.5">
               {item.href && !last ? (
-                <Link href={item.href} className="underline-offset-4 hover:underline">
+                <Link href={item.href} className="inline-block py-0.5 underline-offset-4 hover:underline">
                   {item.label}
                 </Link>
               ) : (
