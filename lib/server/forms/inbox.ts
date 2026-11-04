@@ -20,6 +20,7 @@
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
  04/11/2026 Vinícius Nishimura Reis  Exclusão de envio arquivado, a pedido do titular (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -149,6 +150,21 @@ export async function countFailedNotifications(db: SupabaseClient, kinds: readon
     .select("id", { count: "exact", head: true })
     .in("kind", kinds)
     .eq("notification_status", "failed");
+  if (error) throw dbFailure(error);
+  return count ?? 0;
+}
+
+/**
+ * Quantos envios novos cada tipo tem, para os indicadores do início. Só conta, sem ler o conteúdo: não
+ * é abertura de dado pessoal, e a RLS decide o que entra na conta.
+ */
+export async function countNewSubmissions(db: SupabaseClient, kinds: readonly SubmissionKind[]): Promise<number> {
+  if (kinds.length === 0) return 0;
+  const { count, error } = await db
+    .from(TABLE)
+    .select("id", { count: "exact", head: true })
+    .in("kind", kinds)
+    .eq("status", "novo");
   if (error) throw dbFailure(error);
   return count ?? 0;
 }
