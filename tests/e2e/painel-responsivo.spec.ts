@@ -21,6 +21,7 @@
  04/11/2026 Vinícius Nishimura Reis  Telas de leads e feedbacks (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Telas de CTAs e destaques da Home (ADM-11).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -272,6 +273,19 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
       sort_order: 3,
       content: { members: [{ name: long("Nome", 80), role: long("Cargo", 80) }] },
     });
+    // Duas versões com o maior texto possível: a comparação também não pode alargar a página.
+    for (const title of [long("Antes", 120), long("Depois", 120)]) {
+      const { error } = await client.from("content_versions").insert({
+        entity: "page",
+        entity_id: ids.page,
+        version: 1,
+        action: "updated",
+        status: "published",
+        label: title.slice(0, 200),
+        snapshot: { title, description: long("Texto", 300) },
+      });
+      if (error) throw error;
+    }
 
     // Nos limites dos formulários, sem espaços. O id não tem valor padrão: vem do navegador no envio real.
     const submission = (status: string, name: string) =>
@@ -321,6 +335,10 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
       .from("pages")
       .delete()
       .eq("id", ids.page || "00000000-0000-4000-8000-000000000000");
+    await client
+      .from("content_versions")
+      .delete()
+      .eq("entity_id", ids.page || "sem-pagina");
     await client.from("services").delete().in("id", [ids.service, ids.serviceArchived].filter(Boolean));
     await client.from("case_categories").delete().in("id", [ids.category, ids.categoryArchived].filter(Boolean));
     await client.from("areas").delete().in("id", [ids.area, ids.areaArchived].filter(Boolean));
@@ -376,6 +394,16 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
     screen("inicio", "", /Bem-vindo/),
     screen("visao-geral", "conteudos", /Revisão de conteúdos/),
     screen("configuracoes", "configuracoes", /Contato, links e redes sociais/),
+    screen("aparencia", "aparencia", /Aparência do site/),
+    screen("historico", "historico", /Histórico de alterações/),
+    screen("historico-item", "historico/[entidade]/[id]", /Histórico:/, () => `/admin/historico/page/${ids.page}`),
+    screen(
+      "historico-versao",
+      "historico/[entidade]/[id]/[versao]",
+      /Versão 1/,
+      () => `/admin/historico/page/${ids.page}/1`,
+    ),
+    screen("pagina-livre-nova", "paginas/nova", /Nova página/, () => "/admin/paginas/nova"),
     screen("paginas", "paginas", /Páginas e textos/),
     screen("pagina-nova", "paginas/nova", /Criar conteúdo: Contato/, () => "/admin/paginas/nova?rota=contato"),
     screen("pagina-editar", "paginas/[id]", /^Pagina-/, () => `/admin/paginas/${ids.page}`),

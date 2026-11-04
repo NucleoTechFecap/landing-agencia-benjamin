@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (reestruturação do painel).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -217,7 +218,7 @@ export function PanelShell({
 
   return (
     <div className="studio min-h-dvh bg-studio-papel text-benja-noite">
-      <SkipLink />
+      <SkipLink label="Pular para o conteúdo" />
       {drawerOpen ? (
         <div
           aria-hidden

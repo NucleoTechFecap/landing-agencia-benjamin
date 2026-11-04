@@ -24,6 +24,7 @@
  03/11/2026 Julia                    Asterisco com contraste e aviso de nova aba no link (SEG-07).
  04/11/2026 Vinícius Nishimura Reis  Envio antes da hidratação: botão disponível e "Enviar outra" como link (FORM-08).
  04/11/2026 Vinícius Nishimura Reis  Falha de rede sem código de atendimento: não há log a consultar (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -31,7 +32,12 @@
 
 import Link from "next/link";
 import { buttonClasses } from "@/components/ui/button-link";
+import type { ResolvedPage } from "@/lib/domain/content/catalog";
+import type { FORMULARIOS } from "@/lib/domain/content/catalog/formularios";
 import { BROWSER_REQUEST_ID, type FormActionState } from "@/lib/domain/forms/state";
+
+/** Textos comuns aos formulários. Vêm da página, que é componente de servidor: aqui só chega o valor. */
+export type TextosComuns = ResolvedPage<typeof FORMULARIOS>["comum"];
 
 /** Campos técnicos ocultos: idempotência, tempo de preenchimento e página de origem. */
 export function TechnicalFields({ meta }: { meta: { submissionId: string; startedAt: string; sourcePath: string } }) {
@@ -44,12 +50,16 @@ export function TechnicalFields({ meta }: { meta: { submissionId: string; starte
   );
 }
 
-export function PrivacyConsentText() {
+export function PrivacyConsentText({ textos }: { textos: TextosComuns }) {
   return (
     <>
-      Li e estou ciente do{" "}
-      <Link href="/privacidade" className="font-bold text-benja-verde underline underline-offset-4" target="_blank">
-        aviso de privacidade
+      {textos.consentimento}{" "}
+      <Link
+        href={textos.consentimentoLink.href}
+        className="font-bold text-benja-verde underline underline-offset-4"
+        target="_blank"
+      >
+        {textos.consentimentoLink.label}
         <span className="sr-only"> (abre em nova aba)</span>
       </Link>
       .{" "}
@@ -61,7 +71,7 @@ export function PrivacyConsentText() {
 }
 
 /** Mensagem geral de erro (falha de servidor, limite, validação). */
-export function FormErrorBanner({ state }: { state: FormActionState }) {
+export function FormErrorBanner({ state, textos }: { state: FormActionState; textos: TextosComuns }) {
   if (state.status !== "error") return null;
   const isValidation = state.code === "VALIDATION_FAILED";
   return (
@@ -72,10 +82,10 @@ export function FormErrorBanner({ state }: { state: FormActionState }) {
       role="alert"
       className="rounded-2xl border-2 border-benja-erro bg-benja-erro-fundo p-4 text-sm text-benja-erro-texto outline-none"
     >
-      <p className="font-bold">{isValidation ? "Revise os campos destacados." : state.message}</p>
+      <p className="font-bold">{isValidation ? textos.revise : state.message}</p>
       {!isValidation && state.requestId !== BROWSER_REQUEST_ID ? (
         <p className="mt-1">
-          Código de atendimento: <code className="font-mono">{state.requestId.slice(0, 8)}</code>
+          {textos.codigo} <code className="font-mono">{state.requestId.slice(0, 8)}</code>
         </p>
       ) : null}
     </div>
@@ -83,7 +93,19 @@ export function FormErrorBanner({ state }: { state: FormActionState }) {
 }
 
 /** Confirmação de recebimento com protocolo (TECH-06 §5). */
-export function FormSuccess({ protocol, title, onReset }: { protocol: string; title: string; onReset: () => void }) {
+export function FormSuccess({
+  protocol,
+  title,
+  onReset,
+  textos,
+}: {
+  protocol: string;
+  title: string;
+  onReset: () => void;
+  textos: TextosComuns;
+}) {
+  // O número aparece mesmo se a marca {protocolo} sair do texto: sem ele, a pessoa perde a referência.
+  const [antes, depois = ""] = textos.protocolo.split("{protocolo}");
   return (
     <div
       role="status"
@@ -92,8 +114,9 @@ export function FormSuccess({ protocol, title, onReset }: { protocol: string; ti
     >
       <p className="text-3xl font-black">{title}</p>
       <p className="mt-3 text-benja-noite">
-        Protocolo <strong className="font-mono text-lg">{protocol}</strong>. Guarde este número caso precise falar com a
-        gente sobre esta mensagem.
+        {antes}
+        <strong className="font-mono text-lg">{protocol}</strong>
+        {depois}
       </p>
       {/* Link para a própria página: sem JavaScript ele recarrega o formulário em branco. */}
       <a
@@ -104,13 +127,21 @@ export function FormSuccess({ protocol, title, onReset }: { protocol: string; ti
         }}
         className={buttonClasses("secondary", "mt-6")}
       >
-        Enviar outra mensagem
+        {textos.enviarOutra}
       </a>
     </div>
   );
 }
 
-export function SubmitButton({ pending, children }: { pending: boolean; children: string }) {
+export function SubmitButton({
+  pending,
+  children,
+  textos,
+}: {
+  pending: boolean;
+  children: string;
+  textos: TextosComuns;
+}) {
   return (
     <button
       type="submit"
@@ -118,7 +149,7 @@ export function SubmitButton({ pending, children }: { pending: boolean; children
       aria-disabled={pending}
       className="w-full rounded-full border-2 border-benja-noite bg-benja-verde px-6 py-4 text-lg font-bold text-benja-nyanza shadow-sticker transition hover:bg-benja-lima hover:text-benja-verde disabled:cursor-wait disabled:opacity-70 sm:w-auto"
     >
-      {pending ? "Enviando…" : children}
+      {pending ? textos.enviando : children}
     </button>
   );
 }

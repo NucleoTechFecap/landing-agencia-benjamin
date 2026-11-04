@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,12 +21,15 @@
  28/10/2026 Caio Moraes              Categorias mantêm os outros filtros ativos (CASE-03).
  29/10/2026 Caio Moraes              Botão "Filtrar" com o estilo padrão (INT-01).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import Form from "next/form";
 import Link from "next/link";
 import { buttonClasses } from "@/components/ui/button-link";
+import type { ResolvedPage } from "@/lib/domain/content/catalog";
+import type { CASES } from "@/lib/domain/content/catalog/cases";
 
 export interface FilterOption {
   slug: string;
@@ -64,12 +67,14 @@ export function CaseFilters({
   areas,
   clients,
   active,
+  textos,
 }: {
   categories: FilterOption[];
   services: FilterOption[];
   areas: FilterOption[];
   clients: string[];
   active: ActiveFilters;
+  textos: ResolvedPage<typeof CASES>["filtros"];
 }) {
   const hasFilters = Boolean(active.categoria || active.servico || active.area || active.cliente);
   return (
@@ -85,7 +90,7 @@ export function CaseFilters({
               aria-current={!active.categoria ? "true" : undefined}
               className={`inline-block rounded-full border-2 border-benja-noite px-4 py-1.5 text-sm font-bold transition hover:-translate-y-0.5 ${!active.categoria ? "bg-benja-verde text-benja-nyanza" : "bg-white"}`}
             >
-              Todos
+              {textos.todos}
             </Link>
           </li>
           {categories.map((category) => {
@@ -110,9 +115,9 @@ export function CaseFilters({
       >
         {active.categoria ? <input type="hidden" name="categoria" value={active.categoria} /> : null}
         <label className="text-xs font-bold tracking-widest uppercase">
-          Serviço
+          {textos.servico}
           <select name="servico" defaultValue={active.servico ?? ""} className={`mt-1 ${selectClass}`}>
-            <option value="">Todos os serviços</option>
+            <option value="">{textos.servicoTodos}</option>
             {services.map((service) => (
               <option key={service.slug} value={service.slug}>
                 {service.name}
@@ -121,9 +126,9 @@ export function CaseFilters({
           </select>
         </label>
         <label className="text-xs font-bold tracking-widest uppercase">
-          Área
+          {textos.area}
           <select name="area" defaultValue={active.area ?? ""} className={`mt-1 ${selectClass}`}>
-            <option value="">Todas as áreas</option>
+            <option value="">{textos.areaTodas}</option>
             {areas.map((area) => (
               <option key={area.slug} value={area.slug}>
                 {area.name}
@@ -132,9 +137,9 @@ export function CaseFilters({
           </select>
         </label>
         <label className="text-xs font-bold tracking-widest uppercase">
-          Cliente
+          {textos.cliente}
           <select name="cliente" defaultValue={active.cliente ?? ""} className={`mt-1 ${selectClass}`}>
-            <option value="">Todos os clientes</option>
+            <option value="">{textos.clienteTodos}</option>
             {clients.map((client) => (
               <option key={client} value={client}>
                 {client}
@@ -143,11 +148,11 @@ export function CaseFilters({
           </select>
         </label>
         <button type="submit" className={buttonClasses("lima")}>
-          Filtrar
+          {textos.filtrar}
         </button>
         {hasFilters ? (
           <Link href="/cases" className="px-2 py-3 text-center text-sm font-bold underline underline-offset-4">
-            Limpar filtros
+            {textos.limpar}
           </Link>
         ) : null}
       </Form>

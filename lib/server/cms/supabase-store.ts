@@ -25,16 +25,20 @@
  02/11/2026 Vinícius Nishimura Reis  Serviço e case gravados pelas funções do banco (TECH-13, #314).
  04/11/2026 Vinícius Nishimura Reis  Leitura e gravação da configuração institucional (ADM-10).
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
+ 04/11/2026 Vinícius Nishimura Reis  Conflito de versão também pelo código da DBX-04 (#372).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { siteSettings } from "@/content";
+import type { ContentVersion } from "@/lib/domain/content/versions";
 import {
   assembleAreasAndServices,
   assembleCasesAndCategories,
   assemblePages,
+  toPage,
   toCta,
   toMediaMap,
   toMediaRef,
@@ -90,7 +94,9 @@ export function toCmsError(error: PostgrestError, context: { table: string; oper
       });
     case "42501":
       return new AppError("FORBIDDEN", { internal });
+    // Versão desatualizada: 40001 nas funções de hoje, BJ002 nas que a DBX-04 (#372) redefine. Os dois valem.
     case "40001":
+    case "BJ002":
       return new AppError("CONFLICT", { internal });
     case "P0002":
       return new AppError("NOT_FOUND", { internal });
@@ -105,6 +111,52 @@ async function run<T>(query: Result<T>, context: { table: string; operation: str
   const { data, error } = await query;
   if (error) throw toCmsError(error, context);
   return data;
+}
+
+const VERSION_LIST_COLUMNS =
+  "entity, entity_id, version, action, status, label, summary, restored_from, created_by, created_at";
+const VERSION_COLUMNS = `${VERSION_LIST_COLUMNS}, snapshot`;
+
+interface VersionRow {
+  entity: ContentVersion["entity"];
+  entity_id: string;
+  version: number;
+  action: ContentVersion["action"];
+  status: ContentVersion["status"];
+  label: string | null;
+  summary: string | null;
+  /** Só na leitura de uma versão: a lista mostra a linha do tempo, sem carregar o conteúdo de cada uma. */
+  snapshot?: Record<string, unknown> | null;
+  restored_from: number | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+/** Nome de quem alterou. Falha aqui não esconde o histórico: a linha só fica sem o nome. */
+async function withAuthors(client: SupabaseClient, rows: readonly VersionRow[]): Promise<ContentVersion[]> {
+  const ids = [...new Set(rows.flatMap((row) => row.created_by ?? []))];
+  const names = new Map<string, string | null>();
+  if (ids.length) {
+    const { data, error } = await client.rpc("content_version_authors", { p_ids: ids });
+    if (error) logger.warn("cms.version.authors_failed", { code: error.code });
+    for (const author of (data ?? []) as { id: string; full_name: string | null }[]) {
+      names.set(author.id, author.full_name);
+    }
+  }
+  return rows.map((row) => ({
+    entity: row.entity,
+    entityId: row.entity_id,
+    version: row.version,
+    action: row.action,
+    status: row.status,
+    label: row.label,
+    summary: row.summary,
+    snapshot: row.snapshot ?? null,
+    restoredFrom: row.restored_from,
+    authorId: row.created_by,
+    authorName: row.created_by ? (names.get(row.created_by) ?? null) : null,
+    createdAt: row.created_at,
+  }));
 }
 
 const saved = (row: { id: string; updated_at: string }): SavedRow => ({ id: row.id, updatedAt: row.updated_at });
@@ -321,6 +373,93 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
       const { settings, problems } = toSiteSettings(row, siteSettings);
       if (problems.length) logger.error("cms.settings.invalid_sections", { problems });
       return { settings, updatedAt: row.updated_at };
+    },
+
+    async readPage(id) {
+      const [rows, blocks] = await Promise.all([
+        run<PageRow[]>(client.from("pages").select(COLUMNS.pages).eq("id", id), {
+          table: "pages",
+          operation: "select",
+        }),
+        run<BlockRow[]>(client.from("blocks").select(COLUMNS.blocks).eq("page_id", id), {
+          table: "blocks",
+          operation: "select",
+        }),
+      ]);
+      const [row] = rows ?? [];
+      if (!row) return null;
+      const { page, problems } = toPage(row, blocks ?? []);
+      if (problems.length) logger.warn("cms.page.blocks_skipped", { problems });
+      return page;
+    },
+
+    async savePageDocument(id, expectedUpdatedAt, document) {
+      const rows = await run<{ id: string; updated_at: string }[]>(
+        client.rpc("save_page_document", {
+          p_id: id,
+          p_expected_updated_at: expectedUpdatedAt,
+          p_values: document.values,
+          p_blocks: document.blocks,
+        }),
+        { table: "pages", operation: "save" },
+      );
+      return saved(rows![0]);
+    },
+
+    async insertVersion({ entity, entityId, action, status, label, summary, snapshot, restoredFrom }) {
+      await run(
+        client.from("content_versions").insert({
+          entity,
+          entity_id: entityId,
+          action,
+          status,
+          label,
+          summary: summary ?? null,
+          snapshot,
+          restored_from: restoredFrom ?? null,
+          // O gatilho do banco sobrescreve: o valor aqui só satisfaz o `not null` antes dele.
+          version: 1,
+        }),
+        { table: "content_versions", operation: "insert" },
+      );
+    },
+
+    async countVersions(entity, entityId) {
+      const { count, error } = await client
+        .from("content_versions")
+        .select("id", { count: "exact", head: true })
+        .eq("entity", entity)
+        .eq("entity_id", entityId);
+      if (error) throw toCmsError(error, { table: "content_versions", operation: "select" });
+      return count ?? 0;
+    },
+
+    async listVersions({ entity, entityId, limit }) {
+      let query = client
+        .from("content_versions")
+        .select(VERSION_LIST_COLUMNS)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .limit(limit);
+      if (entity) query = query.eq("entity", entity);
+      if (entityId) query = query.eq("entity_id", entityId);
+      const rows = (await run<VersionRow[]>(query, { table: "content_versions", operation: "select" })) ?? [];
+      return withAuthors(client, rows);
+    },
+
+    async readVersion(entity, entityId, version) {
+      const rows =
+        (await run<VersionRow[]>(
+          client
+            .from("content_versions")
+            .select(VERSION_COLUMNS)
+            .eq("entity", entity)
+            .eq("entity_id", entityId)
+            .eq("version", version),
+          { table: "content_versions", operation: "select" },
+        )) ?? [];
+      const [found] = await withAuthors(client, rows);
+      return found ?? null;
     },
 
     async saveSettings(values, expectedUpdatedAt) {

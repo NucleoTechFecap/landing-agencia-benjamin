@@ -23,6 +23,7 @@
  02/11/2026 Vinícius Nishimura Reis  Tíquete do envio direto de mídia (TECH-13, #313).
  04/11/2026 Vinícius Nishimura Reis  Mensagens da tela de contato e redes, que grava direto no ar (ADM-10).
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -57,6 +58,7 @@ export const CMS_FLASH = {
   excluido: "Excluído definitivamente.",
   enviado: "Arquivo enviado para a biblioteca. Ele já pode ser escolhido nos formulários.",
   "no-ar": "Salvo e já no ar: o site mostra os dados novos.",
+  "versao-restaurada": "Versão restaurada. O conteúdo anterior continua guardado no histórico.",
   "sem-alteracao": "Nada mudou: os dados já eram estes, então o site continua igual.",
 } as const;
 

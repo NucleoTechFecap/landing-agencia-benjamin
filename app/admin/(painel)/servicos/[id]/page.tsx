@@ -21,6 +21,7 @@
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Link para a prévia protegida (ADM-14).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -31,26 +32,37 @@ import { CmsHeader } from "@/components/admin/cms/cms-header";
 import { CommandBar } from "@/components/admin/cms/command-bar";
 import { FlashMessage } from "@/components/admin/cms/flash-message";
 import { ItemPanel } from "@/components/admin/cms/item-panel";
+import { PageTabs } from "@/components/admin/cms/page-tabs";
+import { SeoForm } from "@/components/admin/cms/seo-form";
 import { ServiceForm } from "@/components/admin/cms/service-form";
 import { StatusBadge } from "@/components/admin/cms/status-badge";
+import { siteUrl } from "@/lib/config/public-env";
 import { can } from "@/lib/domain/auth/rbac";
 import { findIntegrityIssues } from "@/lib/domain/content/integrity";
 import { previewPath } from "@/lib/domain/content/preview";
 import { allowedCommands } from "@/lib/domain/content/publication";
+import { historyPath } from "@/lib/domain/content/versions";
 import { requirePageAccess } from "@/lib/server/auth/guards";
 import { publishProblems } from "@/lib/server/cms/content-service";
-import { loadCmsSnapshot, loadImageOptions } from "@/lib/server/cms/context";
+import { loadCmsSnapshot, loadImageOptions, loadLastChange } from "@/lib/server/cms/context";
 import { SERVICE } from "@/lib/server/cms/entities";
-import { saveService, serviceCommand } from "../actions";
+import { saveService, saveServiceSeo, serviceCommand } from "../actions";
 
 export const metadata: Metadata = { title: "Editar serviço" };
 
 export default async function EditServicePage({ params, searchParams }: PageProps<"/admin/servicos/[id]">) {
   const { id } = await params;
   const user = await requirePageAccess("service", "view", `/admin/servicos/${id}`);
-  const [snapshot, images, query] = await Promise.all([loadCmsSnapshot(), loadImageOptions(), searchParams]);
+  const [snapshot, images, query, lastChange] = await Promise.all([
+    loadCmsSnapshot(),
+    loadImageOptions(),
+    searchParams,
+    loadLastChange("service", id),
+  ]);
   const service = snapshot.services.find((item) => item.id === id);
   if (!service) notFound();
+  const readOnly = !can(user.role, "service", "edit") || service.status === "archived";
+  const seoTab = query.aba === "seo";
 
   const now = new Date();
   const cases = snapshot.cases.filter((item) => item.serviceIds.includes(service.id));
@@ -64,25 +76,49 @@ export default async function EditServicePage({ params, searchParams }: PageProp
     <>
       <CmsHeader title={service.name} />
       <FlashMessage ok={query.ok} aviso={query.aviso} />
+      <PageTabs
+        current={seoTab ? "seo" : "dados"}
+        tabs={[
+          { id: "dados", label: "Dados do serviço", href: `${SERVICE.adminPath}/${service.id}` },
+          { id: "seo", label: "SEO e compartilhamento", href: `${SERVICE.adminPath}/${service.id}?aba=seo` },
+        ]}
+      />
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="studio-card p-4 sm:p-6">
+        <div className="min-w-0 studio-card p-4 sm:p-6">
           {service.status === "archived" ? (
             <p className="mb-5 rounded-studio-md bg-studio-realce px-4 py-3 text-sm">
               Serviço arquivado: restaure como rascunho para editar.
             </p>
           ) : null}
-          <ServiceForm
-            action={saveService}
-            service={service}
-            areas={snapshot.areas}
-            images={images}
-            readOnly={!can(user.role, "service", "edit") || service.status === "archived"}
-          />
+          {seoTab ? (
+            <SeoForm
+              action={saveServiceSeo}
+              item={{ id: service.id, updatedAt: service.updatedAt }}
+              seo={service.seo ?? {}}
+              base={{ title: `${service.name} — serviço de comunicação`, description: service.summary }}
+              path={SERVICE.publicPath(service)}
+              siteUrl={siteUrl}
+              images={images}
+              defaultImageSrc={`${SERVICE.publicPath(service)}/opengraph-image`}
+              readOnly={readOnly}
+              cancelHref={`${SERVICE.adminPath}/${service.id}`}
+            />
+          ) : (
+            <ServiceForm
+              action={saveService}
+              service={service}
+              areas={snapshot.areas}
+              images={images}
+              readOnly={readOnly}
+            />
+          )}
         </div>
         <ItemPanel
           item={service}
           publicHref={SERVICE.publicPath(service)}
           previewHref={previewPath("servico", service.id)}
+          historyHref={historyPath("service", service.id)}
+          lastChange={lastChange}
           missing={publishProblems(SERVICE, service, snapshot, now)}
           warnings={warnings}
         >

@@ -23,18 +23,23 @@
  26/10/2026 Vinícius Nishimura Reis  Logotipo vertical em SVG (UX-14).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
  04/11/2026 Vinícius Nishimura Reis  Sem CTA publicado, não sobra caixa vazia no topo (HOME-07).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
-import Image from "next/image";
+import type { ResolvedPage } from "@/lib/domain/content/catalog";
+import type { HOME } from "@/lib/domain/content/catalog/home";
+import type { ImageValue } from "@/lib/domain/content/fields";
+import { DEFAULT_LOGOS } from "@/lib/domain/content/theme";
 import type { SiteSettings } from "@/lib/domain/content/types";
 import { ButtonLink } from "../ui/button-link";
 import { Container } from "../ui/container";
+import { SiteImage } from "../ui/site-image";
 import { Sticker } from "../ui/sticker";
 import { PageReady } from "../motion/page-ready";
 
 /** Texto da faixa lima da marca (hero e tela de carregamento). */
-export const bandText = (tagline: string) => `${tagline} · estratégia · conteúdo · criação · eventos · imprensa ·`;
+export const bandText = (tagline: string, faixa: string) => `${tagline} · ${faixa} ·`;
 
 export interface HeroCta {
   id: string;
@@ -44,8 +49,21 @@ export interface HeroCta {
 }
 
 /** Primeira dobra da Home: manifesto de marca + CTAs principais (PRJ §7.1 / HOME-01). */
-export function HeroManifesto({ settings, ctas }: { settings: SiteSettings; ctas: HeroCta[] }) {
-  const { manifesto } = settings;
+export function HeroManifesto({
+  settings,
+  campos,
+  faixa,
+  logo,
+  ctas,
+}: {
+  settings: SiteSettings;
+  campos: ResolvedPage<typeof HOME>["abertura"];
+  faixa: string;
+  /** Logotipo escolhido em Aparência; sem ele, o da marca. */
+  logo?: ImageValue;
+  ctas: HeroCta[];
+}) {
+  const logotipo = logo ?? DEFAULT_LOGOS.logoHero;
   return (
     <section aria-labelledby="manifesto-titulo" className="relative overflow-hidden bg-benja-verde text-benja-nyanza">
       <PageReady />
@@ -58,27 +76,29 @@ export function HeroManifesto({ settings, ctas }: { settings: SiteSettings; ctas
       <Container className="relative grid items-center gap-12 py-16 sm:py-24 lg:grid-cols-[1.15fr_0.85fr]">
         {/* min-w-0: sem ele a coluna do grid não encolhe abaixo da maior palavra e o texto era cortado em 320 px (HOME-01). */}
         <div className="min-w-0">
-          <p
-            data-motion="intro-fade"
-            data-at="0"
-            className="inline-flex items-center gap-2 rounded-full border-2 border-benja-lima px-4 py-1 text-xs font-bold tracking-widest text-benja-lima uppercase"
-          >
-            Agência experimental da FECAP
-          </p>
+          {campos.etiqueta ? (
+            <p
+              data-motion="intro-fade"
+              data-at="0"
+              className="inline-flex items-center gap-2 rounded-full border-2 border-benja-lima px-4 py-1 text-xs font-bold tracking-widest text-benja-lima uppercase"
+            >
+              {campos.etiqueta}
+            </p>
+          ) : null}
           <h1
             id="manifesto-titulo"
             data-motion="intro-lines"
             data-at="0.08"
             className="mt-6 text-[clamp(2.25rem,11vw,3rem)] leading-[0.95] font-black tracking-tight text-balance break-words sm:text-7xl"
           >
-            {manifesto.title}
+            {campos.titulo}
           </h1>
           <div
             data-motion="intro-fade"
             data-at="0.5"
             className="mt-6 max-w-xl space-y-3 text-lg leading-relaxed text-benja-nyanza/90"
           >
-            {manifesto.paragraphs.map((paragraph) => (
+            {campos.paragrafos.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
@@ -101,12 +121,12 @@ export function HeroManifesto({ settings, ctas }: { settings: SiteSettings; ctas
         <div className="relative mx-auto w-full max-w-[240px] px-6 py-10 sm:max-w-xs lg:max-w-sm">
           <div data-parallax="-28" className="relative z-10">
             <div data-motion="intro-logo" data-at="0.15">
-              <Image
-                src="/brand/logos/logo-vertical.svg"
+              <SiteImage
+                src={logotipo.src}
                 alt=""
                 aria-hidden
-                width={480}
-                height={496}
+                width={logotipo.width ?? DEFAULT_LOGOS.logoHero.width}
+                height={logotipo.height ?? DEFAULT_LOGOS.logoHero.height}
                 priority
                 className="h-auto w-full"
               />
@@ -114,12 +134,12 @@ export function HeroManifesto({ settings, ctas }: { settings: SiteSettings; ctas
           </div>
           <div data-parallax="-64" data-float className="absolute -top-4 -left-10 sm:-left-16">
             <div data-motion="intro-sticker" data-at="0.85" className="rotate-[-12deg]">
-              <Sticker name="poupa-meu-tempo" color="laranja" width={96} />
+              <Sticker src={campos.sticker1.src} width={96} />
             </div>
           </div>
           <div data-parallax="-44" data-float className="absolute -right-10 -bottom-6 sm:-right-16">
             <div data-motion="intro-sticker" data-at="1" className="rotate-[8deg]">
-              <Sticker name="ta-no-briefing" color="rosa" width={110} anchor="bottom" />
+              <Sticker src={campos.sticker2.src} width={110} anchor="bottom" />
             </div>
           </div>
         </div>
@@ -127,12 +147,12 @@ export function HeroManifesto({ settings, ctas }: { settings: SiteSettings; ctas
       <div className="relative overflow-hidden border-t-2 border-benja-noite bg-benja-lima px-4 py-3 text-xs font-black tracking-[0.25em] text-benja-verde uppercase sm:text-sm sm:tracking-[0.3em]">
         <p className="text-center motion-on:sr-only">
           {settings.tagline}
-          <span className="hidden sm:inline"> · estratégia · conteúdo · criação · eventos · imprensa</span>
+          <span className="hidden sm:inline"> · {faixa}</span>
         </p>
         {/* Com as animações ligadas, a faixa anda com a rolagem; o texto acima segue para os leitores de tela. */}
         <div aria-hidden data-band-track className="hidden w-max gap-[1.5em] whitespace-nowrap motion-on:flex">
           {Array.from({ length: 6 }, (_, index) => (
-            <span key={index}>{bandText(settings.tagline)}</span>
+            <span key={index}>{bandText(settings.tagline, faixa)}</span>
           ))}
         </div>
       </div>

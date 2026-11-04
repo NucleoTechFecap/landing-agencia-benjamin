@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,157 +23,31 @@
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
+import { CasesView } from "@/app/(site)/_views/cases-view";
+import { CASES } from "@/lib/domain/content/catalog/cases";
+import { getPage, getSiteSettings } from "@/lib/server/content/repository";
 import { buildMetadata } from "@/lib/server/seo";
-import { Suspense } from "react";
-import { CaseCard } from "@/components/cards/case-card";
-import { CaseFilters, type ActiveFilters } from "@/components/sections/case-filters";
-import { ClosingCta } from "@/components/sections/closing-cta";
-import { PageBlocks } from "@/components/sections/page-blocks";
-import { PageHero } from "@/components/sections/page-hero";
-import { JsonLd } from "@/components/seo/json-ld";
-import { Section } from "@/components/ui/section";
-import { CardsSkeleton, EmptyState, LoadingState } from "@/components/ui/states";
-import { siteUrl } from "@/lib/config/public-env";
-import { isValidSlug } from "@/lib/domain/content/slug";
-import { itemListSchema } from "@/lib/domain/seo/structured-data";
-import {
-  getPage,
-  getSiteSettings,
-  listAreas,
-  listCases,
-  listCategories,
-  listServices,
-} from "@/lib/server/content/repository";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const [settings, page] = await Promise.all([getSiteSettings(), getPage("cases")]);
   return buildMetadata(
     {
-      title: "Cases e portfólio",
-      description:
-        "Portfólio da Agência Benjamin: cases de copywriting, social media & criação e assessoria de imprensa desenvolvidos para clientes reais.",
+      title: CASES.seo.title,
+      description: CASES.seo.description,
       path: "/cases",
-      keywords: ["portfólio", "cases de comunicação", "Aventura de Construir", "Meridiano", "FECAP"],
+      keywords: [...CASES.seo.keywords],
+      seo: page?.seo,
     },
-    await getSiteSettings(),
+    settings,
   );
 }
 
 /** Portfólio com filtros por categoria, serviço e área (CASE-01, CASE-03). */
 export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
-  const [allCases, page] = await Promise.all([listCases(), getPage("cases")]);
-  return (
-    <>
-      <JsonLd
-        data={itemListSchema(
-          "Cases da Agência Benjamin",
-          allCases.map((item) => ({ name: item.title, path: `/cases/${item.slug}` })),
-          siteUrl,
-        )}
-      />
-      <PageHero
-        eyebrow="Portfólio"
-        title="Cases e conteúdos"
-        description={
-          <p>Trabalhos desenvolvidos pela Agência Benjamin para clientes, parceiros e para a própria FECAP.</p>
-        }
-        path="/cases"
-        breadcrumbs={[{ label: "Início", href: "/" }, { label: "Cases" }]}
-        icon="coracao"
-        iconColor="rosa"
-      />
-      <Section tone="claro" halftone labelledBy="portfolio-titulo">
-        <h2 id="portfolio-titulo" className="sr-only">
-          Lista de cases
-        </h2>
-        {/* Os filtros dependem da URL: ficam atrás de Suspense (Cache Components). */}
-        <Suspense
-          fallback={
-            <>
-              <LoadingState label="Carregando cases…" />
-              <CardsSkeleton className="mt-6" />
-            </>
-          }
-        >
-          <FilteredCases searchParams={searchParams} />
-        </Suspense>
-      </Section>
-      <PageBlocks page={page} />
-      <ClosingCta
-        title="Seu projeto pode ser o próximo case."
-        links={[
-          { id: "contato", label: "Quero um projeto", href: "/contato#formulario", external: false },
-          { id: "servicos", label: "Ver serviços", href: "/servicos", external: false },
-        ]}
-      />
-    </>
-  );
-}
-
-const pick = (value: string | string[] | undefined) => {
-  const single = Array.isArray(value) ? value[0] : value;
-  return single && isValidSlug(single) ? single : undefined;
-};
-
-async function FilteredCases({ searchParams }: Pick<PageProps<"/cases">, "searchParams">) {
-  const params = await searchParams;
-  const [categories, services, areas, allCases] = await Promise.all([
-    listCategories(),
-    listServices(),
-    listAreas(),
-    listCases(),
-  ]);
-  const clients = [...new Set(allCases.map((item) => item.client))].sort((a, b) => a.localeCompare(b, "pt-BR"));
-  const rawClient = Array.isArray(params.cliente) ? params.cliente[0] : params.cliente;
-  const active: ActiveFilters = {
-    categoria: pick(params.categoria),
-    servico: pick(params.servico),
-    area: pick(params.area),
-    // Cliente aceita só valores existentes (evita refletir texto arbitrário na página).
-    cliente: clients.find((client) => client === rawClient),
-  };
-  const cases = await listCases({
-    category: active.categoria,
-    service: active.servico,
-    area: active.area,
-    client: active.cliente,
-  });
-  const option = (item: { slug: string; name: string }) => ({ slug: item.slug, name: item.name });
-  const filtered = Object.values(active).some(Boolean);
-
-  return (
-    <>
-      <CaseFilters
-        categories={categories.map(option)}
-        services={services.map(option)}
-        areas={areas.map(option)}
-        clients={clients}
-        active={active}
-      />
-      <p role="status" className="mt-6 text-sm font-bold">
-        {cases.length === 1 ? "1 case encontrado" : `${cases.length} cases encontrados`}
-      </p>
-      {cases.length > 0 ? (
-        <ul data-motion="cards" className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {cases.map((item, index) => (
-            <li key={item.id}>
-              <CaseCard item={item} priority={index === 0} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <EmptyState
-          className="mt-4 bg-benja-nyanza"
-          action={filtered ? { href: "/cases", label: "Limpar filtros e ver todos os cases" } : undefined}
-        >
-          {filtered
-            ? "Nenhum case com esses filtros por enquanto. Tente outra combinação."
-            : "Os primeiros cases estão sendo preparados. Volte em breve!"}
-        </EmptyState>
-      )}
-    </>
-  );
+  return <CasesView page={await getPage("cases")} searchParams={searchParams} />;
 }

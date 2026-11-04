@@ -19,16 +19,25 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
-import { TextArea, TextField } from "@/components/forms/fields";
+import { SelectField, TextArea, TextField } from "@/components/forms/fields";
 import { blockFormValues, type TeamMemberInput } from "@/lib/domain/content/block-input";
-import type { BlockType, PageBlock } from "@/lib/domain/content/blocks";
+import { BLOCK_FIELDS, isFieldBlock, type BlockType, type PageBlock } from "@/lib/domain/content/blocks";
+import { blockEditorFields } from "@/lib/domain/content/field-editor";
+import { SECTION_TONE_LABELS, SECTION_TONE_NAMES } from "@/lib/domain/content/tones";
+import { FieldEditor, type ImageOption } from "./field-editor";
 import { CmsFormShell, type CmsSaveAction, type FieldHelpers } from "./form-shell";
 import { TeamMembersField, type PhotoOption } from "./team-members-field";
+
+/** Mesmo prefixo de lib/server/cms/page-blocks.ts: o nome dos campos no formulário. */
+const BLOCK_FIELD_PREFIX = "bloco";
+
+const TONE_OPTIONS = SECTION_TONE_NAMES.map((tone) => ({ value: tone, label: SECTION_TONE_LABELS[tone] }));
 
 /** Pessoas salvas no bloco; a foto volta para o id da biblioteca pelo endereço. */
 function savedMembers(block: PageBlock | undefined, photos: PhotoOption[]): TeamMemberInput[] {
@@ -56,12 +65,15 @@ export function BlockForm({
   type,
   block,
   photos,
+  images = [],
 }: {
   action: CmsSaveAction;
   page: { id: string; updatedAt: string };
   type: BlockType;
   block?: PageBlock;
   photos: PhotoOption[];
+  /** Biblioteca, para os blocos com imagem. */
+  images?: readonly ImageOption[];
 }) {
   const saved = block ? blockFormValues(block) : {};
   return (
@@ -109,6 +121,27 @@ export function BlockForm({
           <>
             <input type="hidden" name="type" value={type} />
             {block ? <input type="hidden" name="blockId" value={block.id} /> : null}
+            {isFieldBlock(type) ? (
+              <FieldEditor
+                fields={blockEditorFields(
+                  BLOCK_FIELDS[type],
+                  BLOCK_FIELD_PREFIX,
+                  block?.content as Readonly<Record<string, unknown>> | undefined,
+                )}
+                images={images}
+                helpers={helpers}
+              />
+            ) : null}
+            {type === "rich-text" || type === "list" || type === "team" || type === "cta" ? (
+              <SelectField
+                name="fundo"
+                label="Cor de fundo"
+                placeholder="Automática"
+                options={TONE_OPTIONS}
+                errors={errors("fundo")}
+                defaultValue={value("fundo", saved.fundo)}
+              />
+            ) : null}
             {type === "rich-text" ? (
               <>
                 {field("title", "Título", { maxLength: 120 })}

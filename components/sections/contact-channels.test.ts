@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-10).
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -25,12 +26,18 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { siteSettings } from "@/content";
+import { pageFields } from "@/lib/domain/content/catalog";
 import type { SiteSettings } from "@/lib/domain/content/types";
 import { ContactChannels } from "./contact-channels";
 
 const render = (partial: Partial<Pick<SiteSettings, "contact" | "socials">>) =>
   renderToStaticMarkup(
-    createElement(ContactChannels, { contact: siteSettings.contact, socials: siteSettings.socials, ...partial }),
+    createElement(ContactChannels, {
+      contact: siteSettings.contact,
+      socials: siteSettings.socials,
+      textos: pageFields("contato", null).canais,
+      ...partial,
+    }),
   );
 
 describe("canais da página de contato (ADM-10)", () => {

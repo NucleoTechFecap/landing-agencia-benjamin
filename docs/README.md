@@ -21,6 +21,7 @@
 | [Segredos e variáveis de ambiente por estágio](ambientes/variaveis-de-ambiente.md) | ARC-05 |
 | [Cadastro inicial de administradores](operacao/administrador-inicial.md) | INT-08 |
 | [Provisionamento do ambiente de produção](operacao/provisionamento-producao.md) | GO-02 |
+| [Carga inicial do conteúdo no banco](operacao/carga-inicial.md) | Editor do site |
 | [Domínio oficial, DNS e HTTPS](operacao/dominio-dns-https.md) | GO-03 |
 
 ## Segurança, acesso e dados pessoais
@@ -103,7 +104,7 @@
 | [Evolução do módulo de leads para CRM](roadmap/evolucao-crm.md) | FUT-01 |
 | [Newsletter com gestão de assinantes](roadmap/newsletter.md) | FUT-02 |
 | [Automações de comunicação e campanhas](roadmap/automacoes-de-comunicacao.md) | FUT-03 |
-| [Histórico e restauração de versões do CMS](roadmap/historico-de-versoes.md) | FUT-04 |
+| [Histórico e restauração de versões do CMS](roadmap/historico-de-versoes.md) (implementado) | FUT-04 |
 | [Analytics avançado de desempenho do site](roadmap/analytics-avancado.md) | FUT-06 |
 | [Planejamento de integrações externas](roadmap/integracoes-externas.md) | FUT-07 |
 | [Módulos internos para a operação da agência](roadmap/modulos-internos.md) | FUT-08 |

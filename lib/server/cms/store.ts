@@ -25,11 +25,13 @@
  02/11/2026 Vinícius Nishimura Reis  saveWithRelations no lugar de syncLinks e syncGallery (TECH-13, #314).
  04/11/2026 Vinícius Nishimura Reis  Leitura e gravação da configuração institucional (ADM-10).
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Histórico de versões e gravação da página inteira (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import type { ContentSnapshot, MediaRef, Page, SiteSettings } from "@/lib/domain/content/types";
+import type { ContentVersion, VersionAction, VersionEntity } from "@/lib/domain/content/versions";
 
 /** Tabelas de itens editáveis no painel. */
 export type EntityTable = "areas" | "services" | "case_categories" | "cases" | "ctas" | "pages";
@@ -92,6 +94,31 @@ export type ItemRelations =
   | { table: "services"; areaIds: readonly string[] }
   | { table: "cases"; serviceIds: readonly string[]; galleryIds: readonly string[] };
 
+/** Versão a gravar. Número, autor e horário quem define é o banco: o painel não consegue forjar. */
+export interface VersionInput {
+  entity: VersionEntity;
+  entityId: string;
+  action: VersionAction;
+  status: Page["status"] | null;
+  label: string | null;
+  summary?: string | null;
+  snapshot: Record<string, unknown> | null;
+  restoredFrom?: number | null;
+}
+
+/** Filtro do histórico: um item só, ou a linha do tempo de todo o conteúdo. */
+export interface VersionFilter {
+  entity?: VersionEntity;
+  entityId?: string;
+  limit: number;
+}
+
+/** Dados e blocos de uma página, gravados juntos ao restaurar uma versão. */
+export interface PageDocument {
+  values: { title: string; description: string | null; provisional: boolean; fields: unknown; seo: unknown };
+  blocks: readonly { type: string; content: unknown }[];
+}
+
 /** Configuração institucional como o painel lê: a versão otimista é o `updated_at` da linha única. */
 export interface StoredSettings {
   settings: SiteSettings;
@@ -148,4 +175,13 @@ export interface CmsStore {
    * depois de outra criação recebe CONFLICT.
    */
   saveSettings(values: Row, expectedUpdatedAt: string | null): Promise<void>;
+  /** Uma página com os blocos, sem ler o resto do conteúdo. */
+  readPage(id: string): Promise<Page | null>;
+  /** Grava dados e blocos numa transação (save_page_document). Não muda endereço nem estado. */
+  savePageDocument(id: string, expectedUpdatedAt: string, document: PageDocument): Promise<SavedRow>;
+  insertVersion(input: VersionInput): Promise<void>;
+  countVersions(entity: VersionEntity, entityId: string): Promise<number>;
+  /** Mais recentes primeiro, com o nome de quem alterou. */
+  listVersions(filter: VersionFilter): Promise<ContentVersion[]>;
+  readVersion(entity: VersionEntity, entityId: string, version: number): Promise<ContentVersion | null>;
 }

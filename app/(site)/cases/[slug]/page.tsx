@@ -27,6 +27,7 @@
  01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
  04/11/2026 Vinícius Nishimura Reis  Seções movidas para componentes compartilhados com a prévia (ADM-14).
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,7 +38,13 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { siteUrl } from "@/lib/config/public-env";
 import { pickRelatedCases } from "@/lib/domain/content/details";
 import { caseSchema } from "@/lib/domain/seo/structured-data";
-import { getCaseDetail, getSiteSettings, listCases, listPublishedSlugs } from "@/lib/server/content/repository";
+import {
+  getCaseDetail,
+  getPage,
+  getSiteSettings,
+  listCases,
+  listPublishedSlugs,
+} from "@/lib/server/content/repository";
 import { toStaticParams } from "@/lib/server/content/published-slugs";
 import { buildMetadata } from "@/lib/server/seo";
 
@@ -62,6 +69,7 @@ export async function generateMetadata({ params }: PageProps<"/cases/[slug]">): 
       type: "article",
       segmentImage: true,
       keywords: [item.client, category?.name ?? "", ...services.map((service) => service.name)].filter(Boolean),
+      seo: item.seo,
     },
     await getSiteSettings(),
   );
@@ -70,7 +78,11 @@ export async function generateMetadata({ params }: PageProps<"/cases/[slug]">): 
 /** Detalhe do case: desafio, solução, resultados, galeria, links e serviços (CASE-02, CASE-04). */
 export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
   const { slug } = await params;
-  const detail = await getCaseDetail(slug);
+  const [detail, modelo, geralPage] = await Promise.all([
+    getCaseDetail(slug),
+    getPage("modelo-case"),
+    getPage("site-geral"),
+  ]);
   if (!detail) notFound();
   const { item, category, services } = detail;
   const related = category ? pickRelatedCases(await listCases({ category: category.slug }), item.id) : [];
@@ -78,7 +90,7 @@ export default async function CasePage({ params }: PageProps<"/cases/[slug]">) {
   return (
     <>
       <JsonLd data={caseSchema(item, category?.name, services, siteUrl)} />
-      <CaseDetailSections detail={detail} related={related} />
+      <CaseDetailSections detail={detail} related={related} modelo={modelo} geralPage={geralPage} />
     </>
   );
 }

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Endereço sem mapa e redes vazias no rodapé (LAY-03).
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -25,11 +26,18 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { siteSettings } from "@/content";
+import { pageFields } from "@/lib/domain/content/catalog";
 import type { SiteSettings } from "@/lib/domain/content/types";
 import { SiteFooter } from "./site-footer";
 
 const render = (partial: Partial<SiteSettings>) =>
-  renderToStaticMarkup(createElement(SiteFooter, { settings: { ...siteSettings, ...partial }, year: 2026 }));
+  renderToStaticMarkup(
+    createElement(SiteFooter, {
+      settings: { ...siteSettings, ...partial },
+      year: 2026,
+      geral: pageFields("site-geral", null),
+    }),
+  );
 
 describe("rodapé (LAY-03)", () => {
   it("os três links oficiais usam https e abrem em nova aba, avisando o leitor de tela", () => {

@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-09).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -43,19 +44,22 @@ const ADMIN_PATH: Record<MediaUsage["entity"], string> = {
   service: "/admin/servicos",
   case: "/admin/cases",
   page: "/admin/paginas",
+  theme: "/admin/aparencia",
 };
 
 export default async function MediaDetailPage({ params, searchParams }: PageProps<"/admin/midia/[id]">) {
   const { id } = await params;
   const user = await requirePageAccess("media", "view", `/admin/midia/${id}`);
-  const [media, snapshot, query] = await Promise.all([
-    (await cmsDeps()).store.listMedia(),
+  const deps = await cmsDeps();
+  const [media, snapshot, stored, query] = await Promise.all([
+    deps.store.listMedia(),
     loadCmsSnapshot(),
+    deps.store.readSettings(),
     searchParams,
   ]);
   const asset = media.find((item) => item.id === id);
   if (!asset) notFound();
-  const usage = findMediaUsage(asset, snapshot);
+  const usage = findMediaUsage(asset, { ...snapshot, theme: stored?.settings.theme });
   const isImage = asset.mimeType.startsWith("image/");
   const name = mediaDisplayName(asset.path);
   const description = asset.decorative ? "Decorativa" : asset.alt || "Sem texto alternativo";
@@ -110,7 +114,10 @@ export default async function MediaDetailPage({ params, searchParams }: PageProp
               <ul className="mt-3 space-y-3">
                 {usage.map((item) => (
                   <li key={`${item.entity}-${item.id}-${item.place}`} className="space-y-1">
-                    <Link href={`${ADMIN_PATH[item.entity]}/${item.id}`} className="studio-link inline-block py-1">
+                    <Link
+                      href={item.entity === "theme" ? ADMIN_PATH.theme : `${ADMIN_PATH[item.entity]}/${item.id}`}
+                      className="studio-link inline-block py-1"
+                    >
                       {item.name}
                     </Link>
                     <p className="flex flex-wrap items-center gap-2 text-xs text-studio-suave">

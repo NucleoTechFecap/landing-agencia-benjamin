@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-10).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -28,6 +29,7 @@ import { CmsHeader } from "@/components/admin/cms/cms-header";
 import { FlashMessage } from "@/components/admin/cms/flash-message";
 import { SettingsForm } from "@/components/admin/cms/settings-form";
 import { can } from "@/lib/domain/auth/rbac";
+import { SINGLE_ENTITY_ID, historyPath } from "@/lib/domain/content/versions";
 import { requirePageAccess } from "@/lib/server/auth/guards";
 import { cmsDeps } from "@/lib/server/cms/context";
 import { loadSettingsForEdit } from "@/lib/server/cms/settings-service";
@@ -71,7 +73,12 @@ export default async function SettingsAdminPage({ searchParams }: PageProps<"/ad
           <Link href="/admin/paginas" className="studio-link">
             Páginas e textos institucionais
           </Link>
-          . Os destinatários dos formulários do site são definidos pelo NúcleoTech, fora do painel.
+          . Os destinatários dos formulários do site são definidos pelo NúcleoTech, fora do painel. Toda alteração fica
+          no{" "}
+          <Link href={historyPath("settings", SINGLE_ENTITY_ID)} prefetch={false} className="studio-link">
+            histórico destes dados
+          </Link>
+          .
         </p>
       </div>
     </>

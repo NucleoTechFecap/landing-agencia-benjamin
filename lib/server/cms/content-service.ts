@@ -27,6 +27,8 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  Item e relações gravados numa transação (TECH-13, #314).
  04/11/2026 Vinícius Nishimura Reis  Conteúdo sem endereço próprio, como o CTA (ADM-11).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
+ 04/11/2026 Vinícius Nishimura Reis  Restauração que falha ao gravar fica registrada como falha na auditoria.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -44,11 +46,13 @@ import {
   type PublicationState,
 } from "@/lib/domain/content/publication";
 import type { PublicationStatus } from "@/lib/domain/content/publication-status";
+import type { VersionAction } from "@/lib/domain/content/versions";
 import type { AuditInput } from "../audit";
 import type { ContentChange } from "../content/invalidate";
 import { AppError } from "../errors";
 import type { CmsItem, EntityDefinition } from "./entities";
 import type { CmsSnapshot, CmsStore, RetiredSlug } from "./store";
+import { itemVersion, recordBaseline, recordVersion } from "./version-log";
 
 export interface CmsActor {
   id: string;
@@ -89,6 +93,16 @@ const COMMAND_EVENTS: Record<PublicationCommand, AuditEventName> = {
   archive: "content.archived",
   restore: "content.restored",
   delete: "content.deleted",
+};
+
+/** Como cada comando aparece na linha do tempo do item. */
+const COMMAND_VERSIONS: Record<PublicationCommand, VersionAction> = {
+  save: "updated",
+  publish: "published",
+  unpublish: "unpublished",
+  archive: "archived",
+  restore: "unarchived",
+  delete: "deleted",
 };
 
 /**
@@ -183,6 +197,11 @@ function withSlug<I extends { slug?: string }, T extends CmsItem>(
   };
 }
 
+/** Restauração de uma versão: a mesma gravação, com outra marca na auditoria e no histórico. */
+export interface SaveOptions {
+  restoredFrom?: number;
+}
+
 export const stateOf = (item: CmsItem): PublicationState => ({
   status: item.status,
   publishedAt: item.publishedAt,
@@ -203,6 +222,7 @@ export async function saveContent<I extends { slug?: string }, T extends CmsItem
   def: EntityDefinition<I, T>,
   raw: unknown,
   ref?: ItemRef,
+  options: SaveOptions = {},
 ): Promise<SaveResult> {
   if (!can(actor.role, def.resource, ref ? "edit" : "create")) throw new AppError("FORBIDDEN");
   const [snapshot, retired] = await Promise.all([
@@ -254,30 +274,52 @@ export async function saveContent<I extends { slug?: string }, T extends CmsItem
     if (!check.ok) throw publicationError(check.error);
   }
 
-  // Item e relações entram juntos ou não entram (TECH-13): se falhar, nada mudou, então não há o
-  // que auditar nem cache a renovar.
-  const values = def.toValues(input);
-  const saved = def.relations
-    ? await deps.store.saveWithRelations(
-        def.relations(input),
-        values,
-        current && { id: current.id, expectedUpdatedAt: current.updatedAt },
-      )
-    : current
-      ? await deps.store.update(def.table, current.id, values, current.updatedAt)
-      : await deps.store.insert(def.table, { ...values, status: "draft" });
+  if (current) await recordBaseline(deps, itemVersion(def.type, current, "baseline"));
 
-  await deps.audit({
-    event: current ? "content.updated" : "content.created",
-    resourceId: saved.id,
-    outcome: "success",
-    metadata: {
-      entity: def.type,
-      slug: input.slug,
-      ...(previousSlug ? { previousSlug } : {}),
-      ...(current ? { fromStatus: current.status } : {}),
-    },
+  const restored = options.restoredFrom !== undefined;
+  const event: AuditEventName = restored ? "content.version_restored" : current ? "content.updated" : "content.created";
+  const auditMetadata = {
+    entity: def.type,
+    slug: input.slug,
+    ...(previousSlug ? { previousSlug } : {}),
+    ...(current ? { fromStatus: current.status } : {}),
+    ...(restored ? { count: options.restoredFrom } : {}),
+  };
+  // Evento crítico é auditado antes de gravar (TECH-10): sem registro, a restauração não acontece.
+  if (restored) await deps.audit({ event, resourceId: current?.id, outcome: "success", metadata: auditMetadata });
+
+  // Item e relações entram juntos ou não entram (TECH-13): se falhar, nada mudou, então não há cache
+  // a renovar. Só a restauração, já auditada como sucesso, precisa registrar a falha (TECH-10).
+  const values = def.toValues(input);
+  const write = () =>
+    def.relations
+      ? deps.store.saveWithRelations(
+          def.relations(input),
+          values,
+          current && { id: current.id, expectedUpdatedAt: current.updatedAt },
+        )
+      : current
+        ? deps.store.update(def.table, current.id, values, current.updatedAt)
+        : deps.store.insert(def.table, { ...values, status: "draft" });
+  const saved = await write().catch(async (error: unknown) => {
+    if (restored) {
+      await deps
+        .audit({ event, resourceId: current?.id, outcome: "failure", metadata: auditMetadata })
+        .catch(() => undefined);
+    }
+    throw error;
   });
+
+  if (!restored) await deps.audit({ event, resourceId: saved.id, outcome: "success", metadata: auditMetadata });
+  await recordVersion(
+    deps,
+    itemVersion(
+      def.type,
+      { ...merged, id: saved.id },
+      restored ? "version_restored" : current ? "updated" : "created",
+      { restoredFrom: options.restoredFrom },
+    ),
+  );
   if (current?.status === "published") {
     deps.invalidate(contentChange(def, input.slug, [merged, current], snapshot, now, previousSlug));
   }
@@ -359,6 +401,14 @@ export async function runContentCommand<I extends { slug?: string }, T extends C
     throw error;
   }
   if (!critical) await audit("success");
+  await recordVersion(
+    deps,
+    itemVersion(
+      def.type,
+      { ...item, status: next.status === "deleted" ? item.status : next.status },
+      COMMAND_VERSIONS[command],
+    ),
+  );
 
   if (item.status === "published" || next.status === "published") {
     deps.invalidate(contentChange(def, item.slug, [item], snapshot, now));

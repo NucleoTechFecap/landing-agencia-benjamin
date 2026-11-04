@@ -19,11 +19,12 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
-import { CmsHeader } from "@/components/admin/cms/cms-header";
+import { CmsHeader, CmsLinkButton } from "@/components/admin/cms/cms-header";
 import { FlashMessage } from "@/components/admin/cms/flash-message";
 import { PagesTable } from "@/components/admin/cms/pages-table";
 import { can } from "@/lib/domain/auth/rbac";
@@ -39,8 +40,12 @@ export default async function PagesAdminPage({ searchParams }: PageProps<"/admin
     <>
       <CmsHeader
         title="Páginas e textos"
-        description="Cada página do site tem seções fixas. Aqui você troca o manifesto e o texto Sobre, e acrescenta blocos depois das seções fixas. Sem conteúdo publicado, o site continua com os textos atuais."
-      />
+        description="Aqui mudam os textos, imagens, botões e o SEO de cada página, além do menu e do rodapé. Sem conteúdo publicado, o site continua com os textos originais."
+      >
+        {can(user.role, "page", "create") ? (
+          <CmsLinkButton href="/admin/paginas/nova">Nova página</CmsLinkButton>
+        ) : null}
+      </CmsHeader>
       <FlashMessage ok={query.ok} aviso={query.aviso} />
       <PagesTable pages={snapshot.pages} canCreate={can(user.role, "page", "create")} />
     </>

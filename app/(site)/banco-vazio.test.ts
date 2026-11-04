@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,13 +19,14 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
  01/11/2026 Vinícius Nishimura Reis  Mock com getPage, usado pelas páginas a partir do INT-03.
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { ReactElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { siteSettings } from "@/content";
+import { renderServerTree } from "@/tests/render-server-tree";
 
 /*
  * Ambiente recém-criado, sem nada publicado: nenhuma página pública pode quebrar nem mostrar
@@ -44,7 +45,7 @@ vi.mock("@/lib/server/content/repository", () => ({
   listCategories: async () => [],
 }));
 
-const render = async (page: () => Promise<ReactElement>) => renderToStaticMarkup(await page());
+const render = async (page: () => Promise<ReactElement>) => renderServerTree(await page());
 
 describe("páginas públicas sem conteúdo publicado (LAY-07)", () => {
   beforeEach(() => vi.spyOn(console, "error").mockImplementation(() => {}));

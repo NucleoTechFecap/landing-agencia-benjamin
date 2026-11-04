@@ -23,6 +23,7 @@
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
  01/11/2026 Vinícius Nishimura Reis  Segunda expiração contra regeneração em andamento (INT-03).
  04/11/2026 Vinícius Nishimura Reis  Segunda expiração em requisição própria, antes de aquecer (TECH-13, #369).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -31,6 +32,7 @@ import { revalidateTag, updateTag } from "next/cache";
 import { after } from "next/server";
 import { siteUrl } from "@/lib/config/public-env";
 import { getServerEnv } from "@/lib/config/server-env";
+import { pagePath } from "@/lib/domain/content/blocks";
 import type { ContentEntityType } from "@/lib/domain/content/types";
 import { logger } from "../logger";
 import { CONTENT_TAGS } from "./cache-tags";
@@ -103,12 +105,15 @@ export function tagsForChange(change: ContentChange): string[] {
  * atualizam na hora.
  */
 export function detailPathsForChange(change: ContentChange): string[] {
+  const pageRoute = change.slug && change.entity === "page" ? pagePath(change.slug) : null;
   const own =
     change.slug && change.entity === "service"
       ? [`/servicos/${change.slug}`]
       : change.slug && change.entity === "case"
         ? [`/cases/${change.slug}`]
-        : [];
+        : pageRoute
+          ? [pageRoute]
+          : [];
   return [...new Set([...own, ...(change.relatedPaths ?? [])])].slice(0, MAX_WARMED_PATHS);
 }
 

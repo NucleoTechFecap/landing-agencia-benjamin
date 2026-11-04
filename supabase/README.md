@@ -31,3 +31,6 @@ com as chaves do stack local (`npx supabase status`). Sem o stack no ar, esses t
 no `npm test`.
 
 Modelo, convenções e procedimento completo: [dicionário de dados](../docs/banco/dicionario-de-dados.md) §9.
+
+Primeira carga de conteúdo num banco novo: `carga-inicial.sql`, gerado por `npm run carga:write`. Rodar só com instrução do
+responsável, conforme [o procedimento](../docs/operacao/carga-inicial.md).
