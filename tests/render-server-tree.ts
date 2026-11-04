@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (editor do site).
+ 04/11/2026 Vinícius Nishimura Reis  Tira as marcas do React sem regex (alerta do CodeQL).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -39,5 +40,6 @@ export async function renderServerTree(element: ReactElement): Promise<string> {
   await stream.allReady;
   if (failure) throw failure;
   const html = await new Response(stream).text();
-  return html.replace(/<!--.*?-->/g, "");
+  const [start, ...rest] = html.split("<!--");
+  return start + rest.map((part) => part.slice(part.indexOf("-->") + 3)).join("");
 }
