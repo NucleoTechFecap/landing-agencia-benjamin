@@ -19,12 +19,14 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (SEG-06).
  04/11/2026 Vinícius Nishimura Reis  301 de endereço antigo com cache curto (TECH-13, #369).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
+import { readdirSync } from "node:fs";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { proxy } from "./proxy";
+import { config, proxy } from "./proxy";
 
 const SUPABASE = "https://projeto.supabase.co";
 const COOKIE = "sb-projeto-auth-token";
@@ -107,5 +109,30 @@ describe("proxy: endereço antigo de serviço e case (DB-08)", () => {
     expect(response.status).toBe(301);
     expect(response.headers.get("location")).toBe("https://www.exemplo.com.br/cases/nome-novo?origem=x");
     expect(response.headers.get("cache-control")).toBe("public, max-age=0, s-maxage=60");
+  });
+});
+
+describe("endereços de um segmento (editor do site)", () => {
+  const pattern = config.matcher.find((entry) => entry.startsWith("/:pagina"))!;
+  const caught = new RegExp(`^/${pattern.slice("/:pagina".length)}$`);
+
+  it.each(["/pagina-nova", "/README.md", "/.env", "/backup.sql", "/next.config.ts"])(
+    "%s passa pela checagem",
+    (path) => {
+      expect(caught.test(path)).toBe(true);
+    },
+  );
+
+  it.each(["/sobre", "/contato", "/admin", "/api", "/robots.txt", "/sitemap.xml", "/llms.txt", "/llms-full.txt"])(
+    "%s não passa",
+    (path) => {
+      expect(caught.test(path)).toBe(false);
+    },
+  );
+
+  it("nenhum arquivo da raiz de public/ passa: seria respondido com 404", () => {
+    const files = readdirSync("public", { withFileTypes: true }).filter((entry) => entry.isFile());
+    expect(files.length).toBeGreaterThan(0);
+    for (const file of files) expect(caught.test(`/${file.name}`), file.name).toBe(false);
   });
 });

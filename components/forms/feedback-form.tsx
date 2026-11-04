@@ -22,33 +22,65 @@
  04/11/2026 Vinícius Nishimura Reis  Botão disponível antes da hidratação (FORM-08).
  04/11/2026 Vinícius Nishimura Reis  Envio pelo onSubmit do hook (FORM-08).
  04/11/2026 Vinícius Nishimura Reis  Validação no navegador (FORM-04/FORM-05).
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
 import { useState } from "react";
-import { FEEDBACK_PROFILES } from "@/lib/domain/forms/schemas";
+import type { ResolvedPage } from "@/lib/domain/content/catalog";
+import type { FORMULARIOS } from "@/lib/domain/content/catalog/formularios";
+import { FEEDBACK_PROFILES, type FeedbackProfile } from "@/lib/domain/forms/schemas";
 import { CheckboxField, HoneypotField, TextArea, TextField } from "./fields";
-import { FormErrorBanner, FormSuccess, PrivacyConsentText, SubmitButton, TechnicalFields } from "./form-parts";
+import {
+  FormErrorBanner,
+  FormSuccess,
+  PrivacyConsentText,
+  SubmitButton,
+  TechnicalFields,
+  type TextosComuns,
+} from "./form-parts";
 import { useSubmission, type FormAction } from "./use-submission";
 
+type TextosFeedback = ResolvedPage<typeof FORMULARIOS>["feedback"];
+
+/** As chaves dos perfis são as do formulário e do banco: daqui só muda o nome que a pessoa lê. */
+const profileLabels = (textos: TextosFeedback): Record<FeedbackProfile, string> => ({
+  cliente: textos.perfilCliente,
+  parceiro: textos.perfilParceiro,
+  aluno: textos.perfilAluno,
+  comunidade: textos.perfilComunidade,
+  outro: textos.perfilOutro,
+});
+
 /** Formulário de feedback — pode ser anônimo (FORM-01 / SEG-01). */
-export function FeedbackForm({ action }: { action: FormAction }) {
+export function FeedbackForm(props: { action: FormAction; textos: TextosFeedback; comum: TextosComuns }) {
   const [round, setRound] = useState(0);
-  return <FeedbackFormInner key={round} action={action} onReset={() => setRound((value) => value + 1)} />;
+  return <FeedbackFormInner key={round} {...props} onReset={() => setRound((value) => value + 1)} />;
 }
 
-function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: () => void }) {
+function FeedbackFormInner({
+  action,
+  textos,
+  comum,
+  onReset,
+}: {
+  action: FormAction;
+  textos: TextosFeedback;
+  comum: TextosComuns;
+  onReset: () => void;
+}) {
+  const labels = profileLabels(textos);
   const { state, formAction, onSubmit, pending, meta, formRef, errors, values } = useSubmission("feedback", action);
   if (state.status === "success") {
-    return <FormSuccess protocol={state.protocol} title="Obrigado pelo feedback!" onReset={onReset} />;
+    return <FormSuccess protocol={state.protocol} title={textos.sucesso} onReset={onReset} textos={comum} />;
   }
   return (
     <form ref={formRef} action={formAction} onSubmit={onSubmit} noValidate className="relative space-y-6">
       <TechnicalFields meta={meta} />
       <HoneypotField />
-      <FormErrorBanner state={state} />
+      <FormErrorBanner state={state} textos={comum} />
 
       <fieldset
         role="radiogroup"
@@ -56,14 +88,14 @@ function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: (
         aria-describedby={errors.profile ? "profile-erro" : undefined}
       >
         <legend className="text-sm font-bold">
-          Você é{" "}
+          {textos.perfil}{" "}
           <span aria-hidden className="text-benja-laranja">
             *
           </span>
           <span className="sr-only"> (obrigatório)</span>
         </legend>
         <div className="mt-2 flex flex-wrap gap-2">
-          {Object.entries(FEEDBACK_PROFILES).map(([value, label]) => (
+          {(Object.keys(FEEDBACK_PROFILES) as FeedbackProfile[]).map((value) => (
             <label key={value} className="cursor-pointer">
               <input
                 type="radio"
@@ -73,7 +105,7 @@ function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: (
                 className="peer sr-only"
               />
               <span className="inline-block rounded-full border-2 border-benja-noite bg-white px-4 py-2 text-sm font-bold peer-checked:bg-benja-verde peer-checked:text-benja-nyanza peer-focus-visible:outline-3 peer-focus-visible:outline-benja-azul">
-                {label}
+                {labels[value]}
               </span>
             </label>
           ))}
@@ -87,7 +119,7 @@ function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: (
 
       <fieldset>
         <legend className="text-sm font-bold">
-          Que nota você dá para a Benjamin? <span className="font-normal text-benja-grafite/70">(opcional)</span>
+          {textos.nota} <span className="font-normal text-benja-grafite/70">{comum.opcional}</span>
         </legend>
         <div className="mt-2 flex gap-2">
           {[1, 2, 3, 4, 5].map((rating) => (
@@ -110,7 +142,7 @@ function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: (
 
       <TextArea
         name="message"
-        label="Seu feedback"
+        label={textos.mensagem}
         required
         rows={6}
         maxLength={2000}
@@ -119,11 +151,12 @@ function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: (
       />
 
       <div className="rounded-2xl border-2 border-dashed border-benja-verde/30 p-4">
-        <p className="text-sm font-bold">Quer se identificar? Os campos abaixo são opcionais.</p>
+        <p className="text-sm font-bold">{textos.identificar}</p>
         <div className="mt-3 grid gap-5 sm:grid-cols-2">
           <TextField
             name="name"
-            label="Nome"
+            label={textos.nome}
+            optionalLabel={comum.opcional}
             autoComplete="name"
             maxLength={120}
             errors={errors.name}
@@ -131,7 +164,8 @@ function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: (
           />
           <TextField
             name="email"
-            label="E-mail"
+            label={textos.email}
+            optionalLabel={comum.opcional}
             type="email"
             inputMode="email"
             autoComplete="email"
@@ -141,15 +175,17 @@ function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: (
         </div>
         <div className="mt-4">
           <CheckboxField name="allowContact" defaultChecked={values.allowContact === "on"}>
-            Quero receber um retorno da Benjamin sobre este feedback (precisa do e-mail).
+            {textos.retorno}
           </CheckboxField>
         </div>
       </div>
 
       <CheckboxField name="privacyConsent" required errors={errors.privacyConsent}>
-        <PrivacyConsentText />
+        <PrivacyConsentText textos={comum} />
       </CheckboxField>
-      <SubmitButton pending={pending}>Enviar feedback</SubmitButton>
+      <SubmitButton pending={pending} textos={comum}>
+        {textos.botao}
+      </SubmitButton>
     </form>
   );
 }

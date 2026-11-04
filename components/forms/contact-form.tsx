@@ -21,6 +21,7 @@
  04/11/2026 Vinícius Nishimura Reis  Página estática para o envio sem JavaScript (FORM-08).
  04/11/2026 Vinícius Nishimura Reis  Envio pelo onSubmit do hook (FORM-08).
  04/11/2026 Vinícius Nishimura Reis  Validação no navegador (FORM-04/FORM-05).
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -28,15 +29,41 @@
 
 import { useState } from "react";
 import { STANDALONE_FORM_PATHS } from "@/lib/config/navigation";
-import { CONTACT_SUBJECTS } from "@/lib/domain/forms/schemas";
+import type { ResolvedPage } from "@/lib/domain/content/catalog";
+import type { FORMULARIOS } from "@/lib/domain/content/catalog/formularios";
+import { CONTACT_SUBJECTS, type ContactSubject } from "@/lib/domain/forms/schemas";
 import { CheckboxField, HoneypotField, SelectField, TextArea, TextField } from "./fields";
-import { FormErrorBanner, FormSuccess, PrivacyConsentText, SubmitButton, TechnicalFields } from "./form-parts";
+import {
+  FormErrorBanner,
+  FormSuccess,
+  PrivacyConsentText,
+  SubmitButton,
+  TechnicalFields,
+  type TextosComuns,
+} from "./form-parts";
 import { useSubmission, type FormAction } from "./use-submission";
 
-const SUBJECT_OPTIONS = Object.entries(CONTACT_SUBJECTS).map(([value, label]) => ({ value, label }));
+type TextosContato = ResolvedPage<typeof FORMULARIOS>["contato"];
+
+/** As chaves dos assuntos são as do formulário e do banco: daqui só muda o nome que a pessoa lê. */
+const subjectOptions = (textos: TextosContato) => {
+  const labels: Record<ContactSubject, string> = {
+    parceria: textos.assuntoParceria,
+    imprensa: textos.assuntoImprensa,
+    "fazer-parte": textos.assuntoFazerParte,
+    duvida: textos.assuntoDuvida,
+    outro: textos.assuntoOutro,
+  };
+  return (Object.keys(CONTACT_SUBJECTS) as ContactSubject[]).map((value) => ({ value, label: labels[value] }));
+};
 
 /** Formulário de contato institucional — campos de FORM-01. */
-export function ContactForm(props: { action: FormAction; preselectedSubject?: string }) {
+export function ContactForm(props: {
+  action: FormAction;
+  preselectedSubject?: string;
+  textos: TextosContato;
+  comum: TextosComuns;
+}) {
   const [round, setRound] = useState(0);
   return <ContactFormInner key={round} {...props} onReset={() => setRound((value) => value + 1)} />;
 }
@@ -44,10 +71,14 @@ export function ContactForm(props: { action: FormAction; preselectedSubject?: st
 function ContactFormInner({
   action,
   preselectedSubject,
+  textos,
+  comum,
   onReset,
 }: {
   action: FormAction;
   preselectedSubject?: string;
+  textos: TextosContato;
+  comum: TextosComuns;
   onReset: () => void;
 }) {
   const { state, formAction, onSubmit, pending, meta, formRef, errors, values } = useSubmission(
@@ -56,17 +87,17 @@ function ContactFormInner({
     STANDALONE_FORM_PATHS.contact,
   );
   if (state.status === "success") {
-    return <FormSuccess protocol={state.protocol} title="Mensagem enviada!" onReset={onReset} />;
+    return <FormSuccess protocol={state.protocol} title={textos.sucesso} onReset={onReset} textos={comum} />;
   }
   return (
     <form ref={formRef} action={formAction} onSubmit={onSubmit} noValidate className="relative space-y-5">
       <TechnicalFields meta={meta} />
       <HoneypotField />
-      <FormErrorBanner state={state} />
+      <FormErrorBanner state={state} textos={comum} />
       <div className="grid gap-5 sm:grid-cols-2">
         <TextField
           name="name"
-          label="Nome"
+          label={textos.nome}
           required
           autoComplete="name"
           maxLength={120}
@@ -75,7 +106,7 @@ function ContactFormInner({
         />
         <TextField
           name="email"
-          label="E-mail"
+          label={textos.email}
           type="email"
           inputMode="email"
           required
@@ -85,27 +116,28 @@ function ContactFormInner({
         />
         <TextField
           name="phone"
-          label="Telefone"
+          label={textos.telefone}
+          optionalLabel={comum.opcional}
           type="tel"
           inputMode="tel"
           autoComplete="tel"
-          hint="Com DDD."
+          hint={textos.telefoneDica}
           errors={errors.phone}
           defaultValue={values.phone}
         />
         <SelectField
           name="subject"
-          label="Assunto"
+          label={textos.assunto}
           required
-          options={SUBJECT_OPTIONS}
-          placeholder="Selecione"
+          options={subjectOptions(textos)}
+          placeholder={comum.selecione}
           errors={errors.subject}
           defaultValue={values.subject ?? preselectedSubject}
         />
       </div>
       <TextArea
         name="message"
-        label="Mensagem"
+        label={textos.mensagem}
         required
         rows={6}
         maxLength={3000}
@@ -113,9 +145,11 @@ function ContactFormInner({
         defaultValue={values.message}
       />
       <CheckboxField name="privacyConsent" required errors={errors.privacyConsent}>
-        <PrivacyConsentText />
+        <PrivacyConsentText textos={comum} />
       </CheckboxField>
-      <SubmitButton pending={pending}>Enviar mensagem</SubmitButton>
+      <SubmitButton pending={pending} textos={comum}>
+        {textos.botao}
+      </SubmitButton>
     </form>
   );
 }

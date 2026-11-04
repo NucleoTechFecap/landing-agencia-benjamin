@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,12 +19,15 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
  01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import type { Metadata } from "next";
 import { isIndexable, siteUrl } from "@/lib/config/public-env";
+import type { ImageValue } from "@/lib/domain/content/fields";
+import { effectiveSeo, type SeoData } from "@/lib/domain/content/seo-schema";
 import type { SiteSettings } from "@/lib/domain/content/types";
 
 export const SITE_NAME = "Agência Benjamin";
@@ -44,6 +47,8 @@ export interface PageSeo {
   noindex?: boolean;
   /** Ignora o template "%s | Agência Benjamin" (Home). */
   absoluteTitle?: boolean;
+  /** O que foi preenchido na aba SEO do painel: vale por cima de tudo acima. */
+  seo?: SeoData;
 }
 
 /*
@@ -58,18 +63,37 @@ export function absoluteUrl(path = "/"): string {
   return `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+/** Imagem de compartilhamento: a do painel usa `src` e texto alternativo próprio, a da rota, `url`. */
+function toOpenGraphImage(image: NonNullable<PageSeo["image"]> | ImageValue, title: string) {
+  if ("url" in image) return image;
+  return {
+    url: image.src,
+    alt: image.alt || title,
+    ...(image.width && image.height ? { width: image.width, height: image.height } : {}),
+  };
+}
+
 /**
  * Metadados completos de uma página (SEO, Open Graph e Twitter) com canonical e
  * keywords; fora de produção a indexação é sempre bloqueada (ARC-06).
  */
-export function buildMetadata(page: PageSeo, settings?: Pick<SiteSettings, "keywords">): Metadata {
-  const keywords = [...new Set([...(page.keywords ?? []), ...(settings?.keywords ?? [])])];
-  const index = isIndexable && !page.noindex;
-  const openGraphImage = page.segmentImage ? {} : { images: [page.image ?? BRAND_IMAGE] };
-  const twitterImage = page.segmentImage ? {} : { images: [page.image?.url ?? BRAND_TWITTER_IMAGE] };
+export function buildMetadata(page: PageSeo, settings?: Pick<SiteSettings, "keywords" | "theme">): Metadata {
+  const seo = effectiveSeo(page, page.seo);
+  const keywords = [...new Set([...seo.keywords, ...(settings?.keywords ?? [])])];
+  const index = isIndexable && !page.noindex && !seo.noindex;
+  // Imagem da página (painel ou rota) > arquivo opengraph-image do segmento > imagem padrão do tema > marca.
+  const custom = page.seo?.ogImage ?? page.image;
+  const fallback = settings?.theme?.images?.shareImage;
+  const image = custom ?? fallback;
+  const imageUrl = image ? ("url" in image ? image.url : image.src) : undefined;
+  const openGraphImage =
+    page.segmentImage && !page.seo?.ogImage
+      ? {}
+      : { images: [image ? toOpenGraphImage(image, seo.ogTitle) : BRAND_IMAGE] };
+  const twitterImage = page.segmentImage && !page.seo?.ogImage ? {} : { images: [imageUrl ?? BRAND_TWITTER_IMAGE] };
   return {
-    title: page.absoluteTitle ? { absolute: page.title } : page.title,
-    description: page.description,
+    title: page.absoluteTitle || page.seo?.title ? { absolute: seo.title } : seo.title,
+    description: seo.description,
     keywords,
     alternates: { canonical: page.path },
     robots: {
@@ -82,14 +106,14 @@ export function buildMetadata(page: PageSeo, settings?: Pick<SiteSettings, "keyw
       locale: "pt_BR",
       siteName: SITE_NAME,
       url: page.path,
-      title: page.title,
-      description: page.description,
+      title: seo.ogTitle,
+      description: seo.ogDescription,
       ...openGraphImage,
     },
     twitter: {
       card: "summary_large_image",
-      title: page.title,
-      description: page.description,
+      title: seo.ogTitle,
+      description: seo.ogDescription,
       ...twitterImage,
     },
   };

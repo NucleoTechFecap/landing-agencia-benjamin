@@ -21,6 +21,7 @@
  25/10/2026 Caio Moraes              Fecha o menu quando o foco sai dele (LAY-02).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
  04/11/2026 Vinícius Nishimura Reis  Menu rola por dentro em tela baixa: no celular deitado, o fim ficava inalcançável (QA-03).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,7 +30,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import { MAIN_NAVIGATION, SECONDARY_NAVIGATION } from "@/lib/config/navigation";
 import { isActivePath } from "./nav-links";
 
 type MenuMotion = typeof import("@/components/motion/menu");
@@ -44,7 +44,13 @@ const activeMenuMotion = () => (document.documentElement.classList.contains("mot
  * navegar e ao clicar fora; devolve o foco ao botão ao fechar (LAY-02 / SEG-07).
  * Durante a animação de saída o painel fica `inert`: visível, mas sem receber foco nem cliques.
  */
-export function MobileMenu() {
+export function MobileMenu({
+  main,
+  secondary,
+}: {
+  main: readonly { label: string; href: string }[];
+  secondary: readonly { label: string; href: string }[];
+}) {
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const pathname = usePathname();
@@ -151,7 +157,7 @@ export function MobileMenu() {
       >
         <nav aria-label="Menu principal">
           <ul className="flex flex-col">
-            {MAIN_NAVIGATION.map((item) => {
+            {main.map((item) => {
               const active = isActivePath(pathname, item.href);
               return (
                 <li key={item.href}>
@@ -167,7 +173,7 @@ export function MobileMenu() {
             })}
           </ul>
           <ul className="mt-2 border-t-2 border-benja-verde/15 pt-2">
-            {SECONDARY_NAVIGATION.map((item) => (
+            {secondary.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className="block rounded-2xl px-4 py-2 text-sm font-semibold">
                   {item.label}

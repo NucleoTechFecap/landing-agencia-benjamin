@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -27,19 +28,21 @@ import { LeadForm } from "@/components/forms/lead-form";
 import { PageHero } from "@/components/sections/page-hero";
 import { Section } from "@/components/ui/section";
 import { STANDALONE_FORM_PATHS } from "@/lib/config/navigation";
-import { getSiteSettings, listServices } from "@/lib/server/content/repository";
+import { pageFields } from "@/lib/domain/content/catalog";
+import { getPage, getSiteSettings, listServices } from "@/lib/server/content/repository";
 import { buildMetadata } from "@/lib/server/seo";
 import { submitLead } from "../../actions";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const [settings, page] = await Promise.all([getSiteSettings(), getPage("site-formularios")]);
   return buildMetadata(
     {
-      title: "Quero um projeto",
+      title: pageFields("site-formularios", page).paginaProjeto.titulo,
       description: "Formulário de novos projetos da Agência Benjamin, para quem navega sem JavaScript.",
       path: STANDALONE_FORM_PATHS.lead,
       noindex: true,
     },
-    await getSiteSettings(),
+    settings,
   );
 }
 
@@ -48,19 +51,23 @@ export async function generateMetadata(): Promise<Metadata> {
  * hidratação, porque em /contato o resultado não chegaria ao HTML (FORM-08, ver `useSubmission`).
  */
 export default async function LeadFormPage() {
-  const services = await listServices();
+  const [services, formulariosPage, geralPage] = await Promise.all([
+    listServices(),
+    getPage("site-formularios"),
+    getPage("site-geral"),
+  ]);
+  const formularios = pageFields("site-formularios", formulariosPage);
+  const geral = pageFields("site-geral", geralPage);
+  const campos = formularios.paginaProjeto;
   return (
     <>
       <PageHero
-        eyebrow="Contato"
-        title="Quero um projeto"
-        description={<p>Conte sobre o seu projeto. A equipe da Benjamin responde pelo e-mail informado.</p>}
-        breadcrumbs={[
-          { label: "Início", href: "/" },
-          { label: "Contato", href: "/contato" },
-          { label: "Novo projeto" },
-        ]}
-        icon="comentario"
+        eyebrow={campos.etiqueta}
+        title={campos.titulo}
+        description={campos.descricao ? <p>{campos.descricao}</p> : undefined}
+        breadcrumbs={[{ label: geral.mensagens.inicio, href: "/" }, campos.trilhaContato, { label: campos.trilha }]}
+        icon={campos.icone.name}
+        iconColor={campos.icone.color}
       />
       <Section tone="nyanza" labelledBy="formulario-titulo">
         <div className="mx-auto max-w-3xl rounded-3xl border-2 border-benja-noite bg-white/70 p-6 shadow-sticker-lg sm:p-8">
@@ -70,11 +77,13 @@ export default async function LeadFormPage() {
           <LeadForm
             action={submitLead}
             services={services.map((service) => ({ value: service.slug, label: service.name }))}
+            textos={formularios.projeto}
+            comum={formularios.comum}
           />
           <p className="mt-6 text-sm">
-            Quer falar de outro assunto?{" "}
-            <Link href={STANDALONE_FORM_PATHS.contact} className="font-bold underline underline-offset-4">
-              Fale com a gente
+            {campos.outro}{" "}
+            <Link href={campos.outroLink.href} className="font-bold underline underline-offset-4">
+              {campos.outroLink.label}
             </Link>
             .
           </p>

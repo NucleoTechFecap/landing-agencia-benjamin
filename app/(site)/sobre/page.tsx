@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,110 +23,31 @@
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
  01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
+import { SobreView } from "@/app/(site)/_views/sobre-view";
+import { SOBRE } from "@/lib/domain/content/catalog/sobre";
+import { getPage, getSiteSettings } from "@/lib/server/content/repository";
 import { buildMetadata } from "@/lib/server/seo";
-import { AreaCard } from "@/components/cards/area-card";
-import { ClosingCta } from "@/components/sections/closing-cta";
-import { PageBlocks } from "@/components/sections/page-blocks";
-import { PageHero } from "@/components/sections/page-hero";
-import { BrandIcon, type BrandIconColor } from "@/components/ui/brand-icon";
-import { Section } from "@/components/ui/section";
-import { SectionHeading } from "@/components/ui/section-heading";
-import { getPage, getSiteSettings, listAreas } from "@/lib/server/content/repository";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const [settings, page] = await Promise.all([getSiteSettings(), getPage("sobre")]);
   return buildMetadata(
     {
-      title: "Sobre a Benjamin",
-      description:
-        "Conheça a Agência Benjamin, agência experimental de comunicação da FECAP: proposta de valor, modelo de atuação e relação com a FECAP.",
+      title: SOBRE.seo.title,
+      description: SOBRE.seo.description,
       path: "/sobre",
-      keywords: ["sobre a Agência Benjamin", "agência experimental FECAP", "agência de comunicação universitária"],
+      keywords: [...SOBRE.seo.keywords],
+      seo: page?.seo,
     },
-    await getSiteSettings(),
+    settings,
   );
 }
 
-const AREA_COLORS: BrandIconColor[] = ["verde", "laranja", "azul", "rosa", "verde-claro", "lima"];
-
 /** Página Sobre: agência experimental, proposta, modelo de atuação e FECAP (PRJ §8 / SOB-01, SOB-02). */
 export default async function AboutPage() {
-  const [settings, areas, page] = await Promise.all([getSiteSettings(), listAreas(), getPage("sobre")]);
-  const { about } = settings;
-  const pillars = [
-    { icon: "estrela", color: "lima" as const, title: "Proposta de valor", text: about.valueProposition },
-    { icon: "seta-curva", color: "laranja" as const, title: "Modelo de atuação", text: about.howWeWork },
-    { icon: "chapeu", color: "azul" as const, title: "Dentro da FECAP", text: about.fecapRelation },
-  ];
-
-  return (
-    <>
-      <PageHero
-        eyebrow="Sobre a Benjamin"
-        title={about.title}
-        description={<p>{about.intro}</p>}
-        path="/sobre"
-        breadcrumbs={[{ label: "Início", href: "/" }, { label: "Sobre" }]}
-        icon="hermes"
-      />
-
-      <Section tone="nyanza" labelledBy="pilares-titulo">
-        <SectionHeading id="pilares-titulo" eyebrow="Agência experimental" title="Como a Benjamin funciona" />
-        <ul data-motion="cards" className="mt-10 grid gap-6 md:grid-cols-3">
-          {pillars.map((pillar) => (
-            <li key={pillar.title}>
-              <div
-                data-card="soft"
-                className="h-full rounded-3xl border-2 border-benja-noite bg-white/70 p-7 shadow-sticker"
-              >
-                <span data-card-icon className="block w-fit">
-                  <BrandIcon name={pillar.icon} color={pillar.color} size={64} />
-                </span>
-                <h3 className="mt-4 text-2xl font-black text-benja-verde">{pillar.title}</h3>
-                <p className="mt-3 leading-relaxed text-benja-grafite">{pillar.text}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      {areas.length > 0 ? (
-        <Section tone="claro" halftone labelledBy="sobre-areas-titulo">
-          <SectionHeading
-            id="sobre-areas-titulo"
-            eyebrow="Estrutura"
-            title="Seis áreas que trabalham juntas"
-            description="Cada área tem especialistas próprios e se combina com as demais conforme o projeto."
-          />
-          <ul data-motion="cards" className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {areas.map((area, index) => (
-              <li key={area.id}>
-                <AreaCard area={area} color={AREA_COLORS[index % AREA_COLORS.length]} />
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
-
-      {/* "Nosso time" é um bloco da página (SOB-03): sem pessoas autorizadas (CON-09), a seção não existe. */}
-      <PageBlocks page={page} />
-
-      <ClosingCta
-        title="Quer construir algo com a gente?"
-        description="Seja um projeto para sua marca ou vontade de fazer parte da Benjamin, a conversa começa por aqui."
-        links={[
-          { id: "projeto", label: "Quero um projeto", href: "/contato#formulario", external: false },
-          {
-            id: "fazer-parte",
-            label: "Quero fazer parte",
-            href: "/contato?assunto=fazer-parte#formulario",
-            external: false,
-          },
-        ]}
-      />
-    </>
-  );
+  return <SobreView page={await getPage("sobre")} />;
 }

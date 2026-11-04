@@ -22,19 +22,36 @@
  01/11/2026 Vinícius Nishimura Reis  Endereço sem mapa e redes vazias no rodapé (LAY-03).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
  04/11/2026 Vinícius Nishimura Reis  Crédito avisa da nova aba; sem chamada para a própria página de contato (INT-06).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
-import Image from "next/image";
 import Link from "next/link";
-import { MAIN_NAVIGATION, SECONDARY_NAVIGATION } from "@/lib/config/navigation";
+import type { ResolvedPage } from "@/lib/domain/content/catalog";
+import type { GERAL } from "@/lib/domain/content/catalog/geral";
+import { fillText, type ImageValue } from "@/lib/domain/content/fields";
+import { DEFAULT_LOGOS } from "@/lib/domain/content/theme";
 import type { SiteSettings } from "@/lib/domain/content/types";
 import { Container } from "../ui/container";
+import { SiteImage } from "../ui/site-image";
 import { FooterContactLink } from "./contact-cta";
 import { SocialLinks } from "./social-links";
 
 /** Rodapé com contato, redes sociais, navegação e créditos (LAY-03). */
-export function SiteFooter({ settings, year }: { settings: SiteSettings; year: number }) {
+export function SiteFooter({
+  settings,
+  year,
+  geral,
+  logo,
+}: {
+  settings: SiteSettings;
+  year: number;
+  geral: ResolvedPage<typeof GERAL>;
+  /** Logotipo escolhido em Aparência; sem ele, o da marca. */
+  logo?: ImageValue;
+}) {
+  const { rodape, cabecalho } = geral;
+  const logotipo = logo ?? DEFAULT_LOGOS.logoFooter;
   return (
     <footer className="relative overflow-hidden border-t-2 border-benja-noite bg-benja-verde text-benja-nyanza">
       <div
@@ -47,20 +64,20 @@ export function SiteFooter({ settings, year }: { settings: SiteSettings; year: n
         className="relative mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.3fr_1fr_1fr] lg:px-8"
       >
         <div>
-          <Image
-            src="/brand/logos/logo-horizontal.svg"
-            alt="Agência Benjamin"
-            width={180}
-            height={117}
+          <SiteImage
+            src={logotipo.src}
+            alt={logotipo.alt || DEFAULT_LOGOS.logoFooter.alt}
+            width={logotipo.width ?? DEFAULT_LOGOS.logoFooter.width}
+            height={logotipo.height ?? DEFAULT_LOGOS.logoFooter.height}
             className="h-auto w-44"
           />
           <p className="mt-4 max-w-sm text-sm leading-relaxed opacity-90">{settings.description}</p>
           <p className="mt-4 text-sm font-bold tracking-widest uppercase">{settings.tagline}</p>
         </div>
         <div>
-          <h2 className="text-sm font-black tracking-widest uppercase">Navegue</h2>
+          <h2 className="text-sm font-black tracking-widest uppercase">{rodape.navegue}</h2>
           <ul className="mt-4 grid grid-cols-2 gap-2 text-sm md:grid-cols-1">
-            {[...MAIN_NAVIGATION, ...SECONDARY_NAVIGATION].map((item) => (
+            {[...cabecalho.menu, ...cabecalho.menuSecundario].map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className="underline-offset-4 hover:underline">
                   {item.label}
@@ -70,7 +87,7 @@ export function SiteFooter({ settings, year }: { settings: SiteSettings; year: n
           </ul>
         </div>
         <div>
-          <h2 className="text-sm font-black tracking-widest uppercase">Contato</h2>
+          <h2 className="text-sm font-black tracking-widest uppercase">{rodape.contato}</h2>
           <address className="mt-4 space-y-2 text-sm not-italic">
             {settings.contact.email ? (
               <a href={`mailto:${settings.contact.email}`} className="block underline-offset-4 hover:underline">
@@ -91,22 +108,22 @@ export function SiteFooter({ settings, year }: { settings: SiteSettings; year: n
             ) : settings.contact.address ? (
               <p>{settings.contact.address}</p>
             ) : null}
-            <FooterContactLink />
+            <FooterContactLink link={rodape.chamada} />
           </address>
           <SocialLinks socials={settings.socials} className="mt-6" />
         </div>
       </div>
       <Container className="relative flex flex-col gap-2 border-t border-benja-nyanza/25 py-6 text-xs opacity-90 sm:flex-row sm:justify-between">
-        <p>© {year} Agência Benjamin · Agência experimental da FECAP.</p>
+        <p>{fillText(rodape.direitos, { ano: year })}</p>
         <p>
-          Plataforma desenvolvida pelo{" "}
+          {rodape.credito}{" "}
           <a
-            href="https://www.instagram.com/nucleotechfecap"
+            href={rodape.creditoLink.href}
             target="_blank"
             rel="noopener noreferrer"
             className="font-bold underline underline-offset-4"
           >
-            NúcleoTech FECAP
+            {rodape.creditoLink.label}
             <span className="sr-only"> (abre em nova aba)</span>
           </a>
           .

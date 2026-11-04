@@ -23,6 +23,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  03/11/2026 Julia                    Foco, placeholder e asterisco com contraste mínimo (SEG-07).
  04/11/2026 Vinícius Nishimura Reis  Select avisa a mudança de valor, para campos que dependem dele (ADM-11).
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,7 +38,17 @@ function errorId(name: string) {
   return `${name}-erro`;
 }
 
-function Label({ name, label, required }: { name: string; label: string; required?: boolean }) {
+function Label({
+  name,
+  label,
+  required,
+  optionalLabel = "(opcional)",
+}: {
+  name: string;
+  label: string;
+  required?: boolean;
+  optionalLabel?: string;
+}) {
   return (
     <label htmlFor={name} className="text-sm font-bold text-benja-noite">
       {label}
@@ -50,7 +61,7 @@ function Label({ name, label, required }: { name: string; label: string; require
           <span className="sr-only"> (obrigatório)</span>
         </>
       ) : (
-        <span className="font-normal text-benja-grafite/70"> (opcional)</span>
+        <span className="font-normal text-benja-grafite/70"> {optionalLabel}</span>
       )}
     </label>
   );
@@ -74,6 +85,8 @@ interface BaseProps {
   errors?: string[];
   defaultValue?: string;
   hint?: string;
+  /** Marca de campo opcional, quando o texto vem do painel. */
+  optionalLabel?: string;
 }
 
 const describedBy = (name: string, errors?: string[], hint?: string) =>
@@ -90,7 +103,7 @@ export function TextField({
   const id = props.id ?? props.name;
   return (
     <div>
-      <Label name={id} label={props.label} required={props.required} />
+      <Label name={id} label={props.label} required={props.required} optionalLabel={props.optionalLabel} />
       <input
         id={id}
         name={props.name}
@@ -118,7 +131,7 @@ export function TextArea({ rows = 5, maxLength, ...props }: BaseProps & { rows?:
   const invalid = Boolean(props.errors?.length);
   return (
     <div>
-      <Label name={props.name} label={props.label} required={props.required} />
+      <Label name={props.name} label={props.label} required={props.required} optionalLabel={props.optionalLabel} />
       <textarea
         id={props.name}
         name={props.name}
@@ -154,7 +167,7 @@ export function SelectField({
   const id = props.id ?? props.name;
   return (
     <div>
-      <Label name={id} label={props.label} required={props.required} />
+      <Label name={id} label={props.label} required={props.required} optionalLabel={props.optionalLabel} />
       <select
         id={id}
         name={props.name}

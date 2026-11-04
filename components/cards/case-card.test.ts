@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Foco visível no card e testes do portfólio (CASE-01).
  02/11/2026 Vinícius Nishimura Reis  Ajuste às animações GSAP e à remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -46,7 +47,7 @@ const base = {
 } as unknown as CaseCardData;
 
 const render = (item: Partial<CaseCardData> = {}) =>
-  renderToStaticMarkup(createElement(CaseCard, { item: { ...base, ...item } }));
+  renderToStaticMarkup(createElement(CaseCard, { item: { ...base, ...item }, ctaLabel: "Ver case" }));
 
 describe("card de case (CASE-01)", () => {
   it("mostra capa, cliente, categoria e leva ao detalhe", () => {

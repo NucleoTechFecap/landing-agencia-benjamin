@@ -23,6 +23,7 @@
  29/10/2026 Vinicius Binda             301 de endereço antigo ou com maiúsculas para o atual (DB-08).
  04/11/2026 Vinícius Nishimura Reis  Cookies de sessão com HttpOnly, SameSite e Secure (SEG-06).
  04/11/2026 Vinícius Nishimura Reis  301 de endereço antigo com cache curto (TECH-13, #369).
+ 04/11/2026 Vinícius Nishimura Reis  404 real e endereço único nas páginas livres (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -32,7 +33,7 @@ import { publicEnv } from "@/lib/config/public-env";
 import { LOGIN_PATH, isPublicAdminPath } from "@/lib/domain/auth/redirect";
 import { REDIRECT_CACHE_CONTROL } from "@/lib/domain/content/slug";
 import { sessionCookieOptions } from "@/lib/domain/security/http-policy";
-import { resolveDetailSlug, type DetailRoute } from "@/lib/server/content/published-slugs";
+import { resolveDetailSlug, resolvePageSlug, type DetailRoute } from "@/lib/server/content/published-slugs";
 
 /**
  * Primeira barreira do painel (ADM-03) e renovação de sessão (ADM-02):
@@ -80,17 +81,16 @@ export async function proxy(request: NextRequest) {
  * só consegue status 200 + noindex (o shell já começou a ser enviado).
  */
 async function guardDetailRoute(request: NextRequest, pathname: string) {
-  const [, route, slug] = pathname.split("/") as [string, DetailRoute, string];
-  if (!slug) return NextResponse.next();
-  const resolution = await resolveDetailSlug(route, slug);
+  const [, first, slug] = pathname.split("/") as [string, DetailRoute | string, string | undefined];
+  // Um segmento só é uma página livre; dois, o detalhe de serviço ou case.
+  const resolution = slug ? await resolveDetailSlug(first as DetailRoute, slug) : await resolvePageSlug(first);
   if (resolution.status === "missing") {
-    return NextResponse.rewrite(new URL("/_conteudo-inexistente", request.url), { status: 404 });
+    // Dois segmentos de propósito: um só cairia em app/(site)/[slug], que não consegue responder 404.
+    return NextResponse.rewrite(new URL("/_conteudo/inexistente", request.url), { status: 404 });
   }
   if (resolution.status === "moved") {
-    const moved = NextResponse.redirect(
-      new URL(`/${route}/${resolution.slug}${request.nextUrl.search}`, request.url),
-      301,
-    );
+    const target = slug ? `/${first}/${resolution.slug}` : `/${resolution.slug}`;
+    const moved = NextResponse.redirect(new URL(`${target}${request.nextUrl.search}`, request.url), 301);
     moved.headers.set("Cache-Control", REDIRECT_CACHE_CONTROL);
     return moved;
   }
@@ -104,5 +104,12 @@ function redirectToLogin(request: NextRequest, next: string) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/servicos/:slug", "/cases/:slug"],
+  matcher: [
+    "/admin/:path*",
+    "/servicos/:slug",
+    "/cases/:slug",
+    // Página livre: um segmento só, fora das rotas fixas e dos arquivos da raiz. Com ponto também: sem isso,
+    // /README.md ou /.env cairiam em app/(site)/[slug], que não consegue responder 404 de verdade.
+    "/:pagina((?!_next$|admin$|api$|sobre$|areas$|servicos$|cases$|contato$|feedback$|privacidade$|opengraph-image|twitter-image|favicon\\.ico$|icon\\.png$|apple-icon\\.png$|robots\\.txt$|sitemap\\.xml$|llms\\.txt$|llms-full\\.txt$|manifest\\.webmanifest$)[^/]+)",
+  ],
 };

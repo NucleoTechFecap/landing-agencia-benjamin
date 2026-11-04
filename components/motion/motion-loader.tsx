@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 02/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,10 +18,13 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  02/11/2026 Vinícius Nishimura Reis  Criação inicial (animações GSAP).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
-import Image from "next/image";
+import type { ImageValue } from "@/lib/domain/content/fields";
+import { DEFAULT_LOGOS } from "@/lib/domain/content/theme";
+import { SiteImage } from "../ui/site-image";
 import { bandText } from "../sections/hero-manifesto";
 import { Sticker } from "../ui/sticker";
 
@@ -31,7 +34,8 @@ import { Sticker } from "../ui/sticker";
  * é toda em CSS, para já estar em movimento antes de o JavaScript chegar. Não recebe cliques, foco nem
  * leitura de tela: o conteúdo já está na página atrás dela.
  */
-export function MotionLoader({ tagline }: { tagline: string }) {
+export function MotionLoader({ tagline, faixa, logo }: { tagline: string; faixa: string; logo?: ImageValue }) {
+  const logotipo = logo ?? DEFAULT_LOGOS.logoHero;
   return (
     <div
       aria-hidden
@@ -43,11 +47,11 @@ export function MotionLoader({ tagline }: { tagline: string }) {
       <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center gap-[clamp(1rem,4vh,2.5rem)] px-6">
         <div className="relative">
           {/* Logotipo sem rotação nem transparência: entra por máscara. Os stickers ficam fora dele (zona de exclusão). */}
-          <Image
-            src="/brand/logos/logo-vertical.svg"
+          <SiteImage
+            src={logotipo.src}
             alt=""
-            width={480}
-            height={496}
+            width={logotipo.width ?? DEFAULT_LOGOS.logoHero.width}
+            height={logotipo.height ?? DEFAULT_LOGOS.logoHero.height}
             priority
             className="motion-loader-logo h-[clamp(140px,min(40vh,62vw),320px)] w-auto"
           />
@@ -69,7 +73,7 @@ export function MotionLoader({ tagline }: { tagline: string }) {
       <div className="relative overflow-hidden border-t-2 border-benja-noite bg-benja-lima px-4 py-3 text-xs font-black tracking-[0.25em] uppercase sm:text-sm sm:tracking-[0.3em]">
         <div className="motion-loader-band flex w-max gap-[1.5em] whitespace-nowrap">
           {Array.from({ length: 6 }, (_, index) => (
-            <span key={index}>{bandText(tagline)}</span>
+            <span key={index}>{bandText(tagline, faixa)}</span>
           ))}
         </div>
       </div>
