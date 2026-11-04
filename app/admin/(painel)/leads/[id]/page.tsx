@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
+ 04/11/2026 Vinícius Nishimura Reis  Exclusão de envio arquivado, a pedido do titular (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,6 +27,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CmsHeader } from "@/components/admin/cms/cms-header";
 import { FlashMessage } from "@/components/admin/cms/flash-message";
+import { DeleteSubmissionForm } from "@/components/admin/leads/delete-form";
 import { StatusForm } from "@/components/admin/leads/status-form";
 import {
   NotificationPanel,
@@ -35,7 +37,7 @@ import {
 import { INBOX_PATH, canOnKind, isSubmissionId, statusOptions } from "@/lib/domain/forms/inbox";
 import { listServices } from "@/lib/server/content/repository";
 import { openSubmission, requireInboxPage } from "@/lib/server/forms/inbox-context";
-import { changeSubmissionStatusAction } from "../actions";
+import { changeSubmissionStatusAction, deleteSubmissionAction } from "../actions";
 
 // Título fixo: nome e e-mail do visitante não vão para a aba, o histórico nem a trilha da página.
 export const metadata: Metadata = { title: "Envio recebido" };
@@ -68,6 +70,13 @@ export default async function SubmissionPage({ params, searchParams }: PageProps
               id={record.id}
               current={record.status}
               options={statusOptions(record.kind, record.status)}
+            />
+          ) : null}
+          {canOnKind(user.role, record.kind, "delete") ? (
+            <DeleteSubmissionForm
+              action={deleteSubmissionAction}
+              id={record.id}
+              archived={record.status === "arquivado"}
             />
           ) : null}
         </aside>
