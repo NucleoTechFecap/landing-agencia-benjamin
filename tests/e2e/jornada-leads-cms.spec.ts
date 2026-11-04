@@ -24,9 +24,10 @@
 import { randomBytes, randomInt, randomUUID } from "node:crypto";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { panelMenu } from "./painel-helpers";
 
 /**
- * J3.4/J3.5 — envio público consultado no painel (FORM-09, INT-07, SEG-04). Precisa do app construído
+ * J3.4 e J3.10 a J3.13 — envio público consultado no painel (FORM-09, INT-07, SEG-04). Precisa do app construído
  * contra o Supabase local: `npm run test:e2e:cms`. Sem as variáveis, o teste é pulado. Dados fictícios.
  */
 const SUPABASE_URL = process.env.E2E_SUPABASE_URL;
@@ -146,8 +147,7 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
     expect(protocol).not.toBe("");
 
     await login(page, accounts.admin);
-    // `first`: com o menu lateral do painel, o mesmo link também aparece no cartão do início.
-    await page.getByRole("link", { name: "Leads e feedbacks" }).first().click();
+    await panelMenu(page).getByRole("link", { name: "Leads e feedbacks" }).click();
     await expect(page).toHaveURL(/\/admin\/leads$/);
     await expect(visible(page.getByRole("heading", { level: 1, name: "Leads e feedbacks" }))).toBeVisible();
 
@@ -196,7 +196,7 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
   });
 
   for (const role of ["editor", "super_admin"] as const) {
-    test(`J3.5 ${role} recebe "sem permissão" e não vê dado nenhum`, async ({ page }) => {
+    test(`J3.10 ${role} recebe "sem permissão" e não vê dado nenhum`, async ({ page }) => {
       await login(page, accounts[role]);
       await expect(page.getByRole("link", { name: "Leads e feedbacks" })).toHaveCount(0);
       for (const path of ["/admin/leads", `/admin/leads/${hostile.id}`, "/admin/leads/nao-e-uuid"]) {
@@ -220,7 +220,7 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
     });
   }
 
-  test("J3.5 sem sessão, a tela leva ao login e a API pública não tem rota de envios", async ({ page }) => {
+  test("J3.10 sem sessão, a tela leva ao login e a API pública não tem rota de envios", async ({ page }) => {
     const response = await page.request.get(`/admin/leads/${hostile.id}`, { maxRedirects: 0 });
     expect(response.status()).toBe(307);
     expect(response.headers().location).toContain("/admin/login");
@@ -230,7 +230,7 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
     }
   });
 
-  test("J3.6 conteúdo hostil é só texto, e o e-mail que falhou fica à vista", async ({ page }) => {
+  test("J3.11 conteúdo hostil é só texto, e o e-mail que falhou fica à vista", async ({ page }) => {
     await login(page, accounts.admin);
     await page.goto("/admin/leads");
     await expect(page.getByText(/não cheg(ou|aram) por e-mail/)).toBeVisible();
@@ -251,7 +251,7 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
     expect(await page.evaluate(() => (window as unknown as { __xss?: number }).__xss)).toBeUndefined();
   });
 
-  test("J3.6 entrada malformada não quebra a tela nem expõe erro interno", async ({ page }) => {
+  test("J3.11 entrada malformada não quebra a tela nem expõe erro interno", async ({ page }) => {
     await login(page, accounts.admin);
     await page.goto("/admin/leads?pagina=-1&tipo=orcamento&status=eq.novo&categoria=fulano%40exemplo.test");
     await expect(page.getByRole("heading", { level: 1, name: "Leads e feedbacks" })).toBeVisible();
@@ -269,7 +269,7 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
     }
   });
 
-  test("J3.8 ao sair, o envio aberto não fica na página, nem escondido", async ({ page }) => {
+  test("J3.13 ao sair, o envio aberto não fica na página, nem escondido", async ({ page }) => {
     await login(page, accounts.admin);
     await page.goto(`/admin/leads?categoria=${encodeURIComponent(hostile.category)}`);
     await page.getByRole("link", { name: `AB-${suffix.slice(0, 6).toUpperCase()}` }).click();
@@ -285,7 +285,7 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
     await expect(page.getByRole("heading", { name: "Conteúdo enviado" })).toHaveCount(0);
   });
 
-  test("J3.7 admin arquiva e só então exclui, e a trilha fica", async ({ page }) => {
+  test("J3.12 admin arquiva e só então exclui, e a trilha fica", async ({ page }) => {
     await login(page, accounts.admin);
     await page.goto(`/admin/leads/${removable}`);
     await expect(page.getByRole("button", { name: "Excluir definitivamente" })).toHaveCount(0);

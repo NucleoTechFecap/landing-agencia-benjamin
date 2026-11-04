@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-04).
+ 04/11/2026 Vinícius Nishimura Reis  Exemplo de módulo em construção não depende de uma tela (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -54,9 +55,14 @@ describe("menu do painel (ADM-04)", () => {
   });
 
   it("módulo em construção aparece com o aviso e sem link", () => {
-    const markup = render();
-    expect(markup).toMatch(/<p[^>]*>Leads e feedbacks<span[^>]*>Em construção<\/span><\/p>/);
-    expect(markup).not.toMatch(/<a[^>]*>Leads e feedbacks/);
+    // Módulo próprio do teste: cada tela entregue sai do registro, e o exemplo não pode depender dela.
+    const markup = renderToStaticMarkup(
+      createElement(PanelMenu, {
+        modules: [{ name: "Módulo de exemplo", resource: "page", action: "view", issue: "ADM-00" }],
+      }),
+    );
+    expect(markup).toMatch(/<p[^>]*>Módulo de exemplo<span[^>]*>Em construção<\/span><\/p>/);
+    expect(markup).not.toMatch(/<a[^>]*>Módulo de exemplo/);
   });
 
   it("só mostra o que veio filtrado pelo papel", () => {

@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (SEG-06).
+ 04/11/2026 Vinícius Nishimura Reis  Logout termina em ?saiu=ok, depois da recarga (SEG-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -351,7 +352,8 @@ test.describe("Sessão do painel: cookies e CSP @cms", () => {
     await setNewPassword(page, account.password);
 
     await page.getByRole("button", { name: "Sair" }).click();
-    await expect(page).toHaveURL(/\/admin\/login\?saiu=1$/);
+    // `signOut` manda para `?saiu=1`, e a tela de login recarrega em `?saiu=ok` para limpar a memória (SEG-04).
+    await expect(page).toHaveURL(/\/admin\/login\?saiu=ok$/);
     await login(page);
   });
 
@@ -385,7 +387,8 @@ test.describe("Sessão do painel: cookies e CSP @cms", () => {
   test("logout apaga os cookies e o painel volta a pedir login", async ({ page, context }) => {
     await login(page);
     await page.getByRole("button", { name: "Sair" }).click();
-    await expect(page).toHaveURL(/\/admin\/login\?saiu=1$/);
+    // `signOut` manda para `?saiu=1`, e a tela de login recarrega em `?saiu=ok` para limpar a memória (SEG-04).
+    await expect(page).toHaveURL(/\/admin\/login\?saiu=ok$/);
     expect(await sessionCookies(context)).toEqual([]);
     await page.goto("/admin");
     await expect(page).toHaveURL(/\/admin\/login/);
