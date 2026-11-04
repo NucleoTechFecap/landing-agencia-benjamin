@@ -76,6 +76,16 @@ function expectNoInternals(body: string, label: string) {
   }
 }
 
+/** Funções com `use cache`: o Next as registra como Server Actions, com o id só no manifesto do servidor. */
+function cacheFunctionIds(): string[] {
+  const manifest = JSON.parse(readFileSync(".next/server/server-reference-manifest.json", "utf8")) as {
+    node: Record<string, { exportedName: string }>;
+  };
+  return Object.entries(manifest.node)
+    .filter(([, action]) => action.exportedName.startsWith("$$RSC_SERVER_CACHE"))
+    .map(([id]) => id);
+}
+
 const restUrl = (path: string) => new URL(`/rest/v1/${path}`, SUPABASE_URL);
 const anonHeaders = () => ({ apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY}` });
 
@@ -854,6 +864,25 @@ test.describe("QA-06 · conteúdo fora do ar por URL direta @cms", () => {
     }
   });
 
+  test("função `use cache` chamada direto por POST só devolve o que está no ar", async ({ baseURL }) => {
+    // Quem tiver o id do manifesto chama a função sem passar pela página (achado A-04): a RLS segura mesmo assim.
+    const ids = cacheFunctionIds();
+    expect(ids.length).toBeGreaterThan(0);
+    const slugs = [...mass.slugs.cases, ...mass.slugs.services, ...mass.slugs.areas, ...mass.slugs.pages];
+    const argumentLists = [[], [{}], [{ featuredOnly: false }], ...slugs.map((slug) => [slug])];
+    for (const id of ids) {
+      for (const args of argumentLists) {
+        const response = await rawRequest(baseURL!, "/", {
+          method: "POST",
+          headers: { "next-action": id, origin: baseURL!, accept: "text/x-component" },
+          body: JSON.stringify(args),
+        });
+        expectHidden(response.body, `${id} ${JSON.stringify(args)}`);
+        expectNoInternals(response.body, id);
+      }
+    }
+  });
+
   test("a imagem de compartilhamento de item oculto é a mesma de um endereço que não existe", async ({ baseURL }) => {
     const manifest = JSON.parse(readFileSync(".next/app-path-routes-manifest.json", "utf8")) as Record<string, string>;
     const imageRoute = (folder: string) =>
@@ -1074,25 +1103,6 @@ test.describe("QA-06 · erro não vaza detalhe interno @cms", () => {
     }
   });
 
-  test("função de `use cache` não é chamada por POST, mesmo com o id do build", async ({ baseURL }) => {
-    const manifest = JSON.parse(readFileSync(".next/server/server-reference-manifest.json", "utf8")) as {
-      node: Record<string, { exportedName: string; filename: string }>;
-    };
-    const cached = Object.entries(manifest.node).filter(([, action]) =>
-      action.exportedName.startsWith("$$RSC_SERVER_CACHE"),
-    );
-    expect(cached.length).toBeGreaterThan(0);
-    for (const [id] of cached.slice(0, 3)) {
-      const response = await rawRequest(baseURL!, "/", {
-        method: "POST",
-        headers: { "next-action": id, origin: baseURL!, accept: "text/x-component" },
-        body: "[]",
-      });
-      expect(response.status).toBeGreaterThanOrEqual(400);
-      expectNoInternals(response.body, id);
-    }
-  });
-
   test("cabeçalho Host de outro site não muda redirecionamento nem conteúdo", async ({ baseURL }) => {
     const response = await rawRequest(baseURL!, "/admin/leads", { headers: { host: "invasor.test" } });
     expect(response.status).toBe(307);
@@ -1148,6 +1158,17 @@ test.describe("QA-06 · arquivos e segredos no que é entregue ao navegador @cms
     expect(files.length).toBeGreaterThan(10);
     expect(scanFiles(files)).toEqual([]);
     expect(files.filter((file) => file.endsWith(".map"))).toEqual([]);
+  });
+
+  test("o id das funções `use cache` não chega ao navegador", () => {
+    const ids = cacheFunctionIds();
+    expect(ids.length).toBeGreaterThan(0);
+    const delivered = [
+      ...filesUnder(".next/static"),
+      ...filesUnder(".next/server/app").filter((file) => /\.(html|rsc)$/.test(file)),
+    ];
+    const contents = delivered.map((file) => readFileSync(file).toString("latin1"));
+    expect(ids.filter((id) => contents.some((content) => content.includes(id)))).toEqual([]);
   });
 
   test("HTML e RSC pré-renderizados não trazem segredo", () => {
