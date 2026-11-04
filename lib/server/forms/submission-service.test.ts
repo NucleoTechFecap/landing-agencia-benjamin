@@ -22,11 +22,12 @@
  02/11/2026 Vinícius Nishimura Reis  Serviço forjado e falha ao consultar a lista (TECH-06).
  04/11/2026 Vinícius Nishimura Reis  Envio sem JavaScript: antispam sem o tempo de preenchimento (FORM-08).
  04/11/2026 Vinícius Nishimura Reis  Falha ao registrar o resultado da notificação não chega ao visitante (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Eventos de log, sem dados pessoais (FORM-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { createHmac } from "node:crypto";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemorySubmissionStore } from "./memory-store";
 import { processSubmission, retryPendingNotifications, type SubmissionDeps } from "./submission-service";
 import type { Notifier, OutgoingEmail } from "./types";
@@ -63,10 +64,19 @@ let now: Date;
 let deps: SubmissionDeps;
 const context = { requestId: "req-1", ip: "203.0.113.10" };
 
+/** Linhas de log do teste atual, como saem no console. */
+const logLines = () =>
+  [console.log, console.warn, console.error].flatMap((method) =>
+    vi.mocked(method).mock.calls.map(([line]) => String(line)),
+  );
+const logEntries = () => logLines().map((line) => JSON.parse(line) as { event: string; [key: string]: unknown });
+const loggedEvents = () => logEntries().map((entry) => entry.event);
+
 beforeEach(() => {
   vi.spyOn(console, "log").mockImplementation(() => {});
   vi.spyOn(console, "warn").mockImplementation(() => {});
   vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.clearAllMocks();
   store = new MemorySubmissionStore();
   notifier = new FakeNotifier();
   now = T0;
@@ -171,16 +181,9 @@ describe("envio sem JavaScript: campos técnicos vazios (FORM-08)", () => {
 });
 
 describe("falha ao registrar o resultado da notificação (FORM-08)", () => {
-  /** Eventos registrados no console desde o início do teste. */
-  const loggedEvents = () =>
-    [console.log, console.warn, console.error].flatMap((method) =>
-      vi.mocked(method).mock.calls.map(([line]) => (JSON.parse(String(line)) as { event: string }).event),
-    );
-
   let attemptedStatuses: string[];
 
   beforeEach(() => {
-    vi.clearAllMocks();
     attemptedStatuses = [];
     store.updateNotification = async (_id, patch) => {
       attemptedStatuses.push(String(patch.notificationStatus));
@@ -232,6 +235,68 @@ describe("falha ao registrar o resultado da notificação (FORM-08)", () => {
     now = new Date(T0.getTime() + 2 * 60_000);
     expect(await retryPendingNotifications(deps)).toEqual({ retried: 2 });
     expect(notifier.sent).toHaveLength(2);
+  });
+});
+
+describe("logs dos envios: eventos estáveis e sem dados pessoais (FORM-06)", () => {
+  /** Nada do que a pessoa digitou pode aparecer nas linhas de log. */
+  function expectNoPersonalData() {
+    const lines = logLines().join("\n");
+    expect(lines.length).toBeGreaterThan(0);
+    expect(lines).not.toMatch(/maria/i);
+    expect(lines).not.toContain("empresa.com");
+    expect(lines).not.toContain("vídeo institucional");
+    expect(lines).not.toContain("203.0.113.10");
+  }
+
+  it("envio válido: forms.submission.persisted e forms.notification.sent", async () => {
+    await processSubmission("lead", lead(), context, deps);
+    expect(logEntries()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ event: "forms.submission.persisted", level: "info", submissionId: ID }),
+        expect.objectContaining({ event: "forms.notification.sent", level: "info", submissionId: ID, attempts: 1 }),
+      ]),
+    );
+    expectNoPersonalData();
+  });
+
+  // O logger só inclui a pilha do erro fora de produção, e ela não é mascarada: aqui vale o que sai em produção.
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("falha na notificação: forms.notification.failed, mesmo com o e-mail na mensagem do erro", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    notifier.send = async () => {
+      throw new Error("Falha ao entregar para maria@empresa.com");
+    };
+    await processSubmission("lead", lead(), context, deps);
+    expect(logEntries()).toContainEqual(
+      expect.objectContaining({ event: "forms.notification.failed", level: "error", submissionId: ID, attempts: 1 }),
+    );
+    expectNoPersonalData();
+  });
+
+  it("honeypot: forms.submission.spam_suspected com o motivo", async () => {
+    await processSubmission("lead", lead({ website: "spam.com" }), context, deps);
+    expect(logEntries()).toContainEqual(
+      expect.objectContaining({ event: "forms.submission.spam_suspected", level: "warn", reason: "honeypot" }),
+    );
+    expectNoPersonalData();
+  });
+
+  it("envio rápido demais: forms.submission.spam_suspected com o motivo", async () => {
+    await processSubmission("lead", lead({ startedAt: String(T0.getTime() - 500) }), context, deps);
+    expect(logEntries()).toContainEqual(
+      expect.objectContaining({ event: "forms.submission.spam_suspected", level: "warn", reason: "too_fast" }),
+    );
+    expectNoPersonalData();
+  });
+
+  it("validação recusada: o log diz o que aconteceu, sem o que foi digitado", async () => {
+    await processSubmission("lead", lead({ email: "maria@" }), context, deps);
+    expect(loggedEvents()).toContain("app.error.validation_failed");
+    expectNoPersonalData();
   });
 });
 
