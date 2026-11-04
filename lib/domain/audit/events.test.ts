@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-10).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -59,8 +60,10 @@ describe("catálogo de eventos", () => {
   });
 
   it("o check do banco aceita exatamente os eventos do catálogo", () => {
-    const sql = readFileSync(join(process.cwd(), "supabase/migrations/20261013000300_audit_log.sql"), "utf8");
-    const checkBlock = sql.slice(sql.indexOf("event text not null check"), sql.indexOf("resource_type text not null"));
+    // A última migration que redefine o check: histórico de versões (editor do site).
+    const sql = readFileSync(join(process.cwd(), "supabase/migrations/20261104000100_editor_do_site.sql"), "utf8");
+    const start = sql.indexOf("add constraint audit_log_event_check");
+    const checkBlock = sql.slice(start, sql.indexOf("));", start));
     const fromSql = [...checkBlock.matchAll(/'([a-z_.]+)'/g)].map((match) => match[1]).sort();
     expect(fromSql).toEqual(Object.keys(AUDIT_EVENTS).sort());
   });
