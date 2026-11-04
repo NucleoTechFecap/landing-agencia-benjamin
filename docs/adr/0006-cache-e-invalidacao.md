@@ -29,6 +29,10 @@ preserva conteúdo desatualizado após arquivar algo, ou — pior — que expõe
   ISR com App Shell para slugs publicados depois.
 - A API `/api/v1` usa o mesmo repositório e `Cache-Control: s-maxage=240, stale-while-revalidate=60`.
 
+A segunda expiração (3 s depois da primeira) roda em requisição própria a `POST /api/internal/revalidate`,
+porque dentro de `after()` o `revalidateTag` só vale no fim da fila, depois do aquecimento. Sem
+`CONTENT_REVALIDATE_SECRET` ou sem resposta da rota, ela volta a rodar no próprio `after()` (#369).
+
 ### 2. Tags
 
 | Tag | Quem lê |
