@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -25,6 +25,7 @@
  29/10/2026 Vinicius Binda             Serviço e case com endereço antigo redirecionando (DB-08).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  Relações entram na gravação em transação (TECH-13, #314).
+ 04/11/2026 Vinícius Nishimura Reis  Entidade de CTA, que não tem endereço próprio (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -35,6 +36,7 @@ import { areaInputSchema, validateAreaForPublish, type AreaInput } from "@/lib/d
 import { caseInputSchema, type CaseInput } from "@/lib/domain/content/case-input-schema";
 import { validateCaseForPublish } from "@/lib/domain/content/case-schema";
 import { categoryInputSchema, type CategoryInput } from "@/lib/domain/content/category-schema";
+import { ctaInputSchema, validateCtaForPublish, type CtaInput } from "@/lib/domain/content/cta-schema";
 import { serviceInputSchema, validateServiceForPublish, type ServiceInput } from "@/lib/domain/content/service-schema";
 import { pagePath } from "@/lib/domain/content/blocks";
 import { pageInputSchema, type PageInput } from "@/lib/domain/content/page-schema";
@@ -45,34 +47,36 @@ import type {
   CaseStudy,
   ContentEntityType,
   ContentSnapshot,
+  Cta,
   MediaRef,
   Page,
   Publishable,
   Service,
 } from "@/lib/domain/content/types";
+import { ctaTargetColumns } from "../content/supabase/mappers";
 import type { CmsSnapshot, EntityTable, ItemRelations, RedirectEntity, Row } from "./store";
 
-/** Item editável: publicável e com endereço próprio. */
-export type CmsItem = Publishable & { id: string; slug: string };
+/** Item editável: publicável. O endereço só existe nos tipos com página própria (CTA não tem). */
+export type CmsItem = Publishable & { id: string; slug?: string };
 
 /**
  * Tudo que a camada de serviço precisa saber sobre um tipo de conteúdo. Cada entidade nova
  * do painel (serviço, categoria, case) é uma definição destas — as regras de publicação,
  * integridade, auditoria e cache ficam num lugar só (content-service.ts).
  */
-export interface EntityDefinition<I extends { slug: string }, T extends CmsItem> {
+export interface EntityDefinition<I extends { slug?: string }, T extends CmsItem> {
   type: ContentEntityType;
   resource: Resource;
   table: EntityTable;
-  /** Campo do formulário usado para gerar o slug quando ele vem em branco. */
-  slugSource: "name" | "title";
+  /** Campo do formulário usado para gerar o slug quando ele vem em branco. Sem ele, o tipo não tem endereço. */
+  slugSource?: "name" | "title";
   /**
    * Tipo com página própria (DB-08): depois de publicado o slug pode mudar, e o banco registra
    * o antigo em public.slug_redirects (301). Sem ele, o slug fica fixo após a primeira publicação.
    */
   redirectEntity?: RedirectEntity;
   /** Coleção correspondente no snapshot de conteúdo. */
-  key: Exclude<keyof CmsSnapshot, "ctas">;
+  key: keyof CmsSnapshot;
   /** Para mensagens: "a área", "o serviço". */
   noun: { singular: string; article: "a" | "o" };
   /** Caminho do painel (lista) e da página pública do item. */
@@ -355,4 +359,35 @@ export const PAGE: EntityDefinition<PageInput, Page> = {
     provisional: input.provisional,
   }),
   validateForPublish: (page) => (page.blocks.length ? [] : ["Inclua ao menos um bloco de conteúdo."]),
+};
+
+/**
+ * Botão de chamada para ação (ADM-11). Não tem endereço próprio: `publicPath` é só a página em que
+ * ele aparece. A alteração invalida a tag de CTAs, que as páginas leem por `listCtas`.
+ */
+export const CTA: EntityDefinition<CtaInput, Cta> = {
+  type: "cta",
+  resource: "cta",
+  table: "ctas",
+  key: "ctas",
+  noun: { singular: "CTA", article: "o" },
+  adminPath: "/admin/ctas",
+  publicPath: (cta) =>
+    cta.placement === "service-detail" ? "/servicos" : cta.placement === "case-detail" ? "/cases" : "/",
+  inputSchema: ctaInputSchema,
+  list: (snapshot) => snapshot.ctas,
+  toValues: (input) => ({
+    label: input.label,
+    placement: input.placement,
+    sort_order: input.order,
+    ...ctaTargetColumns(input.target),
+  }),
+  merge: (current, input, id) => ({
+    ...(current ?? { ...draftControl, id }),
+    label: input.label,
+    placement: input.placement,
+    target: input.target,
+    order: input.order,
+  }),
+  validateForPublish: (cta) => validateCtaForPublish(cta),
 };

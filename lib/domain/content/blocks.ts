@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,10 +20,12 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
+ 04/11/2026 Vinícius Nishimura Reis  Foto do time só do bucket de mídia e só imagem (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { z } from "zod";
+import { MEDIA_BUCKET } from "@/lib/domain/media/policy";
 import { isValidExternalUrl, isValidInternalPath } from "./integrity";
 import { aboutSchema, manifestoSchema } from "./settings-schema";
 
@@ -69,16 +71,21 @@ const text = (max: number) =>
 const optionalTitle = text(120).optional();
 
 /** Storage do Supabase local (`npx supabase start`) é http; nos demais ambientes vale o https. */
-const LOCAL_STORAGE = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/storage\/v1\/object\/public\//;
+const BUCKET_PATH = `/storage/v1/object/public/${MEDIA_BUCKET}/`;
 
-/** Caminho em /public (ex.: /brand/...) ou URL https do bucket de mídia. */
+/** URL do bucket de mídia: https ou o Storage local. O host do projeto não entra: a regra é de domínio. */
+function isBucketUrl(src: string): boolean {
+  if (!URL.canParse(src)) return false;
+  const url = new URL(src);
+  const allowedOrigin = url.protocol === "https:" || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(url.origin);
+  return allowedOrigin && url.pathname.startsWith(BUCKET_PATH) && !url.pathname.includes("..");
+}
+
+/** Caminho em /public (ex.: /brand/...) ou URL do bucket de mídia. */
 const mediaSrc = z
   .string()
   .max(500)
-  .refine(
-    (src) => (src.startsWith("/") && !src.startsWith("//")) || isValidExternalUrl(src) || LOCAL_STORAGE.test(src),
-    "Imagem inválida.",
-  );
+  .refine((src) => (src.startsWith("/") && !src.startsWith("//")) || isBucketUrl(src), "Imagem inválida.");
 
 /*
  * Conteúdo de cada tipo de bloco. Só texto puro e listas: o site nunca renderiza HTML

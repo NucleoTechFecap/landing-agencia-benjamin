@@ -15,6 +15,7 @@
 npm run build && npm run test:e2e        # Playwright com o Chrome do sistema (desktop + mobile)
 npx supabase start && npx supabase db reset
 npm run test:e2e:cms                      # J2 com o CMS real: build contra o Supabase local + specs @cms
+                                          # e, depois, em série, @home-global (tira da Home os CTAs e destaques de todos)
 E2E_BASE_URL=https://hml-... npm run test:e2e   # contra homologação
 npm run test                              # inclui os testes integrados (Vitest)
 ```
@@ -57,12 +58,16 @@ Legenda de tipo: **E2E** navegador real · **INT** teste integrado de domínio/s
 | J3.1 | Lead persistido, notificado (e-mail com serviço), consulta só por `admin`, retenção dentro do prazo | Pos | INT | Formulários + coordenação | ✅ automatizado |
 | J3.2 | Duplo clique, reenvio, honeypot, falha de banco, falha de e-mail, limite | Neg | INT (S1–S10, S12 a S14 e S16, TECH-07) | Formulários | ✅ automatizado |
 | J3.3 | Envio real em homologação chega ao destinatário de teste via Resend | Pos | MAN | Formulários | ⛔ **gap**: Supabase/Resend de homologação (GO-02) e destinatários (CON-10) |
-| J3.4 | `admin` abre o lead no painel e gera `lead.viewed` na auditoria | Pos | E2E/MAN | Formulários | ⛔ **gap**: tela de leads (FORM-09) |
+| J3.4 | Visitante envia, `admin` vê na lista, abre o detalhe e muda o status, com `lead.viewed` e `lead.status_changed` na auditoria e sem depender do e-mail | Pos | E2E `@cms` | Formulários | ✅ automatizado (`jornada-leads-cms.spec.ts`) |
 | J3.5 | Contato e feedback válidos com protocolo; inválidos com erro no campo e foco, sem POST | Pos/Neg | E2E (`formularios.spec.ts`) | Formulários | ✅ automatizado |
 | J3.6 | Envio sem JavaScript e antes da hidratação, nos três formulários | Pos/Neg | E2E | Formulários | ✅ automatizado |
 | J3.7 | Rede cai, resposta se perde e erro da plataforma: aviso, campos mantidos, reenvio sem duplicar | Neg | E2E | Formulários | ✅ automatizado |
 | J3.8 | Duplo clique gera um único POST e um único protocolo | Neg | E2E | Formulários | ✅ automatizado |
 | J3.9 | Aviso de privacidade linkado nos três formulários e no rodapé; sem a ciência nada é enviado | Pos/Neg | E2E + INT | Formulários | ✅ automatizado; texto do aviso pendente (SEG-02) |
+| J3.10 | `editor` e `super_admin` recebem "sem permissão"; sem sessão vai ao login; `/api/v1` não tem rota de envios | Neg | E2E `@cms` | Coordenação | ✅ automatizado |
+| J3.11 | Conteúdo hostil é só texto, `//evil.com` não vira link, falha de e-mail fica à vista, entrada malformada não expõe erro | Neg | E2E `@cms` | Coordenação | ✅ automatizado |
+| J3.12 | `admin` só exclui depois de arquivar, com a trilha gravada | Pos | E2E `@cms` | Coordenação | ✅ automatizado |
+| J3.13 | Ao sair, o envio aberto não fica na página, nem escondido | Neg | E2E `@cms` | Coordenação | ✅ automatizado |
 
 Registro da execução: [FORM-10](form-10-entrega-de-contatos.md). Os envios do E2E contam para o limite real de
 5 por IP em 10 min, que não é afrouxado: `formularios.spec.ts` dá a cada teste um `x-forwarded-for` próprio. Em
@@ -75,7 +80,8 @@ partes (`-g`), esperando a janela entre elas.
 | --- | ------- | ----------------- | ----------------- |
 | ~~Telas de edição/publicação do CMS~~ | ~~J2.5 sem E2E real~~ | Resolvido: ADM-06/07/08 + INT-02 (E2E `@cms`) | — |
 | J2.5 em homologação | Mesma jornada contra o Supabase de homologação | GO-02 | Sim |
-| Consulta de leads no painel | J3.4 | FORM-09 | Sim (CA-23) |
+| ~~Consulta de leads no painel~~ | ~~J3.4~~ | Resolvido: FORM-09 (E2E `@cms`) | — |
+| J3.4 em homologação | Mesma jornada contra o Supabase de homologação | GO-02 | Sim (CA-23) |
 | Ambiente de homologação com Supabase/Resend | J3.3, roteiros MAN | GO-02, ARC-07 | Sim |
 | Destinatários institucionais | J3.3 | CON-10 | Sim (CA-15) |
 

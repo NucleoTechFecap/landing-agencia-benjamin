@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (SEG-06).
+ 04/11/2026 Vinícius Nishimura Reis  301 de endereço antigo com cache curto (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -95,5 +96,16 @@ describe("proxy: sessão do painel (SEG-06)", () => {
     expect(response.status).toBe(307);
     expect(response.headers.get("location")).toContain("/admin/login?next=%2Fadmin%2Fmidia");
     expect(response.headers.getSetCookie()).toEqual([]);
+  });
+});
+
+describe("proxy: endereço antigo de serviço e case (DB-08)", () => {
+  it("301 mantém a query, e o navegador revalida: o slug pode voltar a um valor já usado", async () => {
+    const { resolveDetailSlug } = await import("@/lib/server/content/published-slugs");
+    vi.mocked(resolveDetailSlug).mockResolvedValue({ status: "moved", slug: "nome-novo" });
+    const response = await proxy(requestTo("/cases/nome-antigo?origem=x"));
+    expect(response.status).toBe(301);
+    expect(response.headers.get("location")).toBe("https://www.exemplo.com.br/cases/nome-novo?origem=x");
+    expect(response.headers.get("cache-control")).toBe("public, max-age=0, s-maxage=60");
   });
 });

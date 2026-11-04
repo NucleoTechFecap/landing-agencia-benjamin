@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,22 +21,15 @@
  26/10/2026 Vinícius Nishimura Reis  DTOs de página e CTA (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Detalhe de área com serviços (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
+ 04/11/2026 Vinícius Nishimura Reis  Lista de posições do CTA vem do schema do CMS (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { z } from "zod";
 import { pagePath, type PageBlock } from "../content/blocks";
+import { CTA_PLACEMENTS } from "../content/cta-schema";
 import { SLUG_PATTERN } from "../content/slug";
-import type {
-  Area,
-  CaseCategory,
-  CaseStudy,
-  CtaPlacement,
-  MediaRef,
-  Page,
-  Service,
-  SiteSettings,
-} from "../content/types";
+import type { Area, CaseCategory, CaseStudy, MediaRef, Page, Service, SiteSettings } from "../content/types";
 
 /** Versão do contrato público. Mudança incompatível = nova versão (/api/v2) — TECH-11. */
 export const API_VERSION = "v1";
@@ -65,14 +58,6 @@ export const caseQuerySchema = paginationSchema.extend({
 export const serviceQuerySchema = z.object({
   featured: z.enum(["true", "false"]).optional(),
 });
-
-export const CTA_PLACEMENTS = [
-  "home-hero",
-  "home-highlight",
-  "footer",
-  "service-detail",
-  "case-detail",
-] as const satisfies readonly CtaPlacement[];
 
 export const ctaQuerySchema = z.object({
   placement: z.enum(CTA_PLACEMENTS, { error: "placement desconhecido." }),

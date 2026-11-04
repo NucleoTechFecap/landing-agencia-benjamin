@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Aquecimento da página de detalhe após invalidar (INT-02).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
  01/11/2026 Vinícius Nishimura Reis  Segunda expiração contra regeneração em andamento (INT-03).
+ 04/11/2026 Vinícius Nishimura Reis  Segunda expiração em requisição própria, antes de aquecer (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,6 +30,7 @@ import "server-only";
 import { revalidateTag, updateTag } from "next/cache";
 import { after } from "next/server";
 import { siteUrl } from "@/lib/config/public-env";
+import { getServerEnv } from "@/lib/config/server-env";
 import type { ContentEntityType } from "@/lib/domain/content/types";
 import { logger } from "../logger";
 import { CONTENT_TAGS } from "./cache-tags";
@@ -130,6 +132,35 @@ async function warmPaths(paths: string[]) {
   );
 }
 
+/** Quanto esperar a resposta da requisição que faz a segunda expiração. */
+const SECOND_PASS_TIMEOUT_MS = 5_000;
+
+/**
+ * Segunda expiração em requisição própria. Dentro de after(), revalidateTag só vale no fim da fila, e o
+ * aquecimento leria o cache ainda não expirado. Num Route Handler, ela vale antes de a resposta sair e
+ * o aquecimento vem depois (TECH-13, #369). Devolve false quando não deu para fazer assim.
+ */
+async function expireInOwnRequest(change: ContentChange): Promise<boolean> {
+  const secret = getServerEnv().CONTENT_REVALIDATE_SECRET;
+  if (!secret) return false;
+  const { entity, slug, previousSlug } = change;
+  const response = await fetch(`${siteUrl}/api/internal/revalidate`, {
+    method: "POST",
+    cache: "no-store",
+    signal: AbortSignal.timeout(SECOND_PASS_TIMEOUT_MS),
+    headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" },
+    body: JSON.stringify({
+      entity,
+      slug,
+      previousSlug,
+      relatedPaths: detailPathsForChange(change),
+      secondPass: true,
+    }),
+  });
+  if (!response.ok) logger.warn("content.cache.second_pass_refused", { entity, status: response.status });
+  return response.ok;
+}
+
 /**
  * Uma regeneração em andamento durante a gravação lê o dado antigo e grava o resultado depois da
  * invalidação: o site ficaria com a versão velha até o fim do cacheLife (ADR-0006). Expirar de novo
@@ -138,6 +169,12 @@ async function warmPaths(paths: string[]) {
 function expireAgainLater(change: ContentChange, tags: string[]) {
   after(async () => {
     await new Promise((resolve) => setTimeout(resolve, SECOND_EXPIRATION_DELAY_MS));
+    const done = await expireInOwnRequest(change).catch((error) => {
+      logger.warn("content.cache.second_pass_request_failed", { entity: change.entity, error });
+      return false;
+    });
+    if (done) return;
+    // Sem o segredo ou sem resposta: ainda expira aqui, mesmo sem a garantia de ordem do aquecimento.
     try {
       tags.forEach((tag) => revalidateTag(tag, { expire: 0 }));
       logger.info("content.cache.invalidated", { source: "second-pass", entity: change.entity, tags });
@@ -147,6 +184,15 @@ function expireAgainLater(change: ContentChange, tags: string[]) {
     }
     await warmPaths(detailPathsForChange(change));
   });
+}
+
+/** Segunda expiração pedida por `expireInOwnRequest`: expira e aquece, sem agendar outra. */
+export function expireSecondPass(change: ContentChange): string[] {
+  const tags = tagsForChange(change);
+  tags.forEach((tag) => revalidateTag(tag, { expire: 0 }));
+  logger.info("content.cache.invalidated", { source: "second-pass-request", entity: change.entity, tags });
+  warmDetailPages(change);
+  return tags;
 }
 
 /**

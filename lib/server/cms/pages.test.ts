@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,8 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 04/11/2026 Vinícius Nishimura Reis  Falha ao gravar bloco é auditada e expira o cache (TECH-13, #369).
+ 04/11/2026 Vinícius Nishimura Reis  Foto do time só do bucket de mídia e só imagem (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -276,6 +278,66 @@ describe("CMS de páginas — blocos (ADM-05)", () => {
   });
 });
 
+describe("CMS de páginas — falha no meio da gravação (TECH-13, #369)", () => {
+  async function pageWithThreeBlocks(env: Env) {
+    const id = await publishedPage(env);
+    await saveBlock(env.deps, env.actor("editor"), env.ref(id), textBlock("Segundo."));
+    await saveBlock(env.deps, env.actor("editor"), env.ref(id), textBlock("Terceiro."));
+    env.audits.length = 0;
+    env.changes.length = 0;
+    return id;
+  }
+
+  it("mover: falha depois da primeira gravação registra a falha e expira o cache da página publicada", async () => {
+    const env = setup();
+    const id = await pageWithThreeBlocks(env);
+    const { updateBlock } = env.deps.store;
+    let calls = 0;
+    env.deps.store.updateBlock = async (blockId, values) => {
+      calls += 1;
+      if (calls === 2) throw new Error("banco fora");
+      return updateBlock(blockId, values);
+    };
+    await expect(
+      changeBlock(env.deps, env.actor("editor"), env.ref(id), blocksOf(env, id)[2].id, "subir"),
+    ).rejects.toThrow("banco fora");
+    expect(env.audits).toMatchObject([
+      { event: "content.updated", outcome: "failure", metadata: { action: "bloco-movido" } },
+    ]);
+    expect(env.changes).toEqual([{ entity: "page", slug: "sobre" }]);
+  });
+
+  it("salvar bloco: falha é auditada, e o rascunho não mexe no cache", async () => {
+    const env = setup();
+    const id = await createPage(env);
+    env.audits.length = 0;
+    env.deps.store.insertBlock = async () => Promise.reject(new Error("banco fora"));
+    await expect(saveBlock(env.deps, env.actor("editor"), env.ref(id), textBlock("Texto."))).rejects.toThrow(
+      "banco fora",
+    );
+    expect(env.audits).toMatchObject([{ outcome: "failure", metadata: { action: "bloco-criado" } }]);
+    expect(env.changes).toEqual([]);
+  });
+
+  it("excluir bloco: falha na auditoria não esconde o erro da gravação", async () => {
+    const env = setup();
+    const id = await pageWithThreeBlocks(env);
+    env.deps.store.removeBlock = async () => Promise.reject(new Error("banco fora"));
+    env.deps.audit = async () => Promise.reject(new Error("auditoria fora"));
+    await expect(
+      changeBlock(env.deps, env.actor("editor"), env.ref(id), blocksOf(env, id)[0].id, "excluir"),
+    ).rejects.toThrow("banco fora");
+    expect(env.changes).toEqual([{ entity: "page", slug: "sobre" }]);
+  });
+
+  it("no caminho normal, a auditoria segue como sucesso", async () => {
+    const env = setup();
+    const id = await pageWithThreeBlocks(env);
+    await changeBlock(env.deps, env.actor("editor"), env.ref(id), blocksOf(env, id)[2].id, "subir");
+    expect(env.audits).toMatchObject([{ outcome: "success", metadata: { action: "bloco-movido" } }]);
+  });
+});
+
 describe("CMS de páginas — Nosso time (ADM-05)", () => {
   const media = (id: string, alt: string | null) => ({
     id,
@@ -307,10 +369,11 @@ describe("CMS de páginas — Nosso time (ADM-05)", () => {
     });
   });
 
-  it("recusa foto fora da biblioteca ou sem texto alternativo", async () => {
-    const env = setup({ media_assets: [media("sem-alt", null)] });
+  it("recusa foto fora da biblioteca, sem texto alternativo ou que não é imagem", async () => {
+    const pdf = { ...media("documento", "Regulamento"), path: "imagens/documento.pdf", mime_type: "application/pdf" };
+    const env = setup({ media_assets: [media("sem-alt", null), pdf] });
     const id = await createPage(env);
-    for (const photoId of ["nao-existe", "sem-alt"]) {
+    for (const photoId of ["nao-existe", "sem-alt", "documento"]) {
       await expect(saveBlock(env.deps, env.actor("editor"), env.ref(id), team(photoId))).rejects.toMatchObject({
         code: "VALIDATION_FAILED",
         fieldErrors: { members: [expect.stringContaining("Ana Souza")] },

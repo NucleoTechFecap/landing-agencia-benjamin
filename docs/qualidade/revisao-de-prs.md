@@ -128,12 +128,12 @@ ser reproduzido, em geral na Vercel.
 
 | # | Achado | Severidade | Situação |
 | - | ------ | ---------- | -------- |
-| 1 | Segunda expiração do cache só vale depois do reaquecimento: pode chegar a cerca de 8 s, acima da meta de 5 s do ADR-0006 | Baixa | Ordem confirmada; efeito plausível. Em #369 |
-| 2 | 301 permanente com slug reversível: a→b→a pode dar loop para quem guardou o 301 | Baixa | Código confirmado; loop plausível. Em #369 |
-| 3 | Blocos de página sem transação, nem a mitigação que `saveContent` tinha | Baixa | Confirmado. Em #369 |
-| 4 | Rollback da DBX-03 cita a versão errada no `migration repair` | Baixa | Confirmado. Em #369 |
-| 5 | Slug chega ao `use cache` sem validar formato em API e imagens de compartilhamento | Baixa | Código confirmado; impacto plausível. Em #369 |
-| 6 | `stale-while-revalidate=3600` contradiz a meta de 5 min do ADR-0006 | Baixa | Cabeçalho confirmado; efeito plausível. Em #369 |
+| 1 | Segunda expiração do cache só vale depois do reaquecimento: pode chegar a cerca de 8 s, acima da meta de 5 s do ADR-0006 | Baixa | Ordem corrigida em requisição própria (#369); o efeito na Vercel ainda não foi medido |
+| 2 | 301 permanente com slug reversível: a→b→a pode dar loop para quem guardou o 301 | Baixa | Corrigido com `Cache-Control` curto (#369); comportamento real da CDN ainda sem medir |
+| 3 | Blocos de página sem transação, nem a mitigação que `saveContent` tinha | Baixa | Mitigado com auditoria da falha e invalidação (#369); a transação pede RPC e migration |
+| 4 | Rollback da DBX-03 cita a versão errada no `migration repair` | Baixa | Corrigido (#369) |
+| 5 | Slug chega ao `use cache` sem validar formato em API e imagens de compartilhamento | Baixa | Corrigido na DB-09 (#65) |
+| 6 | `stale-while-revalidate=3600` contradiz a meta de 5 min do ADR-0006 | Baixa | Corrigido no cabeçalho (#369); comportamento real da CDN ainda sem medir |
 | 7 | #365: categoria ainda forjável em formato de slug (`lead:urgente-diretoria`), embora o documento dissesse que era recusada | Baixa | Corrigido no próprio #365 |
 | 8 | #365: nome e empresa aceitavam quebra de linha e forjavam linhas no e-mail interno | Baixa | Corrigido no próprio #365 |
 

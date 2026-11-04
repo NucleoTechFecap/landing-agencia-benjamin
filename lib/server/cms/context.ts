@@ -24,6 +24,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  Envio de mídia em dois passos no servidor, sem receber o arquivo (TECH-13, #313).
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Ações aceitam conteúdo sem endereço próprio, como o CTA (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -122,7 +123,7 @@ const FLASH_BY_COMMAND: Record<Exclude<PublicationCommand, "save" | "delete">, C
 };
 
 /** Server Action de salvar (criar rascunho ou editar), comum a todas as entidades do painel. */
-export async function cmsSaveAction<I extends { slug: string }, T extends CmsItem>(
+export async function cmsSaveAction<I extends { slug?: string }, T extends CmsItem>(
   def: EntityDefinition<I, T>,
   form: FormData,
   raw: unknown,
@@ -140,7 +141,7 @@ export async function cmsSaveAction<I extends { slug: string }, T extends CmsIte
 }
 
 /** Server Action de publicação (publicar, despublicar, arquivar, restaurar, excluir). */
-export async function cmsCommandAction<I extends { slug: string }, T extends CmsItem>(
+export async function cmsCommandAction<I extends { slug?: string }, T extends CmsItem>(
   def: EntityDefinition<I, T>,
   form: FormData,
 ): Promise<CmsFormState> {
