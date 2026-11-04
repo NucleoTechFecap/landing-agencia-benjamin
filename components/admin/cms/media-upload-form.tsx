@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  27/10/2026 Vinícius Nishimura Reis  Limite de 4 MB conferido no navegador antes do envio (TECH-13).
  02/11/2026 Vinícius Nishimura Reis  Envio direto ao Storage, sem passar pela Server Action (TECH-13, #313).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -141,9 +142,9 @@ export function MediaUploadForm({
           }}
           aria-invalid={fileErrors?.length ? true : undefined}
           aria-describedby={fileErrors?.length ? "file-dica file-erro" : "file-dica"}
-          className="mt-1.5 block w-full rounded-2xl border-2 border-benja-noite bg-white px-4 py-3 text-sm"
+          className="mt-1.5 block w-full"
         />
-        <p id="file-dica" className="mt-1 text-xs text-benja-grafite/80">
+        <p id="file-dica" className="mt-1 text-xs text-studio-suave">
           JPG, PNG, WebP ou AVIF até 5 MB e PDF até 10 MB. Imagens com no máximo 4000 px no maior lado (recomendado:
           2400 px de largura). SVG não é aceito.
         </p>
@@ -167,7 +168,7 @@ export function MediaUploadForm({
       <button
         type="submit"
         disabled={!ready || pending || Boolean(fileProblem)}
-        className="rounded-full bg-benja-verde px-6 py-3 font-bold text-benja-nyanza transition hover:bg-benja-noite disabled:cursor-wait disabled:opacity-60"
+        className="studio-btn studio-btn-primario"
       >
         {pending ? "Enviando…" : "Enviar"}
       </button>

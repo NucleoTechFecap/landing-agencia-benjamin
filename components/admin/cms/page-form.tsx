@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -51,6 +52,7 @@ export function PageForm({
       action={action}
       item={page ? { id: page.id, updatedAt: page.updatedAt } : undefined}
       readOnly={readOnly}
+      cancelHref="/admin/paginas"
       submitLabel={page ? "Salvar alterações" : "Criar rascunho"}
     >
       {({ errors, value }) => (

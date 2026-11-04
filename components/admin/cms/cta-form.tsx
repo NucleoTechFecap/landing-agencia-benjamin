@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-11).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -167,6 +168,7 @@ export function CtaForm({
       action={action}
       item={cta ? { id: cta.id, updatedAt: cta.updatedAt } : undefined}
       readOnly={readOnly}
+      cancelHref="/admin/ctas"
       submitLabel={cta ? "Salvar alterações" : "Criar rascunho"}
     >
       {(fields) => (

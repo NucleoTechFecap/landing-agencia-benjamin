@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,8 +35,7 @@ export interface PhotoOption {
   src: string;
 }
 
-const button =
-  "inline-flex min-h-11 items-center rounded-full border-2 border-benja-noite bg-white px-4 py-1.5 text-xs font-bold text-benja-noite transition hover:bg-benja-creme disabled:cursor-not-allowed disabled:opacity-40";
+const button = "studio-btn studio-btn-secundario";
 
 const BLANK: TeamMemberInput = { name: "", role: "", photoId: "" };
 
@@ -62,13 +62,13 @@ export function TeamMembersField({
   return (
     <fieldset className="min-w-0 space-y-4">
       <legend className="text-sm font-bold text-benja-noite">Pessoas</legend>
-      <p className="text-xs text-benja-grafite/80">
+      <p className="text-xs text-studio-suave">
         Publique só nomes, cargos e fotos que a pessoa autorizou. As fotos vêm da biblioteca de mídia e precisam de
         texto alternativo.
       </p>
       {errors?.length ? <p className="text-sm font-semibold text-benja-erro">{errors[0]}</p> : null}
       {rows.map((member, index) => (
-        <div key={member.key} className="space-y-3 rounded-2xl border-2 border-benja-noite/10 p-4">
+        <div key={member.key} className="space-y-3 rounded-studio-md border border-studio-linha p-4">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <TextField
               id={`member-${member.key}-name`}

@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Tabela sem rolagem lateral, alvos de toque e texto longo (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -46,11 +47,8 @@ export function StatusForm({
 }) {
   const [state, formAction, pending] = useActionState(action, CMS_IDLE);
   return (
-    <section
-      aria-labelledby="atendimento-titulo"
-      className="space-y-3 rounded-3xl border-2 border-benja-noite/15 bg-white p-5"
-    >
-      <h2 id="atendimento-titulo" className="text-sm font-black tracking-widest text-benja-verde uppercase">
+    <section aria-labelledby="atendimento-titulo" className="space-y-3 studio-card p-5">
+      <h2 id="atendimento-titulo" className="text-base font-extrabold text-benja-verde">
         Atendimento
       </h2>
       <CmsFormError state={state} />
@@ -66,7 +64,7 @@ export function StatusForm({
             id="status-atendimento"
             name="status"
             defaultValue={current}
-            className="mt-1.5 min-h-11 w-full rounded-2xl border-2 border-benja-noite bg-white px-4 py-2.5 text-sm text-benja-noite focus:border-benja-azul focus:ring-4 focus:ring-benja-azul"
+            className="mt-1.5 w-full text-benja-noite"
           >
             {options.map((status) => (
               <option key={status} value={status}>
@@ -75,11 +73,7 @@ export function StatusForm({
             ))}
           </select>
         </div>
-        <button
-          type="submit"
-          disabled={pending}
-          className="min-h-11 rounded-full bg-benja-verde px-5 py-2.5 text-sm font-bold text-benja-nyanza transition hover:bg-benja-noite disabled:cursor-wait disabled:opacity-60"
-        >
+        <button type="submit" disabled={pending} className="studio-btn studio-btn-primario">
           {pending ? "Salvando…" : "Salvar status"}
         </button>
       </form>
