@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (editor do site, FUT-04).
  04/11/2026 Vinícius Nishimura Reis  Nova versão (a 000100 é da DBX-05) e tipos de bloco na lista da DBX-04.
+ 04/11/2026 Vinícius Nishimura Reis  Versão desatualizada com BJ002: com 40001, o PostgREST 14 repete a transação e não responde.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,7 +27,7 @@
 -- com as colunas vazias, o site mostra exatamente o que já mostrava. O formato dos jsonb é validado
 -- no código (lib/domain/content), como manifesto e about de site_settings.
 --
--- Erros que o painel traduz (toCmsError): 42501 sem permissão, 40001 versão desatualizada,
+-- Erros que o painel traduz (toCmsError): 42501 sem permissão, BJ002 versão desatualizada,
 -- P0002 item inexistente. Reversão: supabase/rollbacks/20261104000200_editor_do_site.down.sql.
 
 -- ─── Campos, SEO e aparência ─────────────────────────────────────────────────
@@ -203,7 +204,7 @@ begin
     elsif v_version = p_expected_updated_at then
       raise exception 'Operação não permitida.' using errcode = '42501';
     end if;
-    raise exception 'O conteúdo foi alterado por outra pessoa.' using errcode = '40001';
+    raise exception 'O conteúdo foi alterado por outra pessoa.' using errcode = 'BJ002';
   end if;
 
   delete from public.blocks b where b.page_id = saved.id;

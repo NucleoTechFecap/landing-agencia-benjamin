@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (editor do site, FUT-04).
+ 04/11/2026 Vinícius Nishimura Reis  Versão desatualizada de save_page_document com BJ002.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -183,7 +184,7 @@ select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-0000000
 select throws_ok(
   $$select public.save_page_document('00000000-0000-4000-8000-00000000bb01', '2000-01-01',
       '{"title": "Tarde", "description": null, "provisional": false, "fields": {}, "seo": {}}', '[]')$$,
-  '40001',
+  'BJ002',
   null,
   'versão desatualizada é recusada'
 );
