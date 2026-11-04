@@ -105,7 +105,7 @@
 | Projeto no Supabase | 🟡 Existe na organização NucleoTech FECAP. Ver a divergência abaixo. O conteúdo do banco **não foi inspecionado** |
 | Migrations de conteúdo (DB-02) e da TECH-13 (#301, #312) | ✅ Na `main` |
 | Migrations pendentes | ⏳ `20261102000300` (#365) e `20261102000200` (#366), aguardando revisão. Não aplicadas em ambiente remoto |
-| Aplicação | 🟡 Next.js 16.4.3 na `main`, 16.4.4 no #368. Falta o release de segurança de 03/11. `vercel.json` em `gru1` |
+| Aplicação | ✅ Next.js 16.4.5 na `main` desde 04/11 (#378), com o release de segurança de 03/11. `vercel.json` em `gru1` |
 | Acesso às contas na máquina de quem provisiona | ⏳ Em 02/11, a Vercel CLI estava na conta pessoal e a Supabase CLI não via o projeto |
 | Remetente dos formulários (`NOTIFICATION_FROM`) | ⏳ Depende de um domínio verificado no Resend ([GO-03 §0](dominio-dns-https.md#0-decisão-de-27102026-publicar-em-vercelapp-até-o-domínio-sair)) |
 | Destinatários (`*_NOTIFICATION_TO`) | ⏳ No pedido de aprovação preparado para a Benjamin (CON-10) |
@@ -124,8 +124,10 @@ Precisam de decisão de quem responde pela produção antes de qualquer `db push
 **Decisões pedidas:**
 
 1. Esse projeto Supabase é a produção, a homologação ou será substituído por projetos em `sa-east-1`?
-   Não foi possível saber, de fora, se o deploy público já usa esse banco: o formulário de login aparece
-   com ou sem Supabase configurado. A resposta está nas variáveis da Vercel.
+   **Conferido de fora em 04/11/2026: o deploy público não usa banco nenhum.** A CSP publicada não traz a origem do
+   Supabase, e os formulários respondem "serviço indisponível" ([go/no-go §6.1](go-no-go.md)). Para o site funcionar,
+   faltam `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` na Vercel, com as
+   migrations aplicadas antes (GO-04, Vinícius Binda).
 2. A Production Branch da Vercel passa para `production`, ou a documentação muda para o fluxo que
    está em uso?
 
