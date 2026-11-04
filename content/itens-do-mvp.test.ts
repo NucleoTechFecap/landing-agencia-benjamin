@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -32,6 +32,7 @@
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case Aventura de Construir (CASE-05).
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case Meridiano (CASE-06).
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case FECAP (CASE-07).
+ 04/11/2026 Vinícius Nishimura Reis  Item Eventos e Parcerias (SOB-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -49,7 +50,7 @@ import { isPubliclyVisible, visibleSorted } from "../lib/domain/content/visibili
 import { seedSnapshot } from "./index";
 
 /*
- * Um bloco por item das tasks de conteúdo (SOB-08…10, SERV-06…11, CASE-05…10). Cada item é
+ * Um bloco por item das tasks de conteúdo (SOB-05…10, SERV-06…11, CASE-05…10). Cada item é
  * conferido como o site e o painel o usam: publicável pelas regras do CMS, ícone oficial,
  * relações (área ↔ serviços, serviço ↔ cases, categoria ↔ cases), CTA de contato e mídia
  * sem link quebrado. O texto é provisório até a aprovação da Benjamin (CON-05) e as fichas
@@ -211,6 +212,11 @@ function checkCase(
 }
 
 describe("itens de conteúdo do MVP", () => {
+  checkArea("eventos-e-parcerias", {
+    order: 1,
+    services: ["eventos"],
+    provisional: true,
+  });
   checkArea("copywriting", {
     order: 4,
     // Na ordem em que aparecem em /areas (campo "ordem" do serviço).
