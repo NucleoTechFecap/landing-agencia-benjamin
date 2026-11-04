@@ -21,6 +21,7 @@
  04/11/2026 Vinícius Nishimura Reis  Contato institucional: válido e inválido (FORM-04).
  04/11/2026 Vinícius Nishimura Reis  Duplo clique e novo envio depois da confirmação (FORM-08).
  04/11/2026 Vinícius Nishimura Reis  Feedback: anônimo, pedido de retorno e perfil (FORM-05).
+ 04/11/2026 Vinícius Nishimura Reis  Ciência do aviso de privacidade nos três formulários (SEG-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -379,4 +380,33 @@ test.describe("FORM-05 · feedback", () => {
     await expect(page.getByText("Conte quem você é.")).toBeVisible();
     await expect(page.getByRole("radio", { name: "Cliente" })).toBeFocused();
   });
+});
+
+test.describe("SEG-03 · ciência do aviso de privacidade", () => {
+  const forms = [
+    { name: "novo projeto", path: "/contato", button: "Enviar pedido", fill: fillLead },
+    { name: "contato", path: "/contato?tipo=contato", button: "Enviar mensagem", fill: fillContact },
+    { name: "feedback", path: "/feedback", button: "Enviar feedback", fill: fillFeedback },
+  ];
+
+  for (const form of forms) {
+    test(`${form.name}: o aviso está linkado, e sem a ciência nada é enviado`, async ({ page }) => {
+      const posts = trackActionPosts(page);
+      await page.goto(form.path);
+      await expect(page.locator('input[name="submissionId"]')).not.toHaveValue("");
+
+      const noticeLink = page.locator("form").getByRole("link", { name: /aviso de privacidade/ });
+      await expect(noticeLink).toHaveAttribute("href", "/privacidade");
+      await expect(noticeLink).toHaveAttribute("target", "_blank");
+
+      await form.fill(page, uniqueText("Mensagem sem ciência do aviso"));
+      await expect(page.getByLabel(/aviso de privacidade/)).not.toBeChecked();
+      await page.getByRole("button", { name: form.button }).click();
+
+      await expect(page.getByText(CONSENT_ERROR)).toBeVisible();
+      await expect(page.getByLabel(/aviso de privacidade/)).toHaveAttribute("aria-invalid", "true");
+      await expect(page.getByLabel(/aviso de privacidade/)).toBeFocused();
+      expect(posts).toHaveLength(0);
+    });
+  }
 });
