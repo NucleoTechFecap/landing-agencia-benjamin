@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
  26/10/2026 Vinícius Nishimura Reis  Formulário único no shell; next por promessa (B-08) (ADM-02).
  29/10/2026 Caio Moraes              Cores via tokens do tema (ADM-04).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -101,7 +102,10 @@ export function LoginForm({ action, next }: { action: AuthAction; next?: Promise
         {pending ? "Entrando…" : "Entrar"}
       </button>
       <p className="text-center text-sm">
-        <Link href="/admin/recuperar-senha" className="font-semibold text-benja-verde underline underline-offset-4">
+        <Link
+          href="/admin/recuperar-senha"
+          className="inline-block py-1 font-semibold text-benja-verde underline underline-offset-4"
+        >
           Esqueci minha senha
         </Link>
       </p>
@@ -136,7 +140,10 @@ export function ResetRequestForm({ action }: { action: AuthAction }) {
         {pending ? "Enviando…" : "Enviar link"}
       </button>
       <p className="text-center text-sm">
-        <Link href="/admin/login" className="font-semibold text-benja-verde underline underline-offset-4">
+        <Link
+          href="/admin/login"
+          className="inline-block py-1 font-semibold text-benja-verde underline underline-offset-4"
+        >
           Voltar ao login
         </Link>
       </p>

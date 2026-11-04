@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,7 +35,7 @@ import { CmsFormError } from "./form-error";
 type BlockAction = (state: CmsFormState, formData: FormData) => Promise<CmsFormState>;
 
 const button =
-  "rounded-full border-2 border-benja-noite bg-white px-4 py-1.5 text-xs font-bold text-benja-noite transition hover:bg-benja-creme disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex min-h-11 items-center rounded-full border-2 border-benja-noite bg-white px-4 py-1.5 text-xs font-bold text-benja-noite transition hover:bg-benja-creme disabled:cursor-not-allowed disabled:opacity-40";
 
 /** Blocos da página na ordem do site, com editar, mover e excluir, e os tipos que ainda cabem. */
 export function BlockList({
@@ -49,7 +50,7 @@ export function BlockList({
   readOnly: boolean;
 }) {
   return (
-    <section aria-labelledby="blocos-titulo" className="rounded-3xl border-2 border-benja-noite/15 bg-white p-6">
+    <section aria-labelledby="blocos-titulo" className="rounded-3xl border-2 border-benja-noite/15 bg-white p-4 sm:p-6">
       <h2 id="blocos-titulo" className="text-xl font-black text-benja-verde">
         Blocos
       </h2>
@@ -78,7 +79,7 @@ export function BlockList({
           <ul className="mt-2 flex flex-wrap gap-2">
             {addable.map((type) => (
               <li key={type}>
-                <Link href={`/admin/paginas/${page.id}/blocos/novo?tipo=${type}`} className={`inline-block ${button}`}>
+                <Link href={`/admin/paginas/${page.id}/blocos/novo?tipo=${type}`} className={button}>
                   {BLOCK_LABELS[type]}
                 </Link>
               </li>
@@ -133,11 +134,11 @@ function BlockRow({
             {label}
             {isSectionBlock(block.type) ? " · substitui a seção fixa" : ""}
           </p>
-          <p className="mt-1 text-sm break-words">{blockSummary(block)}</p>
+          <p className="mt-1 text-sm wrap-anywhere">{blockSummary(block)}</p>
         </div>
         {readOnly ? null : (
           <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/admin/paginas/${page.id}/blocos/${block.id}`} className={`inline-block ${button}`}>
+            <Link href={`/admin/paginas/${page.id}/blocos/${block.id}`} className={button}>
               Editar<span className="sr-only"> o bloco {label}</span>
             </Link>
             {operation("subir", "Subir", first)}

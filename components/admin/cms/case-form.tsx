@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
  29/10/2026 Vinicius Binda             Endereço editável depois de publicado, com aviso (DB-08).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -75,7 +76,7 @@ export function CaseForm({
         const typedFeatured = value("featured");
         return (
           <>
-            <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <TextField
                 name="title"
                 label="Título"
@@ -176,7 +177,10 @@ export function CaseForm({
             <div className="rounded-2xl border-2 border-dashed border-benja-noite/20 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm font-bold text-benja-noite">Imagens</p>
-                <Link href={uploadHref} className="text-sm font-bold text-benja-verde underline underline-offset-4">
+                <Link
+                  href={uploadHref}
+                  className="inline-block py-1 text-sm font-bold text-benja-verde underline underline-offset-4"
+                >
                   Enviar imagem para a biblioteca
                 </Link>
               </div>
@@ -216,7 +220,7 @@ export function CaseForm({
               errors={errors("team")}
               defaultValue={value("team", item?.team.join("\n"))}
             />
-            <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <TextField
                 name="order"
                 label="Ordem"

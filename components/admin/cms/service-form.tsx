@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Atalho para enviar imagem (ADM-08).
  29/10/2026 Vinicius Binda             Endereço editável depois de publicado, com aviso (DB-08).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -69,7 +70,7 @@ export function ServiceForm({
         const typedFeatured = value("featured");
         return (
           <>
-            <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <TextField
                 name="name"
                 label="Nome"
@@ -125,7 +126,7 @@ export function ServiceForm({
               selected={selectedAreas}
               errors={errors("areaIds")}
             />
-            <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <SelectField
                 name="icon"
                 label="Ícone"
@@ -155,7 +156,7 @@ export function ServiceForm({
             <p className="-mt-2 text-sm">
               <Link
                 href={`/admin/midia?voltar=${encodeURIComponent(service ? `/admin/servicos/${service.id}` : "/admin/servicos/novo")}`}
-                className="font-bold text-benja-verde underline underline-offset-4"
+                className="inline-block py-1 font-bold text-benja-verde underline underline-offset-4"
               >
                 Enviar imagem para a biblioteca
               </Link>

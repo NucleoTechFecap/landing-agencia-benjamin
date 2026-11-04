@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-06).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -48,11 +49,11 @@ export function CheckboxGroup({
 }) {
   const errorId = `${name}-erro`;
   return (
-    <fieldset aria-describedby={errors?.length ? errorId : undefined}>
+    <fieldset aria-describedby={errors?.length ? errorId : undefined} className="min-w-0">
       <legend className="text-sm font-bold text-benja-noite">{legend}</legend>
       {hint ? <p className="mt-1 text-xs text-benja-grafite/80">{hint}</p> : null}
       {options.length ? (
-        <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+        <ul className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
           {options.map((option) => (
             <li key={option.value}>
               <label className="flex items-center gap-3 rounded-xl border-2 border-benja-noite/15 bg-white px-3 py-2 text-sm has-[:checked]:border-benja-verde has-[:checked]:bg-benja-claro/40">
@@ -63,7 +64,7 @@ export function CheckboxGroup({
                   defaultChecked={selected.includes(option.value)}
                   className="size-5 shrink-0 accent-benja-verde"
                 />
-                <span>
+                <span className="min-w-0 wrap-anywhere">
                   {option.label}
                   {option.note ? <span className="text-benja-grafite/70"> ({option.note})</span> : null}
                 </span>

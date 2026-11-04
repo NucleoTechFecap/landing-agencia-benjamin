@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-06).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -63,8 +64,8 @@ export default async function EditServicePage({ params, searchParams }: PageProp
         trail={[{ label: "Serviços", href: "/admin/servicos" }, { label: service.name }]}
       />
       <FlashMessage ok={query.ok} aviso={query.aviso} />
-      <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-        <div className="rounded-3xl border-2 border-benja-noite/15 bg-white p-6">
+      <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="rounded-3xl border-2 border-benja-noite/15 bg-white p-4 sm:p-6">
           {service.status === "archived" ? (
             <p className="mb-5 rounded-2xl bg-benja-creme px-4 py-3 text-sm">
               Serviço arquivado: restaure como rascunho para editar.
@@ -118,7 +119,7 @@ export default async function EditServicePage({ params, searchParams }: PageProp
                       {index ? ", " : ""}
                       <Link
                         href={`/admin/areas/${area.id}`}
-                        className="text-benja-verde underline-offset-4 hover:underline"
+                        className="inline-block py-0.5 text-benja-verde underline-offset-4 hover:underline"
                       >
                         {area.name}
                       </Link>

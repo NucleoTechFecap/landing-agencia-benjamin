@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -42,13 +43,13 @@ export default async function CasesAdminPage({ searchParams }: PageProps<"/admin
       <CmsHeader title="Cases" trail={[{ label: "Cases" }]}>
         <Link
           href="/admin/categorias"
-          className="rounded-full border-2 border-benja-verde px-5 py-2 text-sm font-bold text-benja-verde hover:bg-benja-claro"
+          className="inline-flex min-h-11 items-center rounded-full border-2 border-benja-verde px-5 py-2 text-sm font-bold text-benja-verde hover:bg-benja-claro"
         >
           Categorias
         </Link>
         <Link
           href="/admin/midia"
-          className="rounded-full border-2 border-benja-verde px-5 py-2 text-sm font-bold text-benja-verde hover:bg-benja-claro"
+          className="inline-flex min-h-11 items-center rounded-full border-2 border-benja-verde px-5 py-2 text-sm font-bold text-benja-verde hover:bg-benja-claro"
         >
           Biblioteca de mídia
         </Link>

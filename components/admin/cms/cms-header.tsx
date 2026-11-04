@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,13 +37,17 @@ export function CmsHeader({
 }) {
   return (
     <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-      <div>
+      <div className="min-w-0">
         <nav aria-label="Trilha" className="text-sm text-benja-grafite/80">
           <ol className="flex flex-wrap items-center gap-1.5">
             {[{ label: "Painel", href: "/admin" }, ...trail].map((step, index, steps) => (
-              <li key={step.label} className="flex items-center gap-1.5">
+              <li key={step.label} className="flex min-w-0 items-center gap-1.5 wrap-anywhere">
                 {step.href && index < steps.length - 1 ? (
-                  <Link href={step.href} className="underline-offset-4 hover:underline">
+                  <Link
+                    href={step.href}
+                    prefetch={false}
+                    className="inline-block py-0.5 underline-offset-4 hover:underline"
+                  >
                     {step.label}
                   </Link>
                 ) : (
@@ -53,7 +58,7 @@ export function CmsHeader({
             ))}
           </ol>
         </nav>
-        <h1 className="mt-1 text-3xl font-black text-benja-verde">{title}</h1>
+        <h1 className="mt-1 text-3xl font-black wrap-anywhere text-benja-verde">{title}</h1>
       </div>
       {children ? <div className="flex flex-wrap gap-3">{children}</div> : null}
     </header>
@@ -65,7 +70,8 @@ export function CmsLinkButton({ href, children }: { href: string; children: Reac
   return (
     <Link
       href={href}
-      className="rounded-full bg-benja-verde px-5 py-2.5 text-sm font-bold text-benja-nyanza transition hover:bg-benja-noite focus-visible:ring-4 focus-visible:ring-benja-lima/40"
+      prefetch={false}
+      className="inline-flex min-h-11 items-center rounded-full bg-benja-verde px-5 py-2 text-sm font-bold text-benja-nyanza transition hover:bg-benja-noite focus-visible:ring-4 focus-visible:ring-benja-lima/40"
     >
       {children}
     </Link>
