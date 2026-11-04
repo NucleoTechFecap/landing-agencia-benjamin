@@ -97,6 +97,7 @@
 | --------- | ----- |
 | [Evolução do módulo de leads para CRM](roadmap/evolucao-crm.md) | FUT-01 |
 | [Newsletter com gestão de assinantes](roadmap/newsletter.md) | FUT-02 |
+| [Automações de comunicação e campanhas](roadmap/automacoes-de-comunicacao.md) | FUT-03 |
 | [Histórico e restauração de versões do CMS](roadmap/historico-de-versoes.md) | FUT-04 |
 | [Planejamento de integrações externas](roadmap/integracoes-externas.md) | FUT-07 |
 | [Módulos internos para a operação da agência](roadmap/modulos-internos.md) | FUT-08 |
