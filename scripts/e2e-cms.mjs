@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-12).
+ 04/11/2026 Vinícius Nishimura Reis  Formulário público grava no Supabase local nas jornadas @cms (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -49,6 +50,8 @@ const env = {
   NEXT_PUBLIC_SUPABASE_ANON_KEY: status.ANON_KEY,
   E2E_SUPABASE_URL: status.API_URL,
   E2E_SUPABASE_SERVICE_ROLE_KEY: status.SERVICE_ROLE_KEY,
+  // O formulário público grava com service_role: sem ela, o envio iria para a memória do processo.
+  SUPABASE_SERVICE_ROLE_KEY: status.SERVICE_ROLE_KEY,
 };
 delete env.CONTENT_SOURCE;
 
