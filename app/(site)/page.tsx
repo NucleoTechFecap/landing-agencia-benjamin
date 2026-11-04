@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,6 +23,7 @@
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Home sem CTA ou com destaques acima do limite continua coerente (HOME-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -39,6 +40,8 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { Section } from "@/components/ui/section";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { EmptyState } from "@/components/ui/states";
+import { FEATURED_LIMITS } from "@/lib/domain/content/integrity";
+import { servicesSummary } from "@/lib/domain/content/services-summary";
 import {
   getPage,
   getSiteSettings,
@@ -80,12 +83,9 @@ export default async function HomePage() {
 
   const toLinks = (ctas: typeof heroCtas) =>
     ctas.map((cta) => ({ id: cta.id, label: cta.label, href: cta.link.href, external: cta.link.external }));
-  const solutionsSummary = allServices.length
-    ? `${allServices.length} serviços — ${allServices
-        .slice(0, 4)
-        .map((service) => service.name)
-        .join(", ")} e mais.`
-    : "Nossos serviços estão sendo atualizados.";
+  const solutionsSummary = servicesSummary(allServices.map((service) => service.name));
+  // Limite da Home (TECH-05 §4): acima dele o painel avisa, e aqui valem os primeiros pela ordem.
+  const homeServices = featuredServices.slice(0, FEATURED_LIMITS.services);
 
   return (
     <>
@@ -125,9 +125,9 @@ export default async function HomePage() {
             Ver todos os serviços
           </ButtonLink>
         </div>
-        {featuredServices.length > 0 ? (
+        {homeServices.length > 0 ? (
           <ul data-motion="cards" className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredServices.map((service, index) => (
+            {homeServices.map((service, index) => (
               <li key={service.id}>
                 <ServiceCard service={service} index={index} />
               </li>
