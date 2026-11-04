@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 04/11/2026 Vinícius Nishimura Reis  Falha ao gravar bloco é auditada e expira o cache (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -86,14 +87,32 @@ async function loadForChange(
 const touchPage = (deps: CmsDeps, page: Page) =>
   deps.store.update("pages", page.id, { title: page.title }, page.updatedAt);
 
-async function afterChange(deps: CmsDeps, page: Page, action: string, type: string) {
-  await deps.audit({
-    event: "content.updated",
-    resourceId: page.id,
-    outcome: "success",
-    metadata: { entity: "page", slug: page.slug, action, kind: type, fromStatus: page.status },
-  });
-  if (page.status === "published") deps.invalidate({ entity: "page", slug: page.slug });
+/**
+ * Grava as alterações de um bloco e registra na auditoria. Blocos não têm transação no banco: uma falha
+ * no meio de "mover" deixa a ordem parcial. Por isso a falha também é auditada e, em página publicada,
+ * expira o cache: o site precisa mostrar o que ficou gravado (TECH-13, #369). A próxima operação
+ * renumera a ordem de 0 em diante.
+ */
+async function applyChange(deps: CmsDeps, page: Page, action: string, type: string, write: () => Promise<unknown>) {
+  const audit = (outcome: "success" | "failure") =>
+    deps.audit({
+      event: "content.updated",
+      resourceId: page.id,
+      outcome,
+      metadata: { entity: "page", slug: page.slug, action, kind: type, fromStatus: page.status },
+    });
+  const invalidate = () => {
+    if (page.status === "published") deps.invalidate({ entity: "page", slug: page.slug });
+  };
+  try {
+    await write();
+  } catch (error) {
+    await audit("failure").catch(() => undefined);
+    invalidate();
+    throw error;
+  }
+  await audit("success");
+  invalidate();
 }
 
 /** Foto só vem da biblioteca, nunca do formulário: o bloco guarda endereço e texto alternativo. */
@@ -136,13 +155,14 @@ export async function saveBlock(deps: CmsDeps, actor: CmsActor, ref: ItemRef, re
   const parsed = BLOCK_SCHEMAS[type].safeParse(content);
   if (!parsed.success) throw new AppError("VALIDATION_FAILED", { fieldErrors: fieldErrorsOf(parsed.error) });
 
-  await touchPage(deps, page);
-  if (blockId) await deps.store.updateBlock(blockId, { content: parsed.data });
-  else {
-    const sortOrder = page.blocks.reduce((highest, block) => Math.max(highest, block.order + 1), 0);
-    await deps.store.insertBlock({ page_id: page.id, type, content: parsed.data, sort_order: sortOrder });
-  }
-  await afterChange(deps, page, blockId ? "bloco-editado" : "bloco-criado", type);
+  await applyChange(deps, page, blockId ? "bloco-editado" : "bloco-criado", type, async () => {
+    await touchPage(deps, page);
+    if (blockId) await deps.store.updateBlock(blockId, { content: parsed.data });
+    else {
+      const sortOrder = page.blocks.reduce((highest, block) => Math.max(highest, block.order + 1), 0);
+      await deps.store.insertBlock({ page_id: page.id, type, content: parsed.data, sort_order: sortOrder });
+    }
+  });
 }
 
 /** Sobe, desce ou exclui um bloco. A ordem é renumerada de 0 em diante, corrigindo empates. */
@@ -161,9 +181,10 @@ export async function changeBlock(
   const block = page.blocks[index];
 
   if (operation === "excluir") {
-    await touchPage(deps, page);
-    await deps.store.removeBlock(blockId);
-    await afterChange(deps, page, "bloco-excluido", block.type);
+    await applyChange(deps, page, "bloco-excluido", block.type, async () => {
+      await touchPage(deps, page);
+      await deps.store.removeBlock(blockId);
+    });
     return;
   }
 
@@ -171,9 +192,10 @@ export async function changeBlock(
   if (target < 0 || target >= page.blocks.length) return;
   const reordered = [...page.blocks];
   [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
-  await touchPage(deps, page);
-  for (const [position, item] of reordered.entries()) {
-    if (item.order !== position) await deps.store.updateBlock(item.id, { sort_order: position });
-  }
-  await afterChange(deps, page, "bloco-movido", block.type);
+  await applyChange(deps, page, "bloco-movido", block.type, async () => {
+    await touchPage(deps, page);
+    for (const [position, item] of reordered.entries()) {
+      if (item.order !== position) await deps.store.updateBlock(item.id, { sort_order: position });
+    }
+  });
 }
