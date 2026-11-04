@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  01/11/2026 Vinícius Nishimura Reis  Sufixo de teste com node:crypto (CodeQL).
+ 04/11/2026 Vinícius Nishimura Reis  Chega ao módulo pelo menu do painel (ADM-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -102,7 +103,10 @@ test.describe("Painel · páginas e blocos @cms", () => {
 
   test("editor cria rascunho, escreve blocos e publica; o que salvou reaparece", async ({ page, request }) => {
     await login(page, accounts.editor);
-    await page.getByRole("link", { name: "Páginas e textos institucionais" }).click();
+    await page
+      .getByRole("navigation", { name: "Módulos do painel" })
+      .getByRole("link", { name: "Páginas e textos" })
+      .click();
     await expect(page.getByRole("heading", { name: "Páginas e textos" })).toBeVisible();
 
     await page.getByRole("link", { name: "Criar conteúdo da página Privacidade" }).click();
