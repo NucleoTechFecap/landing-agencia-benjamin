@@ -10,7 +10,7 @@ regra de visibilidade do site: o que não aparece no site não aparece na API.
 - O identificador público é o **slug**; UUIDs internos não são expostos. Endereço antigo ou com
   maiúsculas de serviço e case responde `301` para o atual (DB-08).
 - Toda resposta traz `X-Request-Id`, o mesmo que aparece no log.
-- Cache: `public, s-maxage=300, stale-while-revalidate=3600` nas leituras.
+- Cache: `public, s-maxage=240, stale-while-revalidate=60` nas leituras.
 - Listas paginadas aceitam `page` (≥ 1) e `pageSize` (1–50, padrão 12).
 
 ## Endpoints

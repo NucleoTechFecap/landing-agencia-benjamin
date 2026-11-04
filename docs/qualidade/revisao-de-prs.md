@@ -133,7 +133,7 @@ ser reproduzido, em geral na Vercel.
 | 3 | Blocos de página sem transação, nem a mitigação que `saveContent` tinha | Baixa | Confirmado. Em #369 |
 | 4 | Rollback da DBX-03 cita a versão errada no `migration repair` | Baixa | Corrigido (#369) |
 | 5 | Slug chega ao `use cache` sem validar formato em API e imagens de compartilhamento | Baixa | Código confirmado; impacto plausível. Em #369 |
-| 6 | `stale-while-revalidate=3600` contradiz a meta de 5 min do ADR-0006 | Baixa | Cabeçalho confirmado; efeito plausível. Em #369 |
+| 6 | `stale-while-revalidate=3600` contradiz a meta de 5 min do ADR-0006 | Baixa | Corrigido no cabeçalho (#369); comportamento real da CDN ainda sem medir |
 | 7 | #365: categoria ainda forjável em formato de slug (`lead:urgente-diretoria`), embora o documento dissesse que era recusada | Baixa | Corrigido no próprio #365 |
 | 8 | #365: nome e empresa aceitavam quebra de linha e forjavam linhas no e-mail interno | Baixa | Corrigido no próprio #365 |
 

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,13 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-02).
+ 04/11/2026 Vinícius Nishimura Reis  Stale de 60 s, dentro da meta de 5 min do ADR-0006 (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { caseQuerySchema } from "@/lib/domain/api/contracts";
 import { AppError } from "./errors";
-import { apiRoute, parseQuery } from "./http";
+import { PUBLIC_CACHE_CONTROL, apiRoute, parseQuery } from "./http";
 
 describe("apiRoute", () => {
   afterEach(() => vi.restoreAllMocks());
@@ -61,5 +62,12 @@ describe("apiRoute", () => {
 describe("parseQuery", () => {
   it("lança BAD_REQUEST com campos inválidos", () => {
     expect(() => parseQuery(new Request("http://x/api?pageSize=999"), caseQuerySchema)).toThrowError(AppError);
+  });
+});
+
+describe("cache das leituras públicas", () => {
+  it("o frescor e o stale somam no máximo os 5 min do ADR-0006", () => {
+    const seconds = (name: string) => Number(PUBLIC_CACHE_CONTROL.match(new RegExp(`${name}=(\\d+)`))?.[1]);
+    expect(seconds("s-maxage") + seconds("stale-while-revalidate")).toBeLessThanOrEqual(300);
   });
 });
