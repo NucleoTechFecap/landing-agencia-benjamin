@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-07).
  13/10/2026 Vinícius Nishimura Reis  Armazenamento Supabase e aviso único de segredo efêmero (estrutura da landing).
+ 04/11/2026 Vinícius Nishimura Reis  Production da Vercel nunca guarda envios em memória (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,6 +27,7 @@ import "server-only";
 import { createHmac, randomBytes } from "node:crypto";
 import { siteEnvironment, siteUrl } from "@/lib/config/public-env";
 import { getServerEnv } from "@/lib/config/server-env";
+import { allowsMemoryStore } from "@/lib/domain/forms/store-policy";
 import { listServices } from "../content/repository";
 import { AppError } from "../errors";
 import { logger } from "../logger";
@@ -53,7 +55,7 @@ function resolveStore(): SubmissionStore {
   if (persistent) return persistent;
   const serviceClient = getServiceClient();
   if (serviceClient) return new SupabaseSubmissionStore(serviceClient);
-  if (siteEnvironment === "production" || siteEnvironment === "homologation") {
+  if (!allowsMemoryStore({ siteEnvironment, vercelEnv: process.env.VERCEL_ENV })) {
     // Nunca aceitar leads em memória em ambiente real: seriam perdidos (RN-04).
     throw new AppError("SERVICE_UNAVAILABLE", { internal: { reason: "submission_store_not_configured" } });
   }
