@@ -4,9 +4,9 @@
 | ------------ | -------------------------------------------------------------------------------------- |
 | Issue        | QA-01 (#179)                                                                           |
 | Responsável  | Rafael Morais Rocha (conforme `ownership-por-issue.csv`; backup: Julia Damásio)        |
-| Versão       | 1.1.0                                                                                  |
+| Versão       | 1.2.0                                                                                  |
 | Data         | 04/11/2026                                                                             |
-| Base         | Commit `6bc0f72` da `main`, mais os testes de conteúdo desta entrega; seção 5 atualizada com a entrega de FORM-08; [critérios de aceite](../gestao/criterios-de-aceite.md) (GOV-13) |
+| Base         | Commit `6bc0f72` da `main`, mais os testes de conteúdo; seção 5 com FORM-08; seções 2 a 11 revistas com QA-03, QA-05, QA-06 e INT-06, sobre `6959c27`; [critérios de aceite](../gestao/criterios-de-aceite.md) (GOV-13) |
 | Relacionados | [Jornadas E2E](jornadas-e2e.md) (TECH-12), [CRUD do CMS](qa-04-cms.md) (QA-04), [homologação](homologacao.md) (QA-08), [go/no-go](../operacao/go-no-go.md) (TECH-14) |
 
 > Esta matriz diz **quais testes existem** para cada critério, e não que o critério foi atendido. Isso
@@ -43,9 +43,9 @@ Tipo: `T` técnico, `I` institucional.
 | [CA-01](#ca-01) Home | T + I | Parcial | Áreas e serviços na Home com conteúdo; aceite da agência |
 | [CA-02](#ca-02) Sobre | T + I | Parcial | Aceite do texto (CON-03) |
 | [CA-03](#ca-03) Seis áreas | T + I | Parcial | Aceite do texto (CON-04) |
-| [CA-04](#ca-04) Links e 404 | T | Parcial | Varredura completa de menu e links internos |
+| [CA-04](#ca-04) Links e 404 | T | Coberto | — |
 | [CA-05](#ca-05) Redes sociais | T + I | Parcial | Confirmação de que os perfis são os oficiais |
-| [CA-06](#ca-06) Responsivo | T | Parcial | 360, 768 e 1920 px; painel no celular |
+| [CA-06](#ca-06) Responsivo | T | Coberto | Em aparelho físico e Safari, só na homologação |
 | [CA-07](#ca-07) Acessibilidade | T | Parcial | Contraste AA, Lighthouse e leitor de tela real |
 | [CA-08](#ca-08) SEO básico | T | Parcial | Rich Results e indexação em produção |
 | [CA-09](#ca-09) Nove serviços | T + I | Parcial | Textos finais (CON-05); o gate falha hoje |
@@ -55,10 +55,10 @@ Tipo: `T` técnico, `I` institucional.
 | [CA-13](#ca-13) Case sem material | T | Parcial | A plataforma não sabe o que foi autorizado; o gate falha hoje |
 | [CA-14](#ca-14) Formulários | T | Coberto | — |
 | [CA-15](#ca-15) Entrega do e-mail | T + I | Parcial | Envio real pelo Resend ao destinatário real |
-| [CA-16](#ca-16) Duplicidade e falhas | T | Parcial | Rota do job de reenvio |
+| [CA-16](#ca-16) Duplicidade e falhas | T | Coberto | — |
 | [CA-17](#ca-17) Aviso de privacidade | T + I | Parcial | Texto validado (SEG-02) |
 | [CA-18](#ca-18) Login e sessão | T | Parcial | Logout, renovação de sessão, cadastro público desligado |
-| [CA-19](#ca-19) Permissões N01 a N13 | T | Parcial | N11 e N13 de ponta a ponta; N09 e N10 no banco |
+| [CA-19](#ca-19) Permissões N01 a N13 | T | Coberto | Repetir em homologação (GO-02) |
 | [CA-20](#ca-20) Autonomia da Benjamin | I | Sem cobertura | Só homologação |
 | [CA-21](#ca-21) Rascunho e publicação | T | Coberto | — |
 | [CA-22](#ca-22) Upload de imagem | T | Coberto | — |
@@ -132,7 +132,9 @@ Menu, rodapé, breadcrumbs e links internos sem 404; rota inexistente retorna HT
 | 04.6 | N | Slug malformado ou de outro tipo | `lib/server/content/published-slugs.test.ts` › «recusa slug inexistente, mal formatado, reservado ou de outro tipo (404)» | U |
 | 04.7 | B | Maiúsculas redirecionam, mantendo a query | `tests/e2e/jornada-visitante.spec.ts` › «endereço com maiúsculas responde 301 para as minúsculas, mantendo a query (DB-08)» | E |
 | 04.8 | B | Endereço antigo leva ao novo | `lib/server/content/published-slugs.test.ts` › «endereço antigo vai para o atual (301)». `tests/integration/supabase/slugs-e-urls.test.ts` › «editor publica e troca o endereço; o antigo leva ao novo» | U, S |
-| — | Lacuna | Varredura de **todos** os links de menu, rodapé e breadcrumbs: **sem cobertura**. O menu só é exercido no caminho até Serviços, em `tests/e2e/jornada-visitante.spec.ts` › «fluxo positivo completo»; o teste do rodapé só clica em "Envie uma mensagem". Ver INT-06 na seção 10 | | |
+| 04.9 | P | Todo link das rotas públicas e dos detalhes responde abaixo de 400, com âncora existente | `tests/e2e/links-e-ctas.spec.ts` › «/: todos os links»; «/sobre: todos os links»; «/areas: todos os links»; «/servicos: todos os links»; «/cases: todos os links»; «/contato: todos os links»; «/feedback: todos os links»; «/privacidade: todos os links»; «/servicos: cada detalhe tem os links certos»; «/cases: cada detalhe tem os links certos» | E |
+| 04.10 | N | CTA não aponta para a própria página, salvo filtro e paginação | `tests/e2e/links-e-ctas.spec.ts`, nos mesmos testes. «o botão de contato some em /contato e volta, visível, ao navegar para outra página» | E |
+| 04.11 | P | Destino de cada CTA | `tests/e2e/links-e-ctas.spec.ts` › «cada serviço leva ao formulário com ele mesmo escolhido»; «os CTAs da Home vão para o destino cadastrado» | E |
 
 ### CA-05
 
@@ -155,7 +157,13 @@ Responsivo em 360, 768, 1280 e 1920 px, sem rolagem horizontal.
 | 06.1 | P | Páginas sem estouro, em 1280 e 412 px | `tests/e2e/motion.spec.ts` › «/: tudo visível, imagens carregadas, sem overflow nem erro»; «/sobre: tudo visível, imagens carregadas, sem overflow nem erro»; «/servicos: tudo visível, imagens carregadas, sem overflow nem erro»; «/servicos/copywriting: tudo visível, imagens carregadas, sem overflow nem erro»; «/cases: tudo visível, imagens carregadas, sem overflow nem erro»; «/cases/meridiano: tudo visível, imagens carregadas, sem overflow nem erro»; «/contato: tudo visível, imagens carregadas, sem overflow nem erro»; «/feedback: tudo visível, imagens carregadas, sem overflow nem erro»; «/privacidade: tudo visível, imagens carregadas, sem overflow nem erro» | E |
 | 06.2 | P | Grade e pilares mudam com a largura | `tests/e2e/portfolio.spec.ts` › «a grade acompanha a largura da tela, sem rolagem lateral». `tests/e2e/sobre-proposta-de-valor.spec.ts` › «lado a lado no desktop, empilhados no celular, sem rolagem lateral» | E |
 | 06.3 | N | Blocos e estados sem rolagem lateral | `tests/e2e/rodape.spec.ts` › «não causa rolagem lateral». `tests/e2e/home-cases-em-destaque.spec.ts` › «não causa rolagem lateral». `tests/e2e/pagina-nao-encontrada.spec.ts` › «funciona pelo teclado e sem rolagem lateral». `tests/e2e/estados-globais.spec.ts` › «filtro sem resultado explica o que houve e oferece limpar, sem rolagem lateral» | E |
-| — | Lacuna | As larguras do critério **360, 768 e 1920 px: sem cobertura**. Só 1280 e 412 px rodam. Painel no celular: **sem cobertura** permanente; as jornadas `@cms` ignoram o celular (ADM-16), e o CT-16 da QA-04 foi um roteiro manual em 390 px. Ver a seção 10 | | |
+| 06.4 | P | Rotas públicas em 360, 768, 1280 e 1920 px: rolagem, sobreposição, texto cortado, mídia e alvos de toque | `tests/e2e/responsividade-site.spec.ts` › «/ em 360 px» e as demais combinações de rota e largura; «detalhe de servico em 360 px»; «todo detalhe de servico em 360 px»; «todo detalhe de case em 360 px» | E |
+| 06.5 | N | A medição aponta cada defeito plantado | `tests/e2e/responsividade-site.spec.ts` › «a medição enxerga o que procura: cada defeito plantado é apontado» | E |
+| 06.6 | B | Menu em tela baixa e formulário com erros | `tests/e2e/responsividade-site.spec.ts` › «menu em 800 × 360 (celular deitado): todos os destinos são alcançáveis»; «/feedback: com os erros na tela, o formulário continua cabendo em 360 px» | E |
+| 06.7 | B | Rolagem lateral a cada quadro, durante a animação, com CPU limitada | `tests/e2e/responsividade-site.spec.ts` › «/ com CPU 6x: nunca rola para o lado» | E |
+| 06.8 | P | Painel em 360, 768 e 1280 px | `tests/e2e/painel-responsivo.spec.ts` › «administrador: inicio»; «toda tela de app/admin está na verificação de largura» | C |
+
+Registro da execução: [QA-03](qa-03-responsividade.md). Aparelho físico e Safari ficam para a homologação.
 
 ### CA-07
 
@@ -309,6 +317,8 @@ Envio duplicado não gera dois registros; falha de e-mail não perde o lead.
 | 16.11 | N | S16: falha ao gravar o resultado da notificação | `lib/server/forms/submission-service.test.ts` › «e-mail enviado: o visitante vê sucesso, e o envio não é marcado como falha»; «e-mail recusado: o visitante vê sucesso e os dois problemas ficam no log»; «sem destinatário: o visitante vê sucesso»; «o reenvio agendado não para no primeiro registro com problema» | U |
 | 16.12 | N | S12: ambiente real sem armazenamento persistente | `lib/server/forms/deps.test.ts` › «Production da Vercel com ambiente do site em %s: recusa, em vez de guardar em memória»; «ambiente do site em %s: recusa em qualquer hospedagem». `lib/domain/forms/store-policy.test.ts` › «site em %s e Vercel em %s: não pode, é um deploy real com o ambiente mal configurado» | U |
 | 16.13 | B | S12: desenvolvimento e preview continuam em memória | `lib/server/forms/deps.test.ts` › «preview da Vercel continua em memória»; «desenvolvimento, build e E2E locais, sem VERCEL_ENV, continuam em memória» | U |
+| 16.15 | P | Rota do job: pendente entregue uma vez, sem repetir | `tests/e2e/job-de-notificacoes.spec.ts` › «pendente é entregue uma vez, sem mudar o envio, e a segunda rodada não repete» | C |
+| 16.16 | B | Rota do job: intervalo e tentativas esgotadas | `tests/e2e/job-de-notificacoes.spec.ts` › «falha antiga é reenviada; falha recente espera o intervalo; a esgotada fica de fora» | C |
 | 16.14 | B | S14: antispam sem o tempo de preenchimento | `lib/server/forms/submission-service.test.ts` › «o tempo mínimo não se aplica, como a quem omite o campo: não é uma brecha nova»; «honeypot preenchido continua recusado em silêncio»; «o limite por origem continua valendo»; «o mesmo conteúdo com outro identificador volta como duplicado» | U |
 | — | Lacuna | A rota `/api/internal/jobs/notificacoes` em si: **sem cobertura** | | |
 
@@ -349,18 +359,18 @@ Permissões por papel aplicadas no servidor e no banco (casos N01 a N13 de [TECH
 | Caso | Classe | Cenário | Testes | Bateria | Situação |
 | ---- | ------ | -------- | ------ | ------- | -------- |
 | N01 | N | Anônimo abre `/admin` | `lib/server/auth/guards.test.ts` › «N01 — sem sessão redireciona ao login com retorno». `tests/e2e/jornada-paginas-cms.spec.ts` › «visitante não abre o editor nem lê rascunho» | U, C | Coberto |
-| N02 | N | Anônimo chama ação do painel | `lib/server/auth/guards.test.ts` › «N02 — sem sessão lança UNAUTHENTICATED (401)»; «não executa a ação sem permissão e devolve envelope de erro» | U | Coberto |
+| N02 | N | Anônimo chama ação do painel | `lib/server/auth/guards.test.ts` › «N02 — sem sessão lança UNAUTHENTICATED (401)»; «não executa a ação sem permissão e devolve envelope de erro». `tests/e2e/acesso-indevido-painel.spec.ts` › «sem sessão, nada grava: nem na tela da ação, nem por uma rota pública» | U, C | Coberto |
 | N03 | N | Conta `pending` | `lib/server/auth/guards.test.ts` › «N03 — conta pendente vai para o aviso de acesso pendente». `lib/domain/auth/rbac.test.ts` › «pending não tem nenhuma permissão» | U | Coberto |
 | N04 | N | `editor` exclui | `lib/server/auth/guards.test.ts` › «N04 — editor excluindo case lança FORBIDDEN (403)». `lib/domain/auth/rbac.test.ts` › «editor não pode service:delete»; «editor não pode case:delete»; «editor não pode media:delete». `tests/integration/supabase/cms-areas.test.ts` › «editor arquiva, mas só admin exclui definitivamente — e só arquivado» | U, S | Coberto |
 | N05 | N | `editor` abre leads | `lib/server/auth/guards.test.ts` › «N05 — editor abrindo leads vai para 'sem permissão'». `supabase/tests/database/form_submissions_rls.test.sql` › «editor não consulta (N05)» | U, D | Coberto |
 | N06 | N | `editor` altera contato ou redes | `lib/domain/auth/rbac.test.ts` › «editor não pode settings:edit». `tests/integration/supabase/configuracao-institucional.test.ts` › «editor não altera pela API REST direta». `tests/e2e/jornada-configuracoes-cms.spec.ts` › «editor vê em modo leitura e o servidor recusa o envio forçado» | U, S, C | Coberto |
 | N07 | N | `viewer` edita ou publica | `lib/domain/content/publication.test.ts` › «viewer não salva nem publica». `tests/integration/supabase/cms-areas.test.ts` › «leitor não consegue gravar nem pelo banco (RLS)». `tests/e2e/jornada-editor-cms.spec.ts` › «J2.6 leitor vê o CMS só para leitura e não cria conteúdo» | U, S, C | Coberto |
 | N08 | N | `super_admin` abre leads | `lib/server/auth/guards.test.ts` › «N08 — super_admin não lê leads». `supabase/tests/database/form_submissions_rls.test.sql` › «super_admin não consulta (minimização, N08)» | U, D | Coberto |
-| N09 | N | `admin` promove alguém a `admin` | `lib/domain/auth/rbac.test.ts` › «admin só gerencia editor, viewer e pending». `supabase/tests/database/storage_media.test.sql` › «anon: sem EXECUTE em assign_role» | U, D | Parcial: a regra de `assign_role` para `admin` no banco, **sem cobertura** |
-| N10 | N | Altera o próprio papel | `lib/domain/auth/rbac.test.ts` › «ninguém altera o próprio papel» | U | Parcial: sem teste no banco |
-| N11 | N | Papel forjado no cliente | `lib/domain/auth/rbac.test.ts` › «papel ausente, nulo ou forjado é negado» | U | Parcial: só a regra; cookie ou formulário forjado de ponta a ponta **sem cobertura** |
+| N09 | N | `admin` promove alguém a `admin` | `lib/domain/auth/rbac.test.ts` › «admin só gerencia editor, viewer e pending». `supabase/tests/database/storage_media.test.sql` › «anon: sem EXECUTE em assign_role». `tests/e2e/acesso-indevido-dados.spec.ts` › «N09: admin não promove ninguém a admin; editor e leitor não mudam papel de ninguém» | U, D, C | Coberto, com `assign_role` real pela API REST |
+| N10 | N | Altera o próprio papel | `lib/domain/auth/rbac.test.ts` › «ninguém altera o próprio papel». `tests/e2e/acesso-indevido-dados.spec.ts` › «N10: ninguém muda o próprio papel, nem pela tabela nem pela função» | U, C | Coberto, pela tabela e pela função |
+| N11 | N | Papel forjado no cliente | `lib/domain/auth/rbac.test.ts` › «papel ausente, nulo ou forjado é negado». `tests/e2e/acesso-indevido-painel.spec.ts` › «N11: papel forjado em cookie, formulário ou cabeçalho é ignorado»; «N11: token alterado no cookie cai no login, sem gravar» | U, C | Coberto |
 | N12 | N | `select` anônimo em leads | `supabase/tests/database/form_submissions_rls.test.sql` › «visitante não lê a tabela (N12)». `tests/integration/supabase/formularios.test.ts` › «visitante com a chave anônima não lê nem grava (42501)» | D, S | Coberto. O documento diz "0 linhas", e o teste confirma erro 42501: alinhar |
-| N13 | N | Sessão expirada em escrita | `lib/server/auth/guards.test.ts` › «N02 — sem sessão lança UNAUTHENTICATED (401)» | U | Parcial: é o caminho sem sessão; sessão de fato expirada **sem cobertura** |
+| N13 | N | Sessão expirada em escrita | `lib/server/auth/guards.test.ts` › «N02 — sem sessão lança UNAUTHENTICATED (401)». `tests/e2e/acesso-indevido-painel.spec.ts` › «N13: sessão encerrada no servidor cai no login ao tentar gravar, sem gravar» | U, C | Coberto: sessão encerrada no servidor, com o cookie ainda no navegador |
 | — | P | Papéis permitidos entram e publicam | `lib/domain/auth/rbac.test.ts` › «todos os papéis ativos entram no painel»; «editor cria, edita, publica e arquiva conteúdo» | U | — |
 | — | B | Código e banco iguais | `lib/server/auth/rbac-sql.test.ts` › «o seed SQL de role_permissions é idêntico à matriz em código» | U | — |
 
@@ -503,21 +513,28 @@ Smoke test pós-publicação sem falhas (páginas, formulários, painel, API `/a
 | CTA só para rota conhecida ou https | N | `lib/domain/content/blocks.test.ts` › «CTA só aponta para rota pública conhecida ou link https». `supabase/tests/database/cms_content.test.sql` › «CTA com caminho //host» | U, D |
 | Entrada malformada na API | N | `tests/e2e/seo-e-compartilhamento.spec.ts` › «entrada malformada não expõe dados». `lib/server/http.test.ts` › «lança BAD_REQUEST com campos inválidos» | E, U |
 | Erro sem detalhes internos | N | `lib/server/errors.test.ts` › «esconde detalhes de erros inesperados e registra no log». `lib/server/http.test.ts` › «esconde erro inesperado como INTERNAL_ERROR 500». `lib/server/content/supabase/queries.test.ts` › «falha do banco vira SERVICE_UNAVAILABLE com mensagem segura» | U |
-| Rotas internas exigem segredo | N | `tests/e2e/seo-e-compartilhamento.spec.ts` › «rotas internas recusam quem não tem credencial, sem expor detalhes». `lib/server/internal-auth.test.ts` › «aceita somente o Bearer exato»; «nega quando o segredo não está configurado» | E, U |
+| Rotas internas exigem segredo | N | `tests/e2e/acesso-indevido-dados.spec.ts` › «/api/internal/revalidate: 401 sem token e com token errado, sem expor nada»; «/api/internal/jobs/notificacoes: 401 sem token e com token errado, sem expor nada»; «o token de uma rota não abre a outra». `tests/e2e/seo-e-compartilhamento.spec.ts` › «rotas internas recusam quem não tem credencial, sem expor detalhes». `lib/server/internal-auth.test.ts` › «aceita somente o Bearer exato»; «nega quando o segredo não está configurado» | E, U |
 | API pública não vaza campos internos | N | `lib/domain/api/contracts.test.ts` › «não expõem id interno, status nem campos de controle»; «o id interno da biblioteca de mídia nunca sai na API pública» | U |
 | Logs sem dado pessoal | N | `lib/server/forms/submission-service.test.ts` › «envio válido: forms.submission.persisted e forms.notification.sent»; «falha na notificação: forms.notification.failed, mesmo com o e-mail na mensagem do erro»; «honeypot: forms.submission.spam_suspected com o motivo». `lib/server/forms/notifier.test.ts` › «registra só metadados, nunca o conteúdo nem os endereços». `lib/server/logger.test.ts` › «mascara chaves sensíveis em qualquer profundidade»; «mascara e-mail, telefone e tokens dentro de textos livres». `lib/server/audit.test.ts` › «envia evento com metadados filtrados (sem PII)» | U |
 | Anti-abuso nos formulários | N | `lib/server/forms/submission-service.test.ts` › «S6 honeypot e envio rápido demais: sucesso silencioso sem persistir»; «S9 limite por origem: sexto envio em 10 min é bloqueado». `lib/domain/forms/schemas.test.ts` › «recusa envio com honeypot preenchido ou sem submissionId» | U |
 | RLS em todas as tabelas | N | `lib/server/content/content-sql.test.ts` › «toda tabela de public habilita RLS (supabase/README.md)» | U |
 | Visitante não grava | N | `tests/integration/supabase/conteudo-publico.test.ts` › «visitante não consegue gravar conteúdo (RLS)». `tests/integration/supabase/cms-paginas.test.ts` › «visitante não grava em páginas nem blocos» | S |
 | Auditoria inviolável e obrigatória | N | `supabase/tests/database/audit_log.test.sql` › «DELETE de evento é recusado». `lib/server/audit.test.ts` › «falha em evento crítico aborta a operação». `lib/server/cms/content-service.test.ts` › «evento crítico sem auditoria aborta a operação (TECH-10)» | D, U |
-| Negação registrada | N | `lib/server/auth/guards.test.ts` › «registra a negação na trilha de auditoria (TECH-10)» | U |
+| Negação registrada | N | `lib/server/auth/guards.test.ts` › «registra a negação na trilha de auditoria (TECH-10)». `tests/e2e/acesso-indevido-painel.spec.ts` › «a recusa fica na trilha de auditoria, sem o conteúdo do pedido» | U, C |
 | Segredos e variáveis | N | `lib/config/env.test.ts` › «rejeita segredo curto»; «exige o segredo do reenvio de notificações só em produção (TECH-06)» | U |
 | Retenção de dados | P, B | `lib/domain/forms/retention.test.ts` › «mantém lead dentro de 12 meses e exclui depois»; «anonimiza feedback identificado e exclui anônimo após 24 meses»; «respeita retenção suspensa (legal hold)» | U |
 | Seed sem dados pessoais | N | `scripts/content-seed.test.mjs` › «não cria contas, senhas nem dados pessoais» | U |
-| Cabeçalhos HTTP, HSTS e CSP | — | **Sem cobertura** na `main`. Ver a seção 10 | — |
-| Atributos do cookie de sessão | — | **Sem cobertura** na `main`. Ver a seção 10 | — |
+| Cabeçalhos HTTP, HSTS e CSP | N | `tests/e2e/seguranca-cabecalhos.spec.ts` › «/ responde 200 com todos os cabeçalhos»; «a política está valendo: o que vem de fora é barrado, e os testes acima enxergariam» | E |
+| Atributos do cookie de sessão | N | `tests/e2e/seguranca-cabecalhos.spec.ts` › «login: sessão fora do alcance do JavaScript e painel sem violação» | C |
 | Tentativas de login e mensagem genérica | — | **Sem cobertura.** Roteiro manual de ADM-02 §4 | — |
-| Testes de acesso indevido em ambiente real | — | **Sem cobertura.** QA-06, sem ambiente | — |
+| Rotas do painel sem sessão, deduzidas do disco | N | `tests/e2e/acesso-indevido-painel.spec.ts` › «/admin/leads/[id] leva ao login, com qualquer id» e uma por rota; «cabeçalhos forjados não pulam a barreira (CVE-2025-29927 e parecidos)»; «escrita alternativa não abre o painel: /%61dmin/leads» | C |
+| Server Actions por POST real, com controle | N | `tests/e2e/acesso-indevido-painel.spec.ts` › «viewer: nenhuma ação proibida grava, e a resposta é FORBIDDEN» e um por papel; «CSRF: origem de outro site é recusada, mesmo com a sessão do administrador»; «toda Server Action de app/admin está nesta verificação» | C |
+| Leitura e escrita direta com a chave anônima | N | `tests/e2e/acesso-indevido-dados.spec.ts` › «toda tabela e função exposta está classificada aqui»; «form_submissions: a chave anônima recebe 401, sem nenhuma linha» e uma por tabela; «cases: a chave anônima só lê o que está publicado» e uma por tabela; «services: a chave anônima não grava» e uma por tabela | C |
+| Storage | N | `tests/e2e/acesso-indevido-dados.spec.ts` › «o bucket não lista para a chave anônima, embora o arquivo exista»; «tipo proibido é recusado pelo bucket, mesmo com permissão: text/html» e um por tipo | C |
+| Conteúdo oculto por URL direta, com e sem `use cache` | N | `tests/e2e/acesso-indevido-dados.spec.ts` › «nenhuma rota de /api/v1 devolve conteúdo oculto, deduzidas dos arquivos»; «arquivado pelo painel: detalhe, API e listas param de mostrar, sem redeploy»; «arquivado direto no banco, sem invalidar: o proxy já responde 404 no detalhe» | C |
+| Erro e arquivo interno | N | `tests/e2e/acesso-indevido-dados.spec.ts` › «404 API com travessia» e uma por resposta; «500 e 4xx de Server Action malformada não trazem pilha nem caminho»; «arquivo do projeto não é servido: /.env» e um por arquivo | E, C |
+| Segredos no que chega ao navegador | N | `tests/e2e/acesso-indevido-dados.spec.ts` › «.next/static não traz segredo nem mapa de código»; «todo JavaScript que uma página carrega, seguido pelo navegador, não traz segredo» | E, C |
+| Testes de acesso indevido em homologação | — | **Sem cobertura.** Depende de GO-02. O registro local está em [QA-06](qa-06-acesso-indevido.md) | — |
 
 ## 9. Lista de lacunas
 
@@ -525,14 +542,8 @@ Resumo do que está marcado como **sem cobertura**, para virar teste ou ser acei
 
 | Lacuna | Critério | Quem pode fechar | Bloqueio externo |
 | ------- | -------- | ------------------ | ----------------- |
-| Larguras 360, 768 e 1920 px | CA-06 | QA-03 | — |
-| Varredura de links internos | CA-04 | INT-06 | — |
 | Filtros de serviço, área e cliente no navegador | CA-12 | QA-02 | — |
-| Logout e renovação de sessão | CA-18 | ADM-02, QA-06 | Homologação (GO-02) |
-| N09, N10 no banco; N11 e N13 de ponta a ponta | CA-19 | QA-06 | — |
-| Rota do job de reenvio | CA-16 | QA-05 | — |
-| Cabeçalhos HTTP e cookies | Seção 8 | SEG-06 | — |
-| Tela de leads e `lead.viewed` | CA-23 | FORM-09, SEG-04 | — |
+| Logout e renovação de sessão em homologação | CA-18 | ADM-02, QA-06 | Homologação (GO-02) |
 | `/api/v1/health` | CA-29 | QA-11 | — |
 | Contraste e Lighthouse | CA-07 | QA-07, SEG-07 | — |
 | Envio real de e-mail | CA-15 | FORM-10, GO-05 | CON-10, GO-02 |
@@ -541,32 +552,34 @@ Resumo do que está marcado como **sem cobertura**, para virar teste ou ser acei
 
 ## 10. Em andamento
 
-**Nada aqui conta como cobertura.** Outras frentes estão trabalhando nestes temas em 04/11/2026, em branches ainda
-não mescladas. Quando chegarem à `main`, abra os testes e mova-os para as seções acima, com o nome exato.
+**Nada aqui conta como cobertura.** Estes temas têm branch ou PR aberto em 04/11/2026. Quando chegarem à `main`, abra os
+testes e mova-os para as seções acima, com o nome exato.
 
 | Tema | Referência | Critério afetado |
 | ---- | ----------- | ------------------ |
-| Cabeçalhos HTTP, CSP e cookies de sessão | SEG-06 (#100), branch `fix/seg-06-cookies-csp-e-headers` | Seção 8, CA-25 |
-| Responsividade | QA-03 (#181) | CA-06 |
-| Menu e visão geral do painel | ADM-04 (#80), branch `feat/adm-04-menu-e-visao-geral` | CA-20 |
-| Links e CTAs ponta a ponta | INT-06 (#172), marcada como em andamento no Project | CA-04 |
+| Tela de CTAs: o teste real de "alteração no painel reflete no site" | ADM-11, branch `feat/adm-11-ctas-e-destaques` | CA-20, INT-06 |
+| Prévia protegida de rascunho: rota nova, a classificar em QA-06 | ADM-14, branch `feat/adm-14-previa-protegida` | Seção 8 |
+| Exclusão de mídia: ação nova, a classificar em QA-06 | ADM-09, branch `feat/adm-09-remover-midia` | Seção 8 |
 | Integridade de publicação no banco | PR #372 (DBX-04), que acrescenta `integridade_publicacao.test.sql` e `integridade-publicacao.test.ts` | CA-21, CMS |
+
+Depois de QA-03, QA-05, QA-06 e INT-06, os testes novos saíram desta seção e estão em CA-04, CA-06, CA-16, CA-19 e na seção 8.
+As verificações de QA-06 falham sozinhas quando uma rota ou Server Action nova chega sem classificação.
 
 ## 11. Evidência desta versão
 
-Execução em 04/11/2026, no worktree desta entrega, com Node 22.
+Execução em 04/11/2026, no commit `8e55596` da branch de QA-03, QA-05, QA-06 e INT-06, com Node 22 e Supabase local.
 
 | Bateria | Situação | Resultado |
 | ------- | --------- | ---------- |
-| `npm run verify` (inclui U) | ✅ Rodou | Cabeçalhos, formatação, tipos e lint sem erro; 853 testes passaram e 77 foram ignorados (930, em 85 arquivos); build com 68 páginas |
-| G `npm run check:release-content` | ❌ Rodou e falhou, como esperado | 1 falhou, 296 passaram: 20 itens provisórios (CA-28) |
-| S `npm run test:supabase` | ⏳ Não rodou | Ignorada na `verify`. Precisa de Supabase local |
-| D `npx supabase test db` | ⏳ Não rodou | Os `plan()` dos arquivos somam 214 asserções |
-| E `npm run test:e2e` | ⏳ Não rodou | `playwright test --list`: 92 testes por projeto, em 17 arquivos, contando os `@cms` |
-| C `npm run test:e2e:cms` | ⏳ Não rodou | |
+| `npm run verify` (inclui U) | ✅ Rodou | Cabeçalhos, formatação, tipos e lint sem erro; 1206 testes passaram e 167 foram ignorados, em 108 arquivos; build ok |
+| G `npm run check:release-content` | ❌ Rodou e falhou, como esperado | 1 falhou, 347 passaram: há conteúdo provisório publicado (CA-28) |
+| S `npm run test:supabase` | ✅ Rodou | 17 arquivos, 165 de 165 |
+| D `npx supabase test db` | ✅ Rodou | `Files=10, Tests=260, Result: PASS` |
+| E `npm run test:e2e` | ✅ Rodou | 437 passaram, 0 falharam, 699 pulados (`@cms` e o que não depende da largura) |
+| C `npm run test:e2e:cms` | ✅ Rodou | 361 de 361 |
 
-Os últimos resultados registrados de S, D, E e C estão no [handoff §5](../operacao/handoff-e-manutencao.md), de
-02/11/2026, com menos testes que agora. Esta matriz não os substitui.
+Registros: [QA-03](qa-03-responsividade.md), [QA-05](qa-05-formularios.md) e [QA-06 e INT-06](qa-06-acesso-indevido.md).
+
 
 Como foi conferida: cada teste citado foi aberto, e os nomes foram comparados por script com a saída de
 `vitest run --reporter=json`, `playwright test --list` e as descrições dos arquivos pgTAP.

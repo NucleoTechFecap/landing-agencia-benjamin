@@ -94,9 +94,13 @@ linha. Roda antes de validar o id, para não revelar se um registro existe.
 | `redirect.test.ts` | Rotas públicas do painel e *open redirect* |
 | Smoke local (build de produção, sem Supabase) | `/admin`, `/admin/cases`, `/admin/nova-senha`, `/admin/sem-permissao` → 307 para login com `next`; `/admin/login` e `/admin/recuperar-senha` → 200 |
 
-Casos N11–N13 (papel forjado no cliente, `select` anônimo em leads, sessão expirada em escrita)
-dependem do banco de homologação e estão no roteiro de QA-06. N05, N08 e N12 já têm prova com Auth e RLS
-reais, no Supabase local, em [SEG-04](../qualidade/seg-04-autorizacao-dados-pessoais.md).
+Casos N09, N10, N11 e N13 têm prova de ponta a ponta, com Auth e RLS reais no Supabase local, em
+[QA-06](../qualidade/qa-06-acesso-indevido.md), que percorre também todas as rotas e Server Actions do painel. N05, N08
+e N12 têm prova em [SEG-04](../qualidade/seg-04-autorizacao-dados-pessoais.md). Falta repetir na homologação (GO-02).
+
+Sem sessão, a Server Action para no proxy: o encaminhamento do Next para a tela da ação passa por ele, e a mesma chamada
+por uma rota pública responde `{}`. Com o proxy retirado, as telas do painel respondem 200 com o esqueleto, sem nenhum
+conteúdo: a segunda barreira segura, e o teste acusa a retirada (QA-06 §7).
 
 ## 5. Cabeçalhos de segurança e CSP (SEG-06)
 
