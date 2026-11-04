@@ -123,6 +123,7 @@ navegador. B-03 e B-05 têm testes que falhavam antes.
 
 ## 6. Pendências e riscos
 
+- **Reexecução:** [QA-05](qa-05-formularios.md), com a mesma contagem contra o Postgres e a rota do job de reenvio.
 - **CT-24 (entrega real):** repetir em homologação quando CON-10 e o domínio no Resend estiverem resolvidos (GO-02).
 - **Aprovações da agência:** campos (FORM-01), aviso de privacidade (SEG-02) e destinatários (CON-10) seguem
   pendentes. Esta execução usou o que está proposto e não os trata como aprovados.
