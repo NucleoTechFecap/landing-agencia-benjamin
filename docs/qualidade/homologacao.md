@@ -34,7 +34,6 @@ Dá para fazer tudo em etapas e em mais de um dia.
 | Conteúdo cadastrado no painel para avaliação | ⏳ Depende do ambiente |
 | E-mail de teste dos formulários ligado, com destinatário definido | ⏳ Depende do GO-02 e do CON-10 |
 | Canal para relatar problemas | ⏳ A definir (GOV-04) |
-| Telas de contato e redes, CTAs e pedidos recebidos | ⏳ Ainda não existem no painel (ADM-10, ADM-11, FORM-09) |
 
 **A equipe da Benjamin precisa ter à mão:**
 
@@ -133,7 +132,7 @@ ajuda do NúcleoTech**: se precisar pedir ajuda, anote, porque isso também é u
 | 28 | Editar o texto do case e salvar | O site mostra o texto novo | CA-20 | ☐ | ☐ | ☐ |
 | 29 | Editar a descrição de um serviço e publicar | O site mostra o texto novo | CA-20 | ☐ | ☐ | ☐ |
 | 30 | Editar um texto institucional em **Páginas** | O site mostra o texto novo | CA-20 | ☐ | ☐ | ☐ |
-| 31 | Alterar contato e redes sociais | O site mostra os dados novos. Marque N/A se a tela ainda não existir (ADM-10) | CA-20 | ☐ | ☐ | ☐ |
+| 31 | Com o papel Administrador, alterar contato e redes sociais em **Contato, links e redes sociais** | Salvar vai direto ao ar: o rodapé e a página de contato mostram os dados novos em poucos segundos. Restaure os valores ao terminar | CA-20 | ☐ | ☐ | ☐ |
 | 32 | Abrir os pedidos e feedbacks recebidos | Aparecem os envios da Parte 1, só para quem é administrador. Marque N/A se a tela ainda não existir (FORM-09) | CA-23 | ☐ | ☐ | ☐ |
 | 33 | Arquivar o case de teste | Sai do site; o endereço responde "não encontrada" | CA-21 | ☐ | ☐ | ☐ |
 

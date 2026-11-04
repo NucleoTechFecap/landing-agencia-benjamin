@@ -83,4 +83,5 @@ Notas:
 
 N04–N10 estão automatizados em `lib/domain/auth/rbac.test.ts`; N01–N03, N11–N13 dependem do
 servidor/banco e entram nos testes de ADM-03 e QA-06. N05, N08 e N12 também são provados no banco por
-`supabase/tests/database/form_submissions_rls.test.sql` (TECH-06).
+`supabase/tests/database/form_submissions_rls.test.sql` (TECH-06), e pelo painel e pela API REST direta em
+[SEG-04](../qualidade/seg-04-autorizacao-dados-pessoais.md).

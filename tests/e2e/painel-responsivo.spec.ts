@@ -18,6 +18,8 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Telas de leads e feedbacks (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Telas de CTAs e destaques da Home (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -138,6 +140,9 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
     case: "",
     caseArchived: "",
     media: "",
+    submission: "",
+    submissionArchived: "",
+    cta: "",
   };
   const accounts: { admin?: Account; viewer?: Account } = {};
   const contexts: BrowserContext[] = [];
@@ -226,6 +231,12 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
       client_name: "Cliente fictício",
       summary: "Resumo do case arquivado na verificação de responsividade.",
     });
+    ids.cta = await insert("ctas", {
+      label: long("Cta", 40),
+      placement: "home-highlight",
+      target_kind: "external",
+      target_url: `https://exemplo.com/${"x".repeat(200)}`,
+    });
     ids.page = await insert("pages", {
       slug: `responsivo-${suffix}`,
       title: long("Pagina"),
@@ -261,6 +272,29 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
       content: { members: [{ name: long("Nome", 80), role: long("Cargo", 80) }] },
     });
 
+    // Nos limites dos formulários, sem espaços. O id não tem valor padrão: vem do navegador no envio real.
+    const submission = (status: string, name: string) =>
+      insert("form_submissions", {
+        id: crypto.randomUUID(),
+        protocol: `AB-${newSuffix().slice(0, 6).toUpperCase()}`,
+        kind: "lead",
+        category: `lead:${long("servico-fora-do-site", 80)}`,
+        status,
+        fingerprint: `responsivo-${status}-${suffix}`,
+        source_path: `/${long("origem", 190)}`,
+        notification_status: "failed",
+        notification_attempts: 5,
+        payload: {
+          name: long(name),
+          email: long("e-mail", 254),
+          company: long("Empresa"),
+          projectDescription: long("Descricao", 3000),
+          privacyConsent: true,
+        },
+      });
+    ids.submission = await submission("novo", "Nome");
+    ids.submissionArchived = await submission("arquivado", "Nome-arquivado");
+
     const baseURL = testInfo.project.use.baseURL;
     const open = async () => {
       const context = await browser.newContext({ baseURL, locale: "pt-BR" });
@@ -277,6 +311,10 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
   test.afterAll(async () => {
     for (const context of contexts.splice(0)) await context.close();
     if (!client) return;
+    await client
+      .from("ctas")
+      .delete()
+      .eq("id", ids.cta || "00000000-0000-4000-8000-000000000000");
     await client.from("cases").delete().in("id", [ids.case, ids.caseArchived].filter(Boolean));
     await client
       .from("pages")
@@ -289,6 +327,7 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
       .from("media_assets")
       .delete()
       .eq("id", ids.media || "00000000-0000-4000-8000-000000000000");
+    await client.from("form_submissions").delete().in("id", [ids.submission, ids.submissionArchived].filter(Boolean));
     await deleteAccounts(client, Object.values(accounts));
   });
 
@@ -335,6 +374,7 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
   const ADMIN_ROUTES = [
     screen("inicio", "", /Bem-vindo/),
     screen("visao-geral", "conteudos", /Visão geral/),
+    screen("configuracoes", "configuracoes", /Contato, links e redes sociais/),
     screen("paginas", "paginas", /Páginas e textos/),
     screen("pagina-nova", "paginas/nova", /Criar conteúdo: Contato/, () => "/admin/paginas/nova?rota=contato"),
     screen("pagina-editar", "paginas/[id]", /^Pagina-/, () => `/admin/paginas/${ids.page}`),
@@ -361,10 +401,17 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
     screen("cases", "cases", /Cases/),
     screen("case-novo", "cases/novo", /Novo case/),
     screen("case-editar", "cases/[id]", /^Case-/, () => `/admin/cases/${ids.case}`),
+    screen("ctas", "ctas", /CTAs e destaques da Home/),
+    screen("cta-novo", "ctas/novo", /Novo CTA/),
+    screen("cta-editar", "ctas/[id]", /^Cta-/, () => `/admin/ctas/${ids.cta}`),
     screen("midia", "midia", /Biblioteca de mídia/),
     screen("previa-servico", "previa/[tipo]/[id]", /^Servico-/, () => `/admin/previa/servico/${ids.service}`),
     screen("previa-case", "previa/[tipo]/[id]", /^Case-/, () => `/admin/previa/case/${ids.case}`),
     screen("previa-pagina", "previa/[tipo]/[id]", /^Pagina-/, () => `/admin/previa/pagina/${ids.page}`),
+    screen("midia-detalhe", "midia/[id]", /\.(webp|png|jpe?g|avif)$/, () => `/admin/midia/${ids.media}`),
+    screen("leads", "leads", /Leads e feedbacks/),
+    screen("lead-detalhe", "leads/[id]", /^AB-/, () => `/admin/leads/${ids.submission}`),
+    screen("lead-arquivado", "leads/[id]", /^AB-/, () => `/admin/leads/${ids.submissionArchived}`),
     screen("sem-permissao", "sem-permissao", /Sem permissão/),
     screen("acesso-pendente", "acesso-pendente", /Acesso pendente/),
     screen("nova-senha", "nova-senha", /Defina sua senha/),
@@ -425,6 +472,8 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
       `/admin/cases/${ids.case}`,
       "/admin/midia",
       "/admin/cases",
+      "/admin/leads",
+      `/admin/leads/${ids.submissionArchived}`,
     ]) {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();

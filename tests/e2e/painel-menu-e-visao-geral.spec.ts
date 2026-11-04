@@ -18,11 +18,13 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-04, ADM-18).
+ 04/11/2026 Vinícius Nishimura Reis  Exemplo de módulo em construção não depende de uma tela (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { modulesFor } from "@/lib/config/admin-modules";
 import {
   REQUIRES_SUPABASE,
   SERVICE_KEY,
@@ -191,12 +193,16 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
     await expect(page.getByRole("button", { name: "Abrir menu" })).toBeHidden();
     await expect(menu.getByRole("link", { name: "Início" })).toHaveAttribute("aria-current", "page");
 
-    // Em construção: texto honesto, sem link, no menu e no início.
-    const leads = menu.getByRole("listitem").filter({ hasText: "Leads e feedbacks" });
-    await expect(leads).toContainText("Em construção");
-    await expect(leads.getByRole("link")).toHaveCount(0);
-    await expect(page.getByRole("main").getByText("Em construção · FORM-09")).toBeVisible();
-    await expect(page.getByRole("main").getByRole("link", { name: "Leads e feedbacks" })).toHaveCount(0);
+    // Em construção: texto honesto, sem link, no menu e no início. O exemplo vem do registro, porque
+    // cada tela entregue deixa de estar em construção; quando não houver mais nenhum, o trecho não roda.
+    const building = modulesFor("admin").find((module) => !module.href);
+    if (building) {
+      const item = menu.getByRole("listitem").filter({ hasText: building.name });
+      await expect(item).toContainText("Em construção");
+      await expect(item.getByRole("link")).toHaveCount(0);
+      await expect(page.getByRole("main").getByText(`Em construção · ${building.issue}`)).toBeVisible();
+      await expect(page.getByRole("main").getByRole("link", { name: building.name })).toHaveCount(0);
+    }
 
     // O início usa o mesmo registro do menu: o card inteiro leva ao módulo.
     await page.getByRole("main").getByRole("link", { name: "Serviços" }).click();

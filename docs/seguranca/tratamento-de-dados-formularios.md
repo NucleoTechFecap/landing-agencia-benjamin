@@ -85,12 +85,16 @@ Detalhamento técnico do ciclo de vida, rotina de descarte e trilha de acesso: T
 
 | Pedido | Como atender |
 | ------ | ------------ |
-| Confirmação/acesso | `admin` localiza pelo e-mail no painel e envia cópia ao titular |
-| Correção | `admin` corrige os campos de contato |
-| Eliminação | `admin` exclui o registro (ação auditada) |
-| Revogação do consentimento (feedback) | Anonimização imediata do feedback |
+| Confirmação/acesso | `admin` localiza no painel pelo protocolo informado pelo titular, ou pelos filtros de tipo, categoria e data, e envia cópia ao titular |
+| Correção | **Ainda não é feita pelo painel:** por regra do banco, o `admin` altera só o status. O fluxo para esse pedido está pendente, junto com o responsável por pedidos de titulares ([TECH-08 §8](ciclo-de-vida-dados-pessoais.md)) |
+| Eliminação | `admin` arquiva e exclui o registro no painel (ação auditada) e apaga o e-mail de notificação da caixa de destino |
+| Revogação do consentimento (feedback) | **Ainda não é feita pelo painel:** a anonimização depende da rotina de DBX-05. Enquanto isso, o `admin` pode excluir o registro |
 
 Canal para pedidos: e-mail do encarregado informado no aviso de privacidade (SEG-02).
+
+O painel não busca por nome ou e-mail, para esses dados não irem para a URL e o histórico do navegador
+(FORM-09). Titular sem protocolo é localizado pelos filtros. Se isso não bastar no uso real, a busca precisa
+ser por `POST`, sem o valor na URL.
 
 ## 6. Pontos para aprovação institucional
 

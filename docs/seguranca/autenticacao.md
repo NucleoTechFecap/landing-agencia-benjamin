@@ -28,7 +28,7 @@
 | **Login** | `/admin/login` → `signInWithPassword` → papel ≠ `pending` → redireciona para `next` validado | Mensagem genérica ("E-mail ou senha inválidos"); `pending` é deslogado; `safeAdminRedirect` impede *open redirect* |
 | **Sessão** | Cookies httpOnly; cada página do painel chama `getSessionUser()` dentro de `<Suspense>` | Papel lido do banco a cada requisição, nunca do cliente |
 | **Renovação** | `proxy.ts` chama `getUser()`; tokens expirados são renovados com o refresh token | Refresh token rotativo (configuração do Supabase) |
-| **Logout** | `signOut` (Server Action via `<form>`) → remove cookies e revoga a sessão | Não depende de JavaScript |
+| **Logout** | `signOut` (Server Action via `<form>`) → remove cookies e revoga a sessão. A tela de login recarrega a página (`?saiu=1` → `?saiu=ok`), para tirar da memória do navegador as telas que o Next mantém escondidas (SEG-04) | Não depende de JavaScript |
 | **Recuperação** | `/admin/recuperar-senha` → e-mail com link → `/admin/auth/callback` → `/admin/nova-senha` | Resposta idêntica exista ou não a conta |
 | **Convite** (INT-08) | Convite pelo Supabase → link → callback → `/admin/nova-senha` → papel atribuído por quem convidou | Ninguém conhece ou recebe a senha de outra pessoa |
 

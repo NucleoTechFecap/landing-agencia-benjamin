@@ -5,10 +5,10 @@
 | Issue           | TECH-06 (#107)                                                          |
 | Responsável     | Vinícius Nishimura Reis (`@Vinishireis`)                                |
 | Revisão técnica | Vinícius Binda (`@VinnizzZ`)                                            |
-| Versão          | 1.1.0 — **implementada; fluxos aguardando aprovação da Agência Benjamin (§10)** |
-| Data            | 02/11/2026                                                              |
+| Versão          | 1.2.0 — **implementada; fluxos aguardando aprovação da Agência Benjamin (§10)** |
+| Data            | 04/11/2026 (consulta no painel: FORM-09)                                |
 | Depende de      | [FORM-01](matriz-de-campos.md), [SEG-01](../seguranca/tratamento-de-dados-formularios.md) |
-| Código          | `lib/domain/forms/routing.ts`, `lib/server/forms/*`, migrations `0400` e `20261102000300` + testes (§9) |
+| Código          | `lib/domain/forms/routing.ts`, `lib/domain/forms/inbox.ts`, `lib/server/forms/*`, `app/admin/(painel)/leads/*`, migrations `0400` e `20261102000300` + testes (§9) |
 
 ## 1. Separação dos fluxos
 
@@ -94,10 +94,10 @@ ao visitante nem apaga o envio. Os cenários completos estão em [TECH-07](idemp
 | Destinatário inválido em qualquer lista, ou `LEAD_NOTIFICATION_TO` ausente, em homologação/produção | Nada: **o build falha** e a versão anterior continua no ar | — | — | Build aponta a variável (`FEEDBACK_NOTIFICATION_TO.0: Destinatário inválido.`) |
 | Contato ou feedback sem lista própria | Sucesso com protocolo | Salvo | Vai para `LEAD_NOTIFICATION_TO` | — |
 | Sem destinatário em desenvolvimento/preview | Sucesso com protocolo | Salvo, `skipped` | Não é enviada nem reenviada: esses ambientes não mandam e-mail real | Log `forms.notification.skipped` |
-| Provedor fora do ar ou recusa o envio | Sucesso com protocolo | Salvo, `failed` | Job reenvia com espera crescente, até 5 tentativas | Log `forms.notification.failed` |
+| Provedor fora do ar ou recusa o envio | Sucesso com protocolo | Salvo, `failed` | Job reenvia com espera crescente, até 5 tentativas | Aviso e coluna "Notificação" no painel (INT-07); log `forms.notification.failed` |
 | Falha ao gravar o resultado da notificação | Sucesso com protocolo | Salvo, com a notificação como estava | Job tenta de novo; o `Idempotency-Key` evita e-mail repetido por 24 h | Log `forms.notification.status_update_failed` |
 | Rede do visitante cai no envio | Aviso no formulário, com o que digitou; pode reenviar | Só se o POST chegou ao servidor; o reenvio não duplica | Como no envio normal | — |
-| 5 tentativas esgotadas | (Já viu sucesso) | Mantido, `failed` | Sai da fila; os envios novos continuam sendo reenviados | Conferência semanal ([handoff](../operacao/handoff-e-manutencao.md)), com reenvio manual |
+| 5 tentativas esgotadas | (Já viu sucesso) | Mantido, `failed` | Sai da fila; os envios novos continuam sendo reenviados | Aviso e filtro no painel (INT-07); conferência semanal ([handoff](../operacao/handoff-e-manutencao.md)), com reenvio manual |
 | E-mail aceito pelo provedor e devolvido pela caixa de destino | Sucesso com protocolo | Salvo, `sent` | **Não detectada no MVP** (sem webhook de devolução) | Teste de recebimento no lançamento (CA-15) |
 
 O reenvio depende de duas configurações de produção: `CRON_SECRET`, cuja falta barra o build, e o
@@ -110,21 +110,30 @@ agendamento do job, que é [passo manual do provisionamento](../operacao/provisi
 (feedback). Status extensível para um futuro funil comercial (FUT-01), sem campos de CRM no MVP
 (sem valor, sem etapa de negociação, sem responsável comercial).
 
-O banco aceita os cinco valores para qualquer tipo. A separação por tipo fica para FORM-09, depois da
-aprovação das etapas, para não fixar no banco uma decisão ainda pendente.
+O banco aceita os cinco valores para qualquer tipo. O painel (FORM-09) aplica a separação por tipo só na
+aplicação (`statusOptions`), sem ordem obrigatória entre as etapas: enquanto as etapas não forem aprovadas,
+isso não fixa no banco uma decisão pendente. Mudar as etapas é alterar uma lista em `lib/domain/forms/inbox.ts`.
 
 ## 8. Permissão de consulta
 
-As regras valem no banco (RLS por `kind`), mesmo com a tela de consulta ainda por construir (FORM-09).
-Até lá, os envios só são consultados por SQL.
+As regras valem no banco (RLS por `kind`) e na tela `/admin/leads` (FORM-09), que consulta com a sessão de
+quem está logado, nunca com service role. Abrir um envio gera o evento; listar não, porque a lista só traz
+nome, categoria, status e data.
 
-| Ação | Papel | Regra no banco | Auditoria (TECH-10), a emitir em FORM-09 |
-| ---- | ----- | -------------- | ---------------------------------------- |
-| Listar/abrir leads e contatos | `admin` | `lead:view` | `lead.viewed` (id, sem conteúdo) |
-| Exportar leads | `admin` | `lead:export`, a aplicar em FORM-09 | `lead.exported` (quantidade, filtros) |
-| Listar/abrir feedbacks | `admin` | `feedback:view` | `feedback.viewed` |
-| Alterar status | `admin` | `lead:edit`/`feedback:edit`, **só a coluna `status`** | `lead.status_changed`; feedback: `feedback.status_changed`, a criar em FORM-09 (não está no catálogo) |
-| Excluir (pedido do titular/retenção) | `admin` | `lead:delete`/`feedback:delete` | `lead.deleted` · `feedback.deleted` |
+| Ação | Papel | Regra no banco | Auditoria (TECH-10) |
+| ---- | ----- | -------------- | ------------------- |
+| Listar leads e contatos | `admin` | `lead:view` | — |
+| Abrir lead ou contato | `admin` | `lead:view` | `lead.viewed` (id, tipo e categoria, sem conteúdo) |
+| Listar feedbacks | `admin` | `feedback:view` | — |
+| Abrir feedback | `admin` | `feedback:view` | `feedback.viewed` |
+| Alterar status | `admin` | `lead:edit`/`feedback:edit`, **só a coluna `status`** | `lead.status_changed` nos três tipos, com o tipo real em `metadata.kind` (ver abaixo) |
+| Excluir (pedido do titular/retenção), só depois de arquivar | `admin` | `lead:delete`/`feedback:delete` | `lead.deleted` · `feedback.deleted`, gravados antes da exclusão |
+| Exportar leads | `admin` | `lead:export` | **Não construído:** FORM-09 não pede. Quando existir, `lead.exported` (quantidade, filtros) |
+
+**Por que não há `feedback.status_changed`:** esta seção previa o evento em FORM-09, mas ele não está no
+catálogo nem em `record_audit_event`, que recusaria a gravação. Criá-lo exige migration, e a tela não pode
+depender de uma migration aplicada à parte. Fica `lead.status_changed` com `metadata.kind = "feedback"`.
+Quando a migration vier, o evento novo entra no catálogo, no check do banco e neste documento juntos.
 
 `super_admin`, `editor`, `viewer` e contas pendentes não leem nem alteram envios. O visitante não lê nem
 grava direto: a gravação é do servidor, depois da validação.
@@ -134,7 +143,9 @@ grava direto: a gravação é do servidor, depois da validação.
 | Critério | Exemplo | Onde está provado |
 | -------- | ------- | ------------------ |
 | **Positivo** | Pedido de vídeo vira `lead:audiovisual`, notifica o destinatário comercial, devolve protocolo e o `admin` consulta e altera o status | `jornada-lead.test.ts`, `formularios.test.ts`, `form_submissions_rls.test.sql` |
+| | Pelo navegador: formulário público → lista → detalhe → status, com `lead.viewed` e `lead.status_changed` na trilha | `jornada-leads-cms.spec.ts` (FORM-09) |
 | **Negativa de acesso** | `editor`, `viewer`, `super_admin` e conta pendente: 0 linhas e nada alterado. Visitante: `42501`. `admin` tentando reescrever `payload`, `kind`, `category` ou `notification_status`: `42501` | `formularios.test.ts` (Auth e RLS reais), `form_submissions_rls.test.sql` |
+| | Evidência completa, com a API REST direta e entrada malformada | [SEG-04](../qualidade/seg-04-autorizacao-dados-pessoais.md) |
 | **Borda** | Texto livre no serviço recusado; serviço fora do ar aceito | `schemas.test.ts` |
 | | Slug que não está na lista vira `lead:nao-sei`, com o pedido aceito, mesmo se a consulta à lista falhar | `submission-service.test.ts` |
 | | Quebra de linha em nome e empresa não forja linhas no e-mail | `schemas.test.ts` |
@@ -159,7 +170,6 @@ em cada etapa.
 | Mapa de campos ([FORM-01](matriz-de-campos.md)) | Pendente |
 | Destinatário de cada formulário (CON-10) | Pendente |
 
-**27/10/2026:** pedido de aprovação preparado ([página para enviar à agência](https://claude.ai/artifact/4TJ8vhTDLW6PYfSfCAqLti),
-decisões 1 a 3). A situação de cada ponto muda para "Aprovado" quando a resposta chegar: registrar na
+**27/10/2026:** pedido de aprovação preparado para a agência (decisões 1 a 3). A situação de cada ponto muda para "Aprovado" quando a resposta chegar: registrar na
 issue TECH-06 data, aprovadores e ajustes, e alterar código e documento no mesmo PR. O código
 implementa a proposta para permitir testes, o que não equivale a aprovação.

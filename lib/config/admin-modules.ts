@@ -18,6 +18,8 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-04).
+ 04/11/2026 Vinícius Nishimura Reis  Tela de leads e feedbacks disponível (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Módulo de CTAs e destaques da Home (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -43,9 +45,9 @@ export const ADMIN_MODULES: readonly AdminModule[] = [
   { name: "Categorias de cases", resource: "category", action: "view", href: "/admin/categorias" },
   { name: "Cases", resource: "case", action: "view", href: "/admin/cases" },
   { name: "Biblioteca de mídia", resource: "media", action: "view", href: "/admin/midia" },
-  { name: "Contato, links e redes sociais", resource: "settings", action: "view", issue: "ADM-10" },
-  { name: "CTAs e destaques da Home", resource: "cta", action: "view", issue: "ADM-11" },
-  { name: "Leads e feedbacks", resource: "lead", action: "view", issue: "FORM-09" },
+  { name: "Contato, links e redes sociais", resource: "settings", action: "view", href: "/admin/configuracoes" },
+  { name: "CTAs e destaques da Home", resource: "cta", action: "view", href: "/admin/ctas" },
+  { name: "Leads e feedbacks", resource: "lead", action: "view", href: "/admin/leads" },
   { name: "Usuários e papéis", resource: "user", action: "view", issue: "INT-08" },
   { name: "Trilha de auditoria", resource: "audit", action: "view", issue: "TECH-10" },
 ];

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Sem link publicado, a faixa não aparece (HOME-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -43,6 +44,8 @@ export function ClosingCta({
   description?: string;
   links: ClosingLink[];
 }) {
+  // Sem CTA publicado, o convite ficaria sem ter onde clicar: a faixa inteira sai (HOME-07).
+  if (!links.length) return null;
   return (
     <Section tone="laranja" halftone labelledBy="cta-final-titulo" data-clip-reveal>
       <div data-parallax="-36" className="absolute top-6 right-6 hidden md:block">

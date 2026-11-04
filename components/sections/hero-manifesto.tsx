@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  25/10/2026 Caio Moraes              Sticker "tá no briefing" ancorado na base (LAY-06).
  26/10/2026 Vinícius Nishimura Reis  Logotipo vertical em SVG (UX-14).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Sem CTA publicado, não sobra caixa vazia no topo (HOME-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -81,18 +82,20 @@ export function HeroManifesto({ settings, ctas }: { settings: SiteSettings; ctas
               <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
-          <div data-motion="intro-cta" data-at="0.65" className="mt-8 flex flex-wrap gap-3">
-            {ctas.map((cta, index) => (
-              <ButtonLink
-                key={cta.id}
-                href={cta.href}
-                external={cta.external}
-                variant={index === 0 ? "lima" : "secondary"}
-              >
-                {cta.label}
-              </ButtonLink>
-            ))}
-          </div>
+          {ctas.length ? (
+            <div data-motion="intro-cta" data-at="0.65" className="mt-8 flex flex-wrap gap-3">
+              {ctas.map((cta, index) => (
+                <ButtonLink
+                  key={cta.id}
+                  href={cta.href}
+                  external={cta.external}
+                  variant={index === 0 ? "lima" : "secondary"}
+                >
+                  {cta.label}
+                </ButtonLink>
+              ))}
+            </div>
+          ) : null}
         </div>
         {/* Logotipo sem rotação, sombra extra ou sobreposição: zona de exclusão do brandbook. */}
         <div className="relative mx-auto w-full max-w-[240px] px-6 py-10 sm:max-w-xs lg:max-w-sm">

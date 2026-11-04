@@ -22,6 +22,7 @@
  13/10/2026 Vinícius Nishimura Reis  404 real para serviços e cases inexistentes (estrutura da landing).
  29/10/2026 Vinicius Binda             301 de endereço antigo ou com maiúsculas para o atual (DB-08).
  04/11/2026 Vinícius Nishimura Reis  Cookies de sessão com HttpOnly, SameSite e Secure (SEG-06).
+ 04/11/2026 Vinícius Nishimura Reis  301 de endereço antigo com cache curto (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,6 +30,7 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { publicEnv } from "@/lib/config/public-env";
 import { LOGIN_PATH, isPublicAdminPath } from "@/lib/domain/auth/redirect";
+import { REDIRECT_CACHE_CONTROL } from "@/lib/domain/content/slug";
 import { sessionCookieOptions } from "@/lib/domain/security/http-policy";
 import { resolveDetailSlug, type DetailRoute } from "@/lib/server/content/published-slugs";
 
@@ -85,7 +87,12 @@ async function guardDetailRoute(request: NextRequest, pathname: string) {
     return NextResponse.rewrite(new URL("/_conteudo-inexistente", request.url), { status: 404 });
   }
   if (resolution.status === "moved") {
-    return NextResponse.redirect(new URL(`/${route}/${resolution.slug}${request.nextUrl.search}`, request.url), 301);
+    const moved = NextResponse.redirect(
+      new URL(`/${route}/${resolution.slug}${request.nextUrl.search}`, request.url),
+      301,
+    );
+    moved.headers.set("Cache-Control", REDIRECT_CACHE_CONTROL);
+    return moved;
   }
   return NextResponse.next();
 }
