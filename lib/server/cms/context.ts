@@ -25,6 +25,7 @@
  02/11/2026 Vinícius Nishimura Reis  Envio de mídia em dois passos no servidor, sem receber o arquivo (TECH-13, #313).
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
  04/11/2026 Vinícius Nishimura Reis  Ações aceitam conteúdo sem endereço próprio, como o CTA (ADM-11).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -66,13 +67,14 @@ export async function loadCmsSnapshot(): Promise<CmsSnapshot> {
 }
 
 /** Imagens da biblioteca de mídia para os campos de escolha (rótulo = texto alternativo). */
-export async function loadImageOptions(): Promise<{ id: string; label: string }[]> {
+export async function loadImageOptions(): Promise<{ id: string; label: string; src: string }[]> {
   const media = await (await cmsDeps()).store.listMedia();
   return media
     .filter((asset) => asset.mimeType.startsWith("image/"))
     .map((asset) => ({
       id: asset.id,
       label: asset.decorative ? `Decorativa — ${asset.src.split("/").pop()}` : asset.alt || asset.src.split("/").pop()!,
+      src: asset.src,
     }));
 }
 

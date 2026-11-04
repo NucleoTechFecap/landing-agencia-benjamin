@@ -20,13 +20,16 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Campos remontados após erro preservam seleções (ADM-08).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import Link from "next/link";
+import { useActionState, useState, type ReactNode } from "react";
 import { CMS_IDLE, type CmsFormState } from "@/lib/domain/content/cms-form";
+import { UnsavedGuard } from "../ui/unsaved-guard";
 import { CmsFormError } from "./form-error";
 
 export type CmsSaveAction = (state: CmsFormState, formData: FormData) => Promise<CmsFormState>;
@@ -38,32 +41,44 @@ export interface FieldHelpers {
   value: (name: string, saved?: string) => string | undefined;
 }
 
-/**
- * Formulário de edição do CMS. Guarda id e versão (`updated_at`) em campos ocultos para a
- * concorrência otimista e repreenche o que foi digitado quando o servidor recusa o envio.
- * `readOnly` desabilita tudo (papel sem edição ou item arquivado).
- */
-export function CmsFormShell({
-  action,
-  item,
-  readOnly,
-  submitLabel,
-  children,
-}: {
+interface CmsFormShellProps {
   action: CmsSaveAction;
   item?: { id: string; updatedAt: string };
   readOnly?: boolean;
   submitLabel: string;
+  /** Para onde "Cancelar" leva. Com alteração pendente, o aviso de saída pergunta antes. */
+  cancelHref?: string;
   children: (fields: FieldHelpers) => ReactNode;
-}) {
+}
+
+/**
+ * Formulário de edição do CMS. Guarda id e versão (`updated_at`) em campos ocultos para a
+ * concorrência otimista e repreenche o que foi digitado quando o servidor recusa o envio.
+ * `readOnly` desabilita tudo (papel sem edição ou item arquivado). Cada versão salva remonta o
+ * formulário: o aviso de alteração pendente e o erro da tentativa anterior não sobrevivem ao sucesso.
+ */
+export function CmsFormShell(props: CmsFormShellProps) {
+  return <FormBody key={props.item?.updatedAt ?? "novo"} {...props} />;
+}
+
+function FormBody({ action, item, readOnly, submitLabel, cancelHref, children }: CmsFormShellProps) {
   const [state, formAction, pending] = useActionState(action, CMS_IDLE);
+  const [edited, setEdited] = useState(false);
   const typed = state.status === "error" ? state.values : undefined;
   const fields: FieldHelpers = {
     errors: (name) => (state.status === "error" ? state.fieldErrors?.[name] : undefined),
     value: (name, saved) => typed?.[name] ?? saved,
   };
+  // O que o servidor recusou continua só no formulário: conta como não salvo.
+  const unsaved = !readOnly && !pending && (edited || state.status === "error");
   return (
-    <form action={formAction} noValidate className="space-y-6">
+    <form
+      action={formAction}
+      noValidate
+      className="space-y-6"
+      onChange={() => setEdited(true)}
+      onSubmit={() => setEdited(false)}
+    >
       <CmsFormError state={state} />
       {item ? (
         <>
@@ -76,19 +91,26 @@ export function CmsFormShell({
       <fieldset
         key={state.status === "error" ? state.requestId : "inicial"}
         disabled={readOnly || pending}
-        className="min-w-0 space-y-5 disabled:opacity-80"
+        className="min-w-0 space-y-6"
       >
         {children(fields)}
       </fieldset>
       {readOnly ? null : (
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-full bg-benja-verde px-6 py-3 font-bold text-benja-nyanza transition hover:bg-benja-noite disabled:cursor-wait disabled:opacity-60"
-        >
-          {pending ? "Salvando…" : submitLabel}
-        </button>
+        <div className="sticky bottom-0 z-10 -mx-4 -mb-4 flex flex-wrap items-center justify-end gap-x-4 gap-y-2 rounded-b-studio-lg border-t border-studio-linha bg-white px-4 py-3 sm:-mx-6 sm:-mb-6 sm:px-6">
+          <p aria-live="polite" className="mr-auto text-xs font-semibold text-studio-suave">
+            {unsaved ? "Alterações não salvas" : ""}
+          </p>
+          {cancelHref ? (
+            <Link href={cancelHref} prefetch={false} className="studio-btn studio-btn-sutil">
+              Cancelar
+            </Link>
+          ) : null}
+          <button type="submit" disabled={pending} className="studio-btn studio-btn-primario">
+            {pending ? "Salvando…" : submitLabel}
+          </button>
+        </div>
       )}
+      <UnsavedGuard active={unsaved} />
     </form>
   );
 }

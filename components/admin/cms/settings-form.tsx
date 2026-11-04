@@ -18,15 +18,16 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-10).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
-import type { ReactNode } from "react";
 import { TextArea, TextField } from "@/components/forms/fields";
 import { SETTINGS_LIMITS } from "@/lib/domain/content/settings-schema";
 import type { SiteSettings } from "@/lib/domain/content/types";
+import { FormSection } from "../ui/primitives";
 import { CmsFormShell, type CmsSaveAction } from "./form-shell";
 
 const LEFT_BLANK = "Em branco, não aparece no site.";
@@ -36,15 +37,6 @@ const NETWORKS = [
   { name: "tiktok", label: "TikTok", example: "https://www.tiktok.com/@nome-do-perfil" },
   { name: "linkedin", label: "LinkedIn", example: "https://www.linkedin.com/company/nome-da-pagina" },
 ] as const;
-
-function Group({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="space-y-5">
-      <h2 className="text-lg font-black text-benja-verde">{title}</h2>
-      {children}
-    </section>
-  );
-}
 
 /**
  * Campos de site_settings editáveis no painel (ADM-10). `autoComplete` desligado: o navegador não
@@ -70,7 +62,7 @@ export function SettingsForm({
     >
       {({ errors, value }) => (
         <>
-          <Group title="Contato">
+          <FormSection title="Contato">
             <div className="grid gap-5 md:grid-cols-2">
               <TextField
                 name="email"
@@ -111,8 +103,8 @@ export function SettingsForm({
               errors={errors("mapsUrl")}
               defaultValue={value("mapsUrl", settings.contact.mapsUrl)}
             />
-          </Group>
-          <Group title="Redes sociais">
+          </FormSection>
+          <FormSection title="Redes sociais">
             {NETWORKS.map(({ name, label, example }) => (
               <TextField
                 key={name}
@@ -125,8 +117,8 @@ export function SettingsForm({
                 defaultValue={value(name, settings.socials[name])}
               />
             ))}
-          </Group>
-          <Group title="Apresentação no rodapé e nas buscas">
+          </FormSection>
+          <FormSection title="Apresentação no rodapé e nas buscas">
             <TextField
               name="tagline"
               label="Slogan"
@@ -146,7 +138,7 @@ export function SettingsForm({
               errors={errors("description")}
               defaultValue={value("description", settings.description)}
             />
-          </Group>
+          </FormSection>
         </>
       )}
     </CmsFormShell>

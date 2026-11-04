@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Slug em branco gerado pelo servidor, sem preenchimento no navegador (TECH-12).
  29/10/2026 Vinicius Binda             Aviso de redirecionamento ao trocar endereço publicado (DB-08).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -56,10 +57,10 @@ export function SlugField({
       <div>
         <p className="text-sm font-bold text-benja-noite">Endereço (slug)</p>
         <input type="hidden" name="slug" value={defaultValue} />
-        <p className="mt-1.5 rounded-2xl border-2 border-benja-noite/20 bg-benja-creme px-4 py-3 font-mono text-sm wrap-anywhere">
+        <p className="mt-1.5 rounded-studio-md border border-studio-linha bg-studio-realce px-4 py-3 font-mono text-sm wrap-anywhere">
           {defaultValue}
         </p>
-        <p className="mt-1 text-xs text-benja-grafite/80">Fixo depois da primeira publicação.</p>
+        <p className="mt-1 text-xs text-studio-suave">Fixo depois da primeira publicação.</p>
       </div>
     );
   }

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -64,7 +65,12 @@ export function BlockForm({
 }) {
   const saved = block ? blockFormValues(block) : {};
   return (
-    <CmsFormShell action={action} item={page} submitLabel={block ? "Salvar bloco" : "Adicionar bloco"}>
+    <CmsFormShell
+      action={action}
+      item={page}
+      cancelHref={`/admin/paginas/${page.id}`}
+      submitLabel={block ? "Salvar bloco" : "Adicionar bloco"}
+    >
       {(helpers) => {
         const { errors, value } = helpers;
         const field = (

@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -44,6 +45,7 @@ export function CategoryForm({
       action={action}
       item={category ? { id: category.id, updatedAt: category.updatedAt } : undefined}
       readOnly={readOnly}
+      cancelHref="/admin/categorias"
       submitLabel={category ? "Salvar alterações" : "Criar rascunho"}
     >
       {({ errors, value }) => (
