@@ -35,8 +35,8 @@ e-mail, defina a nova senha e entre.
 Clique em **Sair**, no canto superior direito. Faça isso sempre que usar um computador compartilhado.
 Não compartilhe a senha nem o link recebido por e-mail.
 
-No início do painel, módulos marcados como "Em construção" (como contato e redes sociais) ainda não podem
-ser editados por aqui.
+No início do painel, módulos marcados como "Em construção" (como os CTAs) ainda não podem ser editados por
+aqui.
 
 ## Editar e publicar, passo a passo
 
@@ -101,6 +101,8 @@ stateDiagram-v2
 | Leitor | Sim | — | — | — |
 | Editor | Sim | Sim | Sim | — |
 | Administrador | Sim | Sim | Sim | Sim |
+
+Contato, links e redes sociais são uma exceção: só o Administrador altera. Veja a seção própria, abaixo.
 
 Matriz completa em [perfis e permissões](../seguranca/perfis-e-permissoes.md).
 
@@ -203,6 +205,45 @@ A página pública do serviço já traz o botão de contato com o serviço pré-
 formulário. Um serviço **não pode ser arquivado nem despublicado** se for o único serviço de algum
 case publicado — o painel lista quais cases.
 
+## Contato, links e redes sociais (`/admin/configuracoes`)
+
+**Salvar vai direto ao ar.** Esta tela não tem rascunho nem botão de publicar: ao clicar em **Salvar e
+colocar no ar**, o site muda para todos os visitantes. Confira os links antes de salvar.
+
+Só o **Administrador** altera. Editor e Leitor abrem a tela em modo leitura; se algo precisar mudar, peçam à
+coordenação da Benjamin.
+
+| Campo | Regra | Onde aparece |
+| ----- | ----- | ------------ |
+| E-mail | Opcional. Um endereço válido | Rodapé e página de contato |
+| Telefone | Opcional. Com DDD, só números, espaços, parênteses e hífen | Rodapé e página de contato |
+| Endereço | Opcional. Até 200 caracteres | Rodapé e página de contato |
+| Link do mapa | Opcional. Link completo começando com `https://`. Exige o endereço, porque abre a partir dele | Vira o link do endereço |
+| Instagram, TikTok, LinkedIn | Opcionais. Link completo começando com `https://`, no site da própria rede | Ícones do rodapé e da página de contato |
+| Slogan | Obrigatório. Até 120 caracteres | Rodapé |
+| Descrição da agência | Obrigatória. De 50 a 300 caracteres | Rodapé e resumo do site nas buscas |
+
+- **Campo em branco não aparece no site.** Sem endereço, o item some; sem mapa, o endereço aparece como
+  texto, sem link; sem uma rede, o ícone dela some.
+- **Link recusado:** o painel mostra o erro embaixo do campo e não muda nada no site. Só são aceitos links
+  `https://`. Se copiou o link sem o começo (por exemplo, `instagram.com/benja`), inclua `https://www.`.
+- **Duas pessoas na mesma tela:** quem salvar por último recebe "O conteúdo foi alterado por outra pessoa".
+  Recarregue a página e refaça a alteração.
+- **Quem alterou:** cada gravação fica na trilha de auditoria, com autor, data e os nomes dos campos
+  alterados, sem guardar os valores.
+
+O que **não** se edita aqui:
+
+- **Manifesto e textos do Sobre:** ficam em **Páginas e textos**, com rascunho e publicação. Manter uma fonte
+  só evita dúvida sobre qual texto vale.
+- **Quem recebe os formulários do site:** é definido pelo NúcleoTech, fora do painel. Trocar o e-mail desta
+  tela muda só o que aparece no site, e não o destino das mensagens.
+- **Nome da agência:** também está no logotipo, no rodapé e em outros pontos fixos do site. Se precisar mudar,
+  fale com o NúcleoTech.
+
+Os dados oficiais de contato ainda dependem da definição da agência (CON-10). Esta tela só altera o que
+estiver no site: preencher um campo aqui não conta como aprovação.
+
 ## Biblioteca de mídia (`/admin/midia`)
 
 Envie aqui as imagens antes de usá-las em cases e serviços. Nos formulários, o link **Enviar imagem
@@ -266,5 +307,5 @@ conteúdos (como a categoria estar publicada).
 | "Já existe um item com este endereço" | Escolha outro slug |
 | "Não foi possível registrar a operação na auditoria" | Nada foi alterado. Tente de novo; se persistir, envie o código de atendimento ao NúcleoTech |
 
-Toda publicação, despublicação, arquivamento e exclusão fica registrada na trilha de auditoria
-com quem fez e quando (TECH-10).
+Toda publicação, despublicação, arquivamento, exclusão e alteração de contato e redes fica registrada na
+trilha de auditoria com quem fez e quando (TECH-10).

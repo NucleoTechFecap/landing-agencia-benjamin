@@ -335,6 +335,7 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
   const ADMIN_ROUTES = [
     screen("inicio", "", /Bem-vindo/),
     screen("visao-geral", "conteudos", /Visão geral/),
+    screen("configuracoes", "configuracoes", /Contato, links e redes sociais/),
     screen("paginas", "paginas", /Páginas e textos/),
     screen("pagina-nova", "paginas/nova", /Criar conteúdo: Contato/, () => "/admin/paginas/nova?rota=contato"),
     screen("pagina-editar", "paginas/[id]", /^Pagina-/, () => `/admin/paginas/${ids.page}`),

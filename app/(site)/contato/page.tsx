@@ -24,6 +24,7 @@
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
  04/11/2026 Vinícius Nishimura Reis  Sem JavaScript o fallback leva às páginas estáticas dos formulários (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Canais vêm de ContactChannels: endereço sem mapa não vira link vazio (ADM-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -33,10 +34,9 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ContactForm } from "@/components/forms/contact-form";
 import { LeadForm } from "@/components/forms/lead-form";
-import { SocialLinks } from "@/components/layout/social-links";
+import { ContactChannels } from "@/components/sections/contact-channels";
 import { PageBlocks } from "@/components/sections/page-blocks";
 import { PageHero } from "@/components/sections/page-hero";
-import { BrandIcon } from "@/components/ui/brand-icon";
 import { buttonClasses } from "@/components/ui/button-link";
 import { Section } from "@/components/ui/section";
 import { LoadingState } from "@/components/ui/states";
@@ -75,46 +75,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contato"
       />
       <Section tone="nyanza" labelledBy="formulario-titulo">
         <div className="grid gap-10 lg:grid-cols-[1fr_1.6fr]">
-          <aside
-            aria-label="Outros canais"
-            data-motion="reveal"
-            className="h-fit space-y-6 rounded-3xl border-2 border-benja-noite bg-benja-claro p-7 shadow-sticker"
-          >
-            <BrandIcon name="enviado" color="verde" size={64} />
-            <div>
-              <h2 className="text-xl font-black text-benja-verde">Onde estamos</h2>
-              {settings.contact.address ? (
-                <a
-                  href={settings.contact.mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 block underline underline-offset-4"
-                >
-                  {settings.contact.address}
-                  <span className="sr-only"> (abre o mapa em nova aba)</span>
-                </a>
-              ) : null}
-              {settings.contact.email ? (
-                <a
-                  href={`mailto:${settings.contact.email}`}
-                  className="mt-2 block font-bold underline underline-offset-4"
-                >
-                  {settings.contact.email}
-                </a>
-              ) : null}
-            </div>
-            <div>
-              <h2 className="text-xl font-black text-benja-verde">Redes sociais</h2>
-              <SocialLinks socials={settings.socials} className="mt-3 text-benja-verde" />
-            </div>
-            <p className="text-sm">
-              É cliente, parceiro ou aluno e quer contar como foi?{" "}
-              <Link href="/feedback" className="font-bold underline underline-offset-4">
-                Deixe seu feedback
-              </Link>
-              .
-            </p>
-          </aside>
+          <ContactChannels contact={settings.contact} socials={settings.socials} />
           <div
             id="formulario"
             data-motion="reveal"

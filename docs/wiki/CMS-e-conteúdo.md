@@ -1,7 +1,7 @@
 # CMS e conteúdo
 
 O painel (`/admin`) deixa a equipe da Benjamin manter **páginas e blocos, manifesto, texto Sobre, áreas
-de atuação, serviços, categorias, cases e a biblioteca de mídia** sem deploy. O site lê do Supabase só o que está publicado. O conteúdo
+de atuação, serviços, categorias, cases, a biblioteca de mídia e contato, links e redes sociais** sem deploy. O site lê do Supabase só o que está publicado. O conteúdo
 versionado em `content/` serve de fallback de desenvolvimento e de fonte de parte do seed (os cases do
 seed são fictícios).
 
@@ -10,6 +10,12 @@ seed são fictícios).
 Manifesto e texto Sobre são blocos das páginas `home` e `sobre`: publicados, tomam o lugar do valor de
 `site_settings`; sem página publicada, o site segue com ele. Os demais blocos entram depois das seções
 fixas de cada rota. Despublicar devolve o texto anterior.
+
+## Contato, links e redes sociais
+
+Ficam em `/admin/configuracoes` e não têm rascunho: salvar vai direto ao ar, e só `admin` e `super_admin`
+alteram. Links só com `https://`. Manifesto e Sobre não são editados nessa tela, para não haver duas fontes
+do mesmo texto. Os destinatários dos formulários seguem em variáveis de ambiente.
 
 ## Estados de publicação
 
