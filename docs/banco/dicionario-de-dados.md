@@ -21,7 +21,7 @@ O banco tem três grupos de tabelas. Este documento cobre o grupo de conteúdo e
 | ----- | ------- | --------- |
 | Usuários e acesso | `profiles`, `role_permissions`, `audit_log` | 0100, 0200, 0300 |
 | Formulários (leads, contatos, feedbacks) | `form_submissions` | 0400, 20261102000300 (`update` do painel só em `status`) |
-| Histórico de versões (FUT-04) | `content_versions` | 20261104000100 |
+| Histórico de versões (FUT-04) | `content_versions` | 20261104000200 |
 | **Conteúdo do CMS** | `pages`, `blocks`, `areas`, `services`, `service_areas`, `case_categories`, `cases`, `case_services`, `case_media`, `ctas`, `media_assets`, `site_settings` | **20261025000100** |
 | Endereços antigos (DB-08) | `slug_redirects` | 20261029000100 |
 | Marcação de produção (ARC-11) | `ambiente_banco` | 20261102000100 |
@@ -265,6 +265,10 @@ descartado na leitura (o restante da página continua no ar) e registrado em log
 | `about` | `{ title, intro, valueProposition, howWeWork, fecapRelation }` — só na página `sobre`, um por página; substitui `site_settings.about` |
 | `hero`, `media-text`, `image`, `cards`, `gallery`, `faq`, `buttons` | Descritos por campos em `BLOCK_FIELDS` ([`blocks.ts`](../../lib/domain/content/blocks.ts)). `hero` só em páginas livres |
 
+Se a DBX-04 (#372) estiver aplicada, a lista também vale no banco, pela constraint `blocks_type_catalog`, e a migration
+`20261104000200` inclui nela os tipos das páginas livres. A DBX-04 precisa entrar antes dela, na ordem das versões: aplicada
+depois, volta a recusar esses tipos. O teste em `lib/server/content/content-sql.test.ts` compara a lista com `BLOCK_TYPES`.
+
 Manifesto e "Sobre" ficam em blocos, e não em `site_settings`, para o `editor` (`page:edit`) poder
 alterá-los com rascunho e publicação; `site_settings` exige `settings:edit` e grava direto no ar. Sem
 página publicada, vale o valor de `site_settings`. O bloco não tem versão própria: toda alteração
@@ -302,7 +306,7 @@ Sem acesso pela API (`anon` e `authenticated` não têm privilégio nenhum), e a
 
 ### `content_versions` — histórico de versões (FUT-04)
 
-Migration `20261104000100_editor_do_site.sql`. Imutável para o painel: RLS só com `select` (`view` do recurso) e `insert`
+Migration `20261104000200_editor_do_site.sql`. Imutável para o painel: RLS só com `select` (`view` do recurso) e `insert`
 (`create`, `edit`, `publish`, `archive` ou `delete`). Só o service role apaga: retenção e pedido de titular.
 
 | Coluna | Tipo | Nulo | Regra |
@@ -325,7 +329,7 @@ Funções: `content_version_authors(uuid[])` (definer, devolve só o nome de que
 
 ### `site_settings` — configuração institucional (ADM-10)
 
-Linha única (`id boolean primary key default true check (id)`). A coluna `theme` (`jsonb`, migration `20261104000100`) guarda
+Linha única (`id boolean primary key default true check (id)`). A coluna `theme` (`jsonb`, migration `20261104000200`) guarda
 as cores, fontes e logotipos que divergem da marca, validados em
 [`theme.ts`](../../lib/domain/content/theme.ts). Vazia, vale a identidade padrão.
 
@@ -422,7 +426,7 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | `content-seed.test.mjs` e `seed-users.test.mjs` (ARC-11): cases publicados passam na validação de publicação, sem erro de integridade, blocos no catálogo, mídia em `public/`, nenhum cliente real; contas só no Supabase local e sem senha fixa | Passa no `npm test` |
 | Site e painel sobre o seed (ARC-11, navegador e `curl`): cases fictícios em `/cases`, rascunho, agendado, arquivado e cliente real com 404, blocos em `/areas`. Login com as 4 contas de `npm run seed:users`: `admin` e `editor` veem 5 cases com o botão de novo case, `viewer` vê os 5 sem o botão, `pending` fica no login com o aviso | Conforme. E2E `@cms` sobre o seed: 18 testes, `PASS` |
 | `supabase/tests/database/cms_gravacao_atomica.test.sql` e `tests/integration/supabase/cms-gravacao-atomica.test.ts` (TECH-13, #314, 02/11/2026): 25 testes pgTAP e 6 de integração. FK inválida em qualquer etapa (área, serviço, galeria, criação) desfaz texto e vínculos; versão desatualizada (`40001`), item inexistente (`P0002`), coluna a mais ou a menos (`22023`) e leitor (`42501`) são recusados; funções `security invoker`, sem execução para `anon`, com `search_path` vazio | `Files=7, Tests=179, Result: PASS`; `npm run test:supabase` 62/62; `npm run test:e2e:cms` 18/18 |
-| `npm run test:migrations` com a `20261104000100` (editor do site, 04/11/2026): instalação limpa, seed, upgrade com dados, 14 rollbacks em ordem inversa (duas vezes cada) e reaplicação | `Files=11, Tests=286, Result: PASS` em cada etapa |
+| `npm run test:migrations` com a `20261104000200` (editor do site, 04/11/2026): instalação limpa, seed, upgrade com dados, 14 rollbacks em ordem inversa (duas vezes cada) e reaplicação | `Files=11, Tests=286, Result: PASS` em cada etapa |
 | `npm run test:migrations` com a `20261102000200`: instalação limpa, upgrade com dados, rollbacks em ordem inversa (duas vezes cada) e reaplicação | Verde em 02/11/2026 |
 
 ## 9. Como aplicar, testar e reverter

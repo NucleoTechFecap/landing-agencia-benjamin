@@ -61,7 +61,7 @@ describe("catálogo de eventos", () => {
 
   it("o check do banco aceita exatamente os eventos do catálogo", () => {
     // A última migration que redefine o check: histórico de versões (editor do site).
-    const sql = readFileSync(join(process.cwd(), "supabase/migrations/20261104000100_editor_do_site.sql"), "utf8");
+    const sql = readFileSync(join(process.cwd(), "supabase/migrations/20261104000200_editor_do_site.sql"), "utf8");
     const start = sql.indexOf("add constraint audit_log_event_check");
     const checkBlock = sql.slice(start, sql.indexOf("));", start));
     const fromSql = [...checkBlock.matchAll(/'([a-z_.]+)'/g)].map((match) => match[1]).sort();

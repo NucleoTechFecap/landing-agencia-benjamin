@@ -14,7 +14,7 @@ os detalhes respondem 404 e a Home perde as listas. Foi o que aconteceu em Produ
 `CONTENT_SOURCE=local` devolve o conteúdo de `content/`, mas **nada do que for editado no painel aparece no site**
 enquanto ela estiver definida. Para o painel valer, o conteúdo precisa estar no banco. É isso que a carga faz.
 
-Ela não depende de nenhuma migration nova: foi testada em banco local na versão `20261102000300` e na `20261104000100`.
+Ela não depende de nenhuma migration nova: foi testada em banco local na versão `20261102000300` e na `20261104000200`.
 
 ## O que ela grava
 

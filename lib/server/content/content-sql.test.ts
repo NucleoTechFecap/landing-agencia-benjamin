@@ -19,12 +19,14 @@
  ──────────────────────────────────────────────────────────────────────────────
  25/10/2026 Vinícius Binda             Criação inicial (DB-01/DBX-01).
  04/11/2026 Vinícius Nishimura Reis  Posições, destinos e limites do CTA conferidos com o banco (ADM-11).
+ 04/11/2026 Vinícius Nishimura Reis  Lista de tipos de bloco conferida com BLOCK_TYPES (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { BLOCK_TYPES } from "@/lib/domain/content/blocks";
 import { CTA_LIMITS, CTA_PLACEMENTS, CTA_TARGET_KINDS } from "@/lib/domain/content/cta-schema";
 import { PUBLICATION_STATUSES } from "@/lib/domain/content/publication-status";
 import { RESERVED_SLUGS, SLUG_MAX_LENGTH, SLUG_MIN_LENGTH, SLUG_PATTERN } from "@/lib/domain/content/slug";
@@ -77,6 +79,11 @@ describe("consistência conteúdo código × banco (DB-01/DBX-01)", () => {
     expect(quoted(kinds)).toEqual([...CTA_TARGET_KINDS]);
     expect(sql).toContain(`char_length(label) between ${CTA_LIMITS.labelMin} and ${CTA_LIMITS.label}`);
     expect(sql).toContain(`char_length(target_url) <= ${CTA_LIMITS.url}`);
+  });
+
+  it("a última lista de tipos de bloco é a mesma de BLOCK_TYPES", () => {
+    const lists = [...sql.matchAll(/constraint blocks_type_catalog\s+check \(type in \(([^)]+)\)\)/g)];
+    expect(quoted(lists.at(-1)?.[1] ?? "").sort()).toEqual([...BLOCK_TYPES].sort());
   });
 
   it("toda tabela de public habilita RLS (supabase/README.md)", () => {

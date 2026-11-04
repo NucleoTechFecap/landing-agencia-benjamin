@@ -28,7 +28,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(26);
+select plan(27);
 
 insert into auth.users (id, email) values
   ('00000000-0000-4000-8000-0000000002a1', 'admin-editor@teste.invalid'),
@@ -56,6 +56,17 @@ select throws_ok(
   '23514',
   null,
   'fields só aceita objeto'
+);
+
+-- Vale com ou sem a lista fechada da DBX-04 (blocks_type_catalog).
+insert into public.pages (id, slug, title) values
+  ('00000000-0000-4000-8000-00000000bb02', 'pagina-dos-blocos-novos', 'Página dos blocos novos');
+select lives_ok(
+  $$insert into public.blocks (page_id, type, content, sort_order)
+    select '00000000-0000-4000-8000-00000000bb02', tipo, '{}', ordem::integer
+    from unnest(array['hero', 'media-text', 'image', 'cards', 'gallery', 'faq', 'buttons'])
+      with ordinality as novos(tipo, ordem)$$,
+  'blocks aceita os tipos das páginas livres'
 );
 
 -- ─── Número, autor e imutabilidade ───────────────────────────────────────────

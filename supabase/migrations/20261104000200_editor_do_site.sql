@@ -2,7 +2,7 @@
 ════════════════════════════════════════════════════════════════════════════════
  Sistema      : Agência Benjamin Landing Page
  Módulo       : Supabase
- Arquivo      : 20261104000100_editor_do_site.sql
+ Arquivo      : 20261104000200_editor_do_site.sql
  Descrição    : Campos editáveis, SEO e aparência do site e histórico de versões do conteúdo.
 
  Desenvolvedor: Vinícius Nishimura Reis
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (editor do site, FUT-04).
+ 04/11/2026 Vinícius Nishimura Reis  Nova versão (a 000100 é da DBX-05) e tipos de bloco na lista da DBX-04.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,7 +27,7 @@
 -- no código (lib/domain/content), como manifesto e about de site_settings.
 --
 -- Erros que o painel traduz (toCmsError): 42501 sem permissão, 40001 versão desatualizada,
--- P0002 item inexistente. Reversão: supabase/rollbacks/20261104000100_editor_do_site.down.sql.
+-- P0002 item inexistente. Reversão: supabase/rollbacks/20261104000200_editor_do_site.down.sql.
 
 -- ─── Campos, SEO e aparência ─────────────────────────────────────────────────
 
@@ -219,6 +220,25 @@ comment on function public.save_page_document(uuid, timestamptz, jsonb, jsonb) i
 
 revoke execute on function public.save_page_document(uuid, timestamptz, jsonb, jsonb) from public, anon;
 grant execute on function public.save_page_document(uuid, timestamptz, jsonb, jsonb) to authenticated;
+
+-- ─── Tipos de bloco ──────────────────────────────────────────────────────────
+
+-- A DBX-04 (#372, 20261102000400) fixa os tipos em blocks_type_catalog, igual a BLOCK_TYPES. Onde ela já
+-- estiver aplicada, entram os blocos das páginas livres; sem ela, não há lista a ampliar.
+do $$
+begin
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'blocks_type_catalog' and conrelid = 'public.blocks'::regclass
+  ) then
+    alter table public.blocks drop constraint blocks_type_catalog;
+    alter table public.blocks add constraint blocks_type_catalog check (type in (
+      'rich-text', 'list', 'team', 'cta', 'manifesto', 'about',
+      'hero', 'media-text', 'image', 'cards', 'gallery', 'faq', 'buttons'
+    ));
+  end if;
+end;
+$$;
 
 -- ─── Auditoria ───────────────────────────────────────────────────────────────
 

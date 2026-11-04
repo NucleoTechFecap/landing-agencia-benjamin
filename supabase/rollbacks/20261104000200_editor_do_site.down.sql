@@ -2,7 +2,7 @@
 ════════════════════════════════════════════════════════════════════════════════
  Sistema      : Agência Benjamin Landing Page
  Módulo       : Supabase
- Arquivo      : 20261104000100_editor_do_site.down.sql
+ Arquivo      : 20261104000200_editor_do_site.down.sql
  Descrição    : Reverte campos editáveis, SEO, aparência e histórico de versões.
 
  Desenvolvedor: Vinícius Nishimura Reis
@@ -18,12 +18,13 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (editor do site, FUT-04).
+ 04/11/2026 Vinícius Nishimura Reis  Nova versão (a 000100 é da DBX-05) e tipos de bloco na lista da DBX-04.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
--- Reverte 20261104000100_editor_do_site.sql. O Supabase CLI não executa reversões: aplicar manualmente
+-- Reverte 20261104000200_editor_do_site.sql. O Supabase CLI não executa reversões: aplicar manualmente
 -- (SQL Editor ou psql) e registrar no histórico:
---   npx supabase migration repair --status reverted 20261104000100
+--   npx supabase migration repair --status reverted 20261104000200
 --
 -- Reverter o código ANTES: a versão atual do site lê estas colunas. APAGA o que foi editado nelas
 -- (textos, SEO, aparência) e o histórico inteiro. Por isso para se houver conteúdo, a menos que a sessão
@@ -41,6 +42,20 @@ begin
        or exists (select 1 from public.site_settings where theme <> '{}') then
       raise exception 'Há textos, SEO, aparência ou histórico gravados. Faça backup e confirme com: set benjamin.confirmar_rollback = ''sim'';';
     end if;
+  end if;
+end;
+$$;
+
+-- Volta à lista da DBX-04, se ela estiver aplicada. `not valid`: a reversão não apaga bloco de página livre.
+do $$
+begin
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'blocks_type_catalog' and conrelid = 'public.blocks'::regclass
+  ) then
+    alter table public.blocks drop constraint blocks_type_catalog;
+    alter table public.blocks add constraint blocks_type_catalog
+      check (type in ('rich-text', 'list', 'team', 'cta', 'manifesto', 'about')) not valid;
   end if;
 end;
 $$;

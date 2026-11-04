@@ -55,7 +55,7 @@ categorias, CTAs, configurações) e o histórico não é critério de aceite da
   publicar, porque editar um item publicado já o publica; e usar uma versão preenche o formulário
   em vez de criar um rascunho separado, porque cada item é uma linha só.
 - **04/11/2026:** a coordenação pediu o histórico junto do editor do site, e ele foi implementado
-  (`content_versions`, migration `20261104000100`). Saiu da opção C. O que mudou em relação à especificação está em
+  (`content_versions`, migration `20261104000200`). Saiu da opção C. O que mudou em relação à especificação está em
   [`historico-de-versoes.md`](../roadmap/historico-de-versoes.md) §12.
 - A Benjamin deve ser informada no checkpoint (GOV-08): no MVP, recuperar conteúdo sobrescrito
   exige pedido ao NúcleoTech (restauração via backup). Restaurar traz de volta a última cópia semanal inteira, não só o item.
