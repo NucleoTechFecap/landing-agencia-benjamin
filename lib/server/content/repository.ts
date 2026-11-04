@@ -209,6 +209,7 @@ export async function getCaseDetail(slug: string): Promise<CaseDetail | null> {
   return caseDetailOf(snapshot, item, now);
 }
 
+/** CTAs publicados de um local da página, já com o link resolvido (fallback incluído). */
 export async function listCtas(placement: CtaPlacement): Promise<CtaLink[]> {
   "use cache";
   cacheTag(CONTENT_TAGS.all, CONTENT_TAGS.ctas, CONTENT_TAGS.services, CONTENT_TAGS.cases, CONTENT_TAGS.areas);
