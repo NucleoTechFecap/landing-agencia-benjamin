@@ -6,7 +6,7 @@
 | Responsável  | Rafael Morais Rocha (conforme `ownership-por-issue.csv`; backup: Julia Damásio)        |
 | Versão       | 1.2.0                                                                                  |
 | Data         | 04/11/2026                                                                             |
-| Base         | Commit `6bc0f72` da `main`, mais os testes de conteúdo; seção 5 com FORM-08; seções 2 a 11 revistas com QA-03, QA-05, QA-06 e INT-06, sobre `6959c27`; [critérios de aceite](../gestao/criterios-de-aceite.md) (GOV-13) |
+| Base         | Commit `6bc0f72` da `main`, mais os testes de conteúdo; seção 5 com FORM-08; seções 2 a 11 revistas com QA-03, QA-05, QA-06 e INT-06, sobre `4e0f40c`; [critérios de aceite](../gestao/criterios-de-aceite.md) (GOV-13) |
 | Relacionados | [Jornadas E2E](jornadas-e2e.md) (TECH-12), [CRUD do CMS](qa-04-cms.md) (QA-04), [homologação](homologacao.md) (QA-08), [go/no-go](../operacao/go-no-go.md) (TECH-14) |
 
 > Esta matriz diz **quais testes existem** para cada critério, e não que o critério foi atendido. Isso
@@ -534,6 +534,7 @@ Smoke test pós-publicação sem falhas (páginas, formulários, painel, API `/a
 | Conteúdo oculto por URL direta, com e sem `use cache` | N | `tests/e2e/acesso-indevido-dados.spec.ts` › «nenhuma rota de /api/v1 devolve conteúdo oculto, deduzidas dos arquivos»; «arquivado pelo painel: detalhe, API e listas param de mostrar, sem redeploy»; «arquivado direto no banco, sem invalidar: o proxy já responde 404 no detalhe» | C |
 | Erro e arquivo interno | N | `tests/e2e/acesso-indevido-dados.spec.ts` › «404 API com travessia» e uma por resposta; «500 e 4xx de Server Action malformada não trazem pilha nem caminho»; «arquivo do projeto não é servido: /.env» e um por arquivo | E, C |
 | Segredos no que chega ao navegador | N | `tests/e2e/acesso-indevido-dados.spec.ts` › «.next/static não traz segredo nem mapa de código»; «todo JavaScript que uma página carrega, seguido pelo navegador, não traz segredo» | E, C |
+| Prévia protegida, CTAs e gestão de mídia | N | `tests/e2e/acesso-indevido-painel.spec.ts` › «pending, com sessão válida, não lê rascunho nem arquivado»; «com a prévia aberta, o rascunho não sai por /api/v1 nem por URL pública»; «tipo fora da lista, id de outro tipo e id malformado não abrem nada»; «administrador: ctaCommand: excluir»; «administrador: deleteMediaAsset» | C |
 | Testes de acesso indevido em homologação | — | **Sem cobertura.** Depende de GO-02. O registro local está em [QA-06](qa-06-acesso-indevido.md) | — |
 
 ## 9. Lista de lacunas
@@ -557,9 +558,6 @@ testes e mova-os para as seções acima, com o nome exato.
 
 | Tema | Referência | Critério afetado |
 | ---- | ----------- | ------------------ |
-| Tela de CTAs: o teste real de "alteração no painel reflete no site" | ADM-11, branch `feat/adm-11-ctas-e-destaques` | CA-20, INT-06 |
-| Prévia protegida de rascunho: rota nova, a classificar em QA-06 | ADM-14, branch `feat/adm-14-previa-protegida` | Seção 8 |
-| Exclusão de mídia: ação nova, a classificar em QA-06 | ADM-09, branch `feat/adm-09-remover-midia` | Seção 8 |
 | Integridade de publicação no banco | PR #372 (DBX-04), que acrescenta `integridade_publicacao.test.sql` e `integridade-publicacao.test.ts` | CA-21, CMS |
 
 Depois de QA-03, QA-05, QA-06 e INT-06, os testes novos saíram desta seção e estão em CA-04, CA-06, CA-16, CA-19 e na seção 8.
@@ -567,16 +565,16 @@ As verificações de QA-06 falham sozinhas quando uma rota ou Server Action nova
 
 ## 11. Evidência desta versão
 
-Execução em 04/11/2026, no commit `8e55596` da branch de QA-03, QA-05, QA-06 e INT-06, com Node 22 e Supabase local.
+Execução em 04/11/2026, no commit `b40318f` da branch de QA-03, QA-05, QA-06 e INT-06, sobre `4e0f40c`, com Node 22 e Supabase local.
 
 | Bateria | Situação | Resultado |
 | ------- | --------- | ---------- |
-| `npm run verify` (inclui U) | ✅ Rodou | Cabeçalhos, formatação, tipos e lint sem erro; 1206 testes passaram e 167 foram ignorados, em 108 arquivos; build ok |
-| G `npm run check:release-content` | ❌ Rodou e falhou, como esperado | 1 falhou, 347 passaram: há conteúdo provisório publicado (CA-28) |
-| S `npm run test:supabase` | ✅ Rodou | 17 arquivos, 165 de 165 |
+| `npm run verify` (inclui U) | ✅ Rodou | Verde: 102 arquivos e 1521 testes passando, 189 pulados (entre eles os 19 arquivos de integração, que rodam na bateria S); build de produção ok |
+| G `npm run check:release-content` | ❌ Rodou e falhou, como esperado | 1 falhou, 440 passaram: há conteúdo provisório publicado (CA-28) |
+| S `npm run test:supabase` | ✅ Rodou | 19 arquivos, 187 de 187 |
 | D `npx supabase test db` | ✅ Rodou | `Files=10, Tests=260, Result: PASS` |
-| E `npm run test:e2e` | ✅ Rodou | 437 passaram, 0 falharam, 699 pulados (`@cms` e o que não depende da largura) |
-| C `npm run test:e2e:cms` | ✅ Rodou | 361 de 361 |
+| E `npm run test:e2e` | ✅ Rodou | 446 passaram, 0 falharam, 818 pulados (`@cms` e o que não depende da largura) |
+| C `npm run test:e2e:cms` | ✅ Rodou | 425 de 425 (421 em paralelo e 4 de `@home-global`, em série) |
 
 Registros: [QA-03](qa-03-responsividade.md), [QA-05](qa-05-formularios.md) e [QA-06 e INT-06](qa-06-acesso-indevido.md).
 

@@ -99,7 +99,8 @@ Casos N09, N10, N11 e N13 têm prova de ponta a ponta, com Auth e RLS reais no S
 e N12 têm prova em [SEG-04](../qualidade/seg-04-autorizacao-dados-pessoais.md). Falta repetir na homologação (GO-02).
 
 Sem sessão, a Server Action para no proxy: o encaminhamento do Next para a tela da ação passa por ele, e a mesma chamada
-por uma rota pública responde `{}`. Com o proxy retirado, as telas do painel respondem 200 com o esqueleto, sem nenhum
+por uma rota pública responde `{}`. Na prévia (ADM-14), a guarda roda dentro de `Suspense`: conta com sessão e sem papel
+recebe HTTP 200 com o esqueleto e um redirecionamento na própria página, sem o item. Com o proxy retirado, as telas do painel respondem 200 com o esqueleto, sem nenhum
 conteúdo: a segunda barreira segura, e o teste acusa a retirada (QA-06 §7).
 
 ## 5. Cabeçalhos de segurança e CSP (SEG-06)

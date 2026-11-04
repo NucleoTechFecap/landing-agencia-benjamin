@@ -4,9 +4,9 @@
 | ------------ | ------------------------------------------------------------------------------------------------------- |
 | Issues       | QA-06 (#184) e INT-06 (#172, seção 8 deste documento)                                                   |
 | Execução     | 04/11/2026                                                                                              |
-| Versão       | `8e55596`, branch `test/qa-06-acesso-links-e-telas`, sobre a `main` em `6959c27`                         |
+| Versão       | `b40318f`, branch `test/qa-06-acesso-links-e-telas`, sobre a `main` em `4e0f40c`                         |
 | Ambiente     | Local: `next start` (build de produção) + Supabase local (Postgres 17, Auth, RLS, PostgREST e Storage reais), Chrome headless |
-| **Fora do escopo: não executado** | Homologação e produção. **Nada aqui rodou contra o site publicado nem contra banco remoto.** Teste de invasão por terceiro, força bruta e negação de serviço. Telas de PRs ainda abertos: prévia protegida (ADM-14), exclusão de mídia (ADM-09) e CTAs (ADM-11), que precisam entrar aqui quando chegarem à `main` |
+| **Fora do escopo: não executado** | Homologação e produção. **Nada aqui rodou contra o site publicado nem contra banco remoto.** Teste de invasão por terceiro, força bruta e negação de serviço. |
 
 > **Resultado: nenhuma violação crítica no ambiente local.** Os achados estão na seção 6, com severidade. O critério da
 > issue só fica completo depois de repetir em homologação, com as chaves e as políticas de lá.
@@ -45,7 +45,7 @@ rotas internas também com o token certo.
 | CT-02 | Lista de rotas públicas | Só login, recuperação e o retorno do e-mail, em código e no disco | Conforme | P |
 | CT-03 | `RSC: 1`, pré-busca, `?_rsc=`, outros métodos HTTP | 307 para o login | Conforme | P |
 | CT-04 | Cabeçalhos forjados: `x-middleware-subrequest` (CVE-2025-29927), `x-invoke-path`, `x-matched-path`, `x-nextjs-data`, IP local | 307 para o login | Conforme | P |
-| CT-05 | 28 escritas alternativas: `/ADMIN`, `/%61dmin`, `/admin//leads`, `/admin/(painel)/leads`, `/admin/leads.rsc`, `/admin/login/..%2Fleads`, `%00`, `;x=1` e outras, enviadas sem normalização | Login ou 4xx, nunca 200 com conteúdo | Conforme | P |
+| CT-05 | 32 escritas alternativas: `/ADMIN`, `/%61dmin`, `/admin//leads`, `/admin/(painel)/leads`, `/admin/leads.rsc`, `/admin/login/..%2Fleads`, `%00`, `;x=1` e outras, enviadas sem normalização | Login ou 4xx, nunca 200 com conteúdo | Conforme | P |
 | CT-06 | `next` externo no login e no retorno do e-mail | Fica no site | Conforme | P |
 
 ### 3.2 Server Actions
@@ -66,6 +66,22 @@ inteira antes e depois, inclusive `updated_at`.
 | CT-14 | N13: sessão encerrada no servidor, com o cookie ainda no navegador | Login, nada gravado | Conforme | P |
 | CT-15 | CSRF: `Origin` de outro site com a sessão do `admin` | Recusado, nada gravado | Conforme: 500 do Next, sem pilha | P |
 | CT-16 | Trilha | `access.denied` sem o conteúdo do pedido | Conforme | P |
+| CT-16b | CTAs (ADM-11): `saveCta` e `ctaCommand`, nos 7 comandos, com cada papel | Mesma matriz do conteúdo: `viewer`, `pending` e desativado recebem `FORBIDDEN`; excluir, também `editor`; nada gravado | Conforme | P |
+| CT-16c | Mídia (ADM-09): `saveMediaDetails` e `deleteMediaAsset` | Editar: `viewer`, `pending` e desativado recebem `FORBIDDEN`. Excluir: também `editor`. Linha intacta | Conforme | P |
+
+### 3.2b Prévia protegida (ADM-14)
+
+`/admin/previa/[tipo]/[id]`, além da varredura de rotas do CT-01. A guarda roda dentro de `Suspense`: conta com sessão e
+sem papel recebe HTTP 200 com o esqueleto e um redirecionamento na própria página, sem o item.
+
+| # | Cenário | Esperado | Observado | Spec |
+| - | ------- | -------- | --------- | ---- |
+| CT-16d | Sem sessão: serviço, case e página, em rascunho e arquivados, com HTML, `RSC: 1`, pré-busca e `text/x-component` | 307 para o login, sem o texto do item | Conforme | P |
+| CT-16e | `pending` e `admin` desativado, com sessão válida, nas mesmas variações | Sem o texto do item | Conforme | P |
+| CT-16f | Controle: `viewer`, `editor` e `admin` | Veem o item: a matriz dá `view` a eles | Conforme | P |
+| CT-16g | Tipo fora da lista (`lead`, `profiles`, `area`, `cta`, `__proto__`), id de outro tipo e id malformado, como `editor` | Nada do envio, do perfil nem do item; sem erro interno | Conforme | P |
+| CT-16h | Resposta da prévia | `no-store`, `noindex`, sem `HIT`; visitante, depois, recebe 307 | Conforme | P |
+| CT-16i | Prévias abertas e, em seguida, `/servicos/<slug>`, `/cases/<slug>`, `/api/v1/services/<slug>`, `/api/v1/cases/<slug>`, `/api/v1/pages/<slug>`, Home, listas, sitemap e `llms` | Detalhes em 404; nada do rascunho em lugar nenhum | Conforme | P |
 
 ### 3.3 Rotas internas
 
@@ -73,6 +89,7 @@ inteira antes e depois, inclusive `updated_at`.
 | - | ------- | -------- | --------- | ---- |
 | CT-17 | `/api/internal/revalidate` e `/api/internal/jobs/notificacoes`: sem token, vazio, errado, de tamanho igual, `bearer` minúsculo, `Basic`, `x-api-key`, cookie, na URL | 401, `no-store`, sem detalhe | Conforme | D |
 | CT-18 | Corpo inválido com o token certo: JSON quebrado, lista, entidade desconhecida, travessia, 5.000 caracteres, objeto, `__proto__` | 400 "Corpo inválido.", sem campos do esquema | Conforme | D |
+| CT-18b | `relatedPaths` (TECH-13) com site externo, sem esquema, no painel, com travessia e acima do limite; `secondPass: false` | 400: o que vem de fora não vira requisição do servidor | Conforme | D |
 | CT-19 | Token de uma rota na outra; método errado | 401; 405 | Conforme | D |
 
 ### 3.4 API REST do Supabase, com a chave anônima
@@ -144,12 +161,14 @@ uma. Nenhum mapa de código em `.next/static`. O teste só imprime o nome da var
 
 | Ação | Sem sessão | `pending` | desativado | `viewer` | `editor` | `super_admin` | `admin` |
 | ---- | ---------- | --------- | ---------- | -------- | -------- | ------------- | ------- |
-| Criar, editar, publicar, despublicar, arquivar, restaurar (5 tipos) | Login | FORBIDDEN | FORBIDDEN | FORBIDDEN | Permitido | Permitido | Controle |
-| Excluir (5 tipos) | Login | FORBIDDEN | FORBIDDEN | FORBIDDEN | FORBIDDEN | Permitido | Controle |
+| Criar, editar, publicar, despublicar, arquivar, restaurar (6 tipos, com CTA) | Login | FORBIDDEN | FORBIDDEN | FORBIDDEN | Permitido | Permitido | Controle |
+| Excluir (6 tipos, com CTA) | Login | FORBIDDEN | FORBIDDEN | FORBIDDEN | FORBIDDEN | Permitido | Controle |
 | Blocos de página | Login | FORBIDDEN | FORBIDDEN | FORBIDDEN | Permitido | Permitido | Controle |
 | Configurações | Login | FORBIDDEN | FORBIDDEN | FORBIDDEN | FORBIDDEN | Permitido | Controle |
 | Status e exclusão de envio | Login | FORBIDDEN | FORBIDDEN | FORBIDDEN | FORBIDDEN | FORBIDDEN | Controle |
-| Envio de mídia | Login | FORBIDDEN | FORBIDDEN | FORBIDDEN | Permitido | Permitido | Controle |
+| Envio de mídia e edição do texto alternativo | Login | FORBIDDEN | FORBIDDEN | FORBIDDEN | Permitido | Permitido | Controle |
+| Exclusão de mídia | Login | FORBIDDEN | FORBIDDEN | FORBIDDEN | FORBIDDEN | Permitido | Controle |
+| Ler rascunho na prévia | Login | Sem o item | Sem o item | Lê | Lê | Não exercitado | Lê |
 
 "Permitido" não foi exercitado para `editor` e `super_admin` nesta spec: a permissão positiva deles está em
 `publication-matrix.test.ts` e nas jornadas `@cms`. Papéis e permissões seguem como proposta, até a Agência Benjamin
@@ -166,7 +185,8 @@ Roteiro manual, porque derruba o banco. A stack local foi parada com o site no a
 | `/api/v1/cases`, `/api/v1/cases/nao-existe`, job de reenvio | 500 `INTERNAL_ERROR`, mensagem fixa | Ver A-08 |
 | `/admin`, `/admin/leads` | 307 para o login | Sem Auth, fecha |
 | `/admin/login` | 200 | |
-| `/cases/nao-existe`, `/servicos/nao-existe` | 200 | Ver A-07 |
+| `/cases/nao-existe`, `/servicos/nao-existe` | 200, e a resposta **não termina** | Ver A-07 e A-10 |
+| `/cases/meridiano`, endereço sem cache | 200, em 7 s ou sem terminar | Ver A-10 |
 | `/rota-que-nao-existe`, `/api/v1/pages/home` | 404 | |
 | `/api/v1/health` | 200 | Ver A-09 |
 | Envio de formulário, com o PostgREST fora | Erro de serviço indisponível, com código de atendimento | Visto em situação real na [QA-05](qa-05-formularios.md), O-01 |
@@ -185,10 +205,11 @@ Nenhum é violação crítica, e nenhum foi corrigido aqui: ou são decisão de 
 | A-02 | **Arquivo do bucket público abre por URL direta.** Imagem de rascunho, se alguém tiver o endereço, é baixada sem RLS. É decisão registrada em `20261027000200_media_storage_restrito.sql`: o caminho tem UUID e a listagem está fechada | Baixa | `GET /storage/v1/object/public/media/<caminho>` | Manter. Rever se entrar material sigiloso de cliente |
 | A-03 | **O bucket confia no tipo declarado.** Com permissão de envio, um arquivo com script declarado como `image/png` entra no bucket se não passar pelo painel. Ele é servido como `image/png`, e o navegador não executa. A assinatura é conferida em `finalizeMediaUpload`, que não roda em envio direto à API | Baixa | Teste «o bucket respeita o tipo declarado…» | Manter. Limpeza de arquivo sem registro está em ADM-09 |
 | A-04 | **Função `use cache` responde a POST anônimo, para quem tiver o id.** O Next registra essas funções como Server Actions: `POST /` com `Next-Action: <id>` e corpo `["<slug>"]` executa a função, com argumento à escolha de quem chama. **Não é vazamento:** o id só existe no manifesto do servidor e não chega ao navegador (teste), e a função só lê com a chave anônima e a RLS, então só devolve o que está no ar (teste, com rascunho, arquivado e agendado). O risco é de custo: argumentos à vontade enchem o cache, e, com outro `Content-Type`, o pedido responde 404 e dispara uma regeneração da rota, com 8 linhas de `Unexpected cache miss` no log | Baixa | `POST /` com `Next-Action: <id de $$RSC_SERVER_CACHE em .next/server/server-reference-manifest.json>` | Acompanhar em versões do Next. Não guardar nada privado em `use cache`, como já é a regra. Limite de requisição fica para a plataforma |
-| A-05 | **`/api/v1/*` fica até 5 min na CDN** (`s-maxage=300`, mais `stale-while-revalidate`). Item arquivado sai do servidor na hora, como CT-36 mostra, mas a CDN pode servir a resposta anterior. **Não testado na Vercel** | Baixa | Conferir o cabeçalho `Cache-Control` | Medir em homologação (GO-02). Esta API não tem consumidor externo hoje |
+| A-05 | **`/api/v1/*` fica até 5 min na CDN** (`s-maxage=240`, mais `stale-while-revalidate=60`, desde a TECH-13). Item arquivado sai do servidor na hora, como CT-36 mostra, mas a CDN pode servir a resposta anterior. **Não testado na Vercel** | Baixa | Conferir o cabeçalho `Cache-Control` | Medir em homologação (GO-02). Esta API não tem consumidor externo hoje |
 | A-07 | **Com o banco fora, endereço inexistente responde 200.** `resolvePublicSlug` deixa passar quando a consulta falha, para uma indisponibilidade não derrubar páginas em cache, e a página mostra o "não encontrado" com status 200. Não mostra conteúdo oculto, a não ser que ele já estivesse no cache antes de sair do ar sem invalidar | Baixa | Parar o banco → `GET /cases/nao-existe` | Manter. É a escolha entre disponibilidade e 404 exato |
 | A-08 | **`/api/v1/*` sem cache responde 500, e não o 503 do contrato** ([contratos](../api/contratos.md), "Banco indisponível"), com o banco fora. O corpo é seguro. Causa provável, não confirmada: o `AppError` lançado dentro de `use cache` perde o tipo ao atravessar o cache | Baixa | Parar o banco → `GET /api/v1/cases` | Abrir issue. A correção não é trivial, e por isso não entrou aqui |
 | A-09 | **`/api/v1/health` responde 200 com o banco fora.** Diz que o site está de pé, e não que o conteúdo novo pode ser lido | Baixa | Parar o banco → `GET /api/v1/health` | Decidir em QA-11 se o monitoramento precisa conferir o banco |
+| A-10 | **Com o banco fora, detalhe sem cache pode deixar a resposta aberta.** `/cases/<endereço>` e `/servicos/<endereço>` respondem 200, mandam o esqueleto (cerca de 44 KB) e não encerram a conexão. Na versão testada, os 2 pedidos a endereço inexistente seguiam abertos aos 75 s, e `/cases/meridiano` terminou em 7 s numa rodada e passou de 40 s em outra. **Não vem do rebase:** em `6959c27`, 4 de 6 pedidos seguiam abertos aos 30 s. Não expõe conteúdo, e o `<body>` conferido não traz detalhe interno. Sob indisponibilidade, cada visita prende uma função até o limite da plataforma. Causa não investigada | Média, só com o banco fora | Parar o banco → `curl -m 30 /cases/nao-existe-1` | Abrir issue. Investigar como a falha em `use cache` termina a renderização em streaming. Não medido na Vercel |
 | A-06 | **`cases` e `media_assets` expõem `updated_by` à chave anônima** quando publicados. É só um UUID, sem nome nem e-mail, e `profiles` é fechada | Baixa | `GET /rest/v1/cases?select=updated_by&limit=1` | Aceitar, ou retirar a coluna do `select` do `anon`, com migration própria |
 
 ## 7. As provas falham quando a proteção é retirada
@@ -209,6 +230,9 @@ build temporário. Depois de reverter, as baterias da seção 9 voltaram a passa
 | `requirePermission` sem conferir o papel | Falham os 5 papéis e o N11: a resposta deixa de ser `FORBIDDEN` |
 | Proxy sem redirecionar quem não tem sessão | Falham as rotas. As telas respondem 200 com o esqueleto e **nenhum conteúdo do painel**: `requirePageAccess` segura como segunda barreira |
 | Rota interna devolvendo os erros do Zod | Falham os 9 testes de corpo inválido |
+| `requirePermission` sem conferir, com as ações de CTA e mídia já na lista | Falham os 5 papéis e o N11 |
+| Prévia sem `requirePageAccess` | **Os testes de prévia seguem passando:** sem o papel, a RLS não entrega rascunho, e a prévia vira "não encontrado". Segunda barreira real |
+| Prévia sem `requirePageAccess` e leitura aberta a quem tem sessão em `services`, `cases` e `pages` | Falham `pending` e desativado: o teste enxerga o vazamento quando as duas barreiras caem |
 | Sem o aviso de nova aba no crédito e com os CTAs de volta em `/contato` | Falham «/sobre: todos os links», «/contato: todos os links» e «o botão de contato some…» |
 
 **O teste de Server Action só vale com o formato certo.** Na primeira versão, a recusa vinha antes de ler os campos e
@@ -236,28 +260,32 @@ perfis existirem de fato foi conferido à mão no [relatório da issue](https://
 | B-01 | O crédito "NúcleoTech FECAP", no rodapé de todas as páginas, abria em nova aba sem avisar o leitor de tela. O relatório anterior da issue dava todos os externos como avisados | Abrir qualquer página → conferir o link do crédito | Baixa | `sr-only` no link (`site-footer.tsx`) | ✅ os 22 testes de varredura falhavam antes |
 | B-02 | Em `/contato`, "Fale com a gente" (cabeçalho) e "Envie uma mensagem" (rodapé) apontavam para a própria página. O relatório anterior só olhava o `<main>` | Abrir `/contato` → clicar no botão do cabeçalho | Baixa | `contact-cta.tsx` esconde as duas chamadas em `/contato` | ✅ falhava antes (seção 7); CT-51 |
 
-**O que falta.** O critério "alteração no painel reflete no site sem redeploy" está coberto para contato e redes
-(`jornada-configuracoes-cms.spec.ts`), textos (`jornada-site-cms.spec.ts`), cases (J2.5) e, aqui, CTAs pela rota de
-invalidação. A **tela** de CTAs é a ADM-11, em PR aberto, e o teste real pelo painel depende dela.
+**O que falta.** O critério "alteração no painel reflete no site sem redeploy" está coberto em ambiente local para CTAs pela
+tela (`jornada-home-cms.spec.ts`, ADM-11), para contato e redes (`jornada-configuracoes-cms.spec.ts`), textos
+(`jornada-site-cms.spec.ts`) e cases (J2.5). Falta repetir na homologação, porque a invalidação na Vercel não foi medida.
 
 ## 9. Resultado
 
+Em `b40318f`, sobre `4e0f40c`, com a máquina livre.
+
 | Bateria | Resultado em 04/11/2026 |
 | ------- | ----------------------- |
-| `npm run verify` | Verde: 91 arquivos e 1206 testes passando, 167 pulados (entre eles os 17 arquivos de integração, que rodam na linha abaixo); build de produção ok |
+| `npm run verify` | Verde: 102 arquivos e 1521 testes passando, 189 pulados (entre eles os 19 arquivos de integração, que rodam na bateria S); build de produção ok |
 | `npx supabase test db`, banco limpo | `Files=10, Tests=260, Result: PASS` |
-| `npm run test:supabase` | 17 arquivos, 165 de 165 |
-| `npm run test:e2e:cms`, todas as jornadas `@cms` | 361 de 361 |
-| `npm run test:e2e`, build sem Supabase, desktop e celular | 437 passaram, 0 falharam, 699 pulados (`@cms` e o que não depende da largura) |
-| As specs desta entrega e as três corrigidas, `@cms`, `--repeat-each=3` | 810 de 810 |
-| As specs desta entrega, sem Supabase, desktop e celular, `--repeat-each=3` | 654 passaram, 0 falharam, 1428 pulados |
-| `links-e-ctas.spec.ts`, build com Supabase, sem jornadas em paralelo | 27 passaram, 7 pulados |
+| `npm run test:supabase` | 19 arquivos, 187 de 187 |
+| `npm run test:e2e:cms`, todas as jornadas `@cms` e a passada de `@home-global` | 425 de 425 (421 em paralelo e 4 de `@home-global`, em série) |
+| `npm run test:e2e`, build limpo sem Supabase, desktop e celular | 446 passaram, 0 falharam, 818 pulados (`@cms` e o que não depende da largura) |
+| As specs desta entrega e as três corrigidas, `@cms`, `--repeat-each=3` | 906 de 906 |
+| As specs desta entrega, sem Supabase, desktop e celular, `--repeat-each=3` | 693 passaram, 0 falharam, 1605 pulados |
 
-As mutações da seção 7 e o roteiro da seção 5 são verificações à parte, feitas uma vez. As repetições rodaram no commit
-anterior, `b5b3c8c`. O último commit só acrescenta uma verificação de QA-03 e pula a varredura do build local quando o alvo é
-um ambiente publicado; a parte alterada foi repetida 3 vezes, sem falha.
+**Segunda expiração (TECH-13, #386).** Na rodada de `test:e2e:cms`, com `CONTENT_REVALIDATE_SECRET` definido e o log do
+servidor gravado: **o caminho executou.** 85 expirações em requisição própria (`source: second-pass-request`), 0 pelo caminho de reserva dentro do `after`, 0 recusadas, 0 falhas de requisição e 0 falhas de aquecimento. O contrato da rota também tem teste: `relatedPaths` externo é recusado, e `secondPass: true` responde 200.
+
+As mutações da seção 7 e o roteiro da seção 5 são verificações à parte, feitas uma vez. O roteiro da seção 5 foi repetido em `b40318f` para as rotas do site, da API e do painel; o job e o formulário ficaram da execução anterior ao rebase.
 
 ### Testes instáveis sob carga
+
+Medido antes do rebase, sobre `6959c27`, em carga alta provocada. As correções dos testes seguem iguais.
 
 `jornada-editor-cms.spec.ts` (J2.5), `home-cases-em-destaque.spec.ts` e o PDF de 8 MB de `jornada-midia-cms.spec.ts` tinham
 falhado em outra frente. Para reproduzir, servidor e navegador foram presos a 2 núcleos, com 24 processos ocupando os
@@ -284,10 +312,8 @@ registrou `content.cache.warm_failed` 2 vezes em 12 gravações, sem efeito na l
 
 ## 10. Pendências
 
-- **Next.js:** `npm audit --omit=dev` respondeu 0 em 04/11/2026, mas a [go/no-go](../operacao/go-no-go.md) (E6) registra um
-  release de segurança do Next.js, de 03/11/2026, que precisa entrar antes de publicar. Esta execução testou a versão 16.4.5.
+- **Next.js:** a execução usou a versão 16.4.5, que já traz o release de segurança, pelo #378. `npm audit --omit=dev` respondeu 0.
 - **Homologação:** repetir as seções 3 e 4 contra o Supabase de homologação (GO-02), com as chaves e o `config.toml` de lá.
-- **PRs abertos:** prévia protegida (ADM-14), exclusão de mídia (ADM-09) e CTAs (ADM-11) entram aqui quando chegarem à
-  `main`. A verificação falha sozinha para rota ou ação nova, até serem classificadas.
+- **Rota, Server Action ou tabela nova** falha a verificação sozinha, até ser classificada.
 - **Teste de invasão independente** e limite de requisições: fora do escopo do MVP.
 - **Aprovação da Benjamin** de quem acessa o quê (ADM-01 §5): os testes provam a proposta atual.
