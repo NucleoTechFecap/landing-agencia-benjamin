@@ -62,8 +62,8 @@ export default async function MediaDetailPage({ params, searchParams }: PageProp
     <>
       <CmsHeader title={name} trail={[{ label: "Biblioteca de mídia", href: "/admin/midia" }, { label: name }]} />
       <FlashMessage ok={query.ok} aviso={query.aviso} />
-      <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
-        <section className="space-y-6 rounded-3xl border-2 border-benja-noite/15 bg-white p-6">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="min-w-0 space-y-6 rounded-3xl border-2 border-benja-noite/15 bg-white p-6 wrap-anywhere">
           {isImage ? (
             <Image
               src={asset.src}
@@ -74,7 +74,12 @@ export default async function MediaDetailPage({ params, searchParams }: PageProp
               className="max-h-96 w-full rounded-2xl bg-benja-creme object-contain"
             />
           ) : (
-            <a href={asset.src} target="_blank" rel="noopener noreferrer" className="font-bold underline">
+            <a
+              href={asset.src}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block py-1 font-bold underline"
+            >
               Abrir PDF<span className="sr-only"> (abre em nova aba)</span>
             </a>
           )}
@@ -95,7 +100,7 @@ export default async function MediaDetailPage({ params, searchParams }: PageProp
             <p className="text-sm font-semibold text-benja-noite">{description}</p>
           )}
         </section>
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6 wrap-anywhere">
           <section aria-labelledby="usos" className="rounded-3xl border-2 border-benja-noite/15 bg-white p-5 text-sm">
             <h2 id="usos" className="font-bold">
               Onde é usado
@@ -106,7 +111,7 @@ export default async function MediaDetailPage({ params, searchParams }: PageProp
                   <li key={`${item.entity}-${item.id}-${item.place}`} className="space-y-1">
                     <Link
                       href={`${ADMIN_PATH[item.entity]}/${item.id}`}
-                      className="font-semibold text-benja-verde underline underline-offset-4"
+                      className="inline-block py-1 font-semibold text-benja-verde underline underline-offset-4"
                     >
                       {item.name}
                     </Link>

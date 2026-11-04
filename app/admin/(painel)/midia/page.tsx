@@ -108,7 +108,7 @@ export default async function MediaAdminPage({ searchParams }: PageProps<"/admin
                     </p>
                     <Link
                       href={`/admin/midia/${asset.id}`}
-                      className="font-bold text-benja-verde underline underline-offset-4"
+                      className="inline-block py-1 font-bold text-benja-verde underline underline-offset-4"
                     >
                       Detalhes<span className="sr-only"> de {mediaDisplayName(asset.path)}</span>
                     </Link>

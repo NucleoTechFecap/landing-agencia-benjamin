@@ -362,6 +362,7 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
     screen("case-novo", "cases/novo", /Novo case/),
     screen("case-editar", "cases/[id]", /^Case-/, () => `/admin/cases/${ids.case}`),
     screen("midia", "midia", /Biblioteca de mídia/),
+    screen("midia-detalhe", "midia/[id]", /\.(webp|png|jpe?g|avif)$/, () => `/admin/midia/${ids.media}`),
     screen("sem-permissao", "sem-permissao", /Sem permissão/),
     screen("acesso-pendente", "acesso-pendente", /Acesso pendente/),
     screen("nova-senha", "nova-senha", /Defina sua senha/),

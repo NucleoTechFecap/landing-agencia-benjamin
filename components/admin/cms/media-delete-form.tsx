@@ -59,7 +59,7 @@ export function MediaDeleteForm({
         <button
           type="submit"
           disabled={!ready || pending}
-          className="rounded-full border-2 border-benja-erro px-5 py-2.5 text-sm font-bold text-benja-erro transition hover:bg-benja-erro-fundo disabled:cursor-wait disabled:opacity-60"
+          className="min-h-11 rounded-full border-2 border-benja-erro px-5 py-2 text-sm font-bold text-benja-erro transition hover:bg-benja-erro-fundo disabled:cursor-wait disabled:opacity-60"
         >
           {pending ? "Excluindo…" : "Excluir arquivo"}
         </button>
