@@ -61,7 +61,8 @@ Tipos: **UNI** regra com armazenamento em memória · **INT** Supabase local · 
 | CT-20 | Chamada à Resend | URL, `Authorization`, `Idempotency-Key`, `reply_to`; exceção em 4xx e 5xx | Conforme, só com `fetch` falso | UNI | `notifier.test.ts` |
 | CT-21 | Logs sem dados pessoais | Nenhuma linha com e-mail, nome, mensagem ou IP | Conforme | UNI, E2E | `submission-service.test.ts`, seção 4 |
 | CT-22 | Aviso de privacidade acessível | Link nos 3 formulários e no rodapé; `/privacidade` responde 200 | Conforme; o texto segue como minuta (SEG-02) | E2E | `formularios.spec.ts` |
-| CT-23 | **Entrega real ao destinatário institucional** | E-mail chega ao responsável correto | **Não executado**: depende de CON-10 e do domínio no Resend | — | J3.3 |
+| CT-23 | Deploy de Production da Vercel sem armazenamento persistente, mesmo com `NEXT_PUBLIC_SITE_ENV` errado | Erro com código de atendimento, sem confirmação nem protocolo; texto mantido | Conforme (após B-05), em simulação local | UNI, E2E pontual | `deps.test.ts`, `store-policy.test.ts`, seção 4 |
+| CT-24 | **Entrega real ao destinatário institucional** | E-mail chega ao responsável correto | **Não executado**: depende de CON-10 e do domínio no Resend | — | J3.3 |
 
 ## 4. Execução contra o Postgres local
 
@@ -95,26 +96,34 @@ Baterias da mesma data:
 
 | Bateria | Resultado |
 | ------- | --------- |
-| `npm run verify` (unitários e integrados) | 874 passaram, 77 ignorados (precisam do Supabase local) |
-| `npm run test:supabase` | 75 de 75 |
+| `npm run verify` (unitários e integrados) | 959 passaram, 78 ignorados (precisam do Supabase local) |
+| `npm run test:supabase` | 76 de 76 |
+| `npx supabase test db` | 214 asserções em 9 arquivos, todas passaram |
 | `formularios.spec.ts`, 3 repetições, desktop e celular, em memória | 144 de 144 |
-| `npm run test:e2e` completo, uma repetição, em memória | 180 passaram, 52 ignorados (`@cms`, precisam do Supabase local) |
+| `npm run test:e2e` completo, uma repetição, em memória | 215 passaram, 77 ignorados (`@cms`, precisam do Supabase local) |
+
+**Simulação de Production sem armazenamento (CT-23).** O mesmo build, sem `VERCEL_ENV` na construção, com o processo
+de `next start` em `VERCEL_ENV=production` e sem Supabase. Com e sem JavaScript, o visitante viu "Serviço
+temporariamente indisponível" com código de atendimento, sem "Mensagem enviada!" nem protocolo e com o texto mantido.
+O log trouxe 2 `app.error.service_unavailable` com `reason: submission_store_not_configured`, e nenhum
+`forms.submission.persisted`. Foi uma simulação local: o site publicado não recebeu nenhum envio.
 
 ## 5. Defeitos encontrados
 
 Encontrados nesta frente, corrigidos e retestados no mesmo PR. B-01 e B-02 foram reproduzidos antes da correção, no
-navegador. B-03 tem teste que falhava antes.
+navegador. B-03 e B-05 têm testes que falhavam antes.
 
 | # | Defeito | Passos para reproduzir | Severidade | Correção | Reteste |
 | - | ------- | ---------------------- | ---------- | -------- | ------- |
 | B-01 | Sem JavaScript nada era enviado. Em `/feedback`, "Revise os campos destacados" sem campo destacado, porque os campos técnicos vazios eram recusados. Em `/contato`, "Carregando formulário…" para sempre, sem formulário | Desligar o JavaScript → abrir `/feedback` ou `/contato` | Alta | Vazio vale como ausente; páginas estáticas `/contato/projeto` e `/contato/mensagem` | ✅ E2E |
 | B-02 | Falha de rede derrubava a página: `error.tsx` ("Algo deu errado por aqui."), nenhum formulário na tela e texto perdido | Preencher → cortar a rede → enviar | Alta | Envio pelo `onSubmit` com `try/catch` | ✅ E2E |
 | B-03 | Falha ao gravar o resultado da notificação chegava ao visitante como erro, com o envio já salvo, e parava o reenvio em lote | `updateNotification` falhar depois do `insert` | Alta | Fica no log, e o envio é confirmado | ✅ UNI |
+| B-05 | Deploy de Production da Vercel construído sem as variáveis caía no armazenamento em memória: confirmação e protocolo para o visitante, e o dado perdido com a instância da função (RN-04). Conclusão por leitura de código e pela CSP publicada: **nenhum formulário foi enviado no site publicado** | `VERCEL_ENV=production`, sem Supabase e sem `NEXT_PUBLIC_SITE_ENV` | Alta | `allowsMemoryStore` recusa, com o erro de produção e homologação | ✅ UNI e simulação local |
 | B-04 | Sem validação no navegador, ao contrário dos documentos e da issue FORM-04 | Enviar com e-mail inválido e ver o POST | Média | `browser-validation.ts`, com o esquema do servidor | ✅ E2E |
 
 ## 6. Pendências e riscos
 
-- **CT-23 (entrega real):** repetir em homologação quando CON-10 e o domínio no Resend estiverem resolvidos (GO-02).
+- **CT-24 (entrega real):** repetir em homologação quando CON-10 e o domínio no Resend estiverem resolvidos (GO-02).
 - **Aprovações da agência:** campos (FORM-01), aviso de privacidade (SEG-02) e destinatários (CON-10) seguem
   pendentes. Esta execução usou o que está proposto e não os trata como aprovados.
 - **Sucesso falso do antispam e limite por IP na rede da FECAP:** registrados, sem correção, em
