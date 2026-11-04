@@ -21,6 +21,8 @@ npm run test                              # inclui os testes integrados (Vitest)
 
 ## 2. Matriz E2E
 
+A ligação de todos os testes com os critérios de aceite está na [matriz de testes](matriz-de-testes.md) (QA-01).
+
 Legenda de tipo: **E2E** navegador real · **INT** teste integrado de domínio/serviço · **MAN** roteiro manual em homologação.
 
 ### J1 — Navegação → serviço → case → contato (visitante)

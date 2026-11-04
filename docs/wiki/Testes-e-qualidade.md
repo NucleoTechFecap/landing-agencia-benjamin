@@ -27,6 +27,7 @@ apontado para o Supabase local.
 
 ## Documentos de qualidade
 
+- [Matriz de testes alinhada aos critérios de aceite (QA-01)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/qualidade/matriz-de-testes.md)
 - [Jornadas críticas e testes E2E](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/qualidade/jornadas-e2e.md)
 - [Testes de CRUD e estados de publicação do CMS (QA-04)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/qualidade/qa-04-cms.md)
 - [Roteiro e checklist de homologação da Benjamin (QA-08)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/qualidade/homologacao.md)
