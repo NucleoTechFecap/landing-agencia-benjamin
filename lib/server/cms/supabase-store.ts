@@ -26,6 +26,7 @@
  04/11/2026 Vinícius Nishimura Reis  Leitura e gravação da configuração institucional (ADM-10).
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
  04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
+ 04/11/2026 Vinícius Nishimura Reis  Conflito de versão também pelo código da DBX-04 (#372).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -93,7 +94,9 @@ export function toCmsError(error: PostgrestError, context: { table: string; oper
       });
     case "42501":
       return new AppError("FORBIDDEN", { internal });
+    // Versão desatualizada: 40001 nas funções de hoje, BJ002 nas que a DBX-04 (#372) redefine. Os dois valem.
     case "40001":
+    case "BJ002":
       return new AppError("CONFLICT", { internal });
     case "P0002":
       return new AppError("NOT_FOUND", { internal });
