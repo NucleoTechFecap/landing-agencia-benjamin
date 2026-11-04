@@ -45,7 +45,7 @@ Legenda de tipo: **E2E** navegador real · **INT** teste integrado de domínio/s
 | J2.2 | Viewer não publica; case incompleto não publica | Neg | INT | Coordenação | ✅ automatizado |
 | J2.3 | Arquivar case → some do site e CTA usa fallback | Pos | INT | CMS | ✅ automatizado |
 | J2.4 | Painel sem sessão redireciona ao login com `next` | Neg | E2E | Coordenação | ✅ automatizado |
-| J2.5 | Login → novo case (slug gerado) → rascunho invisível (404) → completar → publicar → página no ar em ≤ 5 s → editar → página atualizada → arquivar → 404 | Pos | E2E `@cms` (Supabase local) + MAN em homologação | CMS (Murilo) + coordenação | ✅ automatizado (`jornada-editor-cms.spec.ts`) |
+| J2.5 | Login → novo case (slug gerado) → rascunho invisível (404) → completar → publicar → página no ar em ≤ 5 s, recarregando (a primeira requisição pode vir do pré-render anterior, ADR-0006) → editar → página atualizada → arquivar → 404 | Pos | E2E `@cms` (Supabase local) + MAN em homologação | CMS (Murilo) + coordenação | ✅ automatizado (`jornada-editor-cms.spec.ts`) |
 | J2.6 | Leitor (`viewer`) vê o CMS sem "Novo case" e `/admin/cases/novo` → "sem permissão" | Neg | E2E `@cms` | Coordenação | ✅ automatizado |
 | J2.7 | Menu do painel por papel: página atual marcada, "Em construção" sem link, abrir e fechar no celular por toque e teclado (ADM-04) | Pos/Neg | E2E `@cms` | Coordenação | ✅ automatizado (`painel-menu-e-visao-geral.spec.ts`) |
 | J2.8 | Visão geral: fila de revisão, leitor sem edição, editor completa o rascunho e ele sai da fila; visitante e conta pendente não leem (ADM-18) | Pos/Neg | E2E `@cms` + INT | Coordenação | ✅ automatizado (`painel-menu-e-visao-geral.spec.ts`, `cms-visao-geral.test.ts`) |
@@ -68,6 +68,7 @@ Legenda de tipo: **E2E** navegador real · **INT** teste integrado de domínio/s
 | J3.11 | Conteúdo hostil é só texto, `//evil.com` não vira link, falha de e-mail fica à vista, entrada malformada não expõe erro | Neg | E2E `@cms` | Coordenação | ✅ automatizado |
 | J3.12 | `admin` só exclui depois de arquivar, com a trilha gravada | Pos | E2E `@cms` | Coordenação | ✅ automatizado |
 | J3.13 | Ao sair, o envio aberto não fica na página, nem escondido | Neg | E2E `@cms` | Coordenação | ✅ automatizado |
+| J3.14 | Rota do job: pendente entregue uma vez, falha antiga reenviada, falha recente espera, esgotada fica de fora (QA-05) | Pos/Neg | E2E `@cms` (`job-de-notificacoes.spec.ts`) | Formulários | ✅ automatizado |
 
 Registro da execução: [FORM-10](form-10-entrega-de-contatos.md). Os envios do E2E contam para o limite real de
 5 por IP em 10 min, que não é afrouxado: `formularios.spec.ts` dá a cada teste um `x-forwarded-for` próprio. Em
