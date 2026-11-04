@@ -288,6 +288,13 @@ test.describe("QA-06 · rotas internas com o token certo @cms", () => {
     ["slug enorme", JSON.stringify({ entity: "case", slug: "a".repeat(5000) })],
     ["objeto no lugar de texto", JSON.stringify({ entity: { $ne: null } })],
     ["protótipo", '{"__proto__":{"admin":true},"entity":"x"}'],
+    // O aquecimento faz o próprio servidor pedir estes caminhos: o que vem de fora não pode virar requisição.
+    ["aquecimento em site externo", JSON.stringify({ entity: "case", relatedPaths: ["https://invasor.test/a"] })],
+    ["aquecimento sem esquema", JSON.stringify({ entity: "case", relatedPaths: ["//invasor.test/a"] })],
+    ["aquecimento no painel", JSON.stringify({ entity: "case", relatedPaths: ["/admin/leads"] })],
+    ["aquecimento com travessia", JSON.stringify({ entity: "case", relatedPaths: ["/cases/../admin/leads"] })],
+    ["aquecimento demais", JSON.stringify({ entity: "case", relatedPaths: Array(13).fill("/cases/meridiano") })],
+    ["segunda expiração falsa", JSON.stringify({ entity: "case", secondPass: false })],
   ] as const) {
     test(`corpo inválido (${label}): 400 com mensagem fixa`, async ({ baseURL }) => {
       const response = await rawRequest(baseURL!, "/api/internal/revalidate", {
@@ -309,6 +316,16 @@ test.describe("QA-06 · rotas internas com o token certo @cms", () => {
       method: "POST",
       headers: { authorization: `Bearer ${REVALIDATE_SECRET}`, "content-type": "application/json" },
       body: JSON.stringify({ entity: "settings" }),
+    });
+    expect(response.status).toBe(200);
+    expect(JSON.parse(response.body).data.invalidated.length).toBeGreaterThan(0);
+  });
+
+  test("controle: a segunda expiração, com o token certo, responde sem agendar outra", async ({ baseURL }) => {
+    const response = await rawRequest(baseURL!, "/api/internal/revalidate", {
+      method: "POST",
+      headers: { authorization: `Bearer ${REVALIDATE_SECRET}`, "content-type": "application/json" },
+      body: JSON.stringify({ entity: "settings", secondPass: true }),
     });
     expect(response.status).toBe(200);
     expect(JSON.parse(response.body).data.invalidated.length).toBeGreaterThan(0);

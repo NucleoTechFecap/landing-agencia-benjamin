@@ -191,6 +191,10 @@ test.describe("QA-06 · rotas do painel sem sessão @cms", () => {
     "/admin/leads/",
     "/_next/data/x/admin/leads.json",
     "/_next/static/../../admin/leads",
+    "/admin/previa/servico/00000000-0000-4000-8000-000000000000.rsc",
+    "/admin/login/..%2Fprevia%2Fservico%2F00000000-0000-4000-8000-000000000000",
+    "/admin/ctas.rsc",
+    "/admin/midia/00000000-0000-4000-8000-000000000000.rsc",
   ]) {
     test(`escrita alternativa não abre o painel: ${path}`, async ({ baseURL }) => {
       let response = await rawRequest(baseURL!, path);
@@ -274,6 +278,12 @@ interface Mass {
   pageDraft: string;
   pageArchived: string;
   block: string;
+  cta: string;
+  ctaDraft: string;
+  ctaArchived: string;
+  /** Sem uso em nenhum conteúdo: é o que o painel deixa editar e excluir (ADM-09). */
+  mediaFree: string;
+  mediaDisposable: string;
   leadNew: string;
   leadArchived: string;
 }
@@ -291,7 +301,8 @@ const WATCHED_COLUMNS: Record<string, (keyof Mass)[]> = {
   cases: ["case", "caseDraft", "caseArchived"],
   pages: ["page", "pageDraft", "pageArchived"],
   blocks: ["block"],
-  media_assets: ["media"],
+  ctas: ["cta", "ctaDraft", "ctaArchived"],
+  media_assets: ["media", "mediaFree", "mediaDisposable"],
   form_submissions: ["leadNew", "leadArchived"],
 };
 
@@ -394,6 +405,27 @@ async function seedMass(client: SupabaseClient, suffix: string): Promise<Mass> {
   // Página sem bloco não pode ser publicada: o controle de "publicar" depende deste.
   await insert("blocks", { page_id: pageDraft, type: "rich-text", sort_order: 0, content: blockContent });
 
+  // Rodapé: a posição não aparece na Home, para a massa não atrapalhar as jornadas em paralelo.
+  const ctaValues = (label: string) => ({
+    label,
+    placement: "footer",
+    target_kind: "internal",
+    target_path: "/feedback",
+  });
+  const cta = await insert("ctas", { ...published, ...ctaValues(`CTA ${suffix}`) });
+  const ctaDraft = await insert("ctas", ctaValues(`CTA rascunho ${suffix}`));
+  const ctaArchived = await insert("ctas", { ...archived, ...ctaValues(`CTA arquivado ${suffix}`) });
+  const looseMedia = (name: string) =>
+    insert("media_assets", {
+      path: `/brand/cases/${name}-${suffix}.webp`,
+      mime_type: "image/webp",
+      width: 1200,
+      height: 750,
+      alt_text: `Imagem sem uso ${suffix}`,
+    });
+  const mediaFree = await looseMedia("solta");
+  const mediaDisposable = await looseMedia("descartavel");
+
   const lead = (status: string) =>
     insert("form_submissions", {
       id: crypto.randomUUID(),
@@ -424,6 +456,11 @@ async function seedMass(client: SupabaseClient, suffix: string): Promise<Mass> {
     pageDraft,
     pageArchived,
     block,
+    cta,
+    ctaDraft,
+    ctaArchived,
+    mediaFree,
+    mediaDisposable,
     leadNew: await lead("novo"),
     leadArchived: await lead("arquivado"),
   };
@@ -431,7 +468,7 @@ async function seedMass(client: SupabaseClient, suffix: string): Promise<Mass> {
 
 async function removeMass(client: SupabaseClient, mass: Mass | undefined) {
   if (!mass) return;
-  for (const table of ["blocks", "pages", "cases", "services", "case_categories", "areas", "media_assets"]) {
+  for (const table of ["ctas", "blocks", "pages", "cases", "services", "case_categories", "areas", "media_assets"]) {
     const ids = (WATCHED_COLUMNS[table] ?? []).map((key) => mass[key]);
     await client.from(table).delete().in("id", ids);
   }
@@ -439,6 +476,7 @@ async function removeMass(client: SupabaseClient, mass: Mass | undefined) {
   for (const table of ["areas", "services", "case_categories", "cases", "pages"]) {
     await client.from(table).delete().like("slug", `%invasao-%${mass.suffix}%`);
   }
+  await client.from("ctas").delete().eq("label", `Invasao ${mass.suffix}`);
 }
 
 /** Estado completo das linhas da massa: qualquer gravação muda `updated_at`, mesmo sem mudar o texto. */
@@ -460,6 +498,8 @@ async function snapshotOf(client: SupabaseClient, mass: Mass) {
     const { data } = await client.from(table).select("id").like("slug", `%invasao-%${mass.suffix}%`);
     rows[`${table}: criados`] = data;
   }
+  const { data: ctas } = await client.from("ctas").select("id").eq("label", `Invasao ${mass.suffix}`);
+  rows["ctas: criados"] = ctas;
   const { data: blocks } = await client.from("blocks").select("id").eq("page_id", mass.page);
   rows["blocks: da página"] = blocks;
   const { data: media } = await client.from("media_assets").select("id").like("path", `%invasao%${mass.suffix}%`);
@@ -497,13 +537,13 @@ interface Attempt {
 }
 
 interface Entity {
-  key: "area" | "service" | "category" | "case" | "page";
+  key: "area" | "service" | "category" | "case" | "page" | "cta";
   table: string;
   save: string;
   command: string;
   base: string;
   newPath: string;
-  labelColumn: "name" | "title";
+  labelColumn: "name" | "title" | "label";
   values: (mass: Mass, label: string, slug: string) => Fields;
 }
 
@@ -557,6 +597,17 @@ const ENTITIES: Entity[] = [
     labelColumn: "name",
     values: (_mass, label, slug) => ({ name: label, slug, ...TEXT }),
   },
+  // CTA não tem endereço próprio: o criado é achado pelo texto do botão.
+  {
+    key: "cta",
+    table: "ctas",
+    save: "saveCta",
+    command: "ctaCommand",
+    base: "/admin/ctas",
+    newPath: "/admin/ctas/novo",
+    labelColumn: "label",
+    values: (_mass, label) => ({ label, placement: "footer", targetKind: "internal", targetPath: "/feedback" }),
+  },
   {
     key: "page",
     table: "pages",
@@ -578,7 +629,7 @@ function contentAttempts(entity: Entity): Attempt[] {
   const draft = (mass: Mass) => mass[`${key}Draft`];
   const archived = (mass: Mass) => mass[`${key}Archived`];
   const slugOf = async (client: SupabaseClient, id: string) =>
-    (await client.from(table).select("slug").eq("id", id).single()).data!.slug as string;
+    key === "cta" ? "" : ((await client.from(table).select("slug").eq("id", id).single()).data!.slug as string);
   const expectStatus = async (client: SupabaseClient, id: string, status: string) =>
     expect(await statusOf(client, table, id), `${table} ${status}`).toBe(status);
 
@@ -590,7 +641,10 @@ function contentAttempts(entity: Entity): Attempt[] {
       path: () => newPath,
       fields: async (mass) => entity.values(mass, `Invasao ${mass.suffix}`, `invasao-${key}-${mass.suffix}`),
       control: async (mass, client) => {
-        const { data } = await client.from(table).select("id").eq("slug", `invasao-${key}-${mass.suffix}`);
+        const created = client.from(table).select("id");
+        const { data } = await (key === "cta"
+          ? created.eq("label", `Invasao ${mass.suffix}`)
+          : created.eq("slug", `invasao-${key}-${mass.suffix}`));
         expect(data, `${save} criou`).toHaveLength(1);
       },
     },
@@ -800,6 +854,32 @@ const OTHER_ATTEMPTS: Attempt[] = [
     // O arquivo não existe no bucket: passar da guarda é chegar à conferência dos bytes.
     control: async (_mass, _client, response) => expect(await response.text()).not.toContain("FORBIDDEN"),
   },
+  {
+    label: "saveMediaDetails",
+    action: "saveMediaDetails",
+    denied: CONTENT_DENIED,
+    path: (mass) => `/admin/midia/${mass.mediaFree}`,
+    fields: async (mass, client) => ({
+      id: mass.mediaFree,
+      expectedUpdatedAt: await versionOf(client, "media_assets", mass.mediaFree),
+      alt: `Invasao ${mass.suffix}`,
+    }),
+    control: async (mass, client) => {
+      const { data } = await client.from("media_assets").select("alt_text").eq("id", mass.mediaFree).single();
+      expect(data!.alt_text).toBe(`Invasao ${mass.suffix}`);
+    },
+  },
+  {
+    label: "deleteMediaAsset",
+    action: "deleteMediaAsset",
+    denied: DELETE_DENIED,
+    path: (mass) => `/admin/midia/${mass.mediaDisposable}`,
+    fields: async (mass) => ({ id: mass.mediaDisposable }),
+    control: async (mass, client) => {
+      const { data } = await client.from("media_assets").select("id").eq("id", mass.mediaDisposable);
+      expect(data, "arquivo excluído").toEqual([]);
+    },
+  },
 ];
 
 const ATTEMPTS: Attempt[] = [...ENTITIES.flatMap(contentAttempts), ...OTHER_ATTEMPTS];
@@ -807,7 +887,7 @@ const ATTEMPTS: Attempt[] = [...ENTITIES.flatMap(contentAttempts), ...OTHER_ATTE
 /** Ações de autenticação não têm recurso a proteger: têm verificação própria, mais abaixo. */
 const AUTH_ACTIONS = new Set(["signIn", "signOut", "requestPasswordReset", "updatePassword"]);
 
-test.describe("QA-06 · Server Actions do painel @cms", () => {
+test.describe("QA-06 · Server Actions e prévia do painel @cms", () => {
   test.skip(!SUPABASE_URL || !SERVICE_KEY || !ANON_KEY, REQUIRES_SUPABASE);
   test.skip(({ isMobile }) => isMobile, "A autorização não depende do tamanho da tela.");
   test.setTimeout(120_000);
@@ -1066,6 +1146,132 @@ test.describe("QA-06 · Server Actions do painel @cms", () => {
       await session.dispose();
       await deleteAccounts(client, [account]);
     }
+  });
+
+  test.describe("prévia protegida (ADM-14)", () => {
+    /** Texto de cada item oculto da massa, por endereço de prévia: é o que não pode sair para quem não pode ler. */
+    const previews = (mass: Mass) => [
+      { path: `/admin/previa/servico/${mass.serviceDraft}`, text: `Serviço rascunho ${mass.suffix}` },
+      { path: `/admin/previa/servico/${mass.serviceArchived}`, text: `Serviço arquivado ${mass.suffix}` },
+      { path: `/admin/previa/case/${mass.caseDraft}`, text: `Case rascunho ${mass.suffix}` },
+      { path: `/admin/previa/case/${mass.caseArchived}`, text: `Case arquivado ${mass.suffix}` },
+      { path: `/admin/previa/pagina/${mass.pageDraft}`, text: `Página rascunho ${mass.suffix}` },
+      { path: `/admin/previa/pagina/${mass.pageArchived}`, text: `Página arquivada ${mass.suffix}` },
+    ];
+    const VARIANTS: Record<string, string>[] = [
+      {},
+      { RSC: "1" },
+      { RSC: "1", "Next-Router-Prefetch": "1" },
+      { Accept: "text/x-component" },
+    ];
+
+    test("sem sessão, nenhuma prévia entrega o item", async ({ baseURL }) => {
+      for (const { path, text } of previews(mass)) {
+        for (const headers of VARIANTS) {
+          const response = await rawRequest(baseURL!, path, { headers });
+          expect(response.status, path).toBe(307);
+          expect(response.headers.location, path).toMatch(/^\/admin\/login/);
+          expect(response.body.includes(text), `${path} ${JSON.stringify(headers)}`).toBe(false);
+        }
+      }
+    });
+
+    for (const role of ["pending", "desativado"] as const) {
+      test(`${role}, com sessão válida, não lê rascunho nem arquivado`, async () => {
+        for (const { path, text } of previews(mass)) {
+          for (const headers of VARIANTS) {
+            const response = await sessions[role]!.get(path, { headers, maxRedirects: 0 });
+            expect((await response.text()).includes(text), `${path} ${JSON.stringify(headers)}`).toBe(false);
+          }
+          // Seguindo o desvio, a tela é o aviso de acesso pendente, sem o conteúdo.
+          const landed = await sessions[role]!.get(path);
+          expect((await landed.text()).includes(text), path).toBe(false);
+        }
+      });
+    }
+
+    test("controle: quem tem leitura vê o item, para a recusa acima valer", async () => {
+      for (const role of ["viewer", "editor", "admin"] as const) {
+        for (const { path, text } of previews(mass)) {
+          const response = await sessions[role]!.get(path);
+          expect(response.status(), `${role} ${path}`).toBe(200);
+          expect(await response.text(), `${role} ${path}`).toContain(text);
+        }
+      }
+    });
+
+    test("tipo fora da lista, id de outro tipo e id malformado não abrem nada", async () => {
+      const editor = sessions.editor!;
+      for (const [path, text] of [
+        [`/admin/previa/lead/${mass.leadNew}`, "teste.e2e@exemplo.com"],
+        [`/admin/previa/profiles/${accounts.admin!.id}`, accounts.admin!.email],
+        [`/admin/previa/area/${mass.areaDraft}`, `Área rascunho ${mass.suffix}`],
+        [`/admin/previa/cta/${mass.ctaDraft}`, `CTA rascunho ${mass.suffix}`],
+        [`/admin/previa/__proto__/${mass.caseDraft}`, `Case rascunho ${mass.suffix}`],
+        [`/admin/previa/servico/${mass.caseDraft}`, `Case rascunho ${mass.suffix}`],
+        [`/admin/previa/case/${mass.serviceDraft}`, `Serviço rascunho ${mass.suffix}`],
+        [`/admin/previa/case/%27%20OR%201%3D1--`, `Case rascunho ${mass.suffix}`],
+      ] as const) {
+        const response = await editor.get(path);
+        const body = await response.text();
+        expect(body.includes(text), path).toBe(false);
+        expect(body, path).not.toMatch(/node_modules|\.next\/server|PGRST\d|invalid input syntax/);
+      }
+    });
+
+    test("a resposta da prévia não fica em cache, e visitante não a recebe depois", async ({ baseURL }) => {
+      const [{ path, text }] = previews(mass);
+      const opened = await sessions.editor!.get(path);
+      expect(await opened.text()).toContain(text);
+      expect(opened.headers()["cache-control"] ?? "").toMatch(/no-store|private/);
+      expect(opened.headers()["x-robots-tag"] ?? "").toContain("noindex");
+      expect(opened.headers()["x-nextjs-cache"]).not.toBe("HIT");
+      const after = await rawRequest(baseURL!, path);
+      expect(after.status).toBe(307);
+      expect(after.body.includes(text)).toBe(false);
+    });
+
+    test("com a prévia aberta, o rascunho não sai por /api/v1 nem por URL pública", async ({ baseURL }) => {
+      // Abre todas antes: se a prévia alimentasse o cache público, o texto apareceria nas leituras abaixo.
+      for (const { path, text } of previews(mass)) {
+        expect(await (await sessions.editor!.get(path)).text(), path).toContain(text);
+      }
+      const texts = previews(mass).map(({ text }) => text);
+      const { suffix } = mass;
+      const expectNothing = (body: string, label: string) => {
+        for (const text of texts) expect(body.includes(text), `${label}: ${text}`).toBe(false);
+      };
+      for (const path of [
+        `/servicos/acesso-servico-rascunho-${suffix}`,
+        `/servicos/acesso-servico-arquivado-${suffix}`,
+        `/cases/acesso-case-rascunho-${suffix}`,
+        `/cases/acesso-case-arquivado-${suffix}`,
+        `/api/v1/services/acesso-servico-rascunho-${suffix}`,
+        `/api/v1/services/acesso-servico-arquivado-${suffix}`,
+        `/api/v1/cases/acesso-case-rascunho-${suffix}`,
+        `/api/v1/cases/acesso-case-arquivado-${suffix}`,
+        `/api/v1/pages/acesso-pagina-rascunho-${suffix}`,
+        `/api/v1/pages/acesso-pagina-arquivada-${suffix}`,
+      ]) {
+        const response = await rawRequest(baseURL!, path);
+        expect(response.status, path).toBe(404);
+        expectNothing(response.body, path);
+      }
+      for (const path of [
+        "/",
+        "/servicos",
+        "/cases",
+        "/sitemap.xml",
+        "/llms.txt",
+        "/llms-full.txt",
+        "/api/v1/services?pageSize=50",
+        "/api/v1/cases?pageSize=50",
+      ]) {
+        const response = await rawRequest(baseURL!, path);
+        expect(response.status, path).toBe(200);
+        expectNothing(response.body, path);
+      }
+    });
   });
 
   test.describe("controle: com o papel certo, o mesmo pedido grava", () => {
