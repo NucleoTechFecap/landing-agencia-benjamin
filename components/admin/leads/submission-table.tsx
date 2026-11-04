@@ -20,6 +20,7 @@
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
  04/11/2026 Vinícius Nishimura Reis  Tabela sem rolagem lateral, alvos de toque e texto longo (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,24 +38,19 @@ import {
 } from "@/lib/domain/forms/inbox";
 import { SUBMISSION_KIND_LABELS } from "@/lib/domain/forms/schemas";
 import { formatDateTime } from "../cms/cms-table";
+import { badgeBase } from "../cms/status-badge";
 
 const STATUS_TONES: Record<SubmissionStatus, string> = {
   novo: "border-benja-laranja bg-white text-benja-noite",
   em_atendimento: "border-benja-azul bg-white text-benja-azul",
   respondido: "border-benja-verde bg-benja-claro text-benja-verde",
   lido: "border-benja-verde bg-benja-claro text-benja-verde",
-  arquivado: "border-benja-grafite/30 bg-benja-creme text-benja-grafite/80",
+  arquivado: "border-studio-linha bg-studio-realce text-studio-suave",
 };
 
 /** Status de atendimento em texto, não só em cor. */
 export function AttendanceBadge({ status }: { status: SubmissionStatus }) {
-  return (
-    <span
-      className={`inline-block rounded-full border-2 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap ${STATUS_TONES[status]}`}
-    >
-      {SUBMISSION_STATUS_LABELS[status]}
-    </span>
-  );
+  return <span className={`${badgeBase} ${STATUS_TONES[status]}`}>{SUBMISSION_STATUS_LABELS[status]}</span>;
 }
 
 const NOTIFICATION_TONES: Record<NotificationStatus, string> = {
@@ -66,13 +62,7 @@ const NOTIFICATION_TONES: Record<NotificationStatus, string> = {
 
 /** Situação do e-mail interno em texto, não só em cor (INT-07). */
 export function NotificationBadge({ status }: { status: NotificationStatus }) {
-  return (
-    <span
-      className={`inline-block rounded-full border-2 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap ${NOTIFICATION_TONES[status]}`}
-    >
-      {NOTIFICATION_STATUS_LABELS[status]}
-    </span>
-  );
+  return <span className={`${badgeBase} ${NOTIFICATION_TONES[status]}`}>{NOTIFICATION_STATUS_LABELS[status]}</span>;
 }
 
 /**
@@ -87,19 +77,17 @@ export function SubmissionTable({
   inbox: InboxPage;
   services: readonly { slug: string; name: string }[];
 }) {
-  const column = "hidden px-3 py-3 md:table-cell";
+  const column = "hidden px-4 py-3 md:table-cell";
   return (
     // `relative`: o texto sr-only é absoluto e, sem isso, escapa do quadro e alarga a página no celular.
-    <div className="relative overflow-x-auto rounded-3xl border-2 border-benja-noite/15 bg-white">
-      <table className="w-full text-left text-sm">
+    <div className="studio-card relative overflow-x-auto">
+      <table className="studio-tabela">
         <caption className="sr-only">Envios recebidos, do mais novo ao mais antigo</caption>
-        <thead className="border-b-2 border-benja-noite/10 text-xs tracking-wider text-benja-grafite/80 uppercase">
+        <thead>
           <tr>
-            <th scope="col" className="px-3 py-3">
-              Protocolo
-            </th>
+            <th scope="col">Protocolo</th>
             {["Nome", "Tipo e categoria", "Status", "Notificação", "Recebido em"].map((name) => (
-              <th key={name} scope="col" className={column}>
+              <th key={name} scope="col" className="hidden md:table-cell">
                 {name}
               </th>
             ))}
@@ -111,8 +99,8 @@ export function SubmissionTable({
             const type = `${SUBMISSION_KIND_LABELS[item.kind]} · ${categoryLabel(item.category, services)}`;
             const received = formatDateTime(item.createdAt);
             return (
-              <tr key={item.id} className="border-b border-benja-noite/5 align-top last:border-0">
-                <td className="px-3 py-3 font-semibold">
+              <tr key={item.id} className="align-top">
+                <td className="px-4 py-3 font-semibold">
                   <Link
                     href={`${INBOX_PATH}/${item.id}`}
                     prefetch={false}
@@ -127,7 +115,7 @@ export function SubmissionTable({
                       <AttendanceBadge status={item.status} />
                       <NotificationBadge status={item.notificationStatus} />
                     </p>
-                    <p className="text-benja-grafite/80">Recebido em {received}</p>
+                    <p className="text-studio-suave">Recebido em {received}</p>
                   </div>
                 </td>
                 <td className={`${column} wrap-anywhere`}>{name}</td>
@@ -138,7 +126,7 @@ export function SubmissionTable({
                 <td className={column}>
                   <NotificationBadge status={item.notificationStatus} />
                 </td>
-                <td className={`${column} text-benja-grafite/80`}>{received}</td>
+                <td className={`${column} text-studio-suave`}>{received}</td>
               </tr>
             );
           })}
@@ -150,7 +138,7 @@ export function SubmissionTable({
 
 /** Navegação entre páginas, mantendo os filtros aplicados. */
 export function InboxPagination({ inbox, query }: { inbox: InboxPage; query: InboxQuery }) {
-  const link = "rounded-full border-2 border-benja-verde px-4 py-1.5 font-bold text-benja-verde hover:bg-benja-claro";
+  const link = "studio-btn studio-btn-secundario";
   return (
     <nav aria-label="Páginas da lista" className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
       <p aria-live="polite">

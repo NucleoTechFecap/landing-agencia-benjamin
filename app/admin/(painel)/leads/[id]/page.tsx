@@ -21,6 +21,7 @@
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
  04/11/2026 Vinícius Nishimura Reis  Exclusão de envio arquivado, a pedido do titular (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Tabela sem rolagem lateral, alvos de toque e texto longo (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -55,10 +56,7 @@ export default async function SubmissionPage({ params, searchParams }: PageProps
   if (!record) notFound();
   return (
     <>
-      <CmsHeader
-        title={record.protocol}
-        trail={[{ label: "Leads e feedbacks", href: INBOX_PATH }, { label: record.protocol }]}
-      />
+      <CmsHeader title={record.protocol} />
       <FlashMessage ok={query.ok} />
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <SubmissionContent record={record} />

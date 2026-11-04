@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-18).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -61,11 +62,7 @@ function NoteList({ title, notes }: { title: string; notes: string[] }) {
 
 function EditLink({ item, className = "" }: { item: OverviewItem; className?: string }) {
   return (
-    <Link
-      href={item.editHref}
-      prefetch={false}
-      className={`inline-flex min-h-11 items-center rounded-full border-2 border-benja-verde px-5 py-2 text-sm font-bold text-benja-verde hover:bg-benja-claro ${className}`}
-    >
+    <Link href={item.editHref} prefetch={false} className={`studio-btn studio-btn-secundario ${className}`}>
       {item.canEdit ? "Editar" : "Ver"}
       <span className="sr-only"> {item.title}</span>
     </Link>
@@ -74,12 +71,12 @@ function EditLink({ item, className = "" }: { item: OverviewItem; className?: st
 
 function ReviewItem({ item }: { item: OverviewItem }) {
   return (
-    <li className="rounded-2xl border-2 border-benja-noite/10 p-4">
+    <li className="rounded-studio-md border border-studio-linha p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-bold tracking-wider text-benja-grafite/80 uppercase">{item.groupLabel}</p>
+          <p className="studio-rotulo">{item.groupLabel}</p>
           <h3 className="mt-1 font-bold wrap-anywhere">{item.title}</h3>
-          <p className="mt-1 text-xs text-benja-grafite/80">Atualizado em {formatDateTime(item.updatedAt)}</p>
+          <p className="mt-1 text-xs text-studio-suave">Atualizado em {formatDateTime(item.updatedAt)}</p>
         </div>
         <StatusBadge status={item.status} provisional={item.provisional} />
       </div>
@@ -102,7 +99,7 @@ function ReviewItem({ item }: { item: OverviewItem }) {
 function ProvisionalList({ items }: { items: OverviewItem[] }) {
   if (!items.length) return null;
   return (
-    <details className="mt-4 rounded-2xl border-2 border-benja-noite/10 px-4 py-1.5">
+    <details className="mt-4 rounded-studio-md border border-studio-linha px-4 py-1.5">
       <summary className="cursor-pointer py-2.5 font-bold">
         Textos provisórios, sem outra pendência ({items.length})
       </summary>
@@ -113,7 +110,7 @@ function ProvisionalList({ items }: { items: OverviewItem[] }) {
         {items.map((item) => (
           <li key={item.editHref} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
             <div className="min-w-0">
-              <p className="text-xs font-bold tracking-wider text-benja-grafite/80 uppercase">{item.groupLabel}</p>
+              <p className="studio-rotulo">{item.groupLabel}</p>
               <p className="font-semibold wrap-anywhere">{item.title}</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -132,8 +129,8 @@ function ReviewSection({ overview }: { overview: ContentOverview }) {
   const hasContent = overview.groups.some((group) => group.items.length > 0);
   const problems = overview.review.filter((item) => hasProblems(item.notes));
   return (
-    <section aria-labelledby="revisao-titulo" className="rounded-3xl border-2 border-benja-laranja bg-white p-4 sm:p-6">
-      <h2 id="revisao-titulo" className="text-xl font-black text-benja-verde">
+    <section aria-labelledby="revisao-titulo" className="studio-card border-benja-laranja p-4 sm:p-6">
+      <h2 id="revisao-titulo" className="studio-titulo-secao">
         Precisa de revisão ({total})
       </h2>
       {problems.length ? (
@@ -169,10 +166,10 @@ function GroupSection({ group }: { group: OverviewGroup }) {
   return (
     <section aria-labelledby={id}>
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2 id={id} className="text-xl font-black text-benja-verde">
+        <h2 id={id} className="studio-titulo-secao">
           {group.label}
         </h2>
-        <p className="text-sm text-benja-grafite/80">{countsText(group.counts)}</p>
+        <p className="text-sm text-studio-suave">{countsText(group.counts)}</p>
       </div>
       <CmsTable
         basePath={group.adminPath}
@@ -188,7 +185,7 @@ function GroupSection({ group }: { group: OverviewGroup }) {
 export function ContentOverviewView({ overview }: { overview: ContentOverview }) {
   if (!overview.groups.length) {
     return (
-      <p className="rounded-3xl border-2 border-dashed border-benja-noite/25 bg-white p-8 text-center">
+      <p className="studio-card border-dashed border-studio-controle p-8 text-center">
         O seu papel não dá acesso a nenhum tipo de conteúdo.
       </p>
     );

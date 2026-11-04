@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-11).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -60,12 +61,12 @@ export default async function EditCtaPage({ params, searchParams }: PageProps<"/
 
   return (
     <>
-      <CmsHeader title={cta.label} trail={[{ label: "CTAs e destaques", href: "/admin/ctas" }, { label: cta.label }]} />
+      <CmsHeader title={cta.label} />
       <FlashMessage ok={query.ok} aviso={query.aviso} />
       <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-        <div className="rounded-3xl border-2 border-benja-noite/15 bg-white p-6">
+        <div className="studio-card p-6">
           {cta.status === "archived" ? (
-            <p className="mb-5 rounded-2xl bg-benja-creme px-4 py-3 text-sm">
+            <p className="mb-5 rounded-studio-md bg-studio-realce px-4 py-3 text-sm">
               CTA arquivado: restaure como rascunho para editar.
             </p>
           ) : null}
@@ -83,7 +84,7 @@ export default async function EditCtaPage({ params, searchParams }: PageProps<"/
             updatedAt={cta.updatedAt}
             commands={allowedCommands(cta.status, user.role, "cta")}
           />
-          <section className="rounded-3xl border-2 border-benja-noite/15 bg-white p-5 text-sm">
+          <section className="studio-card p-5 text-sm">
             <h2 className="font-bold">Para onde o botão leva hoje</h2>
             <p className="mt-2 break-all">{link.href}</p>
           </section>

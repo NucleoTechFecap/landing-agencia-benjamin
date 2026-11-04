@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Link para a prévia protegida (ADM-14).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -54,12 +55,12 @@ export default async function EditCasePage({ params, searchParams }: PageProps<"
     .map((issue) => issue.message);
   return (
     <>
-      <CmsHeader title={item.title} trail={[{ label: "Cases", href: "/admin/cases" }, { label: item.title }]} />
+      <CmsHeader title={item.title} />
       <FlashMessage ok={query.ok} aviso={query.aviso} />
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="rounded-3xl border-2 border-benja-noite/15 bg-white p-4 sm:p-6">
+        <div className="studio-card p-4 sm:p-6">
           {item.status === "archived" ? (
-            <p className="mb-5 rounded-2xl bg-benja-creme px-4 py-3 text-sm">
+            <p className="mb-5 rounded-studio-md bg-studio-realce px-4 py-3 text-sm">
               Case arquivado: restaure como rascunho para editar.
             </p>
           ) : null}

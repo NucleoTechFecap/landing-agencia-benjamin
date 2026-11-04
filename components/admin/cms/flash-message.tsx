@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 28/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,10 +19,12 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
 28/10/2026 Codex                     Aceita apenas códigos conhecidos de aviso (TECH-13).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { CMS_FLASH, CMS_WARNING, isCmsFlash, isCmsWarning } from "@/lib/domain/content/cms-form";
+import { Notice } from "../ui/primitives";
 
 /** Lê ?ok= e ?aviso= deixados pela Server Action ao redirecionar. */
 export function FlashMessage({ ok, aviso }: { ok?: string | string[]; aviso?: string | string[] }) {
@@ -32,14 +34,14 @@ export function FlashMessage({ ok, aviso }: { ok?: string | string[]; aviso?: st
   return (
     <div role="status" className="mb-6 space-y-2">
       {flash ? (
-        <p className="rounded-2xl border-2 border-benja-verde bg-benja-claro px-4 py-3 text-sm font-semibold text-benja-verde">
+        <Notice tone="sucesso" className="animate-studio-entrada font-semibold">
           {flash}
-        </p>
+        </Notice>
       ) : null}
       {warningCodes.map((code) => (
-        <p key={code} className="rounded-2xl border-2 border-benja-laranja bg-white px-4 py-3 text-sm text-benja-noite">
+        <Notice key={code} tone="atencao">
           <strong>Atenção:</strong> {CMS_WARNING[code]}
-        </p>
+        </Notice>
       ))}
     </div>
   );

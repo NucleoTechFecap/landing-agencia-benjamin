@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,12 +31,13 @@ import { blockSummary } from "@/lib/domain/content/block-input";
 import { BLOCK_LABELS, isSectionBlock, type BlockType, type PageBlock } from "@/lib/domain/content/blocks";
 import { CMS_IDLE, type CmsFormState } from "@/lib/domain/content/cms-form";
 import type { Page } from "@/lib/domain/content/types";
+import { ConfirmForm, useHydrated, type Confirmation } from "../ui/confirm-form";
+import { EmptyPanel } from "../ui/primitives";
 import { CmsFormError } from "./form-error";
 
 type BlockAction = (state: CmsFormState, formData: FormData) => Promise<CmsFormState>;
 
-const button =
-  "inline-flex min-h-11 items-center rounded-full border-2 border-benja-noite bg-white px-4 py-1.5 text-xs font-bold text-benja-noite transition hover:bg-benja-creme disabled:cursor-not-allowed disabled:opacity-40";
+const button = "studio-btn studio-btn-secundario";
 
 /** Blocos da página na ordem do site, com editar, mover e excluir, e os tipos que ainda cabem. */
 export function BlockList({
@@ -50,8 +52,8 @@ export function BlockList({
   readOnly: boolean;
 }) {
   return (
-    <section aria-labelledby="blocos-titulo" className="rounded-3xl border-2 border-benja-noite/15 bg-white p-4 sm:p-6">
-      <h2 id="blocos-titulo" className="text-xl font-black text-benja-verde">
+    <section aria-labelledby="blocos-titulo" className="studio-card p-4 sm:p-6">
+      <h2 id="blocos-titulo" className="studio-titulo-secao">
         Blocos
       </h2>
       {page.blocks.length ? (
@@ -69,9 +71,11 @@ export function BlockList({
           ))}
         </ol>
       ) : (
-        <p className="mt-4 rounded-2xl border-2 border-dashed border-benja-noite/25 p-6 text-center text-sm">
-          Nenhum bloco ainda. Enquanto não houver conteúdo publicado, o site mostra só as seções fixas.
-        </p>
+        <div className="mt-4">
+          <EmptyPanel title="Nenhum bloco ainda.">
+            Enquanto não houver conteúdo publicado, o site mostra só as seções fixas.
+          </EmptyPanel>
+        </div>
       )}
       {addable.length ? (
         <div className="mt-6">
@@ -107,30 +111,26 @@ function BlockRow({
   readOnly: boolean;
 }) {
   const [state, formAction, pending] = useActionState(action, CMS_IDLE);
+  const ready = useHydrated();
   const label = BLOCK_LABELS[block.type];
-  const operation = (name: string, text: string, disabled: boolean, confirm?: string) => (
-    <form
-      action={formAction}
-      onSubmit={(event) => {
-        if (confirm && !window.confirm(confirm)) event.preventDefault();
-      }}
-    >
+  const operation = (name: string, text: string, disabled: boolean, confirmation?: Confirmation) => (
+    <ConfirmForm action={formAction} confirmation={confirmation}>
       <input type="hidden" name="id" value={page.id} />
       <input type="hidden" name="expectedUpdatedAt" value={page.updatedAt} />
       <input type="hidden" name="blockId" value={block.id} />
       <input type="hidden" name="operation" value={name} />
-      <button type="submit" disabled={disabled || pending} className={button}>
+      <button type="submit" disabled={disabled || pending || !ready} className={button}>
         {text}
         <span className="sr-only"> o bloco {label}</span>
       </button>
-    </form>
+    </ConfirmForm>
   );
   return (
-    <li className="rounded-2xl border-2 border-benja-noite/10 p-4">
+    <li className="rounded-studio-md border border-studio-linha p-4">
       <CmsFormError state={state} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-bold tracking-wider text-benja-grafite/80 uppercase">
+          <p className="studio-rotulo">
             {label}
             {isSectionBlock(block.type) ? " · substitui a seção fixa" : ""}
           </p>
@@ -143,7 +143,11 @@ function BlockRow({
             </Link>
             {operation("subir", "Subir", first)}
             {operation("descer", "Descer", last)}
-            {operation("excluir", "Excluir", false, "Excluir este bloco? Esta ação não pode ser desfeita.")}
+            {operation("excluir", "Excluir", false, {
+              title: "Excluir este bloco?",
+              message: "Esta ação não pode ser desfeita.",
+              confirmLabel: "Excluir bloco",
+            })}
           </div>
         )}
       </div>

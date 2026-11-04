@@ -20,6 +20,7 @@
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
  04/11/2026 Vinícius Nishimura Reis  Tabela sem rolagem lateral, alvos de toque e texto longo (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -35,26 +36,21 @@ import { AttendanceBadge, NotificationBadge } from "./submission-table";
 export function SubmissionContent({ record }: { record: SubmissionDetail }) {
   const fields = presentPayload(record.payload);
   return (
-    <section
-      aria-labelledby="conteudo-enviado"
-      className="h-fit rounded-3xl border-2 border-benja-noite/15 bg-white p-6"
-    >
-      <h2 id="conteudo-enviado" className="mb-4 text-lg font-black text-benja-verde">
+    <section aria-labelledby="conteudo-enviado" className="h-fit studio-card p-6">
+      <h2 id="conteudo-enviado" className="mb-4 studio-titulo-secao">
         Conteúdo enviado
       </h2>
       {fields.length ? (
         <dl className="space-y-4">
           {fields.map((field) => (
             <div key={field.label}>
-              <dt className="text-xs font-bold tracking-wider wrap-anywhere text-benja-grafite/80 uppercase">
-                {field.label}
-              </dt>
+              <dt className="studio-rotulo wrap-anywhere">{field.label}</dt>
               <dd className="mt-1 wrap-anywhere whitespace-pre-wrap">{field.value}</dd>
             </div>
           ))}
         </dl>
       ) : (
-        <p className="text-sm text-benja-grafite/80">Este envio não tem conteúdo legível.</p>
+        <p className="text-sm text-studio-suave">Este envio não tem conteúdo legível.</p>
       )}
     </section>
   );
@@ -94,11 +90,8 @@ export function SubmissionRecordPanel({
     ],
   ] as const;
   return (
-    <section
-      aria-labelledby="registro-titulo"
-      className="space-y-3 rounded-3xl border-2 border-benja-noite/15 bg-white p-5 text-sm"
-    >
-      <h2 id="registro-titulo" className="text-sm font-black tracking-widest text-benja-verde uppercase">
+    <section aria-labelledby="registro-titulo" className="space-y-3 studio-card p-5 text-sm">
+      <h2 id="registro-titulo" className="text-base font-extrabold text-benja-verde">
         Registro
       </h2>
       <p>
@@ -108,7 +101,7 @@ export function SubmissionRecordPanel({
         {rows.map(([label, value]) => (
           <div key={label}>
             <dt className="font-bold">{label}</dt>
-            <dd className="wrap-anywhere text-benja-grafite/80">{value}</dd>
+            <dd className="wrap-anywhere text-studio-suave">{value}</dd>
           </div>
         ))}
       </dl>
@@ -122,11 +115,8 @@ export function SubmissionRecordPanel({
  */
 export function NotificationPanel({ record }: { record: SubmissionDetail }) {
   return (
-    <section
-      aria-labelledby="notificacao-titulo"
-      className="space-y-3 rounded-3xl border-2 border-benja-noite/15 bg-white p-5 text-sm"
-    >
-      <h2 id="notificacao-titulo" className="text-sm font-black tracking-widest text-benja-verde uppercase">
+    <section aria-labelledby="notificacao-titulo" className="space-y-3 studio-card p-5 text-sm">
+      <h2 id="notificacao-titulo" className="text-base font-extrabold text-benja-verde">
         Notificação por e-mail
       </h2>
       <p>

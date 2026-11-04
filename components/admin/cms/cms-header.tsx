@@ -19,60 +19,52 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { StudioIcon } from "../ui/icons";
 
-/** Título da tela do CMS com trilha (Painel › Seção › Item) e botões à direita. */
+/**
+ * Título da tela e ações dela. A trilha fica no cabeçalho da casca (PanelShell). `description` diz, em
+ * uma frase, para que serve a tela: quem usa o painel não precisa conhecer a estrutura do site.
+ */
 export function CmsHeader({
   title,
-  trail,
+  description,
   children,
 }: {
   title: string;
-  trail: { label: string; href?: string }[];
+  description?: ReactNode;
   children?: ReactNode;
 }) {
   return (
-    <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-      <div className="min-w-0">
-        <nav aria-label="Trilha" className="text-sm text-benja-grafite/80">
-          <ol className="flex flex-wrap items-center gap-1.5">
-            {[{ label: "Painel", href: "/admin" }, ...trail].map((step, index, steps) => (
-              <li key={step.label} className="flex min-w-0 items-center gap-1.5 wrap-anywhere">
-                {step.href && index < steps.length - 1 ? (
-                  <Link
-                    href={step.href}
-                    prefetch={false}
-                    className="inline-block py-0.5 underline-offset-4 hover:underline"
-                  >
-                    {step.label}
-                  </Link>
-                ) : (
-                  <span aria-current={index === steps.length - 1 ? "page" : undefined}>{step.label}</span>
-                )}
-                {index < steps.length - 1 ? <span aria-hidden>›</span> : null}
-              </li>
-            ))}
-          </ol>
-        </nav>
-        <h1 className="mt-1 text-3xl font-black wrap-anywhere text-benja-verde">{title}</h1>
+    <header className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4 lg:mb-8">
+      <div className="min-w-0 flex-1 basis-80">
+        <h1 className="text-3xl leading-tight font-black wrap-anywhere text-benja-verde lg:text-4xl">{title}</h1>
+        {description ? <p className="mt-2 max-w-3xl text-studio-suave">{description}</p> : null}
       </div>
-      {children ? <div className="flex flex-wrap gap-3">{children}</div> : null}
+      {children ? <div className="flex flex-wrap items-center gap-3">{children}</div> : null}
     </header>
   );
 }
 
-/** Botão-link primário do painel (ex.: "Nova área"). */
+/** Ação principal da tela (ex.: "Nova área"). */
 export function CmsLinkButton({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <Link
-      href={href}
-      prefetch={false}
-      className="inline-flex min-h-11 items-center rounded-full bg-benja-verde px-5 py-2 text-sm font-bold text-benja-nyanza transition hover:bg-benja-noite focus-visible:ring-4 focus-visible:ring-benja-lima/40"
-    >
+    <Link href={href} prefetch={false} className="studio-btn studio-btn-primario">
+      <StudioIcon name="mais" size={18} />
+      {children}
+    </Link>
+  );
+}
+
+/** Ação secundária da tela (ex.: "Categorias"). */
+export function CmsSecondaryLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link href={href} prefetch={false} className="studio-btn studio-btn-secundario">
       {children}
     </Link>
   );

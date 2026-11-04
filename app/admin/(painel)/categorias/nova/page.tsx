@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,15 +35,8 @@ export default async function NewCategoryPage() {
   await requirePageAccess("category", "create", "/admin/categorias/nova");
   return (
     <>
-      <CmsHeader
-        title="Nova categoria"
-        trail={[
-          { label: "Cases", href: "/admin/cases" },
-          { label: "Categorias", href: "/admin/categorias" },
-          { label: "Nova" },
-        ]}
-      />
-      <div className="max-w-3xl rounded-3xl border-2 border-benja-noite/15 bg-white p-4 sm:p-6">
+      <CmsHeader title="Nova categoria" />
+      <div className="max-w-3xl studio-card p-4 sm:p-6">
         <CategoryForm action={saveCategory} />
       </div>
     </>

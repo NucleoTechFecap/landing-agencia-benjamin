@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-18).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -28,7 +29,7 @@ import { requirePageAccess } from "@/lib/server/auth/guards";
 import { cmsDeps } from "@/lib/server/cms/context";
 import { loadContentOverview } from "@/lib/server/cms/overview";
 
-export const metadata: Metadata = { title: "Visão geral dos conteúdos" };
+export const metadata: Metadata = { title: "Revisão de conteúdos" };
 
 /**
  * Rota própria, e não o início do painel: quem entra em /admin não espera a leitura de todo o
@@ -39,11 +40,10 @@ export default async function ContentOverviewPage() {
   const overview = await loadContentOverview((await cmsDeps()).store, user.role, new Date());
   return (
     <>
-      <CmsHeader title="Visão geral dos conteúdos" trail={[{ label: "Visão geral" }]} />
-      <p className="mb-6 max-w-3xl text-benja-grafite/80">
-        Páginas, áreas, serviços, categorias e cases em um lugar só: o que está publicado e o que precisa da sua
-        atenção.
-      </p>
+      <CmsHeader
+        title="Revisão de conteúdos"
+        description="Páginas, áreas, serviços, categorias e cases em um lugar só: o que está publicado e o que precisa da sua atenção."
+      />
       <ContentOverviewView overview={overview} />
     </>
   );

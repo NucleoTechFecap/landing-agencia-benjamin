@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -47,31 +48,27 @@ export function PagesTable({ pages, canCreate }: { pages: Page[]; canCreate: boo
   ];
   return (
     // `relative`: o texto sr-only é absoluto e, sem isso, escapa da rolagem e alarga a página no celular.
-    <div className="relative overflow-x-auto rounded-3xl border-2 border-benja-noite/15 bg-white">
-      <table className="w-full text-left text-sm">
+    <div className="studio-card relative overflow-x-auto">
+      <table className="studio-tabela">
         <caption className="sr-only">Páginas do site e estado do conteúdo</caption>
-        <thead className="border-b-2 border-benja-noite/10 text-xs tracking-wider text-benja-grafite/80 uppercase">
+        <thead>
           <tr>
-            <th scope="col" className="px-4 py-3">
-              Página
-            </th>
-            <th scope="col" className="hidden px-4 py-3 md:table-cell">
+            <th scope="col">Página</th>
+            <th scope="col" className="hidden md:table-cell">
               Endereço
             </th>
-            <th scope="col" className="hidden px-4 py-3 md:table-cell">
+            <th scope="col" className="hidden md:table-cell">
               Blocos
             </th>
-            <th scope="col" className="px-4 py-3">
-              Estado
-            </th>
-            <th scope="col" className="hidden px-4 py-3 md:table-cell">
+            <th scope="col">Estado</th>
+            <th scope="col" className="hidden md:table-cell">
               Atualizado em
             </th>
           </tr>
         </thead>
         <tbody>
           {rows.map(({ slug, label, path, page }) => (
-            <tr key={slug} className="border-b border-benja-noite/5 last:border-0">
+            <tr key={slug}>
               <td className="px-4 py-3 font-semibold wrap-anywhere">
                 {page ? (
                   <Link
@@ -85,7 +82,7 @@ export function PagesTable({ pages, canCreate }: { pages: Page[]; canCreate: boo
                   label
                 )}
                 {/* No celular, as colunas secundárias viram linhas sob o nome: o estado fica à vista sem rolar. */}
-                <div className="mt-1 space-y-0.5 text-xs font-normal text-benja-grafite/80 md:hidden">
+                <div className="mt-1 space-y-0.5 text-xs font-normal text-studio-suave md:hidden">
                   <p className="font-mono">{path}</p>
                   {page ? (
                     <>
@@ -104,7 +101,7 @@ export function PagesTable({ pages, canCreate }: { pages: Page[]; canCreate: boo
                   <Link
                     href={`/admin/paginas/nova?rota=${slug}`}
                     prefetch={false}
-                    className="inline-block py-1 font-bold text-benja-verde underline underline-offset-4"
+                    className="studio-link inline-block py-1"
                   >
                     Criar conteúdo<span className="sr-only"> da página {label}</span>
                   </Link>
@@ -112,7 +109,7 @@ export function PagesTable({ pages, canCreate }: { pages: Page[]; canCreate: boo
                   "Só textos fixos"
                 )}
               </td>
-              <td className="hidden px-4 py-3 text-benja-grafite/80 md:table-cell">
+              <td className="hidden px-4 py-3 whitespace-nowrap text-studio-suave md:table-cell">
                 {page ? formatDateTime(page.updatedAt) : "—"}
               </td>
             </tr>

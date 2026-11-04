@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-14).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -53,7 +54,7 @@ export function PreviewBanner({
           {STATUS_NOTE[status]} Só quem entra no painel vê esta página.{note ? ` ${note}` : ""}
         </span>
       </p>
-      <Link href={backHref} className="inline-block py-1 font-bold text-benja-verde underline underline-offset-4">
+      <Link href={backHref} className="studio-link inline-block py-1">
         Voltar ao painel
       </Link>
     </div>

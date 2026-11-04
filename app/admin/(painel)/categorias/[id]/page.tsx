@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -50,19 +51,12 @@ export default async function EditCategoryPage({ params, searchParams }: PagePro
   const cases = snapshot.cases.filter((item) => item.categoryId === category.id);
   return (
     <>
-      <CmsHeader
-        title={category.name}
-        trail={[
-          { label: "Cases", href: "/admin/cases" },
-          { label: "Categorias", href: "/admin/categorias" },
-          { label: category.name },
-        ]}
-      />
+      <CmsHeader title={category.name} />
       <FlashMessage ok={query.ok} aviso={query.aviso} />
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="rounded-3xl border-2 border-benja-noite/15 bg-white p-4 sm:p-6">
+        <div className="studio-card p-4 sm:p-6">
           {category.status === "archived" ? (
-            <p className="mb-5 rounded-2xl bg-benja-creme px-4 py-3 text-sm">
+            <p className="mb-5 rounded-studio-md bg-studio-realce px-4 py-3 text-sm">
               Categoria arquivada: restaure como rascunho para editar.
             </p>
           ) : null}
@@ -84,7 +78,7 @@ export default async function EditCategoryPage({ params, searchParams }: PagePro
             updatedAt={category.updatedAt}
             commands={allowedCommands(category.status, user.role, "category")}
           />
-          <section className="rounded-3xl border-2 border-benja-noite/15 bg-white p-5 text-sm">
+          <section className="studio-card p-5 text-sm">
             <h2 className="font-bold">Cases nesta categoria</h2>
             {cases.length ? (
               <ul className="mt-2 space-y-2">
@@ -101,7 +95,7 @@ export default async function EditCategoryPage({ params, searchParams }: PagePro
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-benja-grafite/80">Nenhum case ainda.</p>
+              <p className="mt-2 text-studio-suave">Nenhum case ainda.</p>
             )}
           </section>
         </ItemPanel>
