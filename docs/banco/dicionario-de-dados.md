@@ -600,7 +600,9 @@ restaurar, editar e publicar. Transições e `published_at` valem para esses pap
 
 **Por que `BJ002` e não `40001`.** O PostgREST trata `40001` como falha passageira e repete a transação.
 Como a versão continua desatualizada, a chamada ficava sem resposta (visto no PostgREST 14.18 da stack
-local). Nenhuma função nossa deve usar esse código para erro de regra.
+local). Nenhuma função nossa deve usar esse código para erro de regra. O painel (`toCmsError`) continua
+traduzindo `40001` como `CONFLICT`, para o caso de o código novo rodar com banco sem a
+`20261102000500` ou com ela revertida.
 
 **Divergência conhecida na R12.** O banco aceita imagem decorativa, como diz §5. O painel ainda a recusa
 ao publicar: `toMediaRef` entrega `alt` vazio e `checkMedia` trata como falta de texto. O painel continua
