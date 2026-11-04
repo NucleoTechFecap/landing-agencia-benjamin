@@ -18,12 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (HOME-07).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { randomBytes } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Browser, type Locator, type Page } from "@playwright/test";
+import { acceptConfirmation } from "./painel-helpers";
 
 /**
  * Tira da Home TODOS os CTAs e destaques, inclusive os do seed, e devolve ao fim. Por mexer no
@@ -151,8 +153,8 @@ test.describe("Home sem CTA e sem destaque @home-global", () => {
     changed = true;
     for (const cta of original.ctas) {
       await page.goto(`/admin/ctas/${cta.id}`);
-      page.once("dialog", (dialog) => dialog.accept());
       await page.getByRole("button", { name: "Despublicar" }).click();
+      await acceptConfirmation(page, "Despublicar");
       await expect(page.getByRole("status").getByText("Despublicado")).toBeVisible();
     }
 

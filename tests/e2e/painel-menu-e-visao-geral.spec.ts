@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-04, ADM-18).
  04/11/2026 Vinícius Nishimura Reis  Exemplo de módulo em construção não depende de uma tela (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,6 +27,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { modulesFor } from "@/lib/config/admin-modules";
 import {
+  acceptConfirmation,
   REQUIRES_SUPABASE,
   SERVICE_KEY,
   SUPABASE_URL,
@@ -184,7 +186,7 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
     await expect(panelMenu(page)).toHaveCount(0);
   });
 
-  test("administrador navega pelo menu, com a página atual marcada e o que falta marcado como em construção", async ({
+  test("administrador navega pelo menu, com a página atual marcada e sem itens que não levam a lugar nenhum", async ({
     page,
   }) => {
     await login(page, accounts.admin!);
@@ -193,31 +195,37 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
     await expect(page.getByRole("button", { name: "Abrir menu" })).toBeHidden();
     await expect(menu.getByRole("link", { name: "Início" })).toHaveAttribute("aria-current", "page");
 
-    // Em construção: texto honesto, sem link, no menu e no início. O exemplo vem do registro, porque
-    // cada tela entregue deixa de estar em construção; quando não houver mais nenhum, o trecho não roda.
-    const building = modulesFor("admin").find((module) => !module.href);
-    if (building) {
-      const item = menu.getByRole("listitem").filter({ hasText: building.name });
-      await expect(item).toContainText("Em construção");
-      await expect(item.getByRole("link")).toHaveCount(0);
-      await expect(page.getByRole("main").getByText(`Em construção · ${building.issue}`)).toBeVisible();
-      await expect(page.getByRole("main").getByRole("link", { name: building.name })).toHaveCount(0);
+    // Módulo sem tela fica fora do menu e do início. O exemplo vem do registro, porque cada tela entregue
+    // deixa de estar nessa lista; quando não houver mais nenhum, o trecho não roda.
+    for (const building of modulesFor("admin").filter((module) => !module.href)) {
+      await expect(menu.getByText(building.name)).toHaveCount(0);
+      await expect(page.getByRole("main").getByText(building.name)).toHaveCount(0);
+    }
+    await expect(page.getByText("Em construção")).toHaveCount(0);
+
+    // Grupos do menu, na ordem do registro.
+    for (const group of ["Visão geral", "Conteúdo do site", "Comunicação", "Biblioteca", "Administração"]) {
+      await expect(menu.getByText(group, { exact: true })).toBeVisible();
     }
 
-    // O início usa o mesmo registro do menu: o card inteiro leva ao módulo.
-    await page.getByRole("main").getByRole("link", { name: "Serviços" }).click();
+    // Atalho do início: leva direto à tela e o menu acompanha.
+    await page.getByRole("main").getByRole("link", { name: "Gerenciar serviços" }).click();
     await expect(page).toHaveURL(/\/admin\/servicos$/);
     await expect(menu.getByRole("link", { name: "Serviços" })).toHaveAttribute("aria-current", "page");
     await expect(menu.getByRole("link", { name: "Início" })).not.toHaveAttribute("aria-current", "page");
 
     await page.goto("/admin/cases/novo");
     await expect(menu.getByRole("link", { name: "Cases", exact: true })).toHaveAttribute("aria-current", "page");
+    // A trilha do cabeçalho vem do endereço: o último passo é a tela atual, sem link.
+    const trail = page.getByRole("navigation", { name: "Trilha" });
+    await expect(trail.getByRole("link", { name: "Cases" })).toHaveAttribute("href", "/admin/cases");
+    await expect(trail.getByText("Novo case")).toHaveAttribute("aria-current", "page");
   });
 
   test("administrador identifica o que está publicado e o que precisa de revisão", async ({ page }) => {
     await login(page, accounts.admin!);
-    await panelMenu(page).getByRole("link", { name: "Visão geral dos conteúdos" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "Visão geral dos conteúdos" })).toBeVisible();
+    await panelMenu(page).getByRole("link", { name: "Revisão de conteúdos" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Revisão de conteúdos" })).toBeVisible();
     const queue = reviewQueue(page);
 
     // Rascunho com pendência, publicado quebrado e provisório entram, cada um com o motivo.
@@ -267,10 +275,10 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
   test("editor autorizado completa o rascunho pela fila e o item sai dela", async ({ page }) => {
     await login(page, accounts.editor!);
     const menu = panelMenu(page);
-    for (const hidden of ["Leads e feedbacks", "Usuários e papéis", "Trilha de auditoria"]) {
+    for (const hidden of ["Contatos e feedbacks", "Usuários e papéis", "Trilha de auditoria"]) {
       await expect(menu.getByText(hidden)).toHaveCount(0);
     }
-    await menu.getByRole("link", { name: "Visão geral dos conteúdos" }).click();
+    await menu.getByRole("link", { name: "Revisão de conteúdos" }).click();
     await reviewQueue(page)
       .getByRole("link", { name: `Editar ${titles.draftPending}` })
       .click();
@@ -281,8 +289,8 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
     await visible(page.getByRole("button", { name: "Salvar alterações" })).click();
     await expect(page.getByRole("status")).toContainText("Alterações salvas");
 
-    await menu.getByRole("link", { name: "Visão geral dos conteúdos" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "Visão geral dos conteúdos" })).toBeVisible();
+    await menu.getByRole("link", { name: "Revisão de conteúdos" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Revisão de conteúdos" })).toBeVisible();
     await expect(reviewQueue(page).getByText(titles.draftPending)).toHaveCount(0);
     await expect(
       page
@@ -296,7 +304,7 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
     await login(page, accounts.viewer!);
     const menu = panelMenu(page);
     await expect(menu.getByRole("link", { name: "Cases", exact: true })).toBeVisible();
-    await expect(menu.getByText("Leads e feedbacks")).toHaveCount(0);
+    await expect(menu.getByText("Contatos e feedbacks")).toHaveCount(0);
 
     await page.goto("/admin/conteudos");
     const link = reviewQueue(page).getByRole("link", { name: `Ver ${titles.liveBroken}` });
@@ -332,7 +340,9 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
       await openMenu(page);
       await saveEvidence(page, "menu-aberto-360");
       const closeButton = page.getByRole("button", { name: "Fechar menu" });
-      await expect(closeButton).toHaveAttribute("aria-expanded", "true");
+      // A gaveta prende o foco: o botão de fechar recebe o foco e o resto da tela fica fora de alcance.
+      await expect(closeButton).toBeFocused();
+      await expect(page.locator("div[inert] #conteudo")).toHaveCount(1);
       await expect(menu.getByRole("link", { name: "Início" })).toHaveAttribute("aria-current", "page");
       for (const link of await menu.getByRole("link").all()) {
         expect((await link.boundingBox())!.height, await link.innerText()).toBeGreaterThanOrEqual(44);
@@ -346,6 +356,7 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
       // Fecha por toque, no próprio botão.
       await closeButton.tap();
       await expect(menu).toBeHidden();
+      await expect(page.locator("div[inert] #conteudo")).toHaveCount(0);
 
       // Teclado: Enter abre, Tab entra no menu com foco visível, Esc fecha e devolve o foco.
       await button.focus();
@@ -365,10 +376,10 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
       await menu.getByRole("link", { name: "Início" }).tap();
       await expect(menu).toBeHidden();
       await openMenu(page);
-      await menu.getByRole("link", { name: "Visão geral dos conteúdos" }).tap();
+      await menu.getByRole("link", { name: "Revisão de conteúdos" }).tap();
       await expect(page).toHaveURL(/\/admin\/conteudos$/);
       await expect(menu).toBeHidden();
-      await expect(page.getByRole("heading", { level: 1, name: "Visão geral dos conteúdos" })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: "Revisão de conteúdos" })).toBeVisible();
 
       // Na fila, o link de edição cabe na largura da tela: basta rolar para baixo.
       const item = reviewQueue(page).getByRole("listitem").filter({ hasText: titles.liveBroken }).first();
@@ -413,8 +424,8 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
       await visible(page.getByRole("button", { name: "Publicar", exact: true })).tap();
       await expect(page.getByRole("status")).toContainText("Publicado");
 
-      page.once("dialog", (dialog) => dialog.accept());
       await visible(page.getByRole("button", { name: "Despublicar" })).tap();
+      await acceptConfirmation(page, "Despublicar");
       await expect(page.getByRole("status")).toContainText("Despublicado");
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -434,7 +445,7 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
     await page.goto("/admin");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await page.goto("/admin/conteudos");
-    await expect(page.getByRole("heading", { level: 1, name: "Visão geral dos conteúdos" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Revisão de conteúdos" })).toBeVisible();
     // O Next dispara os prefetches logo depois de hidratar, ao ver os links na tela.
     await expect(page.getByRole("button", { name: "Sair" })).toBeEnabled();
     await page.waitForLoadState("networkidle");
@@ -451,13 +462,9 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
     await expect(skip).toBeFocused();
     await expect(skip).toBeVisible();
 
-    // Tab segue pelo cabeçalho (marca e Sair) até o primeiro link do menu.
+    // Tab segue pela marca até o primeiro link do menu; Sair fica no rodapé do menu.
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: "Painel · Agência Benjamin" })).toBeFocused();
-    await page.keyboard.press("Tab");
-    await expect(page.getByRole("button", { name: "Sair" })).toBeFocused();
-    await expect(page.getByRole("button", { name: "Sair" })).toHaveCSS("outline-style", "solid");
-    await saveEvidence(page, "cabecalho-foco-teclado-1280", false);
     await page.keyboard.press("Tab");
     const first = panelMenu(page).getByRole("link", { name: "Início" });
     await expect(first).toBeFocused();
@@ -468,5 +475,10 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
     await skip.focus();
     await page.keyboard.press("Enter");
     await expect(page.getByRole("main")).toBeFocused();
+
+    // Sair, no rodapé do menu, com foco visível.
+    await page.getByRole("button", { name: "Sair" }).focus();
+    await expect(page.getByRole("button", { name: "Sair" })).toHaveCSS("outline-style", "solid");
+    await saveEvidence(page, "sair-foco-teclado-1280", false);
   });
 });
