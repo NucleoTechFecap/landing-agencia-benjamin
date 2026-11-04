@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-04).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -25,105 +26,95 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
-import { ADMIN_HOME_PATH, isActiveModule, type AdminModule } from "@/lib/config/admin-modules";
+import { useState, type FocusEvent, type MouseEvent } from "react";
+import { isActiveModule, type AdminNavigationGroup } from "@/lib/config/admin-modules";
+import { StudioIcon } from "./ui/icons";
 
-const link = "flex min-h-11 items-center rounded-xl px-3 py-2 text-sm font-semibold wrap-anywhere transition";
+interface Tip {
+  text: string;
+  top: number;
+  left: number;
+}
 
 /**
- * Lista de módulos que o servidor já filtrou pelo papel. No celular é um painel que abre abaixo do
- * botão, no fluxo da página: não cobre o conteúdo e o foco segue a ordem natural (padrão de divulgação).
- * Fecha com Esc, devolvendo o foco ao botão, e ao escolher um módulo. O menu fica no layout e não
- * desmonta ao navegar, então precisa fechar sozinho.
+ * Menu do painel, com os grupos que o servidor já filtrou pelo papel. Recolhido, cada item vira só o
+ * ícone: o nome continua no link, para leitores de tela, e aparece em dica ao passar o mouse ou focar.
+ * A dica é posicionada na janela porque a coluna do menu tem rolagem própria e cortaria o que passa da borda.
  *
  * Sem prefetch: todas as telas do painel dependem da requisição, então não há o que adiantar, e cada
  * prefetch passaria pelo proxy, que valida a sessão no Supabase Auth (eram 14 chamadas a cada página).
  */
-export function PanelMenu({ modules }: { modules: readonly AdminModule[] }) {
+export function PanelMenu({
+  navigation,
+  collapsed = false,
+  onNavigate,
+}: {
+  navigation: readonly AdminNavigationGroup[];
+  collapsed?: boolean;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const [lastPathname, setLastPathname] = useState(pathname);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const navId = useId();
+  const [tip, setTip] = useState<Tip | null>(null);
 
-  // Fecha ao trocar de rota (ajuste de estado durante a renderização, sem efeito).
-  if (pathname !== lastPathname) {
-    setLastPathname(pathname);
-    setOpen(false);
-  }
-
-  const close = () => {
-    setOpen(false);
-    buttonRef.current?.focus();
-  };
-
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      setOpen(false);
-      buttonRef.current?.focus();
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open]);
-
-  const item = (href: string, name: string) => {
-    const active = isActiveModule(pathname, href);
-    return (
-      <Link
-        href={href}
-        prefetch={false}
-        aria-current={active ? "page" : undefined}
-        onClick={close}
-        className={`${link} ${active ? "bg-benja-claro font-bold text-benja-verde" : "hover:bg-benja-creme"}`}
-      >
-        {name}
-      </Link>
-    );
+  const showTip = (event: MouseEvent<HTMLElement> | FocusEvent<HTMLElement>, text: string) => {
+    // Na gaveta do celular o menu aparece sempre inteiro, mesmo com a preferência de recolhido.
+    if (!collapsed || !window.matchMedia("(min-width: 64rem)").matches) return;
+    const box = event.currentTarget.getBoundingClientRect();
+    setTip({ text, top: box.top + box.height / 2, left: box.right + 12 });
   };
 
   return (
-    <div className="border-b-2 border-benja-noite/10 bg-white lg:border-r-2 lg:border-b-0">
-      <div className="lg:sticky lg:top-0 lg:max-h-dvh lg:overflow-y-auto">
-        <button
-          ref={buttonRef}
-          type="button"
-          aria-expanded={open}
-          aria-controls={navId}
-          onClick={() => setOpen((current) => !current)}
-          className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-2 text-sm font-bold text-benja-verde focus-visible:outline-offset-[-4px]! lg:hidden"
-        >
-          {open ? "Fechar menu" : "Abrir menu"}
-          <svg
-            viewBox="0 0 24 24"
-            aria-hidden
-            className="size-6 stroke-current"
-            fill="none"
-            strokeWidth={2.5}
-            strokeLinecap="round"
+    <nav aria-label="Módulos do painel" className="min-h-0 flex-1 overflow-y-auto px-3 py-2 [scrollbar-width:thin]">
+      {navigation.map((group) => (
+        <div key={group.id} className="mb-5 last:mb-2">
+          <p
+            className={`mb-1.5 px-3 text-[0.6875rem] font-bold tracking-[0.12em] text-benja-claro uppercase ${collapsed ? "lg:sr-only" : ""}`}
           >
-            {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-          </svg>
-        </button>
-        <nav id={navId} aria-label="Módulos do painel" className={`${open ? "block" : "hidden"} p-2 lg:block lg:p-3`}>
+            {group.label}
+          </p>
           <ul className="space-y-1">
-            <li>{item(ADMIN_HOME_PATH, "Início")}</li>
-            {modules.map((module) => (
-              <li key={module.name}>
-                {module.href ? (
-                  item(module.href, module.name)
-                ) : (
-                  <p className="flex min-h-11 flex-col justify-center px-3 py-2 text-sm text-benja-grafite/70">
-                    {module.name}
-                    <span className="text-xs font-bold">Em construção</span>
-                  </p>
-                )}
-              </li>
-            ))}
+            {group.modules.map((module) => {
+              const active = isActiveModule(pathname, module.href!);
+              return (
+                <li key={module.name}>
+                  <Link
+                    href={module.href!}
+                    prefetch={false}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => {
+                      setTip(null);
+                      onNavigate?.();
+                    }}
+                    onMouseEnter={(event) => showTip(event, module.name)}
+                    onMouseLeave={() => setTip(null)}
+                    onFocus={(event) => showTip(event, module.name)}
+                    onBlur={() => setTip(null)}
+                    className={`flex min-h-11 items-center gap-3 rounded-studio-md px-3 py-2 text-sm leading-snug font-semibold transition duration-150 ease-studio focus-visible:outline-benja-nyanza! ${
+                      collapsed ? "lg:justify-center" : ""
+                    } ${
+                      active
+                        ? "bg-benja-nyanza font-bold text-benja-verde shadow-studio-pop-lima"
+                        : "text-benja-nyanza hover:bg-white/10"
+                    }`}
+                  >
+                    <StudioIcon name={module.icon} />
+                    <span className={`min-w-0 wrap-anywhere ${collapsed ? "lg:sr-only" : ""}`}>{module.name}</span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
-        </nav>
-      </div>
-    </div>
+        </div>
+      ))}
+      {tip ? (
+        <span
+          role="tooltip"
+          style={{ top: tip.top, left: tip.left }}
+          className="pointer-events-none fixed z-60 max-w-56 -translate-y-1/2 rounded-studio-sm bg-benja-noite px-3 py-1.5 text-xs font-semibold text-white shadow-studio-flutuante"
+        >
+          {tip.text}
+        </span>
+      ) : null}
+    </nav>
   );
 }
