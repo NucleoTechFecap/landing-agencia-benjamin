@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (SEG-04).
+ 04/11/2026 Vinícius Nishimura Reis  Exclusão de envio arquivado (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -48,7 +49,7 @@ vi.mock("../audit", () => ({ recordAuditEvent }));
 vi.mock("../supabase/server", () => ({ createSessionClient }));
 vi.mock("../cms/context", () => ({ withFlash: (path: string, flash: string) => `${path}?ok=${flash}` }));
 
-const { changeStatusFromForm, openSubmission, requireInboxPage } = await import("./inbox-context");
+const { changeStatusFromForm, deleteFromForm, openSubmission, requireInboxPage } = await import("./inbox-context");
 
 const user = (role: Role): SessionUser => ({ id: "u1", email: "x@y.test", name: "X", role });
 
@@ -58,7 +59,10 @@ function clientWith(row: Record<string, unknown> | null) {
     eq: () => ({ eq: () => ({ select: async () => ({ data: [{ id: SUBMISSION_ID }], error: null }) }) }),
   }));
   const select = vi.fn(() => ({ eq: () => ({ maybeSingle: async () => ({ data: row, error: null }) }) }));
-  return { from: vi.fn(() => ({ select, update })), update };
+  const remove = vi.fn(() => ({
+    eq: () => ({ eq: () => ({ select: async () => ({ data: [{ id: SUBMISSION_ID }], error: null }) }) }),
+  }));
+  return { from: vi.fn(() => ({ select, update, delete: remove })), update, remove };
 }
 
 const statusForm = (status = "em_atendimento") => {
@@ -150,6 +154,45 @@ describe("changeStatusFromForm", () => {
     createSessionClient.mockResolvedValue(clientWith(null));
     await expect(changeStatusFromForm(statusForm())).resolves.toMatchObject({ status: "error", code: "NOT_FOUND" });
     expect(revalidatePath).not.toHaveBeenCalled();
+  });
+});
+
+describe("deleteFromForm", () => {
+  const deleteForm = () => {
+    const form = new FormData();
+    form.set("id", SUBMISSION_ID);
+    return form;
+  };
+
+  it.each(["editor", "viewer", "super_admin", "pending"] as const)(
+    "N04/N08: %s recebe 403, com a negação na trilha e sem tocar no banco",
+    async (role) => {
+      currentUser = user(role);
+      await expect(deleteFromForm(deleteForm())).resolves.toMatchObject({ status: "error", code: "FORBIDDEN" });
+      expect(recordAuditEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ event: "access.denied", metadata: { resource: "lead", action: "delete" } }),
+      );
+      expect(createSessionClient).not.toHaveBeenCalled();
+    },
+  );
+
+  it("admin exclui envio arquivado e volta à lista", async () => {
+    currentUser = user("admin");
+    const client = clientWith({ kind: "contact", status: "arquivado" });
+    createSessionClient.mockResolvedValue(client);
+    await expect(deleteFromForm(deleteForm())).rejects.toThrow("REDIRECT:/admin/leads?ok=excluido");
+    expect(client.remove).toHaveBeenCalled();
+    expect(recordAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ event: "lead.deleted", resourceId: SUBMISSION_ID, metadata: { kind: "contact" } }),
+    );
+  });
+
+  it("envio que não está arquivado volta como erro do formulário", async () => {
+    currentUser = user("admin");
+    const client = clientWith({ kind: "contact", status: "novo" });
+    createSessionClient.mockResolvedValue(client);
+    await expect(deleteFromForm(deleteForm())).resolves.toMatchObject({ status: "error", code: "CONFLICT" });
+    expect(client.remove).not.toHaveBeenCalled();
   });
 });
 

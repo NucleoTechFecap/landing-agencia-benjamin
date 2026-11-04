@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Exclusão de envio arquivado, a pedido do titular (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,7 +37,7 @@ import { text } from "../cms/form-data";
 import { newRequestId, toPublicError } from "../errors";
 import { logger } from "../logger";
 import { createSessionClient } from "../supabase/server";
-import { changeSubmissionStatus, getSubmission, type InboxDeps } from "./inbox";
+import { changeSubmissionStatus, deleteSubmission, getSubmission, type InboxDeps } from "./inbox";
 
 /**
  * Guarda das telas de envios: a tela serve a dois recursos (`lead` e `feedback`), então entra quem
@@ -109,5 +110,13 @@ export async function changeStatusFromForm(form: FormData): Promise<CmsFormState
       currentStatus: text(form, "currentStatus"),
     });
     return withFlash(`${INBOX_PATH}/${id}`, "salvo");
+  });
+}
+
+/** Server Action da exclusão de um envio arquivado. */
+export async function deleteFromForm(form: FormData): Promise<CmsFormState> {
+  return inboxAction("delete", async (user, deps) => {
+    await deleteSubmission(deps, user.role, text(form, "id"));
+    return withFlash(INBOX_PATH, "excluido");
   });
 }

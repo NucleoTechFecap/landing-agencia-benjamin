@@ -18,14 +18,19 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Exclusão de envio arquivado, a pedido do titular (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use server";
 
 import type { CmsFormState } from "@/lib/domain/content/cms-form";
-import { changeStatusFromForm } from "@/lib/server/forms/inbox-context";
+import { changeStatusFromForm, deleteFromForm } from "@/lib/server/forms/inbox-context";
 
 export async function changeSubmissionStatusAction(_state: CmsFormState, form: FormData): Promise<CmsFormState> {
   return changeStatusFromForm(form);
+}
+
+export async function deleteSubmissionAction(_state: CmsFormState, form: FormData): Promise<CmsFormState> {
+  return deleteFromForm(form);
 }

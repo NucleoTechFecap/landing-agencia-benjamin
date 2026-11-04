@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
+ 04/11/2026 Vinícius Nishimura Reis  Exclusão de envio arquivado, a pedido do titular (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -233,4 +234,41 @@ export async function changeSubmissionStatus(deps: InboxDeps, role: Role, change
     metadata: { kind: row.kind, fromStatus: row.status, toStatus: change.status },
   });
   return { changed: true };
+}
+
+const DELETE_EVENT = { lead: "lead.deleted", contact: "lead.deleted", feedback: "feedback.deleted" } as const;
+
+/**
+ * Exclui um envio a pedido do titular ou no fim da retenção (SEG-01 §5). Só depois de arquivado, um
+ * por vez, para um clique errado não apagar dado de ninguém. O evento é crítico e vem antes da
+ * exclusão: sem trilha não há exclusão, e se ela falhar fica o registro da falha (TECH-10 §3).
+ */
+export async function deleteSubmission(deps: InboxDeps, role: Role, id: string) {
+  const { db } = deps;
+  if (!isSubmissionId(id)) throw new AppError("NOT_FOUND");
+
+  const { data: row, error: readError } = await db
+    .from(TABLE)
+    .select("kind, status")
+    .eq("id", id)
+    .maybeSingle<{ kind: SubmissionKind; status: SubmissionStatus }>();
+  if (readError) throw dbFailure(readError);
+  if (!row) throw new AppError("NOT_FOUND");
+  if (!canOnKind(role, row.kind, "delete")) throw new AppError("FORBIDDEN");
+  if (row.status !== "arquivado") {
+    throw new AppError("CONFLICT", { message: "Arquive o envio antes de excluir." });
+  }
+
+  const audit = (outcome: "success" | "failure") =>
+    deps.audit({ event: DELETE_EVENT[row.kind], resourceId: id, outcome, metadata: { kind: row.kind } });
+
+  await audit("success");
+  try {
+    const { data: deleted, error } = await db.from(TABLE).delete().eq("id", id).eq("status", "arquivado").select("id");
+    if (error) throw dbFailure(error);
+    if (!deleted?.length) throw new AppError("CONFLICT");
+  } catch (error) {
+    await audit("failure").catch(() => undefined);
+    throw error;
+  }
 }

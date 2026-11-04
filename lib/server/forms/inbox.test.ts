@@ -19,13 +19,20 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
+ 04/11/2026 Vinícius Nishimura Reis  Exclusão de envio arquivado, a pedido do titular (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { readFileSync } from "node:fs";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it, vi } from "vitest";
-import { changeSubmissionStatus, countFailedNotifications, getSubmission, listSubmissions } from "./inbox";
+import {
+  changeSubmissionStatus,
+  countFailedNotifications,
+  deleteSubmission,
+  getSubmission,
+  listSubmissions,
+} from "./inbox";
 
 const ID = "00000000-0000-4000-8000-000000000601";
 const ALL = ["lead", "contact", "feedback"] as const;
@@ -37,7 +44,7 @@ function fakeDb(results: Result[]) {
   const calls: [string, unknown[]][] = [];
   const builder: Record<string, unknown> = {};
   const next = () => results.shift() ?? { data: null, error: null };
-  for (const method of ["from", "select", "update", "eq", "in", "order", "range", "returns"]) {
+  for (const method of ["from", "select", "update", "delete", "eq", "in", "order", "range", "returns"]) {
     builder[method] = (...args: unknown[]) => {
       calls.push([method, args]);
       return builder;
@@ -139,6 +146,74 @@ describe("changeSubmissionStatus", () => {
     const error = await changeSubmissionStatus({ db, audit: vi.fn() }, "admin", change).catch((caught) => caught);
     expect(error).toMatchObject({ code: "SERVICE_UNAVAILABLE" });
     expect(error.message).not.toContain("detalhe interno");
+  });
+});
+
+describe("deleteSubmission", () => {
+  const archived = { data: { kind: "lead", status: "arquivado" }, error: null };
+
+  it("audita antes de excluir, com o evento do tipo real", async () => {
+    const order: string[] = [];
+    const { db, calls } = fakeDb([archived, { data: [{ id: ID }], error: null }]);
+    const audit = vi.fn(async () => {
+      order.push(`auditou com ${calls.filter(([method]) => method === "delete").length} exclusões`);
+    });
+    await deleteSubmission({ db, audit }, "admin", ID);
+    expect(audit).toHaveBeenCalledWith({
+      event: "lead.deleted",
+      resourceId: ID,
+      outcome: "success",
+      metadata: { kind: "lead" },
+    });
+    expect(order).toEqual(["auditou com 0 exclusões"]);
+    expect(calls.some(([method]) => method === "delete")).toBe(true);
+    expect(calls).toContainEqual(["eq", ["status", "arquivado"]]);
+  });
+
+  it("feedback usa feedback.deleted", async () => {
+    const { db } = fakeDb([
+      { data: { kind: "feedback", status: "arquivado" }, error: null },
+      { data: [{ id: ID }], error: null },
+    ]);
+    const audit = vi.fn(async () => {});
+    await deleteSubmission({ db, audit }, "admin", ID);
+    expect(audit).toHaveBeenCalledWith(expect.objectContaining({ event: "feedback.deleted" }));
+  });
+
+  it("sem auditoria não há exclusão (evento crítico)", async () => {
+    const { db, calls } = fakeDb([archived]);
+    const audit = vi.fn(async () => {
+      throw new Error("trilha fora do ar");
+    });
+    await expect(deleteSubmission({ db, audit }, "admin", ID)).rejects.toThrow("trilha fora do ar");
+    expect(calls.some(([method]) => method === "delete")).toBe(false);
+  });
+
+  it("falha ao excluir fica registrada", async () => {
+    const { db } = fakeDb([archived, { data: null, error: { code: "XX000", message: "detalhe interno" } }]);
+    const audit = vi.fn(async () => {});
+    await expect(deleteSubmission({ db, audit }, "admin", ID)).rejects.toMatchObject({ code: "SERVICE_UNAVAILABLE" });
+    expect(audit).toHaveBeenLastCalledWith(expect.objectContaining({ outcome: "failure" }));
+  });
+
+  it("envio que não está arquivado não é excluído", async () => {
+    const { db, calls } = fakeDb([{ data: { kind: "lead", status: "respondido" }, error: null }]);
+    const audit = vi.fn(async () => {});
+    await expect(deleteSubmission({ db, audit }, "admin", ID)).rejects.toMatchObject({ code: "CONFLICT" });
+    expect(calls.some(([method]) => method === "delete")).toBe(false);
+    expect(audit).not.toHaveBeenCalled();
+  });
+
+  it("papel sem a permissão não exclui", async () => {
+    const { db, calls } = fakeDb([archived]);
+    await expect(deleteSubmission({ db, audit: vi.fn() }, "editor", ID)).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(calls.some(([method]) => method === "delete")).toBe(false);
+  });
+
+  it("id malformado nem chega ao banco", async () => {
+    const { db, calls } = fakeDb([]);
+    await expect(deleteSubmission({ db, audit: vi.fn() }, "admin", "1")).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(calls).toEqual([]);
   });
 });
 
