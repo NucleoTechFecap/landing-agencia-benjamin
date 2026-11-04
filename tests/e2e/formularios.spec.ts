@@ -18,11 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Contato institucional: válido e inválido (FORM-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { randomInt, randomUUID } from "node:crypto";
-import { expect, test, type Page, type Route } from "@playwright/test";
+import { expect, test, type Page, type Request, type Route } from "@playwright/test";
 
 /*
  * Os envios contam para o limite real de 5 por IP em 10 min (TECH-07), que o teste não afrouxa: cada
@@ -43,6 +44,15 @@ const uniqueText = (label: string) => `${label} para o teste automatizado ${rand
 async function waitUntilHumanlyReady(page: Page) {
   await expect(page.locator('input[name="submissionId"]')).not.toHaveValue("");
   await page.waitForTimeout(3_100);
+}
+
+/** POSTs de Server Action feitos pelo formulário hidratado. */
+function trackActionPosts(page: Page) {
+  const posts: Request[] = [];
+  page.on("request", (request) => {
+    if (request.method() === "POST" && request.headers()["next-action"]) posts.push(request);
+  });
+  return posts;
 }
 
 const isPost = (route: Route) => route.request().method() === "POST";
@@ -257,5 +267,35 @@ test.describe("FORM-08 · envio antes da hidratação", () => {
     await expect(page.locator('input[name="submissionId"]')).not.toHaveValue("");
     await expect(page.getByLabel(/^Seu feedback/)).toBeFocused();
     expect(pageErrors).toEqual([]);
+  });
+});
+
+test.describe("FORM-04 · contato institucional", () => {
+  test("válido mostra confirmação e protocolo", async ({ page }) => {
+    await page.goto("/contato?tipo=contato");
+    await waitUntilHumanlyReady(page);
+    await fillContact(page, uniqueText("Mensagem de contato"));
+    await page.getByLabel(/aviso de privacidade/).check();
+    await page.getByRole("button", { name: "Enviar mensagem" }).click();
+
+    await expect(page.getByRole("status").filter({ hasText: "Mensagem enviada!" })).toBeVisible();
+    await expect(page.getByText(/AB-[0-9A-F]{6}/)).toBeVisible();
+  });
+
+  test("inválido mostra o erro no campo, com foco nele, sem ir ao servidor", async ({ page }) => {
+    const posts = trackActionPosts(page);
+    await page.goto("/contato?tipo=contato");
+    await expect(page.locator('input[name="submissionId"]')).not.toHaveValue("");
+    await page.getByLabel(/^Nome/).fill("Pessoa de Teste E2E");
+    await page.getByLabel(/^E-mail/).fill("email-invalido");
+    await page.getByRole("button", { name: "Enviar mensagem" }).click();
+
+    await expect(page.getByRole("alert").filter({ hasText: "Revise os campos destacados." })).toBeVisible();
+    await expect(page.getByText("Informe um e-mail válido.")).toBeVisible();
+    await expect(page.getByText("Escolha o assunto.")).toBeVisible();
+    await expect(page.getByLabel(/^E-mail/)).toHaveAttribute("aria-invalid", "true");
+    await expect(page.getByLabel(/^E-mail/)).toBeFocused();
+    await expect(page.getByLabel(/^Nome/)).toHaveValue("Pessoa de Teste E2E");
+    expect(posts).toHaveLength(0);
   });
 });

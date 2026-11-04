@@ -12,7 +12,9 @@
 
 ## 1. Garantias
 
-1. **Validação sempre no servidor** — o navegador valida para ajudar, o servidor decide.
+1. **Validação sempre no servidor** — o navegador valida para ajudar, com o mesmo esquema
+   (`browser-validation.ts`), e o servidor decide. Erro só em campo técnico e honeypot preenchido não param
+   no navegador: seguem para o servidor responder.
 2. **Persistir antes de notificar** — o e-mail é consequência do registro, nunca o contrário.
 3. **Nenhum lead válido é perdido silenciosamente** — falha de banco vira erro visível com
    código de atendimento; falha de e-mail fica pendente e é reenviada. Depois de salvar, nenhum erro
@@ -33,7 +35,7 @@
 | # | Cenário | Resposta ao visitante | Registro | Notificação | Log |
 | - | ------- | --------------------- | -------- | ----------- | --- |
 | S1 | Envio válido | Sucesso + protocolo `AB-XXXXXX` | Criado (`novo`) | Enviada (`sent`) | `forms.submission.persisted`, `forms.notification.sent` |
-| S2 | Campo inválido | Erro por campo, valores repreenchidos | — | — | `app.error.validation_failed` |
+| S2 | Campo inválido | Erro por campo, valores repreenchidos. Com JavaScript, sem POST | — | — | `app.error.validation_failed` (só quando chega ao servidor) |
 | S3 | Duplo clique / reenvio do mesmo `submissionId` | Sucesso com **mesmo** protocolo, `duplicate: true` | Inalterado | Não reenviada | `forms.submission.duplicate (by=id)` |
 | S4 | Mesmo conteúdo, novo `submissionId`, em até 10 min | Sucesso com protocolo original | Inalterado | Não reenviada | `forms.submission.duplicate (by=fingerprint)` |
 | S5 | Mesmo conteúdo após 10 min | Sucesso, novo protocolo | Novo registro | Enviada | `persisted` |
