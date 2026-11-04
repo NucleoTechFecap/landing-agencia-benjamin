@@ -81,7 +81,7 @@ Nenhum destinatário fica fixo no código (TECH-06). Os e-mails reais dependem d
 | Necessidade de algum campo excluído pela minimização | Pendente |
 
 **27/10/2026:** pedido de aprovação preparado para a coordenação da Benjamin com estes cinco pontos e
-os e-mails de destino de cada formulário ([página para enviar à agência](https://claude.ai/artifact/4TJ8vhTDLW6PYfSfCAqLti), decisão 1). A
+os e-mails de destino de cada formulário (decisão 1 do pedido). A
 situação de cada ponto muda para "Aprovado" quando a resposta chegar.
 
 Ao aprovar: registrar comentário na issue FORM-01 (data, aprovadores, ajustes) e alterar
