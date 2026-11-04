@@ -45,14 +45,15 @@
 | S9 | > 5 envios da mesma origem em 10 min | Erro "Muitas tentativas…" | — | — | `app.error.rate_limited` |
 | S10 | Sem destinatário configurado (só desenvolvimento e preview; em homologação e produção a falta barra o build, ver [TECH-06 §6](captacao-e-roteamento.md)) | Sucesso | Criado, `skipped` | Não enviada nem reenviada (alerta no log) | `forms.notification.skipped` |
 | S11 | Dois envios simultâneos do mesmo id | Ambos sucesso, um `duplicate` | Um registro (constraint única) | Uma | `persisted` |
-| S12 | Produção sem armazenamento persistente configurado | Erro 503 | — | — | `app.error.service_unavailable` (nunca grava em memória fora do dev) |
+| S12 | Ambiente real sem armazenamento persistente configurado (seção 6) | Erro "Serviço temporariamente indisponível" + código de atendimento, com o texto digitado | — | — | `app.error.service_unavailable`, com `reason: submission_store_not_configured` |
 | S13 | Notificação esgotou as 5 tentativas | (Já viu sucesso) | Mantido, `failed`, tentativas 5 | Sai da fila, sem bloquear os envios novos; reenvio manual ([handoff](../operacao/handoff-e-manutencao.md)) | `forms.notification.failed` |
 | S14 | Envio sem JavaScript ou antes da hidratação (campos técnicos vazios) | Página recarrega com o resultado: confirmação, ou erro por campo com os valores repreenchidos | Criado, sem `source_path` | Enviada | `persisted`; sem o tempo mínimo (seção 7) |
 | S15 | Rede cai, resposta se perde ou a plataforma responde com erro antes da aplicação | Aviso no próprio formulário, sem código de atendimento, com tudo o que foi digitado; pode reenviar com o mesmo `submissionId` | Criado só se o POST chegou ao servidor | Como S1 ou, no reenvio, S3 | Nenhum no servidor quando o POST não chega |
 | S16 | Falha ao gravar o resultado da notificação | **Sucesso** (envio já salvo) | Criado, com a notificação como estava (`pending`) | Rotina tenta de novo; o `Idempotency-Key` evita e-mail repetido por 24 h | `forms.notification.status_update_failed` |
 
 S1–S10, S13, S14 e S16 são testes automatizados, e S14 e S15 têm E2E em `tests/e2e/formularios.spec.ts`; S11 é garantido pela constraint `unique` e pelo tratamento de
-`DuplicateSubmissionError`, testado no banco real (`formularios.test.ts`); S12 por `resolveStore()`.
+`DuplicateSubmissionError`, testado no banco real (`formularios.test.ts`); S12 por `resolveStore()`, com
+testes em `deps.test.ts`, `store-policy.test.ts` e `actions.test.ts`.
 
 S15 é o motivo de o formulário hidratado chamar a action dentro de `try/catch`, no `onSubmit` de
 `use-submission.ts`: no `useActionState`, a rejeição subia para o `error.tsx` e o visitante perdia o texto.
@@ -125,6 +126,21 @@ alter table public.form_submissions enable row level security;  -- sem policy pa
 
 A inserção pública acontece no servidor (Server Action) com credencial restrita; o visitante nunca
 lê a tabela (TECH-08).
+
+**Quando o armazenamento em memória é permitido.** Só em desenvolvimento e no preview da Vercel, onde os dados são
+descartáveis (`allowsMemoryStore`, em `store-policy.ts`). Sem armazenamento persistente, o envio é recusado (S12)
+quando:
+
+- `NEXT_PUBLIC_SITE_ENV` é `production` ou `homologation`; ou
+- `VERCEL_ENV` é `production`, **seja qual for** `NEXT_PUBLIC_SITE_ENV`.
+
+A segunda regra existe porque `NEXT_PUBLIC_SITE_ENV` entra no build e vale `development` quando falta. Um deploy de
+Production construído sem as variáveis caía em memória: o visitante recebia "Pedido recebido!" e protocolo, e o
+dado se perdia junto com a instância da função, em violação à RN-04. Agora ele vê o erro com código de atendimento.
+`VERCEL_ENV` é lida em tempo de execução e depende da opção de expor as variáveis de sistema da Vercel, ligada por
+padrão. Sem ela a regra não dispara, por isso ela não substitui configurar o ambiente
+([provisionamento](../operacao/provisionamento-producao.md)). `next build` e os testes locais, que rodam sem
+`VERCEL_ENV`, não mudam.
 
 ## 7. Envio sem JavaScript e antes da hidratação (FORM-08)
 
