@@ -20,6 +20,7 @@
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (SEG-06).
  04/11/2026 Vinícius Nishimura Reis  301 de endereço antigo com cache curto (TECH-13, #369).
  04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
+ 04/11/2026 Vinícius Nishimura Reis  Endereço que só começa com admin não é o painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -31,7 +32,7 @@ import { config, proxy } from "./proxy";
 const SUPABASE = "https://projeto.supabase.co";
 const COOKIE = "sb-projeto-auth-token";
 
-vi.mock("@/lib/server/content/published-slugs", () => ({ resolveDetailSlug: vi.fn() }));
+vi.mock("@/lib/server/content/published-slugs", () => ({ resolveDetailSlug: vi.fn(), resolvePageSlug: vi.fn() }));
 vi.mock("@/lib/config/public-env", () => ({
   publicEnv: { NEXT_PUBLIC_SITE_URL: "https://www.exemplo.com.br", NEXT_PUBLIC_SITE_ENV: "production" },
 }));
@@ -109,6 +110,39 @@ describe("proxy: endereço antigo de serviço e case (DB-08)", () => {
     expect(response.status).toBe(301);
     expect(response.headers.get("location")).toBe("https://www.exemplo.com.br/cases/nome-novo?origem=x");
     expect(response.headers.get("cache-control")).toBe("public, max-age=0, s-maxage=60");
+  });
+});
+
+describe("proxy: endereço que só começa com admin (editor do site)", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it("/administracao publicada abre como qualquer página livre, sem ir ao login", async () => {
+    const { resolvePageSlug } = await import("@/lib/server/content/published-slugs");
+    vi.mocked(resolvePageSlug).mockResolvedValue({ status: "current" });
+    const response = await proxy(requestTo("/administracao"));
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("/admins inexistente responde 404, sem consultar o serviço de login", async () => {
+    const { resolvePageSlug } = await import("@/lib/server/content/published-slugs");
+    vi.mocked(resolvePageSlug).mockResolvedValue({ status: "missing" });
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", SUPABASE);
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "chave-anonima-so-para-o-teste");
+    const login = vi.fn();
+    vi.stubGlobal("fetch", login);
+    const response = await proxy(requestTo("/admins"));
+    expect(response.status).toBe(404);
+    expect(login).not.toHaveBeenCalled();
+  });
+
+  it.each(["/admin", "/admin/midia"])("%s continua atrás do login", async (path) => {
+    const response = await proxy(requestTo(path));
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toContain("/admin/login");
   });
 });
 

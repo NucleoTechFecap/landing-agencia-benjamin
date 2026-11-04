@@ -24,6 +24,7 @@
  04/11/2026 Vinícius Nishimura Reis  Cookies de sessão com HttpOnly, SameSite e Secure (SEG-06).
  04/11/2026 Vinícius Nishimura Reis  301 de endereço antigo com cache curto (TECH-13, #369).
  04/11/2026 Vinícius Nishimura Reis  404 real e endereço único nas páginas livres (editor do site).
+ 04/11/2026 Vinícius Nishimura Reis  Endereço que só começa com admin não é o painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -44,7 +45,8 @@ import { resolveDetailSlug, resolvePageSlug, type DetailRoute } from "@/lib/serv
  */
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  if (!pathname.startsWith("/admin")) return guardDetailRoute(request, pathname);
+  // Comparar o segmento inteiro: /administracao é uma página livre, não o painel.
+  if (pathname !== "/admin" && !pathname.startsWith("/admin/")) return guardDetailRoute(request, pathname);
 
   let response = NextResponse.next({ request });
   const isPublic = isPublicAdminPath(pathname);
