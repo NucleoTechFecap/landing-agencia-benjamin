@@ -46,7 +46,7 @@ lista permitida.
 | `media.uploaded` / `media.deleted` | Biblioteca de mídia | — / ✔ |
 | `lead.viewed` · `feedback.viewed` · `lead.status_changed` | Acesso a dados pessoais (trilha de acesso — TECH-08). `lead.viewed` vale para lead e contato; `lead.status_changed` vale para os três tipos, com o tipo real em `metadata.kind` (FORM-09) | — |
 | `lead.exported` · `lead.deleted` · `feedback.deleted` · `retention.executed` | Saída/eliminação de dados pessoais | ✔ |
-| `access.denied` | Tentativa negada pelo RBAC | — |
+| `access.denied` | Tentativa negada pelo RBAC. Nas Server Actions e na tela de envios (FORM-09); nas demais telas, a negação fica só no log `auth.page.denied` | — |
 
 ¹ **Crítico:** se a auditoria não puder ser gravada, a operação é **abortada**
 (`SERVICE_UNAVAILABLE`). Em operações críticas da aplicação, o evento é gravado **antes** da

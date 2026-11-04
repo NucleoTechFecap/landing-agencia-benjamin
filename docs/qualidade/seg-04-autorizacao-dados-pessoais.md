@@ -35,6 +35,7 @@ marcador aparecer na resposta de quem não pode ler, o teste falha, mesmo em for
 | Conteúdo do envio (`payload`) | HTML ou script executado no painel de quem atende (XSS guardado) | Só texto com o escape do React, sem link automático | `submission-detail.test.ts`, E2E J3.6 |
 | `sourcePath` | `//evil.com` virando link para outro site | Só texto, nunca link | `submission-detail.test.ts`, E2E J3.6 |
 | Formulário de status | Forjar `kind`, gravar status inválido, sobrescrever a alteração de outra pessoa | Tipo lido do banco; status de lista fechada; `update` condicionado ao status lido | `inbox.test.ts`, `leads-no-painel.test.ts` |
+| Conta sem o papel, tentando abrir a tela | Tentar ler dados pessoais sem deixar rastro | `access.denied` na trilha, além do log, sem dizer qual registro foi pedido | `inbox-context.test.ts`, E2E J3.5 |
 | Trilha de auditoria | Forjar eventos de dados pessoais; gravar conteúdo no evento | `record_audit_event` só aceita `lead.*` e `feedback.*` do `admin`; metadados de lista permitida | `leads_painel.test.sql`, `leads-no-painel.test.ts`, `inbox-context.test.ts` |
 | Pré-carregamento de links | Passar o mouse contar como leitura e gravar evento falso | `prefetch={false}` nos links do painel de envios | Revisão de código |
 | Computador compartilhado | Envio aberto ficar no DOM depois de sair (Activity do Next) | Recarga completa ao sair | E2E J3.8 |
