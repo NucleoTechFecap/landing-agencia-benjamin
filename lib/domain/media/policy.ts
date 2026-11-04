@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-10).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
  02/11/2026 Vinícius Nishimura Reis  Volta aos limites do ADR-0005; confere o que volta do navegador (TECH-13, #313).
+ 04/11/2026 Vinícius Nishimura Reis  Identificador do objeto para os logs, sem o nome do arquivo (SEG-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -153,6 +154,11 @@ export function isUploadPath(path: string, mimeType: string): boolean {
   const rule = MEDIA_RULES[mimeType];
   if (!rule) return false;
   return new RegExp(`^\\d{4}/\\d{2}/[0-9a-f-]{36}-[a-z0-9-]{1,60}\\.${rule.extension}$`).test(path);
+}
+
+/** Só o UUID de um caminho de isUploadPath: basta para achar o objeto, sem o nome do arquivo nos logs. */
+export function uploadIdOf(path: string): string {
+  return path.slice(path.lastIndexOf("/") + 1, path.lastIndexOf("/") + 37);
 }
 
 /** URL pública de um objeto do bucket de mídia. */

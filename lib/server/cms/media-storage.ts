@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 02/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  02/11/2026 Vinícius Nishimura Reis  Criação inicial (TECH-13, #313).
+ 04/11/2026 Vinícius Nishimura Reis  Confere o resultado da remoção (SEG-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -64,8 +65,18 @@ export function createSupabaseMediaStorage(client: SupabaseClient): MediaStorage
       return data.token;
     },
     readStart: (path, limit) => readObjectStart(bucket.getPublicUrl(path).data.publicUrl, limit),
+    /*
+     * O Storage não acusa quando nada foi apagado: sem permissão (RLS) ou com o objeto já ausente, ele
+     * responde sucesso com a lista vazia. Só conta como removido o que voltou na lista.
+     */
     async remove(path) {
-      await bucket.remove([path]);
+      const { data, error } = await bucket.remove([path]);
+      if (error || !data?.length) {
+        throw new AppError("SERVICE_UNAVAILABLE", {
+          message: "Não foi possível remover o arquivo do armazenamento.",
+          cause: error ?? "nenhum objeto removido",
+        });
+      }
     },
   };
 }
