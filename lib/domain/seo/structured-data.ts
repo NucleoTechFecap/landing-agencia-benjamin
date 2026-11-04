@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Logotipos em /brand/logos (UX-14).
  01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
  04/11/2026 Vinícius Nishimura Reis  Endereço segue o que foi salvo no painel (ADM-10).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -57,8 +58,9 @@ export function organizationSchema(settings: SiteSettings, siteUrl: string) {
     slogan: settings.tagline,
     description: settings.description,
     url: siteUrl,
-    logo: `${siteUrl}/brand/logos/logo-horizontal.png`,
-    image: `${siteUrl}/brand/logos/logo-vertical.png`,
+    // Logotipo escolhido em Aparência, no lugar do da marca. O da biblioteca já é uma URL absoluta.
+    logo: new URL(settings.theme?.images?.logoHeader?.src ?? "/brand/logos/logo-horizontal.png", siteUrl).href,
+    image: new URL(settings.theme?.images?.logoHero?.src ?? "/brand/logos/logo-vertical.png", siteUrl).href,
     sameAs: Object.values(settings.socials).filter(Boolean),
     ...(settings.contact.email ? { email: settings.contact.email } : {}),
     ...(settings.contact.address ? { address: postalAddress(settings.contact.address) } : {}),

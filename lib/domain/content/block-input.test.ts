@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -108,8 +109,13 @@ describe("onde cada bloco pode entrar (ADM-05)", () => {
   });
 
   it("sobre só na página Sobre; os demais em qualquer página, quantas vezes for", () => {
-    expect(addableBlockTypes("sobre", [])).toEqual(["rich-text", "list", "team", "cta", "about"]);
-    expect(addableBlockTypes("home", [manifesto])).toEqual(["rich-text", "list", "team", "cta"]);
-    expect(addableBlockTypes("contato", [])).toEqual(["rich-text", "list", "team", "cta"]);
+    const anywhere = ["rich-text", "list", "team", "cta", "media-text", "image", "cards", "gallery", "faq", "buttons"];
+    expect(addableBlockTypes("sobre", [])).toEqual([...anywhere.slice(0, 4), "about", ...anywhere.slice(4)]);
+    expect(addableBlockTypes("home", [manifesto])).toEqual(anywhere);
+    expect(addableBlockTypes("contato", [])).toEqual(anywhere);
+    // A abertura vira o topo: só faz sentido em página sem seções fixas.
+    expect(addableBlockTypes("pagina-nova", [])).toContain("hero");
+    // Menu, rodapé e modelos não têm onde mostrar blocos.
+    expect(addableBlockTypes("site-geral", [])).toEqual([]);
   });
 });
