@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-08).
  04/11/2026 Vinícius Nishimura Reis  Contato institucional: válido e inválido (FORM-04).
+ 04/11/2026 Vinícius Nishimura Reis  Duplo clique e novo envio depois da confirmação (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -297,5 +298,45 @@ test.describe("FORM-04 · contato institucional", () => {
     await expect(page.getByLabel(/^E-mail/)).toBeFocused();
     await expect(page.getByLabel(/^Nome/)).toHaveValue("Pessoa de Teste E2E");
     expect(posts).toHaveLength(0);
+  });
+});
+
+test.describe("FORM-08 · duplo envio", () => {
+  test("duplo clique gera um único POST e um único protocolo", async ({ page }) => {
+    const posts = trackActionPosts(page);
+    await page.goto("/contato?tipo=contato");
+    await waitUntilHumanlyReady(page);
+    await fillContact(page, uniqueText("Mensagem de duplo clique"));
+    await page.getByLabel(/aviso de privacidade/).check();
+    const submissionId = await page.locator('input[name="submissionId"]').inputValue();
+    // Resposta atrasada: o segundo clique acontece com o envio em andamento, como numa rede real.
+    await page.route(
+      (url) => url.pathname === "/contato",
+      async (route) => {
+        if (isPost(route)) await new Promise((resolve) => setTimeout(resolve, 500));
+        await route.fallback();
+      },
+    );
+
+    await page.getByRole("button", { name: "Enviar mensagem" }).dblclick();
+    await expect(page.getByRole("button", { name: "Enviando…" })).toBeDisabled();
+
+    await expect(page.getByRole("status").filter({ hasText: "Mensagem enviada!" })).toBeVisible();
+    await expect(page.getByText(/AB-[0-9A-F]{6}/)).toHaveText(protocolOf(submissionId));
+    expect(posts).toHaveLength(1);
+  });
+
+  test("'Enviar outra mensagem' abre um envio novo, com outro identificador", async ({ page }) => {
+    await page.goto("/feedback");
+    await waitUntilHumanlyReady(page);
+    const firstId = await page.locator('input[name="submissionId"]').inputValue();
+    await fillFeedback(page, uniqueText("Primeiro feedback"));
+    await page.getByLabel(/aviso de privacidade/).check();
+    await page.getByRole("button", { name: "Enviar feedback" }).click();
+    await page.getByRole("link", { name: "Enviar outra mensagem" }).click();
+
+    await expect(page.locator('input[name="submissionId"]')).not.toHaveValue("");
+    await expect(page.locator('input[name="submissionId"]')).not.toHaveValue(firstId);
+    await expect(page.getByLabel(/^Seu feedback/)).toHaveValue("");
   });
 });
