@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  25/10/2026 Vinícius Binda             Criação inicial (DB-01/DBX-01).
  04/11/2026 Vinícius Nishimura Reis  Posições, destinos e limites do CTA conferidos com o banco (ADM-11).
+ 04/11/2026 Vinicius Binda             Campos anonimizados pela retenção (DBX-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -27,6 +28,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { CTA_LIMITS, CTA_PLACEMENTS, CTA_TARGET_KINDS } from "@/lib/domain/content/cta-schema";
 import { PUBLICATION_STATUSES } from "@/lib/domain/content/publication-status";
+import { FEEDBACK_PERSONAL_FIELDS } from "@/lib/domain/forms/retention";
 import { RESERVED_SLUGS, SLUG_MAX_LENGTH, SLUG_MIN_LENGTH, SLUG_PATTERN } from "@/lib/domain/content/slug";
 import { MEDIA_RULES } from "@/lib/domain/media/policy";
 
@@ -77,6 +79,11 @@ describe("consistência conteúdo código × banco (DB-01/DBX-01)", () => {
     expect(quoted(kinds)).toEqual([...CTA_TARGET_KINDS]);
     expect(sql).toContain(`char_length(label) between ${CTA_LIMITS.labelMin} and ${CTA_LIMITS.label}`);
     expect(sql).toContain(`char_length(target_url) <= ${CTA_LIMITS.url}`);
+  });
+
+  it("apply_retention anonimiza os mesmos campos de FEEDBACK_PERSONAL_FIELDS (DBX-05)", () => {
+    const body = functionBody("apply_retention");
+    for (const field of FEEDBACK_PERSONAL_FIELDS) expect(body).toContain(`- '${field}'`);
   });
 
   it("toda tabela de public habilita RLS (supabase/README.md)", () => {

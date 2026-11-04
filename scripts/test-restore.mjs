@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinicius Binda             Criação inicial (DB-10).
+ 04/11/2026 Vinicius Binda             Reaplicação da lista de envios eliminados depois de restaurar (DBX-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,7 +38,8 @@ import { createClient } from "@supabase/supabase-js";
  *   2. cópia: dump, arquivos do bucket, pacote criptografado; apaga o que não está cifrado;
  *   3. destino: stack nova em pasta temporária, só com as migrations, como um projeto recém-criado;
  *   4. restauração: decifra o pacote, restaura os dados e devolve os arquivos;
- *   5. conferência: linhas de todas as tabelas, arquivos, login, RLS e dados válidos e inválidos.
+ *   5. conferência: linhas de todas as tabelas, arquivos, login, RLS e dados válidos e inválidos;
+ *   6. lista de eliminados reaplicada e testes pgTAP sobre os dados restaurados.
  */
 const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
 const windows = process.platform === "win32";
@@ -49,6 +51,9 @@ const FILES = [
   { path: "2026/11/documento-ficticio.pdf", contentType: "application/pdf", bytes: randomBytes(4096) },
 ];
 const clientOptions = { auth: { persistSession: false, autoRefreshToken: false } };
+// Envios fictícios para a lista de eliminados (DBX-05): um excluído a pedido depois da cópia, um que
+// segue no banco e um com retenção suspensa, que a lista não pode apagar.
+const SUBMISSIONS = { erased: randomUUID(), kept: randomUUID(), held: randomUUID() };
 
 const failures = [];
 function check(what, ok, detail = "") {
@@ -199,6 +204,18 @@ async function prepareSource(stack, account) {
     fingerprint: randomBytes(16).toString("hex"),
   });
   if (formError) fail(`Envio de formulário: ${formError.message}`);
+  const { error: listError } = await admin.from("form_submissions").insert(
+    Object.entries(SUBMISSIONS).map(([name, id]) => ({
+      id,
+      protocol: "TESTE-DBX05",
+      kind: "lead",
+      category: "lead:teste",
+      payload: { name: "Pessoa Fictícia", email: "pessoa@teste.invalid" },
+      fingerprint: name,
+      legal_hold: name === "held",
+    })),
+  );
+  if (listError) fail(`Envios da lista de eliminados: ${listError.message}`);
 
   const editor = createClient(stack.url, stack.anonKey, clientOptions);
   await editor.auth.signInWithPassword(account);
@@ -337,6 +354,27 @@ async function verify(target, account, beforeFingerprint, beforeStructure) {
     "-",
   ]);
   check("a preparação recusa um banco com dados", !again.ok && again.err.includes("Restauração recusada"));
+
+  // docs/operacao/retencao-e-descarte.md §6: o que foi eliminado a pedido volta com a cópia e sai pela lista.
+  const stillThere = () =>
+    query(
+      TARGET_PROJECT,
+      `select string_agg(fingerprint, ',' order by fingerprint) from public.form_submissions where protocol = 'TESTE-DBX05';`,
+    );
+  check("o envio eliminado depois da cópia voltou com a restauração", stillThere() === "erased,held,kept");
+  const reapplied = query(
+    TARGET_PROJECT,
+    `select row(deleted, anonymized, skipped)::text from public.apply_retention(array['${SUBMISSIONS.erased}', '${SUBMISSIONS.held}']::uuid[], '{}'::uuid[], now(), 'titular');`,
+  );
+  check("a lista de eliminados exclui o envio e respeita a retenção suspensa", reapplied === "(1,0,1)", reapplied);
+  check("só o envio da lista saiu do banco restaurado", stillThere() === "held,kept");
+  check(
+    "a reaplicação fica na auditoria, só com contagens",
+    query(
+      TARGET_PROJECT,
+      "select metadata->>'origin' from public.audit_log where event = 'retention.executed' order by id desc limit 1;",
+    ) === "titular",
+  );
 }
 
 async function main() {
@@ -408,6 +446,7 @@ async function main() {
     step("6. Testes do banco sobre os dados restaurados");
     // ambiente_banco.test.sql confere que a migration não marca o banco. A marcação já foi conferida.
     query(TARGET_PROJECT, "delete from public.ambiente_banco;");
+    query(TARGET_PROJECT, "update public.form_submissions set legal_hold = false;");
     const pgtap = npx(["supabase", "test", "db", "--workdir", targetDir]);
     const summary = `${pgtap.stdout}${pgtap.stderr}`
       .split("\n")
