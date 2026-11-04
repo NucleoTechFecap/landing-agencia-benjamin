@@ -21,8 +21,7 @@
 ──────────────────────────────────────────────────────────────────────────────
 */
 
-import { mkdirSync } from "node:fs";
-import { join } from "node:path";
+import { readdirSync } from "node:fs";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import {
@@ -33,6 +32,7 @@ import {
   deleteAccounts,
   login,
   newSuffix,
+  saveEvidence,
   serviceClient,
   type Account,
 } from "./painel-helpers";
@@ -42,8 +42,6 @@ const WIDTHS = [360, 768, 1280] as const;
 /** WCAG 2.5.8 (AA): 24 px para qualquer alvo. Botões e campos do painel ficam na recomendação de 44 px. */
 const MIN_TARGET = 24;
 const MIN_CONTROL = 44;
-/** Capturas de tela ficam fora do repositório: só são gravadas com esta variável. */
-const EVIDENCE_DIR = process.env.E2E_EVIDENCE_DIR;
 
 const PAST = "2026-10-01T12:00:00.000Z";
 
@@ -274,7 +272,6 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
     pages.viewer = await open();
     await login(pages.viewer, accounts.viewer);
     pages.visitor = await open();
-    if (EVIDENCE_DIR) mkdirSync(EVIDENCE_DIR, { recursive: true });
   });
 
   test.afterAll(async () => {
@@ -295,6 +292,8 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
     await deleteAccounts(client, Object.values(accounts));
   });
 
+  const newBlock = (type: string) => `/admin/paginas/${ids.page}/blocos/novo?tipo=${type}`;
+
   /** Abre a tela, confere que é ela mesma (e não um erro ou desvio) e mede nas três larguras. */
   async function audit(page: Page, label: string, path: () => string, heading: RegExp) {
     await page.goto(path());
@@ -314,61 +313,62 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
       if (scrollWidth > clientWidth) failures[`${width}: rolagem lateral`] = { scrollWidth, clientWidth, outside };
       if (scrollers.length) failures[`${width}: área com rolagem própria`] = scrollers;
       if (width === 360 && smallTargets.length) failures[`${width}: alvo pequeno`] = smallTargets;
-      if (EVIDENCE_DIR) {
-        await page.screenshot({ path: join(EVIDENCE_DIR, `${label}-${width}.png`), fullPage: true });
-      }
+      await saveEvidence(page, `${label}-${width}`);
     }
     expect(failures).toEqual({});
   }
 
-  const ADMIN_ROUTES: { label: string; path: () => string; heading: RegExp }[] = [
-    { label: "inicio", path: () => "/admin", heading: /Bem-vindo/ },
-    { label: "visao-geral", path: () => "/admin/conteudos", heading: /Visão geral/ },
-    { label: "paginas", path: () => "/admin/paginas", heading: /Páginas e textos/ },
-    { label: "pagina-nova", path: () => "/admin/paginas/nova?rota=contato", heading: /Criar conteúdo: Contato/ },
-    { label: "pagina-editar", path: () => `/admin/paginas/${ids.page}`, heading: /^Pagina-/ },
-    {
-      label: "bloco-novo-texto",
-      path: () => `/admin/paginas/${ids.page}/blocos/novo?tipo=rich-text`,
-      heading: /Novo bloco: Texto/,
-    },
-    {
-      label: "bloco-novo-lista",
-      path: () => `/admin/paginas/${ids.page}/blocos/novo?tipo=list`,
-      heading: /Novo bloco: Lista/,
-    },
-    {
-      label: "bloco-novo-time",
-      path: () => `/admin/paginas/${ids.page}/blocos/novo?tipo=team`,
-      heading: /Novo bloco: Nosso time/,
-    },
-    {
-      label: "bloco-novo-cta",
-      path: () => `/admin/paginas/${ids.page}/blocos/novo?tipo=cta`,
-      heading: /Novo bloco: Chamada/,
-    },
-    {
-      label: "bloco-editar",
-      path: () => `/admin/paginas/${ids.page}/blocos/${ids.block}`,
-      heading: /Editar bloco: Texto/,
-    },
-    { label: "areas", path: () => "/admin/areas", heading: /Áreas de atuação/ },
-    { label: "area-nova", path: () => "/admin/areas/nova", heading: /Nova área/ },
-    { label: "area-editar", path: () => `/admin/areas/${ids.area}`, heading: /^Area-/ },
-    { label: "area-arquivada", path: () => `/admin/areas/${ids.areaArchived}`, heading: /^Area-arquivada/ },
-    { label: "servicos", path: () => "/admin/servicos", heading: /Serviços/ },
-    { label: "servico-novo", path: () => "/admin/servicos/novo", heading: /Novo serviço/ },
-    { label: "servico-editar", path: () => `/admin/servicos/${ids.service}`, heading: /^Servico-/ },
-    { label: "categorias", path: () => "/admin/categorias", heading: /Categorias de cases/ },
-    { label: "categoria-nova", path: () => "/admin/categorias/nova", heading: /Nova categoria/ },
-    { label: "categoria-editar", path: () => `/admin/categorias/${ids.category}`, heading: /^Categoria-/ },
-    { label: "cases", path: () => "/admin/cases", heading: /Cases/ },
-    { label: "case-novo", path: () => "/admin/cases/novo", heading: /Novo case/ },
-    { label: "case-editar", path: () => `/admin/cases/${ids.case}`, heading: /^Case-/ },
-    { label: "midia", path: () => "/admin/midia", heading: /Biblioteca de mídia/ },
-    { label: "sem-permissao", path: () => "/admin/sem-permissao", heading: /Sem permissão/ },
-    { label: "acesso-pendente", path: () => "/admin/acesso-pendente", heading: /Acesso pendente/ },
-    { label: "nova-senha", path: () => "/admin/nova-senha", heading: /Defina sua senha/ },
+  /** Uma tela: `route` é a pasta em app/admin (sem o grupo), e `path` só existe quando a URL depende da massa. */
+  const screen = (
+    label: string,
+    route: string,
+    heading: RegExp,
+    path = () => `/admin/${route}`.replace(/\/$/, ""),
+  ) => ({
+    label,
+    route,
+    heading,
+    path,
+  });
+
+  // Tela nova em app/admin entra aqui, em uma linha: o último teste do arquivo falha enquanto faltar.
+  const ADMIN_ROUTES = [
+    screen("inicio", "", /Bem-vindo/),
+    screen("visao-geral", "conteudos", /Visão geral/),
+    screen("paginas", "paginas", /Páginas e textos/),
+    screen("pagina-nova", "paginas/nova", /Criar conteúdo: Contato/, () => "/admin/paginas/nova?rota=contato"),
+    screen("pagina-editar", "paginas/[id]", /^Pagina-/, () => `/admin/paginas/${ids.page}`),
+    screen("bloco-novo-texto", "paginas/[id]/blocos/novo", /Novo bloco: Texto/, () => newBlock("rich-text")),
+    screen("bloco-novo-lista", "paginas/[id]/blocos/novo", /Novo bloco: Lista/, () => newBlock("list")),
+    screen("bloco-novo-time", "paginas/[id]/blocos/novo", /Novo bloco: Nosso time/, () => newBlock("team")),
+    screen("bloco-novo-cta", "paginas/[id]/blocos/novo", /Novo bloco: Chamada/, () => newBlock("cta")),
+    screen(
+      "bloco-editar",
+      "paginas/[id]/blocos/[blocoId]",
+      /Editar bloco: Texto/,
+      () => `/admin/paginas/${ids.page}/blocos/${ids.block}`,
+    ),
+    screen("areas", "areas", /Áreas de atuação/),
+    screen("area-nova", "areas/nova", /Nova área/),
+    screen("area-editar", "areas/[id]", /^Area-/, () => `/admin/areas/${ids.area}`),
+    screen("area-arquivada", "areas/[id]", /^Area-arquivada/, () => `/admin/areas/${ids.areaArchived}`),
+    screen("servicos", "servicos", /Serviços/),
+    screen("servico-novo", "servicos/novo", /Novo serviço/),
+    screen("servico-editar", "servicos/[id]", /^Servico-/, () => `/admin/servicos/${ids.service}`),
+    screen("categorias", "categorias", /Categorias de cases/),
+    screen("categoria-nova", "categorias/nova", /Nova categoria/),
+    screen("categoria-editar", "categorias/[id]", /^Categoria-/, () => `/admin/categorias/${ids.category}`),
+    screen("cases", "cases", /Cases/),
+    screen("case-novo", "cases/novo", /Novo case/),
+    screen("case-editar", "cases/[id]", /^Case-/, () => `/admin/cases/${ids.case}`),
+    screen("midia", "midia", /Biblioteca de mídia/),
+    screen("sem-permissao", "sem-permissao", /Sem permissão/),
+    screen("acesso-pendente", "acesso-pendente", /Acesso pendente/),
+    screen("nova-senha", "nova-senha", /Defina sua senha/),
+  ];
+  const PUBLIC_ROUTES = [
+    screen("login", "login", /Painel da Benjamin/),
+    screen("recuperar-senha", "recuperar-senha", /senha/i),
   ];
 
   for (const route of ADMIN_ROUTES) {
@@ -397,56 +397,20 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
     });
   }
 
-  const PUBLIC_ROUTES: { label: string; path: () => string; heading: RegExp }[] = [
-    { label: "login", path: () => "/admin/login", heading: /Painel da Benjamin/ },
-    { label: "recuperar-senha", path: () => "/admin/recuperar-senha", heading: /senha/i },
-  ];
   for (const route of PUBLIC_ROUTES) {
     test(`sem sessão: ${route.label}`, async () => {
       await audit(pages.visitor!, `visitante-${route.label}`, route.path, route.heading);
     });
   }
 
-  test("o que está no registro de telas cobre todas as rotas do painel", async () => {
-    const { readdirSync } = await import("node:fs");
-    const routeFiles = (readdirSync("app/admin", { recursive: true }) as string[]).filter((file) =>
-      file.endsWith("page.tsx"),
-    );
-    const covered = routeFiles.map((file) =>
-      file
-        .replace(/\\/g, "/")
-        .replace("(painel)/", "")
-        .replace(/\/?page\.tsx$/, ""),
-    );
-    const expected = [
-      "",
-      "conteudos",
-      "paginas",
-      "paginas/nova",
-      "paginas/[id]",
-      "paginas/[id]/blocos/novo",
-      "paginas/[id]/blocos/[blocoId]",
-      "areas",
-      "areas/nova",
-      "areas/[id]",
-      "servicos",
-      "servicos/novo",
-      "servicos/[id]",
-      "categorias",
-      "categorias/nova",
-      "categorias/[id]",
-      "cases",
-      "cases/novo",
-      "cases/[id]",
-      "midia",
-      "sem-permissao",
-      "acesso-pendente",
-      "login",
-      "recuperar-senha",
-      "nova-senha",
-    ];
-    // Tela nova sem verificação de largura faz este teste falhar: acrescente-a às listas acima.
-    expect(covered.sort()).toEqual(expected.sort());
+  test("toda tela de app/admin está na verificação de largura", () => {
+    const pages = (readdirSync("app/admin", { recursive: true }) as string[])
+      .map((file) => file.replace(/\\/g, "/"))
+      .filter((file) => file.endsWith("page.tsx"))
+      .map((file) => file.replace("(painel)/", "").replace(/\/?page\.tsx$/, ""));
+    const listed = [...ADMIN_ROUTES, ...PUBLIC_ROUTES].map((route) => route.route);
+    expect(pages.filter((route) => !listed.includes(route))).toEqual([]);
+    expect(listed.filter((route) => !pages.includes(route))).toEqual([]);
   });
 
   test("teclado alcança todos os controles da tela, com foco visível, em 360 px", async () => {
@@ -481,15 +445,18 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
       for (let press = 0; press < expected.length + 5 && reached.size < expected.length; press += 1) {
         await page.keyboard.press("Tab");
         const focused = await page.evaluate(async () => {
-          // O anel de foco dos campos tem transição: até o primeiro quadro, o valor lido ainda é o anterior.
-          await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
           const element = document.activeElement;
           if (!element) return null;
+          // Lê depois das transições: no meio delas, o anel ainda aparece em campo que já perdeu o foco.
+          await Promise.allSettled(element.getAnimations().map((animation) => animation.finished));
           const style = getComputedStyle(element);
+          // Ícone de calendário do campo de mês: o foco fica dentro do controle nativo, e quem desenha o
+          // contorno é o navegador, em parte que o estilo calculado do campo não mostra.
+          const nativePart = element.matches(":focus-within") && !element.matches(":focus");
           return {
             mark: element.getAttribute("data-teclado"),
             // Campos têm anel de foco (box-shadow); os demais, o contorno global de :focus-visible.
-            visible: style.outlineStyle !== "none" || style.boxShadow !== "none",
+            visible: nativePart || style.outlineStyle !== "none" || style.boxShadow !== "none",
             name: `${element.tagName} ${element.getAttribute("name") ?? element.textContent?.trim().slice(0, 30)}`,
           };
         });

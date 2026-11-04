@@ -22,6 +22,8 @@
 */
 
 import { randomBytes } from "node:crypto";
+import { mkdirSync } from "node:fs";
+import { join } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, type Page } from "@playwright/test";
 
@@ -73,6 +75,14 @@ export async function submitLogin(page: Page, account: Account) {
 export async function login(page: Page, account: Account) {
   await submitLogin(page, account);
   await expect(page).toHaveURL(/\/admin$/);
+}
+
+/** Capturas de tela ficam fora do repositório: só são gravadas com E2E_EVIDENCE_DIR. */
+export async function saveEvidence(page: Page, name: string, fullPage = true) {
+  const dir = process.env.E2E_EVIDENCE_DIR;
+  if (!dir) return;
+  mkdirSync(dir, { recursive: true });
+  await page.screenshot({ path: join(dir, `${name}.png`), fullPage });
 }
 
 export const panelMenu = (page: Page) => page.getByRole("navigation", { name: "Módulos do painel" });
