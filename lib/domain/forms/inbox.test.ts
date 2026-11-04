@@ -19,11 +19,13 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
+ 04/11/2026 Vinícius Nishimura Reis  Lead e feedback com a mesma visão: o menu usa só lead (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { ROLES, can } from "../auth/rbac";
 import { NOTIFICATION_RETRY } from "./idempotency";
 import {
   INBOX_PAGE_SIZE,
@@ -55,6 +57,11 @@ describe("permissão por tipo", () => {
       expect(kindsAllowed(role, "view")).toEqual([]);
       expect(kindsAllowed(role, "edit")).toEqual([]);
     }
+  });
+
+  it("lead e feedback têm a mesma visão em todo papel: o item do menu confere só `lead`", () => {
+    // Se a matriz separar os dois, quem tem só feedback entra na tela, mas não vê o item no menu.
+    for (const role of ROLES) expect(can(role, "feedback", "view")).toBe(can(role, "lead", "view"));
   });
 
   it("usa o mesmo recurso que o roteamento e a RLS", () => {

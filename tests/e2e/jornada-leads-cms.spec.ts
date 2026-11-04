@@ -146,7 +146,8 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
     expect(protocol).not.toBe("");
 
     await login(page, accounts.admin);
-    await page.getByRole("link", { name: "Leads e feedbacks" }).click();
+    // `first`: com o menu lateral do painel, o mesmo link também aparece no cartão do início.
+    await page.getByRole("link", { name: "Leads e feedbacks" }).first().click();
     await expect(page).toHaveURL(/\/admin\/leads$/);
     await expect(visible(page.getByRole("heading", { level: 1, name: "Leads e feedbacks" }))).toBeVisible();
 

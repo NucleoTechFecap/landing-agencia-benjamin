@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
+ 04/11/2026 Vinícius Nishimura Reis  Tabela sem rolagem lateral, alvos de toque e texto longo (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -38,7 +39,7 @@ import {
 import { SUBMISSION_KIND_LABELS, type SubmissionKind } from "@/lib/domain/forms/schemas";
 
 const control =
-  "mt-1.5 w-full rounded-2xl border-2 border-benja-noite bg-white px-4 py-2.5 text-sm text-benja-noite focus:border-benja-azul focus:ring-4 focus:ring-benja-azul";
+  "mt-1.5 min-h-11 w-full rounded-2xl border-2 border-benja-noite bg-white px-4 py-2.5 text-sm text-benja-noite focus:border-benja-azul focus:ring-4 focus:ring-benja-azul";
 
 function Filter({
   name,
@@ -52,7 +53,8 @@ function Filter({
   children: ReactNode;
 }) {
   return (
-    <div>
+    // min-w-0: um nome de serviço longo numa opção não pode alargar a coluna.
+    <div className="min-w-0">
       <label htmlFor={`filtro-${name}`} className="text-sm font-bold text-benja-noite">
         {label}
       </label>
@@ -124,11 +126,15 @@ export function SubmissionFilters({
       <div className="flex items-center gap-4">
         <button
           type="submit"
-          className="rounded-full bg-benja-verde px-5 py-2.5 text-sm font-bold text-benja-nyanza transition hover:bg-benja-noite"
+          className="min-h-11 rounded-full bg-benja-verde px-5 py-2.5 text-sm font-bold text-benja-nyanza transition hover:bg-benja-noite"
         >
           Filtrar
         </button>
-        <Link href={INBOX_PATH} prefetch={false} className="text-sm font-semibold underline underline-offset-4">
+        <Link
+          href={INBOX_PATH}
+          prefetch={false}
+          className="inline-block py-1 text-sm font-semibold underline underline-offset-4"
+        >
           Limpar
         </Link>
       </div>
