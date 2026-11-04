@@ -86,6 +86,7 @@
 | [Jornadas críticas e testes E2E](qualidade/jornadas-e2e.md) | TECH-12 |
 | [Testes de CRUD e estados de publicação do CMS](qualidade/qa-04-cms.md) | QA-04 |
 | [Roteiro e checklist de homologação da Benjamin](qualidade/homologacao.md) | QA-08 |
+| [Autorização de leitura de dados pessoais no painel](qualidade/seg-04-autorizacao-dados-pessoais.md) | SEG-04 |
 | [Roteiro de reprodução do ambiente com seed](qualidade/arc-11-reproducao-do-seed.md) | ARC-11 |
 | [Revisão e aprovação de PRs críticos](qualidade/revisao-de-prs.md) | TECH-13 |
 | [Checklist de release e plano de rollback](operacao/release-e-rollback.md) | GO-01 |
