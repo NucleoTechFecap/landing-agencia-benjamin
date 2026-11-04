@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  04/11/2026 Vinícius Nishimura Reis  Página estática para o envio sem JavaScript (FORM-08).
  04/11/2026 Vinícius Nishimura Reis  Envio pelo onSubmit do hook (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Validação no navegador (FORM-04/FORM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -50,6 +51,7 @@ function ContactFormInner({
   onReset: () => void;
 }) {
   const { state, formAction, onSubmit, pending, meta, formRef, errors, values } = useSubmission(
+    "contact",
     action,
     STANDALONE_FORM_PATHS.contact,
   );
