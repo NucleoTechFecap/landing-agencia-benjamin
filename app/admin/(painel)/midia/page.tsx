@@ -20,16 +20,19 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  02/11/2026 Vinícius Nishimura Reis  Formulário com os dois passos do envio direto (TECH-13, #313).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { CmsHeader } from "@/components/admin/cms/cms-header";
 import { FlashMessage } from "@/components/admin/cms/flash-message";
 import { MediaUploadForm } from "@/components/admin/cms/media-upload-form";
 import { can } from "@/lib/domain/auth/rbac";
 import { safeAdminRedirect } from "@/lib/domain/auth/redirect";
+import { mediaDisplayName } from "@/lib/domain/media/usage";
 import { requirePageAccess } from "@/lib/server/auth/guards";
 import { cmsDeps } from "@/lib/server/cms/context";
 import { finishMediaUpload, requestMediaUpload } from "./actions";
@@ -37,8 +40,8 @@ import { finishMediaUpload, requestMediaUpload } from "./actions";
 export const metadata: Metadata = { title: "Biblioteca de mídia" };
 
 /**
- * Biblioteca de mídia mínima (envio + lista) para capa e galeria dos cases e imagem dos
- * serviços. Gestão completa (excluir, editar texto alternativo, ver onde é usado) é ADM-09.
+ * Biblioteca de mídia: envio e lista para capa e galeria dos cases, imagem dos serviços e fotos do
+ * time. Texto alternativo, usos e exclusão ficam no detalhe de cada arquivo (ADM-09).
  */
 export default async function MediaAdminPage({ searchParams }: PageProps<"/admin/midia">) {
   const user = await requirePageAccess("media", "view", "/admin/midia");
@@ -103,6 +106,12 @@ export default async function MediaAdminPage({ searchParams }: PageProps<"/admin
                       {asset.width && asset.height ? `${asset.width} × ${asset.height} px · ` : ""}
                       {asset.mimeType.replace("image/", "").replace("application/", "").toUpperCase()}
                     </p>
+                    <Link
+                      href={`/admin/midia/${asset.id}`}
+                      className="inline-block py-1 font-bold text-benja-verde underline underline-offset-4"
+                    >
+                      Detalhes<span className="sr-only"> de {mediaDisplayName(asset.path)}</span>
+                    </Link>
                   </div>
                 </li>
               ))}

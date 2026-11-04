@@ -405,6 +405,7 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
     screen("cta-novo", "ctas/novo", /Novo CTA/),
     screen("cta-editar", "ctas/[id]", /^Cta-/, () => `/admin/ctas/${ids.cta}`),
     screen("midia", "midia", /Biblioteca de mídia/),
+    screen("midia-detalhe", "midia/[id]", /\.(webp|png|jpe?g|avif)$/, () => `/admin/midia/${ids.media}`),
     screen("leads", "leads", /Leads e feedbacks/),
     screen("lead-detalhe", "leads/[id]", /^AB-/, () => `/admin/leads/${ids.submission}`),
     screen("lead-arquivado", "leads/[id]", /^AB-/, () => `/admin/leads/${ids.submissionArchived}`),

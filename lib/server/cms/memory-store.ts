@@ -24,6 +24,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  Gravação de item com relações, como no banco (TECH-13, #314).
  04/11/2026 Vinícius Nishimura Reis  Configuração institucional, com a linha única do banco (ADM-10).
+ 04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -102,7 +103,7 @@ export interface MemoryTables {
   cases: CaseRow[];
   case_services: CaseServiceRow[];
   case_media: CaseMediaRow[];
-  media_assets: MediaAssetRow[];
+  media_assets: (MediaAssetRow & { updated_at?: string })[];
   ctas: CtaRow[];
   pages: PageRow[];
   blocks: BlockRow[];
@@ -209,9 +210,29 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
       if (tables.media_assets.some((row) => row.path === values.path)) {
         throw new AppError("CONFLICT", { message: "Arquivo já registrado." });
       }
-      const row = { ...values, id: crypto.randomUUID() };
+      const row = { ...values, id: crypto.randomUUID(), updated_at: tick() };
       tables.media_assets.push(row);
       return toMediaAsset(row, "https://projeto.supabase.co");
+    },
+
+    async updateMedia(id, values, expectedUpdatedAt) {
+      const row = tables.media_assets.find((item) => item.id === id);
+      if (!row) throw new AppError("NOT_FOUND");
+      if ((row.updated_at ?? "") !== expectedUpdatedAt) throw new AppError("CONFLICT");
+      Object.assign(row, values, { updated_at: tick() });
+      return toMediaAsset(row, "https://projeto.supabase.co");
+    },
+
+    async removeMedia(id) {
+      const index = tables.media_assets.findIndex((item) => item.id === id);
+      if (index < 0) throw new AppError("NOT_FOUND");
+      // FK restrict do banco: capa, galeria e imagem de serviço. A foto do time não tem FK.
+      const referenced =
+        tables.services.some((item) => item.image_media_id === id) ||
+        tables.cases.some((item) => item.cover_media_id === id) ||
+        tables.case_media.some((link) => link.media_id === id);
+      if (referenced) throw new AppError("CONFLICT", { message: "Este item está em uso e não pode ser excluído." });
+      tables.media_assets.splice(index, 1);
     },
 
     async retiredSlugs(entity) {

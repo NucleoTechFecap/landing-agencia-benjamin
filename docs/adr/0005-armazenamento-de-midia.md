@@ -130,6 +130,21 @@ técnica, ainda não tomada.**
 Quem envia já é da equipe autenticada, com `media:create`: nenhum desses caminhos está aberto ao
 visitante.
 
+## Exclusão e edição (ADM-09)
+
+`deleteMedia` exige `media:delete`, recusa arquivo em uso e lista os usos. A foto do bloco "Nosso time"
+fica em JSON, sem FK: só essa busca a enxerga, então uma exclusão direta pela API, por quem tem
+`media:delete`, ou uma foto escolhida entre a busca e a gravação escapam dela. Capa, galeria e imagem de
+serviço têm também a FK `restrict`.
+
+O registro sai antes do arquivo. Se o Storage falhar, sobra um arquivo sem registro: o painel avisa e o log
+traz `media.delete.file_left` com o `objectId`, para apagar à mão como descrito acima. A ordem inversa poderia tirar do ar uma imagem em uso. Arquivo com caminho em `/public` não passa pelo
+Storage.
+
+`updateMediaDetails` exige `media:edit` e usa versão otimista. A foto do bloco "Nosso time" guarda uma
+cópia do texto alternativo, atualizada quando o bloco é salvo de novo; o painel avisa. Editar não gera
+evento de auditoria, porque o catálogo só tem `media.uploaded` e `media.deleted`.
+
 ## Demonstração em homologação (pendente)
 
 O critério de aceite exige upload e recuperação demonstrados em homologação. Depende de:
