@@ -44,7 +44,8 @@
 | Atualizar dependências | Mensal | `npm outdated`, `npm audit`, PR com `npm run verify`, `test:e2e`, `test:supabase` e `test:e2e:cms` |
 | Atualizar Next.js | A cada minor | Ler `node_modules/next/dist/docs/` da nova versão (AGENTS.md) |
 | Rotacionar segredos | Semestral e ao desligar alguém com acesso | [ARC-05 §4](../ambientes/variaveis-de-ambiente.md) |
-| Testar restauração de backup | Trimestral | DB-10 |
+| Copiar banco e arquivos para o Drive institucional | Semanal | [DB-10 §4](backup-e-recuperacao.md): é o único backup no plano Free. Conferir também o uso e se há aviso de pausa |
+| Testar restauração de backup | Trimestral | `npm run test:restore` ([DB-10 §6](backup-e-recuperacao.md)) |
 | Invalidar cache manualmente | Em incidente | `POST /api/internal/revalidate` (ADR-0006) |
 
 As rotinas com frequência fixa já são issues no Project 4, com a label `manutencao`: #302 a #309

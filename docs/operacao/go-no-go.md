@@ -34,7 +34,7 @@ Situação em **02/11/2026**, no commit `7be685f` da `main` (✅ atendido · �
 | E7 | Integridade do conteúdo: `findIntegrityIssues` sem erros; serviços oficiais e cases liberados publicados | B | INT-04, INT-05, TECH-05 | 🟡 Sem erros de integridade no conteúdo versionado (testes de conformidade); versões oficiais ainda não publicadas |
 | E8 | Operações administrativas: login, edição, publicação, arquivamento e permissões verificadas | B | QA-04, ADM-02/03 | 🟡 Local: matriz de publicação, 16 casos do QA-04 e `test:e2e:cms` 18/18; em homologação ⏳ |
 | E9 | Formulários entregam ao destinatário institucional; duplicidade e falhas tratadas | B | QA-05, FORM-10, TECH-07 | ⏳ Destinatários reais (CON-10) e remetente verificado no Resend sem resposta; correções da TECH-06 no PR #365, aguardando revisão |
-| E10 | Backup configurado e restauração testada | B | DB-10 | ⏳ Sem evidência de backup nem de restauração; rotina trimestral criada (#309) |
+| E10 | Backup configurado e restauração testada | B | DB-10 | 🟡 Plano Free, sem backup do Supabase. Cópia semanal definida e restauração validada em stack local (04/11). **Falta a primeira cópia real da produção** e definir onde fica a senha da cópia ([§8](backup-e-recuperacao.md)) |
 | E11 | Domínio com HTTPS válido | B* | GO-03 | 🟡 Decisão de 27/10: publicar na URL `*.vercel.app` (HTTPS da Vercel) até o domínio sair. Atende com ressalva |
 | E12 | Plano de rollback revisado e deployment anterior identificado | B | GO-01 | 🟡 Plano revisado, mas descreve `main → production`. A Vercel hoje publica a `main` como Production, sem a branch `production` (ver riscos) |
 | E13 | Aviso de privacidade validado institucionalmente | B | SEG-02, SEG-10 | ⏳ Aviso publicado ainda como minuta em validação |
@@ -55,7 +55,8 @@ Situação em **02/11/2026**, no commit `7be685f` da `main` (✅ atendido · �
 | Projeto Supabase único, em `us-east-1`, e a documentação prevê `sa-east-1` e projetos separados | Alta | Médio | A região não muda depois de criada. Decidir o papel do projeto antes de aplicar migrations ([provisionamento §6](provisionamento-producao.md)) | Coordenação técnica |
 | Gravação do CMS não é atômica (item, vínculos e galeria) | Baixa | Médio | Falha registrada e explicada (#316); transação no PR #366, aguardando revisão | Coordenação técnica |
 | Envio de mídia pelo painel limitado a 4 MB (teto da Vercel) | Média | Baixo | Mensagem antes do envio (#316); envio direto ao Storage no PR #367, aguardando revisão | Coordenação técnica |
-| Sem histórico de versões no MVP | Baixa | Médio | Arquivar antes de excluir + auditoria + backup (ADR-0007); proposta em FUT-04 | Coordenação técnica |
+| Sem histórico de versões no MVP | Baixa | Médio | Arquivar antes de excluir + auditoria + cópia semanal (ADR-0007); proposta em FUT-04 | Coordenação técnica |
+| Plano Free do Supabase: sem backup gerenciado e com pausa por inatividade | Média | Alto | Decisão de 04/11: perda aceita de até 7 dias, recuperação em até 120 min, cópia semanal no Drive institucional ([DB-10](backup-e-recuperacao.md)); reavaliar o Pro antes de dados reais em volume | Vinícius Binda |
 
 ## 4. Registro preliminar — 13/10/2026 (fim da fundação técnica)
 

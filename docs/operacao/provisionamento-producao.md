@@ -14,8 +14,10 @@
 - [x] Conta/plano institucional da **Vercel** para produção (uso comercial; crons frequentes exigem plano pago).
       **Decisão de 27/10/2026:** contas institucionais do NúcleoTech, não contas pessoais (o plano
       Hobby da Vercel não permite uso comercial).
-- [x] Organização/plano do **Supabase** para produção (sem pausa por inatividade; backups diários).
-      **Decisão de 27/10/2026:** organização institucional do NúcleoTech.
+- [x] Organização/plano do **Supabase** para produção.
+      **Decisão de 27/10/2026:** organização institucional do NúcleoTech. **Decisão de 04/11/2026:** plano Free por
+      enquanto, então há pausa por inatividade e nenhum backup do Supabase
+      ([backup e recuperação](backup-e-recuperacao.md)).
 - [ ] Acesso às duas contas na máquina de quem provisiona (`vercel login` e `npx supabase login`).
 - [ ] Conta **Resend** com domínio do remetente verificado. Sem o domínio da Benjamin, ver a
       pendência do remetente em [GO-03 §0](dominio-dns-https.md#0-decisão-de-27102026-publicar-em-vercelapp-até-o-domínio-sair).
@@ -97,7 +99,8 @@
 
 | Item | Situação |
 | ---- | -------- |
-| Decisão de conta e plano | ✅ Contas institucionais do NúcleoTech (Vercel e Supabase) |
+| Decisão de conta e plano | ✅ Contas institucionais do NúcleoTech (Vercel e Supabase). Supabase no plano Free, sem backup gerenciado |
+| Backup | 🟡 Procedimento e restauração validados localmente; primeira cópia real pendente ([DB-10](backup-e-recuperacao.md)) |
 | Projeto na Vercel | 🟡 Existe (`agencia-benjamin`) e publica a cada merge. Ver a divergência abaixo |
 | Projeto no Supabase | 🟡 Existe na organização NucleoTech FECAP. Ver a divergência abaixo. O conteúdo do banco **não foi inspecionado** |
 | Migrations de conteúdo (DB-02) e da TECH-13 (#301, #312) | ✅ Na `main` |

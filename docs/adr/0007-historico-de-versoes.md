@@ -39,7 +39,7 @@ categorias, CTAs, configurações) e o histórico não é critério de aceite da
 | Publicar algo errado | Validação obrigatória ao publicar e ao editar publicado (TECH-04); aviso "alteração será publicada imediatamente" |
 | Apagar sem querer | Exclusão só depois de arquivar e só por `admin` (TECH-04/TECH-03) |
 | Não saber quem alterou | Trilha de auditoria (`content.updated`, `content.published`… — TECH-10) |
-| Perda total | Backup diário do banco e da mídia (DB-10), restauração assistida pelo NúcleoTech |
+| Perda total | Cópia semanal do banco e da mídia (DB-10), com perda de até 7 dias e restauração assistida pelo NúcleoTech |
 
 ### Preparação para FUT-04 (sem custo agora)
 
@@ -55,4 +55,4 @@ categorias, CTAs, configurações) e o histórico não é critério de aceite da
   publicar, porque editar um item publicado já o publica; e usar uma versão preenche o formulário
   em vez de criar um rascunho separado, porque cada item é uma linha só.
 - A Benjamin deve ser informada no checkpoint (GOV-08): no MVP, recuperar conteúdo sobrescrito
-  exige pedido ao NúcleoTech (restauração via backup).
+  exige pedido ao NúcleoTech (restauração via backup). Restaurar traz de volta a última cópia semanal inteira, não só o item.
