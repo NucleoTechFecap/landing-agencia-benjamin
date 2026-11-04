@@ -5,7 +5,7 @@
 | Task | CASE-09 (#164) |
 | Situação | Nome e descrição aprovados no documento de requisitos (PRJ §12) |
 | No site | Filtro de `/cases?categoria=social-media-e-criacao` |
-| No painel | **Cases e categorias** → **Categorias** → Social Media & Criação |
+| No painel | **Categorias de cases** → Social Media & Criação |
 
 ## Campos no painel
 

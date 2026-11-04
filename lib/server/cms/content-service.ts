@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -26,6 +26,7 @@
  29/10/2026 Vinicius Binda             Troca de slug com 301 em serviço/case e endereço reservado (DB-08).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  Item e relações gravados numa transação (TECH-13, #314).
+ 04/11/2026 Vinícius Nishimura Reis  Conteúdo sem endereço próprio, como o CTA (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -95,9 +96,9 @@ const COMMAND_EVENTS: Record<PublicationCommand, AuditEventName> = {
  * vale a união das relações de antes e de depois (o case que saiu de um serviço também some da
  * página dele).
  */
-function contentChange<I extends { slug: string }, T extends CmsItem>(
+function contentChange<I extends { slug?: string }, T extends CmsItem>(
   def: EntityDefinition<I, T>,
-  slug: string,
+  slug: string | undefined,
   items: T[],
   snapshot: CmsSnapshot,
   now: Date,
@@ -106,14 +107,14 @@ function contentChange<I extends { slug: string }, T extends CmsItem>(
   const relatedPaths = [...new Set(items.flatMap((item) => def.relatedPaths?.(item, snapshot, now) ?? []))];
   return {
     entity: def.type,
-    slug,
+    ...(slug ? { slug } : {}),
     ...(previousSlug && previousSlug !== slug ? { previousSlug } : {}),
     ...(relatedPaths.length ? { relatedPaths } : {}),
   };
 }
 
 /** Snapshot com o item substituído pela versão nova (para checar integridade antes de gravar). */
-function withItem<I extends { slug: string }, T extends CmsItem>(
+function withItem<I extends { slug?: string }, T extends CmsItem>(
   snapshot: CmsSnapshot,
   def: EntityDefinition<I, T>,
   item: T,
@@ -129,7 +130,7 @@ function withItem<I extends { slug: string }, T extends CmsItem>(
  * O que impede publicar o item: campos obrigatórios da entidade e erros de integridade que
  * apareceriam com ele publicado (ex.: serviço sem área, case com categoria em rascunho).
  */
-export function publishProblems<I extends { slug: string }, T extends CmsItem>(
+export function publishProblems<I extends { slug?: string }, T extends CmsItem>(
   def: EntityDefinition<I, T>,
   item: T,
   snapshot: CmsSnapshot,
@@ -161,14 +162,14 @@ export function publicationError(error: PublicationError): AppError {
  * entidade e os endereços antigos/reservados; na edição mantém o atual (apagar o campo não
  * apaga o endereço).
  */
-function withSlug<I extends { slug: string }, T extends CmsItem>(
+function withSlug<I extends { slug?: string }, T extends CmsItem>(
   def: EntityDefinition<I, T>,
   raw: unknown,
   snapshot: CmsSnapshot,
   retired: readonly RetiredSlug[],
   ref?: ItemRef,
 ): unknown {
-  if (typeof raw !== "object" || raw === null) return raw;
+  if (!def.slugSource || typeof raw !== "object" || raw === null) return raw;
   const values = raw as Record<string, unknown>;
   if (typeof values.slug === "string" && values.slug.trim()) return raw;
   const items = def.list(snapshot);
@@ -178,7 +179,7 @@ function withSlug<I extends { slug: string }, T extends CmsItem>(
   if (!source.trim()) return raw;
   return {
     ...values,
-    slug: uniqueSlug(source, [...items.map((item) => item.slug), ...retired.map((entry) => entry.slug)]),
+    slug: uniqueSlug(source, [...items.flatMap((item) => item.slug ?? []), ...retired.map((entry) => entry.slug)]),
   };
 }
 
@@ -196,7 +197,7 @@ export const stateOf = (item: CmsItem): PublicationState => ({
  * após a primeira publicação. Endereço antigo de outro item ou de item excluído não é
  * reaproveitado: os links que circulam com ele abririam outro conteúdo.
  */
-export async function saveContent<I extends { slug: string }, T extends CmsItem>(
+export async function saveContent<I extends { slug?: string }, T extends CmsItem>(
   deps: CmsDeps,
   actor: CmsActor,
   def: EntityDefinition<I, T>,
@@ -218,7 +219,8 @@ export async function saveContent<I extends { slug: string }, T extends CmsItem>
   if (ref && !current) throw new AppError("NOT_FOUND");
   if (current && current.updatedAt !== ref!.expectedUpdatedAt) throw new AppError("CONFLICT");
 
-  const slugTaken = items.some((item) => item.slug === input.slug && item.id !== current?.id);
+  const slugTaken =
+    input.slug !== undefined && items.some((item) => item.slug === input.slug && item.id !== current?.id);
   if (slugTaken) {
     throw new AppError("VALIDATION_FAILED", {
       fieldErrors: { slug: ["Já existe um item com este endereço. Escolha outro."] },
@@ -287,7 +289,7 @@ export async function saveContent<I extends { slug: string }, T extends CmsItem>
  * conteúdo completo → impacto em outras páginas (TECH-05) → auditoria → gravação → cache.
  * Eventos críticos são auditados ANTES da gravação; se ela falhar, registra-se a falha (TECH-10).
  */
-export async function runContentCommand<I extends { slug: string }, T extends CmsItem>(
+export async function runContentCommand<I extends { slug?: string }, T extends CmsItem>(
   deps: CmsDeps,
   actor: CmsActor,
   def: EntityDefinition<I, T>,

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -72,7 +73,7 @@ export function CmsTable({
       <Table rows={active} basePath={basePath} extraHeader={extraHeader} caption="Itens ativos" />
       {archived.length ? (
         <details className="rounded-3xl border-2 border-benja-noite/15 bg-white p-4">
-          <summary className="cursor-pointer font-bold">Arquivados ({archived.length})</summary>
+          <summary className="cursor-pointer py-2.5 font-bold">Arquivados ({archived.length})</summary>
           <div className="mt-4">
             <Table rows={archived} basePath={basePath} extraHeader={extraHeader} caption="Itens arquivados" />
           </div>
@@ -95,26 +96,27 @@ function Table({
 }) {
   if (!rows.length) return <p className="text-sm text-benja-grafite/80">Nenhum item ativo.</p>;
   return (
-    <div className="overflow-x-auto rounded-3xl border-2 border-benja-noite/15 bg-white">
-      <table className="w-full min-w-[640px] text-left text-sm">
+    // `relative`: o texto sr-only é absoluto e, sem isso, escapa da rolagem e alarga a página no celular.
+    <div className="relative overflow-x-auto rounded-3xl border-2 border-benja-noite/15 bg-white">
+      <table className="w-full text-left text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead className="border-b-2 border-benja-noite/10 text-xs tracking-wider text-benja-grafite/80 uppercase">
           <tr>
-            <th scope="col" className="px-4 py-3">
+            <th scope="col" className="hidden px-4 py-3 md:table-cell">
               Ordem
             </th>
             <th scope="col" className="px-4 py-3">
               Nome
             </th>
             {extraHeader ? (
-              <th scope="col" className="px-4 py-3">
+              <th scope="col" className="hidden px-4 py-3 md:table-cell">
                 {extraHeader}
               </th>
             ) : null}
             <th scope="col" className="px-4 py-3">
               Estado
             </th>
-            <th scope="col" className="px-4 py-3">
+            <th scope="col" className="hidden px-4 py-3 md:table-cell">
               Atualizado em
             </th>
           </tr>
@@ -122,17 +124,31 @@ function Table({
         <tbody>
           {rows.map((row) => (
             <tr key={row.id} className="border-b border-benja-noite/5 last:border-0">
-              <td className="px-4 py-3 tabular-nums">{row.order}</td>
-              <td className="px-4 py-3 font-semibold">
-                <Link href={`${basePath}/${row.id}`} className="text-benja-verde underline-offset-4 hover:underline">
+              <td className="hidden px-4 py-3 tabular-nums md:table-cell">{row.order}</td>
+              <td className="px-4 py-3 font-semibold wrap-anywhere">
+                <Link
+                  href={`${basePath}/${row.id}`}
+                  // A tela de edição só existe por requisição: o prefetch de cada linha só geraria carga no proxy.
+                  prefetch={false}
+                  className="inline-block py-1 text-benja-verde underline-offset-4 hover:underline"
+                >
                   {row.title}
                 </Link>
+                {/* No celular, as colunas secundárias viram linhas sob o nome: o estado fica à vista sem rolar. */}
+                <div className="mt-1 space-y-0.5 text-xs font-normal text-benja-grafite/80 md:hidden">
+                  {extraHeader ? (
+                    <p>
+                      {extraHeader}: {row.extra}
+                    </p>
+                  ) : null}
+                  <p>Atualizado em {formatDateTime(row.updatedAt)}</p>
+                </div>
               </td>
-              {extraHeader ? <td className="px-4 py-3">{row.extra}</td> : null}
+              {extraHeader ? <td className="hidden px-4 py-3 wrap-anywhere md:table-cell">{row.extra}</td> : null}
               <td className="px-4 py-3">
                 <StatusBadge status={row.status} provisional={row.provisional} />
               </td>
-              <td className="px-4 py-3 text-benja-grafite/80">{formatDateTime(row.updatedAt)}</td>
+              <td className="hidden px-4 py-3 text-benja-grafite/80 md:table-cell">{formatDateTime(row.updatedAt)}</td>
             </tr>
           ))}
         </tbody>

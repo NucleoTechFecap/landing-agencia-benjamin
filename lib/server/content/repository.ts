@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Lê da fonte ativa (content/ ou Supabase) e expõe páginas (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Detalhe de área com serviços (DB-04).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
+ 04/11/2026 Vinícius Nishimura Reis  Seleção de detalhes movida para lib/domain, compartilhada com a prévia (ADM-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,13 +31,20 @@ import { resolveCtaHref, type ResolvedLink } from "@/lib/domain/content/integrit
 import type {
   Area,
   CaseCategory,
-  CaseStudy,
   ContentSnapshot,
   CtaPlacement,
   Page,
   Service,
   SiteSettings,
 } from "@/lib/domain/content/types";
+import {
+  caseDetailOf,
+  serviceDetailOf,
+  toCaseCards,
+  type CaseCard,
+  type CaseDetail,
+  type ServiceDetail,
+} from "@/lib/domain/content/details";
 import { withPublishedTexts } from "@/lib/domain/content/page-texts";
 import { isPubliclyVisible, visibleSorted } from "@/lib/domain/content/visibility";
 import { CONTENT_TAGS } from "./cache-tags";
@@ -54,27 +62,11 @@ async function loadSnapshot(): Promise<ContentSnapshot> {
   return getContentSource().snapshot();
 }
 
-export interface CaseCard extends CaseStudy {
-  categoryName: string;
-  categorySlug: string;
-}
-
-export interface CaseDetail {
-  item: CaseStudy;
-  category: CaseCategory | null;
-  services: Service[];
-  areas: Area[];
-}
+export type { CaseCard, CaseDetail, ServiceDetail };
 
 export interface AreaDetail {
   area: Area;
   services: Service[];
-}
-
-export interface ServiceDetail {
-  service: Service;
-  areas: Area[];
-  cases: CaseCard[];
 }
 
 export interface CtaLink {
@@ -88,13 +80,6 @@ export interface CaseFilters {
   service?: string;
   area?: string;
   client?: string;
-}
-
-function toCaseCards(snapshot: ContentSnapshot, items: CaseStudy[], now: Date): CaseCard[] {
-  return items.map((item) => {
-    const category = snapshot.categories.find((entry) => entry.id === item.categoryId && isPubliclyVisible(entry, now));
-    return { ...item, categoryName: category?.name ?? "", categorySlug: category?.slug ?? "" };
-  });
 }
 
 export async function getSiteSettings(): Promise<SiteSettings> {
@@ -161,17 +146,7 @@ export async function getServiceDetail(slug: string): Promise<ServiceDetail | nu
   const now = new Date();
   const service = snapshot.services.find((item) => item.slug === slug && isPubliclyVisible(item, now));
   if (!service) return null;
-  const areas = visibleSorted(
-    snapshot.areas.filter((area) => service.areaIds.includes(area.id)),
-    (area) => area.name,
-    now,
-  );
-  const relatedCases = visibleSorted(
-    snapshot.cases.filter((item) => item.serviceIds.includes(service.id)),
-    (item) => item.title,
-    now,
-  );
-  return { service, areas, cases: toCaseCards(snapshot, relatedCases, now) };
+  return serviceDetailOf(snapshot, service, now);
 }
 
 export async function listCategories(): Promise<CaseCategory[]> {
@@ -231,24 +206,7 @@ export async function getCaseDetail(slug: string): Promise<CaseDetail | null> {
   const now = new Date();
   const item = snapshot.cases.find((entry) => entry.slug === slug && isPubliclyVisible(entry, now));
   if (!item) return null;
-  const services = visibleSorted(
-    snapshot.services.filter((service) => item.serviceIds.includes(service.id)),
-    (service) => service.name,
-    now,
-  );
-  const areaIds = new Set(services.flatMap((service) => service.areaIds));
-  return {
-    item,
-    category:
-      snapshot.categories.find((category) => category.id === item.categoryId && isPubliclyVisible(category, now)) ??
-      null,
-    services,
-    areas: visibleSorted(
-      snapshot.areas.filter((area) => areaIds.has(area.id)),
-      (area) => area.name,
-      now,
-    ),
-  };
+  return caseDetailOf(snapshot, item, now);
 }
 
 /** CTAs publicados de um local da página, já com o link resolvido (fallback incluído). */

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
+ 04/11/2026 Vinícius Nishimura Reis  Foto do time só do bucket de mídia e só imagem (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -82,13 +83,17 @@ describe("catálogo de blocos (DB-03)", () => {
     expect(pagePath("toString")).toBeNull();
   });
 
-  it("foto do time: aceita /public, https e o Storage local; recusa o resto", () => {
+  it("foto do time: aceita /public e o bucket de mídia, por https ou no Storage local; recusa o resto", () => {
     const photo = (src: string) =>
       BLOCK_SCHEMAS.team.safeParse({ members: [{ name: "Ana", photo: { src, alt: "Ana" } }] }).success;
     expect(photo("/brand/foto.jpg")).toBe(true);
     expect(photo("https://projeto.supabase.co/storage/v1/object/public/media/foto.jpg")).toBe(true);
     expect(photo("http://127.0.0.1:54321/storage/v1/object/public/media/foto.jpg")).toBe(true);
     expect(photo("http://exemplo.com/foto.jpg")).toBe(false);
+    expect(photo("https://exemplo.com/foto.jpg")).toBe(false);
+    expect(photo("https://projeto.supabase.co/storage/v1/object/public/outro-bucket/foto.jpg")).toBe(false);
+    expect(photo("http://exemplo.com/storage/v1/object/public/media/foto.jpg")).toBe(false);
+    expect(photo("https://projeto.supabase.co/storage/v1/object/public/media/../segredo/foto.jpg")).toBe(false);
     expect(photo("http://127.0.0.1:54321/outra/foto.jpg")).toBe(false);
     expect(photo("//exemplo.com/foto.jpg")).toBe(false);
     expect(photo("javascript:alert(1)")).toBe(false);

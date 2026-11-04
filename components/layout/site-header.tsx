@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,13 +21,14 @@
  25/10/2026 Caio Moraes              Esconde o CTA do header abaixo de 640 px (LAY-02).
  26/10/2026 Vinícius Nishimura Reis  Logotipo horizontal em SVG (UX-14).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Sem o botão de contato na própria página de contato (INT-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import Image from "next/image";
 import Link from "next/link";
-import { ButtonLink } from "../ui/button-link";
 import { Container } from "../ui/container";
+import { HeaderContactCta } from "./contact-cta";
 import { MobileMenu } from "./mobile-menu";
 import { NavLinks } from "./nav-links";
 
@@ -52,12 +53,7 @@ export function SiteHeader() {
         </Link>
         <nav aria-label="Principal" className="flex items-center gap-2">
           <NavLinks />
-          {/* O wrapper controla a visibilidade: o ButtonLink já aplica inline-flex, que venceria o hidden (LAY-02). */}
-          <div data-motion="chrome" className="hidden sm:block">
-            <ButtonLink href="/contato" variant="primary" className="px-5 py-2 text-sm">
-              Fale com a gente
-            </ButtonLink>
-          </div>
+          <HeaderContactCta />
           <MobileMenu />
         </nav>
       </Container>

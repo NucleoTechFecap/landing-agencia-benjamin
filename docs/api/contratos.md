@@ -27,8 +27,12 @@ visibilidade é única (TECH-04, invariante I1).
 - Identificador público = **slug** (IDs internos/UUIDs não são expostos).
 - Sucesso: `{ "data": ..., "meta"?: {...} }` · Erro: `{ "error": { code, message, requestId, fieldErrors? } }`.
 - Todo response traz `X-Request-Id` (o mesmo da mensagem de erro e do log).
-- Leituras públicas: `Cache-Control: public, s-maxage=300, stale-while-revalidate=3600`; erros e escritas: `no-store`.
+- Leituras públicas: `Cache-Control: public, s-maxage=240, stale-while-revalidate=60`; erros e escritas: `no-store`.
 - Parâmetros desconhecidos são ignorados; parâmetros inválidos → `400 BAD_REQUEST` com `fieldErrors`.
+- Slug fora do formato responde `404 NOT_FOUND` sem consultar a fonte nem gravar no cache (DB-09). Com
+  maiúsculas, serviços e cases respondem `301` para o endereço em minúsculas.
+- Rotas internas (`/api/internal/*`): sem o segredo → `401 UNAUTHENTICATED`; corpo inválido → `400 BAD_REQUEST`,
+  sem efeito. Campos a mais no corpo são ignorados.
 - `status`, rascunhos e campos de controle **nunca** são parâmetros nem campos da API pública.
 
 ## 3. Paginação e filtros
@@ -81,6 +85,10 @@ PageDTO        { slug, title, description?, path: string|null (rota fixa — PAG
 CtaDTO         { label, href, external }   // placement: home-hero | home-highlight | footer | service-detail | case-detail
 ```
 
+Em `SiteSettingsDTO`, campo não preenchido no painel (ADM-10) fica ausente, nunca vazio. Os links são sempre
+`https://`, e as redes ficam no domínio da própria rede. Regras em
+[`dicionario-de-dados.md`](../banco/dicionario-de-dados.md#site_settings--configuração-institucional-adm-10).
+
 Exemplo (`GET /api/v1/cases?category=assessoria-de-imprensa`):
 
 ```json
@@ -109,7 +117,7 @@ submitContact(prev, formData) / submitFeedback(prev, formData)
 type FormActionState =
   | { status: "idle" }
   | { status: "success"; protocol: string; duplicate: boolean }
-  | { status: "error"; code: ErrorCode; message: string; requestId: string;
+  | { status: "error"; code: ErrorCode | "NETWORK_ERROR"; message: string; requestId: string;
       fieldErrors?: Record<string, string[]>; values?: Record<string, string> }  // values para repreencher (sem campos técnicos)
 ```
 
@@ -120,6 +128,7 @@ type FormActionState =
 | Reenvio do mesmo `submissionId` | `success`, `duplicate: true`, mesmo protocolo | — |
 | Limite de envios | `error` | `RATE_LIMITED` |
 | Banco indisponível | `error` | `SERVICE_UNAVAILABLE` |
+| A action não respondeu (rede, resposta perdida). Só existe no navegador, com `requestId: "navegador"` | `error` | `NETWORK_ERROR` |
 
 Regras de idempotência e falhas: TECH-07.
 
@@ -149,11 +158,19 @@ export async function publishCase(input: { id: string; expectedUpdatedAt: string
 | `delete` | `{ id }` (somente arquivado) | `delete` | 403, 409 |
 | `requestMediaUpload` | `FormData { name, type, size, alt, decorative }` (sem o arquivo) | `media:create` | 413, 415, 422 (ARC-10) |
 | `finishMediaUpload` | `FormData { path, name, type, alt, decorative, voltar? }` | `media:create` | 413, 415, 422 (ARC-10) |
-| `listLeads` | `{ kind?, category?, status?, page, pageSize }` | `lead:view` | 401, 403 |
-| `exportLeads` | filtros | `lead:export` | 401, 403 |
+| `listSubmissions` (`listLeads` nas versões anteriores deste documento) | `{ kind?, status?, category?, notification?, page }`; página fixa de 20 itens | `lead:view` ou `feedback:view`, por tipo | 401, 403 |
+| `changeSubmissionStatus` | `{ id, status, currentStatus }` | `lead:edit` ou `feedback:edit`, pelo tipo gravado | 401, 403, 404, 409, 422 |
+| `deleteSubmission` | `{ id }` (somente arquivado) | `lead:delete` ou `feedback:delete`, pelo tipo gravado | 401, 403, 404, 409 |
+| `exportLeads` (não construído) | filtros | `lead:export` | 401, 403 |
 
-Entidades com Zod próprio: case (`case-schema.ts` — CASE-11); serviço, área, categoria, CTA e
-página seguem o mesmo padrão rascunho/publicação, com campos obrigatórios de TECH-05 §5.
+Envios não têm rota em `/api/v1`: a consulta só existe nas telas do painel, com a sessão de quem está logado,
+e os parâmetros da URL passam por lista fechada em `parseInboxQuery` (`lib/domain/forms/inbox.ts`).
+Valor malformado vira "sem filtro"; id malformado responde como inexistente, sem chegar ao banco.
+
+Entidades com Zod próprio: case (`case-schema.ts` — CASE-11) e CTA (`cta-schema.ts` — ADM-11); serviço,
+área, categoria e página seguem o mesmo padrão rascunho/publicação, com campos obrigatórios de TECH-05 §5.
+`saveCta` recebe `{ label, placement, targetKind, targetPath?, targetUrl?, targetId?, order }` e usa só o campo
+do tipo de destino escolhido. O CTA não tem slug: o serviço pula as regras de endereço para o tipo sem `slugSource`.
 
 **Implementação (ADM-07).** `lib/server/cms/content-service.ts` aplica, para toda entidade
 descrita em `lib/server/cms/entities.ts`: permissão → Zod da entidade → versão otimista

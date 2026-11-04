@@ -12,9 +12,15 @@ painel exige para publicar.
 
 | Item | Tipo | Task | Ficha | Situação |
 | ---- | ---- | ---- | ----- | -------- |
+| Eventos e Parcerias | Área | SOB-05 | [areas/eventos-e-parcerias.md](areas/eventos-e-parcerias.md) | Provisório — aguardando texto aprovado |
+| Social Media | Área | SOB-06 | [areas/social-media.md](areas/social-media.md) | Provisório — aguardando texto aprovado |
+| Comunicação Interna | Área | SOB-07 | [areas/comunicacao-interna.md](areas/comunicacao-interna.md) | Provisório — aguardando texto aprovado |
 | Copywriting | Área | SOB-08 | [areas/copywriting.md](areas/copywriting.md) | Provisório — aguardando texto aprovado |
 | Criação | Área | SOB-09 | [areas/criacao.md](areas/criacao.md) | Provisório — aguardando texto aprovado |
 | Assessoria de Imprensa | Área | SOB-10 | [areas/assessoria-de-imprensa.md](areas/assessoria-de-imprensa.md) | Provisório — aguardando texto aprovado |
+| Estratégia Digital | Serviço | SERV-03 | [servicos/estrategia-digital.md](servicos/estrategia-digital.md) | Provisório — aguardando texto aprovado |
+| Social Media | Serviço | SERV-04 | [servicos/social-media.md](servicos/social-media.md) | Provisório — aguardando texto aprovado |
+| Eventos | Serviço | SERV-05 | [servicos/eventos.md](servicos/eventos.md) | Provisório — aguardando texto aprovado |
 | Produção de Conteúdo | Serviço | SERV-06 | [servicos/producao-de-conteudo.md](servicos/producao-de-conteudo.md) | Provisório — aguardando texto aprovado |
 | Copywriting | Serviço | SERV-07 | [servicos/copywriting.md](servicos/copywriting.md) | Provisório — aguardando texto aprovado |
 | Design e Identidade Visual | Serviço | SERV-08 | [servicos/design-e-identidade-visual.md](servicos/design-e-identidade-visual.md) | Provisório — aguardando texto aprovado |

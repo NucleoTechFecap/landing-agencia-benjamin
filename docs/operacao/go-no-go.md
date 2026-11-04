@@ -5,8 +5,8 @@
 | Issue           | TECH-14 (#178)                                                          |
 | Responsável     | Vinícius Nishimura Reis (`@Vinishireis`)                                |
 | Revisão técnica | Flávio Santos                                                           |
-| Versão          | 1.2.0 (modelo + registros de 13/10, 27/10 e 02/11)                      |
-| Data            | 13/10/2026 · atualizado em 27/10 e 02/11/2026 · decisão prevista para 03–04/11/2026 |
+| Versão          | 1.3.0 (modelo + registros de 13/10, 27/10, 02/11 e 04/11)               |
+| Data            | 13/10/2026 · atualizado em 27/10, 02/11 e 04/11/2026 · decisão prevista para 03–04/11/2026 |
 | Depende de      | QA-11 (smoke pós-correções), [GO-01](release-e-rollback.md)             |
 
 > A decisão técnica **não substitui** o aceite institucional da Agência Benjamin (GO-07), que segue
@@ -30,10 +30,10 @@ Situação em **02/11/2026**, no commit `7be685f` da `main` (✅ atendido · �
 | E3 | Critérios de aceite técnicos (CA-xx `T`) atendidos | B | [GOV-13](../gestao/criterios-de-aceite.md) | 🟡 CMS coberto localmente (QA-04, CT-01 a CT-16); conferência de todos os CA-xx pendente |
 | E4 | `npm run release:check` verde no commit candidato (inclui **sem conteúdo provisório**) | B | GO-01 | ❌ `verify` verde; `check:release-content` falha com **20 itens provisórios publicados** (6 áreas, 9 serviços, 3 cases, manifesto e Sobre), que dependem do texto aprovado (CON-05) e dos materiais dos cases (CON-08) |
 | E5 | `npm run test:e2e` verde contra homologação | B | TECH-12 | 🟡 Local, com o PR #368: `test:e2e` 96 passaram e 42 ignorados; `test:e2e:cms` 18/18. Contra homologação ⏳ |
-| E6 | Vulnerabilidades: `npm audit --omit=dev` sem altas/críticas; testes de acesso indevido (QA-06) sem falhas | B | Auditoria + QA-06 | ❌ `npm audit --omit=dev`: 0, mas o **release de segurança do Next.js de 03/11/2026 (7 vulnerabilidades médias) precisa entrar antes de publicar**. Com desenvolvimento: 17 moderadas, todas do aviso `GHSA-g3hv-75wg-m249` (`minimatch`, via ESLint 9; não entra em produção). Revisão técnica de 02/11 sem achado alto ou médio. QA-06 ⏳ |
+| E6 | Vulnerabilidades: `npm audit --omit=dev` sem altas/críticas; testes de acesso indevido (QA-06) sem falhas | B | Auditoria + QA-06 | ❌ `npm audit --omit=dev`: 0, mas o **release de segurança do Next.js de 03/11/2026 (7 vulnerabilidades médias) precisa entrar antes de publicar**. Com desenvolvimento: 17 moderadas, todas do aviso `GHSA-g3hv-75wg-m249` (`minimatch`, via ESLint 9; não entra em produção). Revisão técnica de 02/11 sem achado alto ou médio. QA-06: **sem violação crítica no ambiente local** ([registro](../qualidade/qa-06-acesso-indevido.md)); falta repetir em homologação. |
 | E7 | Integridade do conteúdo: `findIntegrityIssues` sem erros; serviços oficiais e cases liberados publicados | B | INT-04, INT-05, TECH-05 | 🟡 Sem erros de integridade no conteúdo versionado (testes de conformidade); versões oficiais ainda não publicadas |
 | E8 | Operações administrativas: login, edição, publicação, arquivamento e permissões verificadas | B | QA-04, ADM-02/03 | 🟡 Local: matriz de publicação, 16 casos do QA-04 e `test:e2e:cms` 18/18; em homologação ⏳ |
-| E9 | Formulários entregam ao destinatário institucional; duplicidade e falhas tratadas | B | QA-05, FORM-10, TECH-07 | ⏳ Destinatários reais (CON-10) e remetente verificado no Resend sem resposta; correções da TECH-06 no PR #365, aguardando revisão |
+| E9 | Formulários entregam ao destinatário institucional; duplicidade e falhas tratadas | B | QA-05, FORM-10, TECH-07 | ⏳ Destinatários reais (CON-10) e remetente verificado no Resend sem resposta; correções da TECH-06 no PR #365, aguardando revisão. Duplicidade, falhas e rota do job conferidas no Postgres local ([QA-05](../qualidade/qa-05-formularios.md)) |
 | E10 | Backup configurado e restauração testada | B | DB-10 | 🟡 Plano Free, sem backup do Supabase. Cópia semanal definida e restauração validada em stack local (04/11). **Falta a primeira cópia real da produção** e definir onde fica a senha da cópia ([§8](backup-e-recuperacao.md)) |
 | E11 | Domínio com HTTPS válido | B* | GO-03 | 🟡 Decisão de 27/10: publicar na URL `*.vercel.app` (HTTPS da Vercel) até o domínio sair. Atende com ressalva |
 | E12 | Plano de rollback revisado e deployment anterior identificado | B | GO-01 | 🟡 Plano revisado, mas descreve `main → production`. A Vercel hoje publica a `main` como Production, sem a branch `production` (ver riscos) |
@@ -50,7 +50,7 @@ Situação em **02/11/2026**, no commit `7be685f` da `main` (✅ atendido · �
 | Produção ainda não provisionada | Média | Alto | Decidido em 27/10: contas institucionais da Vercel e do Supabase; aguardando o acesso para o GO-02 | Coordenação técnica |
 | Sem domínio oficial na data | Alta | Médio (marca, SEO) | Publicar em `*.vercel.app` e migrar quando o domínio sair (GO-03) | Agência Benjamin / coordenação técnica |
 | ~~`main` sem proteção~~ | — | — | **Resolvido em 28/10** com os rulesets de `main` e `production`. PRs anteriores sem revisão registrada: ver [revisão de PRs §6.3](../qualidade/revisao-de-prs.md) | — |
-| Release de segurança do Next.js em 03/11 (7 médias) ainda não aplicado | Alta | Alto (bloqueia E6) | Atualizar assim que sair, repetindo a bateria do PR #368, antes de qualquer publicação | Coordenação técnica |
+| ~~Release de segurança do Next.js em 03/11 (7 médias)~~ | — | — | **Resolvido em 04/11** com o Next.js 16.4.5 (#378) | — |
 | Vercel publica a `main` como Production; a branch `production` não existe | Alta | Alto | Cada merge vai ao ar em `agencia-benjamin.vercel.app` (hoje com `noindex`). Contradiz GO-01 e ARC-06. Decidir o fluxo antes do GO ([provisionamento §6](provisionamento-producao.md)) | Coordenação técnica |
 | Projeto Supabase único, em `us-east-1`, e a documentação prevê `sa-east-1` e projetos separados | Alta | Médio | A região não muda depois de criada. Decidir o papel do projeto antes de aplicar migrations ([provisionamento §6](provisionamento-producao.md)) | Coordenação técnica |
 | Gravação do CMS não é atômica (item, vínculos e galeria) | Baixa | Médio | Falha registrada e explicada (#316); transação no PR #366, aguardando revisão | Coordenação técnica |
@@ -120,6 +120,37 @@ e E13 dependem de respostas que estão fora do alcance do NúcleoTech. E6 tem sa
    `check:release-content` verde.
 5. QA-09/10/11 em homologação, `test:e2e` contra homologação e QA-06.
 6. Validação do aviso de privacidade (SEG-02) e backup com restauração testada (DB-10).
+
+## 6.1 Registro — 04/11/2026 (código publicado por decisão da coordenação técnica)
+
+Vinícius Nishimura Reis autorizou aprovar, mesclar e publicar os PRs do dia. **Isso não é o GO do §7**, que segue em
+branco: a regra do §1 continua dando **NO-GO técnico**, porque há bloqueantes pendentes. O código novo está em
+`agencia-benjamin.vercel.app`, que segue com `noindex` e **sem Supabase**.
+
+| # | Situação em 04/11, depois dos merges | O que falta |
+| - | ------------------------------------ | ----------- |
+| E1, E2 | ⏳ Sem homologação | Ambiente (GO-02), QA-09, QA-10 e QA-11 |
+| E3, E8 | 🟡 Local: telas do MVP entregues e testadas por papel | Repetir em homologação |
+| E4 | ❌ `check:release-content`: 20 itens provisórios | Texto e materiais da Benjamin |
+| E5 | 🟡 Local: `test:e2e` 446 passaram; `test:e2e:cms` 425/425 | Rodar contra homologação |
+| E6 | 🟡 **Next.js 16.4.5 no ar (#378)**; `npm audit --omit=dev`: 0; QA-06 sem violação crítica no ambiente local | Repetir a QA-06 em homologação; decidir os achados A-01 e A-10 |
+| E7 | 🟡 Sem erro de integridade no conteúdo versionado | Versões oficiais publicadas |
+| E9 | ❌ **Os formulários do site publicado recusam envios** (ver abaixo) | Supabase na Vercel, destinatários (CON-10) e domínio no Resend |
+| E10 | 🟡 Procedimento e restauração locais | Primeira cópia real e as correções do runbook (issue própria) |
+| E11, E12 | 🟡 Como em 02/11 | Domínio; decisão da Production Branch |
+| E13 | ⏳ Minuta em validação | SEG-02 |
+| E14 | ⏳ Lighthouse não medido | QA-07 |
+| E15 | ✅ Guia do painel com as telas novas | — |
+
+**Achado de 04/11: a produção não tem armazenamento.** A CSP publicada não traz a origem do Supabase, que só entra com
+`NEXT_PUBLIC_SUPABASE_URL` no build. Um envio de verificação, que nunca seria gravado, recebeu "Serviço temporariamente
+indisponível". Antes do #383, o visitante recebia confirmação e protocolo, e o dado ficava só na memória da função e se
+perdia. Os logs da Vercel não foram consultados, então não se sabe se houve envios reais perdidos; o endereço tem
+`noindex` e ainda não foi divulgado. Depois do #383, os três formulários mostram erro com código de atendimento até o
+Supabase ser configurado. Sem ele, o painel publicado também não tem como funcionar, e o site lê `content/`.
+
+**Migrations remotas:** ficam com Vinícius Binda (GO-04), por decisão da coordenação técnica. Nenhuma foi aplicada nem
+consultada por esta rodada. O #372 segue aberto, aguardando a correção do `40001`, a cópia e as migrations.
 
 ## 7. Ata da decisão final (preencher em 03–04/11/2026)
 

@@ -308,7 +308,29 @@ Linha única (`id boolean primary key default true check (id)`).
 | `manifesto`, `about`, `contact`, `socials` | `jsonb` | Não | Objeto JSON | mesmos nomes em `SiteSettings` |
 | `keywords` | `text[]` | Não | `{}` | `keywords` |
 
-Leitura pública (o conteúdo é institucional) e escrita só com `settings:edit`.
+Leitura pública (o conteúdo é institucional) e escrita só com `settings:edit`. Sem rascunho: toda gravação
+vai direto ao ar. Quem grava é a tela `/admin/configuracoes`, com a sessão de quem edita (RLS) e
+concorrência otimista por `updated_at`, e cada alteração gera o evento crítico `settings.updated`, com os
+nomes dos campos e sem os valores.
+
+A tela edita `tagline`, `description`, `contact` e `socials`. Não edita `manifesto` e `about`, que têm blocos
+publicáveis (seção de blocos acima), nem `name`, `short_name` e `keywords`. Em ambiente sem a linha, a primeira
+gravação a cria, com o valor de referência de `content/site.ts` no que a tela não edita.
+
+O banco garante só que `contact` e `socials` são objetos JSON. O formato fica em
+`lib/domain/content/settings-schema.ts`, aplicado ao salvar e também ao ler. Uma seção fora destas regras não
+chega ao site: vale o valor de referência, e o problema vai para o log.
+
+| Campo | Regra |
+| ----- | ----- |
+| `contact.email` | E-mail válido, até 254 caracteres |
+| `contact.phone` | Até 30 caracteres; números, espaços, `(`, `)`, `.`, `-` e `+` inicial; de 8 a 15 dígitos |
+| `contact.address` | 1–200 |
+| `contact.mapsUrl` | `https://`, domínio público, sem usuário e senha, até 500 caracteres. No formulário, exige `contact.address` |
+| `socials.instagram`, `socials.tiktok`, `socials.linkedin` | As mesmas regras de link, no domínio da rede ou em subdomínio dele |
+
+Campo em branco é gravado como chave ausente, e o site não mostra o item. Os links são gravados na forma
+canônica de `URL.href`.
 
 ## 6. Regras que ficam na aplicação
 
@@ -361,6 +383,8 @@ validado no banco desde a DBX-04 (§12).
 | `npm run test:migrations` com a `20261102000300` (TECH-06, 02/11/2026): upgrade da `20261030000100` com dados, 11 rollbacks em ordem inversa (cada um duas vezes) e reaplicação | `Files=7, Tests=180, Result: PASS` em cada etapa |
 | `supabase/tests/database/form_submissions_rls.test.sql` (TECH-06): consulta e alteração de envios papel por papel, regra por `kind` com permissões isoladas, `update` só em `status`; com o `grant` antigo, os casos de `payload`, `kind`, `category` e `notification_status` falham | 26 testes, `PASS` |
 | `tests/integration/supabase/formularios.test.ts` (TECH-06): três tipos pelo serviço real até o banco, contas reais de cada papel, corrida do mesmo `submissionId` e fila de reenvio | 6 testes, `PASS` (12 arquivos, 62 testes no total) |
+| `supabase/tests/database/leads_painel.test.sql` (SEG-04, 04/11/2026): `anon` sem nenhum privilégio, `update` de `authenticated` só em `status`, cada outra coluna recusada para o `admin`, policies de `update` e `delete` com permissão isolada, conta desativada, guarda da trilha e tabela fora da publicação do Realtime. Sem migration: testa o que já existe | 46 testes, `PASS` (`Files=10, Tests=260`) |
+| `tests/integration/supabase/leads-no-painel.test.ts` (SEG-04): serviços do painel e API REST direta, com contas reais de cada papel e a chave anônima. Evidência em [SEG-04](../qualidade/seg-04-autorizacao-dados-pessoais.md) | 63 testes, `PASS` (17 arquivos, 165 testes no total) |
 | `next start` sobre o Supabase local, case renomeado de `meridiano` para `meridiano-2026` (DB-08): `/cases/meridiano?utm=x` → 301 com a query; `/cases/Meridiano` → 301 direto ao atual; `/cases/meridiano-2026` → 200; rascunho e inexistente → 404; `/servicos/Audiovisual` → 301; `/api/v1/cases/meridiano` → 301; `/api/v1/cases/nao-existe` → 404 | Conferido com `curl` |
 | `npm run test:migrations` (DB-08, 29/10/2026): 9 migrations, todas com rollback; upgrade de `20261028000100` com dados; os 9 `.down.sql` em ordem inversa, duas vezes cada; reaplicação e pgTAP. À parte: com endereço antigo registrado, `20261029000100_db08_slugs_e_urls.down.sql` para sem `benjamin.confirmar_rollback` e mantém a tabela; com a confirmação, remove tabela, triggers e funções | `Files=5, Tests=148, Result: PASS` em cada etapa |
 | `npm run test:migrations` (ARC-11, 02/11/2026): 11 migrations, todas com rollback. Seed: 6 áreas, 10 serviços, 5 cases, 2 itens de galeria, 5 CTAs, 4 mídias, 2 páginas, 5 blocos, 1 configuração. Com a marcação real em `public.ambiente_banco`, o seed é recusado sem inserir nada; os 11 `.down.sql` rodam em ordem inversa, duas vezes cada, e reaplicam. À parte: o rollback da marcação para em banco marcado e só segue com `benjamin.confirmar_rollback` | `Files=7, Tests=163, Result: PASS` em cada etapa |
@@ -455,6 +479,7 @@ de item que já foi ao ar **nunca** passa a abrir outro conteúdo.
 | Serviço/case que já foi publicado troca de slug | O antigo vai para `slug_redirects` apontando para o **id** do item | `track_slug` |
 | Endereço antigo acessado, item no ar | **301** para o slug atual, mantendo a query string. Trocas seguidas (a → b → c) levam direto ao atual, sem cadeia | `resolve_public_slug`, `proxy.ts`, API |
 | Endereço com maiúsculas (`/cases/Meridiano`) | **301** para as minúsculas, já no slug atual (um só redirecionamento) | `resolveDetailSlug` |
+| Cache do 301 | `max-age=0, s-maxage=60`: como o slug pode voltar a um valor já usado, ninguém guarda o redirecionamento (#369). O comportamento na CDN da Vercel ainda não foi medido | `proxy.ts`, `lib/server/http.ts` |
 | Item despublicado, arquivado, agendado ou excluído | **404** no endereço atual e nos antigos | `resolve_public_slug` (RLS) |
 | O próprio item volta a um endereço antigo | Permitido: o registro daquele endereço sai e o abandonado passa a redirecionar | `track_slug` |
 | Outro item tenta usar endereço antigo ou reservado | Recusado (`23505`); o painel avisa antes de gravar | `track_slug`, `content-service.ts` |

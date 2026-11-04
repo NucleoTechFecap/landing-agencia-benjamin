@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -24,6 +24,7 @@
  26/10/2026 Vinícius Nishimura Reis  Id da mídia na referência, só para o painel (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 04/11/2026 Vinícius Nishimura Reis  Colunas do destino do CTA para gravar pelo painel (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -204,6 +205,26 @@ export function toCtaTarget(row: CtaRow): CtaTarget {
     case "contact":
       return row.target_service_id ? { kind: "contact", serviceId: row.target_service_id } : { kind: "contact" };
   }
+}
+
+/**
+ * Colunas target_* a partir do destino: cada tipo usa só a sua (constraint ctas_target). As demais
+ * vão nulas de propósito, senão trocar o tipo de destino deixaria a coluna antiga preenchida.
+ */
+export function ctaTargetColumns(
+  target: CtaTarget,
+): Pick<
+  CtaRow,
+  "target_kind" | "target_path" | "target_url" | "target_service_id" | "target_case_id" | "target_area_id"
+> {
+  return {
+    target_kind: target.kind,
+    target_path: target.kind === "internal" ? target.path : null,
+    target_url: target.kind === "external" ? target.url : null,
+    target_service_id: target.kind === "service" || target.kind === "contact" ? (target.serviceId ?? null) : null,
+    target_case_id: target.kind === "case" ? target.caseId : null,
+    target_area_id: target.kind === "area" ? target.areaId : null,
+  };
 }
 
 export function toCta(row: CtaRow): Cta {

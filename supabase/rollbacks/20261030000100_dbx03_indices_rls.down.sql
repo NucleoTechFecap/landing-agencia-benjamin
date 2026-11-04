@@ -2,7 +2,7 @@
 ════════════════════════════════════════════════════════════════════════════════
  Sistema      : Agência Benjamin Landing Page
  Módulo       : Supabase
- Arquivo      : 20261028000200_dbx03_indices_rls.down.sql
+ Arquivo      : 20261030000100_dbx03_indices_rls.down.sql
  Descrição    : Reversão dos índices de autoria e das políticas de leitura do painel (DBX-03).
 
  Desenvolvedor: Vinicius Binda
@@ -21,9 +21,9 @@
 ──────────────────────────────────────────────────────────────────────────────
 */
 
--- Reverte 20261028000200_dbx03_indices_rls.sql. O Supabase CLI não executa reversões: aplicar
+-- Reverte 20261030000100_dbx03_indices_rls.sql. O Supabase CLI não executa reversões: aplicar
 -- manualmente (SQL Editor ou psql) e registrar no histórico:
---   npx supabase migration repair --status reverted 20261028000200
+--   npx supabase migration repair --status reverted 20261030000100
 --
 -- Não apaga dados: só índices e a forma das políticas (as linhas visíveis a cada papel são as
 -- mesmas antes e depois). Pode rodar de novo sem erro.

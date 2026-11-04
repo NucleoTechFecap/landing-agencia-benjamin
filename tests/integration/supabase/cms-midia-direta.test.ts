@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 02/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  02/11/2026 Vinícius Nishimura Reis  Criação inicial (TECH-13, #313).
+ 04/11/2026 Vinícius Nishimura Reis  Remoção que não apagou nada é falha, não sucesso (SEG-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -121,6 +122,18 @@ describe.runIf(hasSupabaseTestEnv)("envio direto de mídia ao Storage (TECH-13, 
     expect(await inBucket(sent.path)).toBe(false);
     const rows = await serviceClient().from("media_assets").select("id").eq("path", sent.path);
     expect(rows.data).toEqual([]);
+  });
+
+  it("sem permissão de apagar: o Storage diz que deu certo, e a remoção acusa (SEG-05)", async () => {
+    const sent = await send(`sem-permissao-${suffix}.webp`, "image/webp", webp);
+    const direct = await users.viewer!.client.storage.from(MEDIA_BUCKET).remove([sent.path]);
+    expect(direct).toEqual({ data: [], error: null });
+    await expect(createSupabaseMediaStorage(users.viewer!.client).remove(sent.path)).rejects.toMatchObject({
+      code: "SERVICE_UNAVAILABLE",
+    });
+    expect(await inBucket(sent.path)).toBe(true);
+    await expect(createSupabaseMediaStorage(users.editor!.client).remove(sent.path)).resolves.toBeUndefined();
+    expect(await inBucket(sent.path)).toBe(false);
   });
 
   it("tamanho declarado menor que o real: o que chegou é medido e recusado", async () => {

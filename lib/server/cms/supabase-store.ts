@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -24,11 +24,14 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  Serviço e case gravados pelas funções do banco (TECH-13, #314).
  02/11/2026 Vinicius Binda             Erros de transição e de integridade de publicação do banco (DBX-04).
+ 04/11/2026 Vinícius Nishimura Reis  Leitura e gravação da configuração institucional (ADM-10).
+ 04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { siteSettings } from "@/content";
 import {
   assembleAreasAndServices,
   assembleCasesAndCategories,
@@ -36,6 +39,7 @@ import {
   toCta,
   toMediaMap,
   toMediaRef,
+  toSiteSettings,
 } from "../content/supabase/mappers";
 import {
   COLUMNS,
@@ -50,6 +54,7 @@ import {
   type PageRow,
   type ServiceAreaRow,
   type ServiceRow,
+  type SiteSettingsRow,
 } from "../content/supabase/rows";
 import { AppError } from "../errors";
 import { logger } from "../logger";
@@ -113,9 +118,18 @@ async function run<T>(query: Result<T>, context: { table: string; operation: str
 
 const saved = (row: { id: string; updated_at: string }): SavedRow => ({ id: row.id, updatedAt: row.updated_at });
 
-export function toMediaAsset(row: MediaAssetRow, supabaseUrl: string): MediaAsset {
-  return { ...toMediaRef(row, supabaseUrl), id: row.id, mimeType: row.mime_type, decorative: row.decorative };
+export function toMediaAsset(row: MediaAssetRow & { updated_at?: string }, supabaseUrl: string): MediaAsset {
+  return {
+    ...toMediaRef(row, supabaseUrl),
+    id: row.id,
+    path: row.path,
+    mimeType: row.mime_type,
+    decorative: row.decorative,
+    updatedAt: row.updated_at ?? "",
+  };
 }
+
+const MEDIA_ASSET_COLUMNS = `${COLUMNS.media_assets}, updated_at` as const;
 
 /**
  * Store do CMS sobre o Supabase. Recebe o cliente com a sessão do usuário (createSessionClient):
@@ -166,10 +180,10 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
 
     async listMedia(): Promise<MediaAsset[]> {
       const rows =
-        (await run<(MediaAssetRow & { created_at: string })[]>(
+        (await run<(MediaAssetRow & { created_at: string; updated_at: string })[]>(
           client
             .from("media_assets")
-            .select(`${COLUMNS.media_assets}, created_at`)
+            .select(`${MEDIA_ASSET_COLUMNS}, created_at`)
             .order("created_at", { ascending: false }),
           { table: "media_assets", operation: "select" },
         )) ?? [];
@@ -186,11 +200,47 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
     },
 
     async insertMedia(values: MediaRow): Promise<MediaAsset> {
-      const row = await run<MediaAssetRow>(
-        client.from("media_assets").insert(values).select(COLUMNS.media_assets).single(),
+      const row = await run<MediaAssetRow & { updated_at: string }>(
+        client.from("media_assets").insert(values).select(MEDIA_ASSET_COLUMNS).single(),
         { table: "media_assets", operation: "insert" },
       );
       return toMediaAsset(row!, supabaseUrl);
+    },
+
+    async updateMedia(id, values, expectedUpdatedAt) {
+      const context = { table: "media_assets", operation: "update" };
+      const row = await run<MediaAssetRow & { updated_at: string }>(
+        client
+          .from("media_assets")
+          .update(values)
+          .eq("id", id)
+          .eq("updated_at", expectedUpdatedAt)
+          .select(MEDIA_ASSET_COLUMNS)
+          .maybeSingle(),
+        context,
+      );
+      if (row) return toMediaAsset(row, supabaseUrl);
+      const current = await run<{ updated_at: string }>(
+        client.from("media_assets").select("updated_at").eq("id", id).maybeSingle(),
+        { ...context, operation: "select" },
+      );
+      if (!current) throw new AppError("NOT_FOUND");
+      if (current.updated_at !== expectedUpdatedAt) throw new AppError("CONFLICT");
+      logger.warn("cms.update.denied_by_rls", { table: "media_assets", id });
+      throw new AppError("FORBIDDEN");
+    },
+
+    async removeMedia(id) {
+      const context = { table: "media_assets", operation: "delete" };
+      const rows = await run<{ id: string }[]>(client.from("media_assets").delete().eq("id", id).select("id"), context);
+      if (rows?.length) return;
+      const current = await run<{ id: string }>(client.from("media_assets").select("id").eq("id", id).maybeSingle(), {
+        ...context,
+        operation: "select",
+      });
+      if (!current) throw new AppError("NOT_FOUND");
+      logger.warn("cms.delete.denied_by_rls", { table: "media_assets", id });
+      throw new AppError("FORBIDDEN");
     },
 
     async insert(table, values) {
@@ -269,6 +319,47 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
         operation: "delete",
       });
       if (!rows?.length) throw new AppError("NOT_FOUND");
+    },
+
+    async readSettings() {
+      const row = await run<SiteSettingsRow & { updated_at: string }>(
+        client.from("site_settings").select(`${COLUMNS.site_settings}, updated_at`).maybeSingle(),
+        { table: "site_settings", operation: "select" },
+      );
+      if (!row) return null;
+      const { settings, problems } = toSiteSettings(row, siteSettings);
+      if (problems.length) logger.error("cms.settings.invalid_sections", { problems });
+      return { settings, updatedAt: row.updated_at };
+    },
+
+    async saveSettings(values, expectedUpdatedAt) {
+      const context = { table: "site_settings", operation: "save" };
+      if (expectedUpdatedAt === null) {
+        const { error } = await client.from("site_settings").insert(values);
+        // Linha única: chave repetida quer dizer que outra pessoa criou a linha antes desta gravação.
+        if (error?.code === "23505") throw new AppError("CONFLICT", { internal: { ...context, code: error.code } });
+        if (error) throw toCmsError(error, context);
+        return;
+      }
+      const row = await run<{ updated_at: string }>(
+        client
+          .from("site_settings")
+          .update(values)
+          .eq("id", true)
+          .eq("updated_at", expectedUpdatedAt)
+          .select("updated_at")
+          .maybeSingle(),
+        context,
+      );
+      if (row) return;
+      // Nenhuma linha: mudou desde a leitura ou a RLS barrou a gravação.
+      const current = await run<{ updated_at: string }>(
+        client.from("site_settings").select("updated_at").maybeSingle(),
+        context,
+      );
+      if (current?.updated_at !== expectedUpdatedAt) throw new AppError("CONFLICT");
+      logger.warn("cms.update.denied_by_rls", { table: "site_settings" });
+      throw new AppError("FORBIDDEN");
     },
   };
 }

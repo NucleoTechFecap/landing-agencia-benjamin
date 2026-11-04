@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,12 +20,14 @@
  01/11/2026 Vinícius Nishimura Reis  Testes de aceite dos cases em destaque (HOME-04).
  01/11/2026 Vinícius Nishimura Reis  Sufixo de teste com node:crypto (CodeQL).
  01/11/2026 Vinícius Nishimura Reis  Espera curta para o toPass recarregar a página (HOME-04).
+ 04/11/2026 Vinícius Nishimura Reis  Prazos que distinguem produto lento de máquina carregada (QA-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { randomBytes } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { ACTION_TIMEOUT_MS, publishBudgetMs } from "./painel-helpers";
 
 /**
  * Cases em destaque da Home (HOME-04): o bloco em celular e desktop, com o conteúdo versionado, e
@@ -33,7 +35,6 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
  */
 const SUPABASE_URL = process.env.E2E_SUPABASE_URL;
 const SERVICE_KEY = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
-const PUBLISH_BUDGET_MS = 5_000; // ADR-0006: publicação reflete no site em até 5 s
 const READ_TIMEOUT_MS = 500;
 
 const visible = (locator: Locator) => locator.filter({ visible: true });
@@ -79,6 +80,7 @@ test.describe("Home · cases em destaque no painel @cms", () => {
   test.describe.configure({ mode: "serial" });
   test.skip(!SUPABASE_URL || !SERVICE_KEY, "Requer o Supabase local: npm run test:e2e:cms");
   test.skip(({ isMobile }) => isMobile, "Painel no celular é avaliado em ADM-16.");
+  test.setTimeout(120_000);
 
   const suffix = randomBytes(3).toString("hex");
   const account = { email: `home-editor-${suffix}@teste.local`, password: `Senha-e2e-${suffix}-ed1`, id: "" };
@@ -109,7 +111,7 @@ test.describe("Home · cases em destaque no painel @cms", () => {
       // Espera curta: a página já carregada não muda. Quem precisa olhar de novo é o toPass, recarregando.
       const onPage = { timeout: READ_TIMEOUT_MS };
       await (present ? expect(card).toBeVisible(onPage) : expect(card).toHaveCount(0, onPage));
-    }).toPass({ timeout: PUBLISH_BUDGET_MS });
+    }).toPass({ timeout: publishBudgetMs() });
     await visitor.close();
   };
 
@@ -198,7 +200,7 @@ test.describe("Home · cases em destaque no painel @cms", () => {
     await login(page);
     await page.goto(`/admin/cases/${ids.case}`);
     await page.getByRole("button", { name: "Publicar" }).click();
-    await expect(page.getByRole("status").getByText("Publicado.")).toBeVisible();
+    await expect(page.getByRole("status").getByText("Publicado.")).toBeVisible({ timeout: ACTION_TIMEOUT_MS });
     await expectOnHome(page, title);
 
     const visitor = await page.context().browser()!.newContext();
@@ -214,7 +216,7 @@ test.describe("Home · cases em destaque no painel @cms", () => {
     await page.goto(`/admin/cases/${ids.case}`);
     await visible(page.getByLabel("Título")).fill(renamed);
     await visible(page.getByRole("button", { name: "Salvar alterações" })).click();
-    await expect(page.getByRole("status").getByText("Alterações salvas.")).toBeVisible();
+    await expect(page.getByRole("status").getByText("Alterações salvas.")).toBeVisible({ timeout: ACTION_TIMEOUT_MS });
     await expectOnHome(page, renamed);
     await expectOnHome(page, title, false);
   });
@@ -224,7 +226,7 @@ test.describe("Home · cases em destaque no painel @cms", () => {
     await page.goto(`/admin/cases/${ids.case}`);
     page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Arquivar" }).click();
-    await expect(page.getByRole("status").getByText("Arquivado")).toBeVisible();
+    await expect(page.getByRole("status").getByText("Arquivado")).toBeVisible({ timeout: ACTION_TIMEOUT_MS });
     await expectOnHome(page, renamed, false);
   });
 });

@@ -10,15 +10,17 @@ vulnerability** para um relato privado. Política:
 
 | Controle | Como funciona |
 | --- | --- |
-| Autenticação do painel | Supabase Auth, só por convite; senha definida pela própria pessoa |
+| Autenticação do painel | Supabase Auth, só por convite; senha definida pela própria pessoa; sessão em cookie `HttpOnly`, `SameSite=Lax` e `Secure` em https |
 | Autorização | Papéis (`super_admin`, `admin`, `editor`, `viewer`, `pending`) checados no servidor e de novo pela RLS |
 | Leitura pública | Três barreiras: RLS, filtro de status e data de publicação |
 | Auditoria | `audit_log` somente inclusão, com quem fez o quê e quando, sem dado pessoal |
 | Upload | Tipo conferido pelos bytes do arquivo, SVG recusado, limite de tamanho; listar o bucket exige permissão |
-| Cabeçalhos | `nosniff`, `X-Frame-Options: DENY`, HSTS, `Referrer-Policy`, `Permissions-Policy` e `noindex` no painel |
+| Cabeçalhos | CSP (com `'unsafe-inline'` em `script-src`, porque Partial Prerendering não aceita nonce), `nosniff`, `X-Frame-Options: DENY`, HSTS, `Referrer-Policy`, `Permissions-Policy` e `noindex` no painel |
 
 A revisão de segurança mais recente (27/10/2026) está registrada em
 [`docs/qualidade/revisao-de-prs.md`](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/qualidade/revisao-de-prs.md).
+Limitações conhecidas: [CSP](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/seguranca/protecao-de-rotas.md)
+e [mídia](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/adr/0005-armazenamento-de-midia.md).
 
 ## Controles do repositório
 

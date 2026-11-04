@@ -7,7 +7,7 @@
 | Versão       | 1.0.0                                                                    |
 | Data         | 13/10/2026                                                               |
 | Fontes       | PRJ §41 (escopo do MVP), PRJ §44 (validação), PRJ §45 (critérios gerais); [mapa de requisitos](../requisitos/mapa-de-requisitos.md) |
-| Uso          | Base da matriz de testes (QA-01), da homologação (QA-08/09) e do go/no-go (TECH-14) |
+| Uso          | Base da [matriz de testes](../qualidade/matriz-de-testes.md) (QA-01), da [homologação](../qualidade/homologacao.md) (QA-08/09) e do go/no-go (TECH-14) |
 
 ## 1. Como usar
 

@@ -82,20 +82,28 @@
 
 | Documento | Issue |
 | --------- | ----- |
+| [Matriz de testes alinhada aos critérios de aceite](qualidade/matriz-de-testes.md) | QA-01 |
 | [Jornadas críticas e testes E2E](qualidade/jornadas-e2e.md) | TECH-12 |
 | [Testes de CRUD e estados de publicação do CMS](qualidade/qa-04-cms.md) | QA-04 |
+| [Roteiro e checklist de homologação da Benjamin](qualidade/homologacao.md) | QA-08 |
+| [Autorização de leitura de dados pessoais no painel](qualidade/seg-04-autorizacao-dados-pessoais.md) | SEG-04 |
 | [Roteiro de reprodução do ambiente com seed](qualidade/arc-11-reproducao-do-seed.md) | ARC-11 |
 | [Revisão e aprovação de PRs críticos](qualidade/revisao-de-prs.md) | TECH-13 |
 | [Checklist de release e plano de rollback](operacao/release-e-rollback.md) | GO-01 |
 | [Decisão técnica de go/no-go](operacao/go-no-go.md) | TECH-14 |
 | [Publicação da primeira versão](operacao/publicacao-mvp.md) | GO-06 |
 | [Handoff técnico e manutenção](operacao/handoff-e-manutencao.md) | GO-09 |
+| [Suporte, correções e evolução depois do lançamento](operacao/suporte-e-evolucao.md) | GO-11 |
 
 ## Evoluções pós-MVP
 
 | Documento | Issue |
 | --------- | ----- |
 | [Evolução do módulo de leads para CRM](roadmap/evolucao-crm.md) | FUT-01 |
+| [Newsletter com gestão de assinantes](roadmap/newsletter.md) | FUT-02 |
+| [Automações de comunicação e campanhas](roadmap/automacoes-de-comunicacao.md) | FUT-03 |
 | [Histórico e restauração de versões do CMS](roadmap/historico-de-versoes.md) | FUT-04 |
+| [Analytics avançado de desempenho do site](roadmap/analytics-avancado.md) | FUT-06 |
 | [Planejamento de integrações externas](roadmap/integracoes-externas.md) | FUT-07 |
 | [Módulos internos para a operação da agência](roadmap/modulos-internos.md) | FUT-08 |
+| [Priorização de novas seções, conteúdos e cases](roadmap/priorizacao-editorial.md) | FUT-10 |

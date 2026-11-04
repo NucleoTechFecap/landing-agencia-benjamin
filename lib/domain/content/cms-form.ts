@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,8 @@
  26/10/2026 Vinícius Nishimura Reis  Mensagem de arquivo enviado (ADM-08).
 28/10/2026 Codex                     Adiciona catálogo fechado de avisos (TECH-13).
  02/11/2026 Vinícius Nishimura Reis  Tíquete do envio direto de mídia (TECH-13, #313).
+ 04/11/2026 Vinícius Nishimura Reis  Mensagens da tela de contato e redes, que grava direto no ar (ADM-10).
+ 04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -54,6 +56,8 @@ export const CMS_FLASH = {
   restaurado: "Restaurado como rascunho.",
   excluido: "Excluído definitivamente.",
   enviado: "Arquivo enviado para a biblioteca. Ele já pode ser escolhido nos formulários.",
+  "no-ar": "Salvo e já no ar: o site mostra os dados novos.",
+  "sem-alteracao": "Nada mudou: os dados já eram estes, então o site continua igual.",
 } as const;
 
 export type CmsFlash = keyof typeof CMS_FLASH;
@@ -66,6 +70,10 @@ export function isCmsFlash(value: unknown): value is CmsFlash {
 export const CMS_WARNING = {
   "case-services-hidden": "Os vínculos com cases publicados deixarão de aparecer no site.",
   "ctas-fallback": "CTAs publicados passarão a usar o link de fallback.",
+  "media-file-left":
+    "O registro saiu da biblioteca, mas o arquivo continua no armazenamento. Avise o NúcleoTech para removê-lo.",
+  "media-alt-team":
+    "O bloco Nosso time guarda uma cópia do texto alternativo: abra a página e salve o bloco para atualizar a foto.",
 } as const;
 
 export type CmsWarning = keyof typeof CMS_WARNING;

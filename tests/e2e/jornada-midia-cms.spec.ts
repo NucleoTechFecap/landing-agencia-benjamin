@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 02/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  02/11/2026 Vinícius Nishimura Reis  Criação inicial (TECH-13, #313).
+ 04/11/2026 Vinícius Nishimura Reis  Prazo do teste maior que a espera do envio (QA-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -50,6 +51,8 @@ test.describe("Biblioteca de mídia · envio direto ao Storage @cms", () => {
   test.describe.configure({ mode: "serial" });
   test.skip(!SUPABASE_URL || !SERVICE_KEY, "Requer o Supabase local: npm run test:e2e:cms");
   test.skip(({ isMobile }) => isMobile, "Painel no celular é avaliado em ADM-16.");
+  // O envio sozinho pode levar os 30 s que cada espera abaixo admite: o teste inteiro precisa caber mais que isso.
+  test.setTimeout(120_000);
 
   const suffix = randomUUID().slice(0, 8);
   const account = { email: `e2e-midia-${suffix}@teste.local`, password: `Senha-e2e-${suffix}-md!`, id: "" };

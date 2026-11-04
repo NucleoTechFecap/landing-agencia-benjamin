@@ -38,5 +38,6 @@ vai pelo canal privado de Security Advisory.
 
 Documentos: [release e rollback](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/operacao/release-e-rollback.md) ·
 [handoff e manutenção](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/operacao/handoff-e-manutencao.md) ·
+[suporte e evolução (proposta)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/operacao/suporte-e-evolucao.md) ·
 [backup e recuperação](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/operacao/backup-e-recuperacao.md) ·
 [logs e erros (ADR-0004)](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/adr/0004-logs-e-tratamento-de-erros.md)

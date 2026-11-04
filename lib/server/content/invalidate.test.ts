@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Aquecimento da página de detalhe após invalidar (INT-02).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
  01/11/2026 Vinícius Nishimura Reis  Segunda expiração contra regeneração em andamento (INT-03).
+ 04/11/2026 Vinícius Nishimura Reis  Segunda expiração em requisição própria, antes de aquecer (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -31,9 +32,12 @@ const { updateTag, revalidateTag } = vi.hoisted(() => ({ updateTag: vi.fn(), rev
 vi.mock("next/cache", () => ({ updateTag, revalidateTag }));
 const { after } = vi.hoisted(() => ({ after: vi.fn() }));
 vi.mock("next/server", () => ({ after }));
+const serverEnv = vi.hoisted(() => ({ CONTENT_REVALIDATE_SECRET: undefined as string | undefined }));
+vi.mock("@/lib/config/server-env", () => ({ getServerEnv: () => serverEnv }));
 
 const {
   detailPathsForChange,
+  expireSecondPass,
   invalidateContentFromAction,
   invalidateContentFromRoute,
   MAX_WARMED_PATHS,
@@ -183,6 +187,66 @@ describe("segunda expiração (ADR-0006)", () => {
     await vi.advanceTimersByTimeAsync(SECOND_EXPIRATION_DELAY_MS);
     await expect(pass).resolves.toBeUndefined();
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  describe("em requisição própria (TECH-13, #369)", () => {
+    const SECRET = "x".repeat(32);
+    const lastCall = () => fetchMock.mock.calls.at(-1) as unknown as [string, RequestInit];
+
+    beforeEach(() => {
+      serverEnv.CONTENT_REVALIDATE_SECRET = SECRET;
+      fetchMock.mockImplementation(async () => new Response());
+    });
+
+    afterEach(() => {
+      serverEnv.CONTENT_REVALIDATE_SECRET = undefined;
+      fetchMock.mockImplementation(async () => new Response());
+    });
+
+    it("com o segredo, pede a expiração à rota interna, com o que ela precisa para aquecer", async () => {
+      invalidateContentFromAction({
+        entity: "case",
+        slug: "meridiano",
+        previousSlug: "antigo",
+        relatedPaths: ["/servicos/social"],
+      });
+      const pass = secondPass();
+      await vi.advanceTimersByTimeAsync(SECOND_EXPIRATION_DELAY_MS);
+      await pass;
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      const [url, init] = lastCall();
+      expect(url).toMatch(/\/api\/internal\/revalidate$/);
+      expect(init.method).toBe("POST");
+      expect((init.headers as Record<string, string>).authorization).toBe(`Bearer ${SECRET}`);
+      expect(JSON.parse(init.body as string)).toEqual({
+        entity: "case",
+        slug: "meridiano",
+        previousSlug: "antigo",
+        relatedPaths: ["/cases/meridiano", "/servicos/social"],
+        secondPass: true,
+      });
+      expect(revalidateTag).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["recusa", async () => new Response(null, { status: 401 })],
+      ["fora do ar", async () => Promise.reject(new Error("rede fora"))],
+    ])("rota interna %s: expira aqui mesmo e aquece, sem afetar a operação", async (_label, reply) => {
+      fetchMock.mockImplementationOnce(reply);
+      invalidateContentFromAction({ entity: "case", slug: "meridiano" });
+      const pass = secondPass();
+      await vi.advanceTimersByTimeAsync(SECOND_EXPIRATION_DELAY_MS);
+      await expect(pass).resolves.toBeUndefined();
+      expect(revalidateTag).toHaveBeenCalledWith("content:cases", { expire: 0 });
+      expect(String(lastCall()[0])).toMatch(/\/cases\/meridiano$/);
+    });
+
+    it("expireSecondPass expira e aquece, mas não agenda uma terceira expiração", () => {
+      const tags = expireSecondPass({ entity: "case", slug: "meridiano" });
+      expect(tags).toContain("content:case:meridiano");
+      expect(revalidateTag).toHaveBeenCalledWith("content:case:meridiano", { expire: 0 });
+      expect(after).toHaveBeenCalledTimes(1);
+    });
   });
 
   it("cabe na meta de refletir no site em até 5 s", () => {

@@ -5,7 +5,7 @@
 | Task | CASE-05 (#160) |
 | Situação | **Bloqueado:** aguardando material e autorização da Benjamin (CON-06, #19) |
 | No site | `/cases/aventura-de-construir`, no filtro `/cases?categoria=copywriting` |
-| No painel | **Cases e categorias** → Conteúdo para o blog Aventura de Construir |
+| No painel | **Cases** → Conteúdo para o blog Aventura de Construir |
 
 ## Bloqueio
 

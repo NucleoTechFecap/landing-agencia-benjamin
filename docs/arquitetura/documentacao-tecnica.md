@@ -47,6 +47,7 @@ flowchart LR
 | `/cases` | `cases/page.tsx` | Shell estático + filtros por `searchParams` (Suspense) | Portfólio filtrável |
 | `/cases/[slug]` | `cases/[slug]/page.tsx` | `generateStaticParams` + ISR | Detalhe do case |
 | `/contato` | `contato/page.tsx` | Shell estático + abas por `searchParams` | Formulários de projeto e contato |
+| `/contato/projeto` · `/contato/mensagem` | `contato/projeto/page.tsx` · `contato/mensagem/page.tsx` | Estática, `noindex` | Os mesmos formulários para envio sem JavaScript ou antes da hidratação ([FORM-08](../formularios/idempotencia-e-falhas.md)) |
 | `/feedback` | `feedback/page.tsx` | Estática | Formulário de feedback |
 | `/privacidade` | `privacidade/page.tsx` | Estática | Aviso de privacidade (minuta) |
 | 404 | `app/not-found.tsx` | — | HTTP 404 real via `proxy.ts` para slugs inexistentes |
@@ -58,7 +59,8 @@ flowchart LR
 | `/admin/login`, `/admin/recuperar-senha`, `/admin/auth/callback` | Público | Login, recuperação, retorno dos e-mails |
 | `/admin/nova-senha` | Sessão | Definir senha (convite/recuperação) |
 | `/admin/acesso-pendente`, `/admin/sem-permissao` | Sessão | Avisos de acesso |
-| `/admin` (grupo `(painel)`) | `dashboard:view` | Início do painel; módulos CRUD em ADM-04…ADM-11 |
+| `/admin` (grupo `(painel)`) | `dashboard:view` | Início do painel e menu, os dois a partir do registro `lib/config/admin-modules.ts` (ADM-04); módulos CRUD em ADM-05…ADM-11 |
+| `/admin/conteudos` | `dashboard:view` e, por grupo, `<recurso>:view` | Visão geral: estado dos conteúdos e fila de revisão, com uma única leitura do conteúdo (`lib/server/cms/overview.ts`, ADM-18) |
 
 ### APIs e arquivos especiais
 
@@ -102,14 +104,14 @@ esperam, e cada uma tem seu `Suspense`.
 
 | Tema | Implementação | Documento |
 | ---- | ------------- | --------- |
-| Autenticação | Supabase Auth (convite, senha ≥ 12, cookies httpOnly, renovação no proxy) | [autenticacao.md](../seguranca/autenticacao.md) |
+| Autenticação | Supabase Auth (convite, senha ≥ 12, cookies `HttpOnly`, `SameSite=Lax` e `Secure` em https, renovação no proxy) | [autenticacao.md](../seguranca/autenticacao.md) |
 | Autorização | RBAC em código (`rbac.ts`) + `has_permission()` no banco + guardas | [matriz-rbac.md](../seguranca/matriz-rbac.md), [protecao-de-rotas.md](../seguranca/protecao-de-rotas.md) |
 | Dados pessoais | Minimização, RLS por tipo, retenção, IP só em HMAC | [ciclo-de-vida-dados-pessoais.md](../seguranca/ciclo-de-vida-dados-pessoais.md) |
 | Auditoria | `audit_log` append-only, eventos críticos abortam sem registro | [trilha-de-auditoria.md](../seguranca/trilha-de-auditoria.md) |
 | Logs | JSON estruturado com mascaramento de PII | [ADR-0004](../adr/0004-logs-e-tratamento-de-erros.md) |
 | Formulários | Zod no servidor, honeypot, tempo mínimo, limite por origem, idempotência | [idempotencia-e-falhas.md](../formularios/idempotencia-e-falhas.md) |
-| Mídia | Tipos/limites, assinatura de bytes, SVG recusado | [ADR-0005](../adr/0005-armazenamento-de-midia.md) |
-| Cabeçalhos | nosniff, Referrer-Policy, X-Frame-Options, Permissions-Policy, HSTS, `X-Robots-Tag` fora de produção | `next.config.ts` |
+| Mídia | Tipos/limites, assinatura de bytes, SVG recusado; riscos residuais registrados | [ADR-0005](../adr/0005-armazenamento-de-midia.md) |
+| Cabeçalhos | CSP (com `'unsafe-inline'` em `script-src`, limitação documentada), nosniff, Referrer-Policy, X-Frame-Options, Permissions-Policy, HSTS, `X-Robots-Tag` fora de produção | [protecao-de-rotas.md §5](../seguranca/protecao-de-rotas.md#5-cabeçalhos-de-segurança-e-csp-seg-06) |
 | Segredos | `.env*` fora do Git, validação por ambiente | [variaveis-de-ambiente.md](../ambientes/variaveis-de-ambiente.md) |
 
 ## 5. Banco de dados

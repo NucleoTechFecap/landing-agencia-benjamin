@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,8 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Link para a prévia protegida (ADM-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,6 +32,7 @@ import { FlashMessage } from "@/components/admin/cms/flash-message";
 import { ItemPanel } from "@/components/admin/cms/item-panel";
 import { can } from "@/lib/domain/auth/rbac";
 import { findIntegrityIssues } from "@/lib/domain/content/integrity";
+import { previewPath } from "@/lib/domain/content/preview";
 import { allowedCommands } from "@/lib/domain/content/publication";
 import { requirePageAccess } from "@/lib/server/auth/guards";
 import { publishProblems } from "@/lib/server/cms/content-service";
@@ -53,8 +56,8 @@ export default async function EditCasePage({ params, searchParams }: PageProps<"
     <>
       <CmsHeader title={item.title} trail={[{ label: "Cases", href: "/admin/cases" }, { label: item.title }]} />
       <FlashMessage ok={query.ok} aviso={query.aviso} />
-      <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-        <div className="rounded-3xl border-2 border-benja-noite/15 bg-white p-6">
+      <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="rounded-3xl border-2 border-benja-noite/15 bg-white p-4 sm:p-6">
           {item.status === "archived" ? (
             <p className="mb-5 rounded-2xl bg-benja-creme px-4 py-3 text-sm">
               Case arquivado: restaure como rascunho para editar.
@@ -72,6 +75,7 @@ export default async function EditCasePage({ params, searchParams }: PageProps<"
         <ItemPanel
           item={item}
           publicHref={CASE.publicPath(item)}
+          previewHref={previewPath("case", item.id)}
           missing={publishProblems(CASE, item, snapshot, now)}
           warnings={warnings}
         >

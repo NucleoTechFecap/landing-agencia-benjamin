@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,13 +20,14 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-09).
  13/10/2026 Vinícius Nishimura Reis  Autenticação compartilhada das rotas internas (GO-02).
  26/10/2026 Vinícius Nishimura Reis  Tags e invalidação de páginas do CMS (DB-03).
+ 04/11/2026 Vinícius Nishimura Reis  Segunda expiração em requisição própria, antes de aquecer (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { z } from "zod";
 import { getServerEnv } from "@/lib/config/server-env";
 import { SLUG_PATTERN } from "@/lib/domain/content/slug";
-import { invalidateContentFromRoute } from "@/lib/server/content/invalidate";
+import { MAX_WARMED_PATHS, expireSecondPass, invalidateContentFromRoute } from "@/lib/server/content/invalidate";
 import { AppError } from "@/lib/server/errors";
 import { apiRoute, jsonOk } from "@/lib/server/http";
 import { hasBearerSecret } from "@/lib/server/internal-auth";
@@ -36,6 +37,13 @@ const bodySchema = z.object({
   entity: z.enum(["settings", "area", "service", "category", "case", "cta", "page"]),
   slug,
   previousSlug: slug,
+  /** Páginas de detalhe a aquecer: só caminhos do próprio site, com formato conhecido. */
+  relatedPaths: z
+    .array(z.string().regex(/^\/(servicos|cases)\/[a-z0-9]+(-[a-z0-9]+)*$/))
+    .max(MAX_WARMED_PATHS)
+    .optional(),
+  /** Marca a segunda expiração do próprio site (invalidate.ts): não agenda outra. */
+  secondPass: z.literal(true).optional(),
 });
 
 /**
@@ -48,6 +56,7 @@ export const POST = apiRoute(async (request, _context, requestId) => {
   }
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) throw new AppError("BAD_REQUEST", { message: "Corpo inválido." });
-  const tags = invalidateContentFromRoute(parsed.data);
+  const { secondPass, ...change } = parsed.data;
+  const tags = secondPass ? expireSecondPass(change) : invalidateContentFromRoute(change);
   return jsonOk({ data: { invalidated: tags } }, { requestId });
 });

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
  26/10/2026 Vinícius Nishimura Reis  Formulário único no shell; next por promessa (B-08) (ADM-02).
  29/10/2026 Caio Moraes              Cores via tokens do tema (ADM-04).
+ 04/11/2026 Vinícius Nishimura Reis  Recarrega depois de sair, para limpar dados da memória (SEG-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -27,6 +28,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AuthCard } from "@/components/admin/auth-card";
 import { LoginForm } from "@/components/admin/auth-forms";
+import { ReloadAfterSignOut } from "@/components/admin/reload-after-sign-out";
 import { signIn } from "../actions";
 
 export const metadata: Metadata = { title: "Entrar" };
@@ -62,6 +64,8 @@ async function LoginNotices({ searchParams }: Pick<PageProps<"/admin/login">, "s
           Você saiu do painel com segurança.
         </p>
       ) : null}
+      {/* `1` é o que signOut manda; depois da recarga vem `ok`, que só mostra o aviso. */}
+      {params.saiu === "1" ? <ReloadAfterSignOut /> : null}
       {notice ? (
         <p
           role="alert"

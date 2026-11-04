@@ -24,6 +24,15 @@ portal de login). Suba sem os serviços de log e analytics:
 3. Confirme que o Supabase subiu com os templates de `supabase/templates/` (`npx supabase stop` e
    `start` depois de mudar o `config.toml`).
 
+**Login não mantém a sessão em `next start` local.** O cookie recebe `Secure` quando
+`NEXT_PUBLIC_SITE_URL` não começa com `http://`, e nem todo navegador aceita isso em `http://localhost`.
+Declare `NEXT_PUBLIC_SITE_URL=http://localhost:3000` e refaça o build.
+
+**O console acusa `Content Security Policy`.** Recurso de uma origem que a política não libera. A origem
+do Supabase entra no build: depois de trocar `NEXT_PUBLIC_SUPABASE_URL`, refaça o build. Integração nova
+exige acrescentar a origem em `lib/domain/security/http-policy.ts`
+([proteção de rotas §5](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/seguranca/protecao-de-rotas.md)).
+
 **Senha recusada ao criar a conta.** A política exige no mínimo 12 caracteres, com letras e números.
 
 ## Painel e conteúdo

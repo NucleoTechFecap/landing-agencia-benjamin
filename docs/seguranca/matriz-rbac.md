@@ -81,6 +81,7 @@ Notas:
 | N12 | `select` direto na tabela de leads com chave anônima | 0 linhas (RLS) |
 | N13 | Sessão expirada em ação de escrita | 401 e redirecionamento ao login, nada gravado |
 
-N04–N10 estão automatizados em `lib/domain/auth/rbac.test.ts`; N01–N03, N11–N13 dependem do
-servidor/banco e entram nos testes de ADM-03 e QA-06. N05, N08 e N12 também são provados no banco por
-`supabase/tests/database/form_submissions_rls.test.sql` (TECH-06).
+N04–N10 estão automatizados em `lib/domain/auth/rbac.test.ts`; N01–N03 em `guards.test.ts`. N02, N04 a N11 e N13 têm
+prova por POST real, com Auth e RLS reais, em [QA-06](../qualidade/qa-06-acesso-indevido.md). N05, N08 e N12 também são provados no banco por
+`supabase/tests/database/form_submissions_rls.test.sql` (TECH-06), e pelo painel e pela API REST direta em
+[SEG-04](../qualidade/seg-04-autorizacao-dados-pessoais.md).
