@@ -17,7 +17,7 @@
 | Resumo | Conteúdos em texto, imagem e vídeo alinhados à estratégia. | 10 a 200 caracteres (atual: 58) |
 | Descrição | Pautas, roteiros, textos, imagens e vídeos produzidos para informar, engajar e gerar relacionamento com o público da marca. | Mínimo de 20 caracteres (atual: 123) |
 | Exemplos de entregas | Pautas e roteiros · Conteúdo para blog e redes · Séries editoriais | Até 12, um por linha |
-| Áreas de atuação | Social Media, [Copywriting](../areas/copywriting.md), [Criação](../areas/criacao.md) | Ao menos uma publicada |
+| Áreas de atuação | [Social Media](../areas/social-media.md), [Copywriting](../areas/copywriting.md), [Criação](../areas/criacao.md) | Ao menos uma publicada |
 | Ícone | Salvo (`salvo`) | Um dos 14 ícones oficiais |
 | Imagem | Nenhuma (o site usa o ícone) | Da biblioteca de mídia, com texto alternativo |
 | Destaque na Home | Sim | Até 6 serviços em destaque |
