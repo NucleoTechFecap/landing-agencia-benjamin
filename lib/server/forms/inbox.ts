@@ -20,6 +20,7 @@
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
  04/11/2026 Vinícius Nishimura Reis  Exclusão de envio arquivado, a pedido do titular (FORM-09).
+ 04/11/2026 Vinicius Binda             Exclusão recusada em envio com retenção suspensa (DBX-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -85,6 +86,9 @@ interface DbError {
 /** Quem chama só vê a mensagem padrão; o erro do banco fica em `cause`, para o log mascarado. */
 function dbFailure(error: DbError): AppError {
   if (error.code === "42501") return new AppError("FORBIDDEN", { cause: error });
+  if (error.code === "BJ004") {
+    return new AppError("CONFLICT", { message: "Este envio está com a retenção suspensa e não pode ser excluído." });
+  }
   return new AppError("SERVICE_UNAVAILABLE", { cause: error, internal: { code: error.code } });
 }
 
