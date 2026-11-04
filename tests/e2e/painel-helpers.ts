@@ -18,11 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-04, ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Conta de teste com o papel super_admin (QA-06).
+ 04/11/2026 Vinícius Nishimura Reis  Prazo de publicação e espera de Server Action para máquina carregada (QA-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { randomBytes } from "node:crypto";
 import { mkdirSync } from "node:fs";
+import { cpus, loadavg } from "node:os";
 import { join } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, type Page } from "@playwright/test";
@@ -32,7 +35,7 @@ export const SUPABASE_URL = process.env.E2E_SUPABASE_URL;
 export const SERVICE_KEY = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
 export const REQUIRES_SUPABASE = "Requer o Supabase local: npm run test:e2e:cms";
 
-export type PanelRole = "admin" | "editor" | "viewer" | "pending";
+export type PanelRole = "super_admin" | "admin" | "editor" | "viewer" | "pending";
 
 export interface Account {
   email: string;
@@ -41,6 +44,15 @@ export interface Account {
 }
 
 export const newSuffix = () => randomBytes(4).toString("hex");
+
+/**
+ * Prazo para a publicação chegar ao site (ADR-0006: 5 s). Com a máquina sobrecarregada, o relógio mede a fila de
+ * CPU e não a invalidação, então o prazo folga só nesse caso. Em máquina livre, e no CI, o limite é o do ADR.
+ */
+export const publishBudgetMs = () => (loadavg()[0] > cpus().length ? 30_000 : 5_000);
+
+/** Espera por uma Server Action terminar. É evento, não pausa: em máquina livre, responde bem antes. */
+export const ACTION_TIMEOUT_MS = 20_000;
 
 export const serviceClient = (): SupabaseClient =>
   createClient(SUPABASE_URL!, SERVICE_KEY!, { auth: { persistSession: false } });
