@@ -81,6 +81,10 @@ PageDTO        { slug, title, description?, path: string|null (rota fixa — PAG
 CtaDTO         { label, href, external }   // placement: home-hero | home-highlight | footer | service-detail | case-detail
 ```
 
+Em `SiteSettingsDTO`, campo não preenchido no painel (ADM-10) fica ausente, nunca vazio. Os links são sempre
+`https://`, e as redes ficam no domínio da própria rede. Regras em
+[`dicionario-de-dados.md`](../banco/dicionario-de-dados.md#site_settings--configuração-institucional-adm-10).
+
 Exemplo (`GET /api/v1/cases?category=assessoria-de-imprensa`):
 
 ```json

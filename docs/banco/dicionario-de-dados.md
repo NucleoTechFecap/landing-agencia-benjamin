@@ -307,7 +307,29 @@ Linha única (`id boolean primary key default true check (id)`).
 | `manifesto`, `about`, `contact`, `socials` | `jsonb` | Não | Objeto JSON | mesmos nomes em `SiteSettings` |
 | `keywords` | `text[]` | Não | `{}` | `keywords` |
 
-Leitura pública (o conteúdo é institucional) e escrita só com `settings:edit`.
+Leitura pública (o conteúdo é institucional) e escrita só com `settings:edit`. Sem rascunho: toda gravação
+vai direto ao ar. Quem grava é a tela `/admin/configuracoes`, com a sessão de quem edita (RLS) e
+concorrência otimista por `updated_at`, e cada alteração gera o evento crítico `settings.updated`, com os
+nomes dos campos e sem os valores.
+
+A tela edita `tagline`, `description`, `contact` e `socials`. Não edita `manifesto` e `about`, que têm blocos
+publicáveis (seção de blocos acima), nem `name`, `short_name` e `keywords`. Em ambiente sem a linha, a primeira
+gravação a cria, com o valor de referência de `content/site.ts` no que a tela não edita.
+
+O banco garante só que `contact` e `socials` são objetos JSON. O formato fica em
+`lib/domain/content/settings-schema.ts`, aplicado ao salvar e também ao ler. Uma seção fora destas regras não
+chega ao site: vale o valor de referência, e o problema vai para o log.
+
+| Campo | Regra |
+| ----- | ----- |
+| `contact.email` | E-mail válido, até 254 caracteres |
+| `contact.phone` | Até 30 caracteres; números, espaços, `(`, `)`, `.`, `-` e `+` inicial; de 8 a 15 dígitos |
+| `contact.address` | 1–200 |
+| `contact.mapsUrl` | `https://`, domínio público, sem usuário e senha, até 500 caracteres. No formulário, exige `contact.address` |
+| `socials.instagram`, `socials.tiktok`, `socials.linkedin` | As mesmas regras de link, no domínio da rede ou em subdomínio dele |
+
+Campo em branco é gravado como chave ausente, e o site não mostra o item. Os links são gravados na forma
+canônica de `URL.href`.
 
 ## 6. Regras que ficam na aplicação
 
