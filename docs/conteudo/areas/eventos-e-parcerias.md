@@ -21,7 +21,7 @@
 
 ## Relações
 
-- **Serviços desta área** (vínculo feito no cadastro do serviço): Eventos.
+- **Serviços desta área** (vínculo feito no cadastro do serviço): [Eventos](../servicos/eventos.md).
 
 ## Para a Benjamin aprovar (SOB-05)
 

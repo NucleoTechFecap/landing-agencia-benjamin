@@ -37,6 +37,7 @@
  04/11/2026 Vinícius Nishimura Reis  Item Comunicação Interna (SOB-07).
  04/11/2026 Vinícius Nishimura Reis  Item Estratégia Digital (SERV-03).
  04/11/2026 Vinícius Nishimura Reis  Item Social Media (SERV-04).
+ 04/11/2026 Vinícius Nishimura Reis  Item Eventos (SERV-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -257,6 +258,12 @@ describe("itens de conteúdo do MVP", () => {
     areas: ["social-media"],
     cases: ["meridiano"],
     featured: true,
+    provisional: true,
+  });
+  checkService("eventos", {
+    areas: ["eventos-e-parcerias"],
+    cases: [],
+    featured: false,
     provisional: true,
   });
   checkService("producao-de-conteudo", {
