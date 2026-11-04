@@ -59,7 +59,7 @@ Tipo: `T` técnico, `I` institucional.
 | [CA-17](#ca-17) Aviso de privacidade | T + I | Parcial | Texto validado (SEG-02) |
 | [CA-18](#ca-18) Login e sessão | T | Parcial | Logout, renovação de sessão, cadastro público desligado |
 | [CA-19](#ca-19) Permissões N01 a N13 | T | Parcial | N11 e N13 de ponta a ponta; N09 e N10 no banco |
-| [CA-20](#ca-20) Autonomia da Benjamin | I | Sem cobertura | Só homologação; falta a tela ADM-11 |
+| [CA-20](#ca-20) Autonomia da Benjamin | I | Sem cobertura | Só homologação |
 | [CA-21](#ca-21) Rascunho e publicação | T | Coberto | — |
 | [CA-22](#ca-22) Upload de imagem | T | Coberto | — |
 | [CA-23](#ca-23) Leads só para `admin` | T | Parcial | Tela FORM-09 e `lead.viewed` em fluxo real |
@@ -378,7 +378,7 @@ só mostram que as telas funcionam, e não que a equipe consegue usá-las sozinh
 | Serviços | `tests/integration/supabase/cms-servicos.test.ts` › «editor cria o serviço com áreas e imagem; vínculo gravado pela RLS do editor» | S | Sem E2E |
 | Mídia | `tests/e2e/jornada-midia-cms.spec.ts` › «imagem de 5 MB entra na biblioteca» | C | |
 | Contato e redes | `tests/e2e/jornada-configuracoes-cms.spec.ts` › «admin altera rede e contato; rodapé e /contato mudam sem deploy, e a restauração volta tudo» | C | Salvar vai direto ao ar, sem rascunho |
-| CTAs e destaques | **Sem cobertura** | — | Tela inexistente na `main` (ADM-11) |
+| CTAs e destaques | `tests/e2e/jornada-home-cms.spec.ts` › «publicado vira botão na Home, navegável, e entra na API pública»; «destaque é marcado no serviço, a tela de CTAs mostra onde, e a Home acompanha». `tests/integration/supabase/cms-ctas.test.ts` › «editor salva; quem não é do painel não lê, nem direto pela API REST» | C, S | Só local: o site publicado ainda não está ligado ao Supabase (GO-02) |
 
 ### CA-21
 
@@ -533,7 +533,6 @@ Resumo do que está marcado como **sem cobertura**, para virar teste ou ser acei
 | Rota do job de reenvio | CA-16 | QA-05 | — |
 | Cabeçalhos HTTP e cookies | Seção 8 | SEG-06 | — |
 | Tela de leads e `lead.viewed` | CA-23 | FORM-09, SEG-04 | — |
-| Tela de CTAs | CA-20 | ADM-11 | — |
 | `/api/v1/health` | CA-29 | QA-11 | — |
 | Contraste e Lighthouse | CA-07 | QA-07, SEG-07 | — |
 | Envio real de e-mail | CA-15 | FORM-10, GO-05 | CON-10, GO-02 |

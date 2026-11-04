@@ -34,7 +34,6 @@ Dá para fazer tudo em etapas e em mais de um dia.
 | Conteúdo cadastrado no painel para avaliação | ⏳ Depende do ambiente |
 | E-mail de teste dos formulários ligado, com destinatário definido | ⏳ Depende do GO-02 e do CON-10 |
 | Canal para relatar problemas | ⏳ A definir (GOV-04) |
-| Telas de CTAs e pedidos recebidos | ⏳ Ainda não existem no painel (ADM-11, FORM-09) |
 
 **A equipe da Benjamin precisa ter à mão:**
 
