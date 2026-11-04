@@ -30,15 +30,15 @@ marcador aparecer na resposta de quem não pode ler, o teste falha, mesmo em for
 | Conta desativada com token ainda válido | Continuar lendo depois do desligamento | `current_app_role()` vale como `pending`, na hora | `leads-no-painel.test.ts`, `leads_painel.test.sql` |
 | `admin` | Reescrever o que o visitante enviou ou forjar a notificação | `update` só na coluna `status` | `leads-no-painel.test.ts`, `leads_painel.test.sql` |
 | Falha na aplicação | Guarda esquecida ou papel errado no servidor | A consulta usa a sessão, sem service role; a RLS segura sozinha. O teste chama os serviços com todos os tipos e o papel forjado | `leads-no-painel.test.ts`, `inbox.test.ts` (arquitetura) |
-| `id` na URL e no formulário | Texto arbitrário chegando ao banco; descobrir se um registro existe | Formato conferido antes do banco; guarda antes do id; mesma resposta para "não existe" e "não pode ver" | `inbox-context.test.ts`, `leads-no-painel.test.ts`, E2E J3.5 e J3.6 |
-| Filtros e página na URL | Operador do PostgREST, valor enorme, nome ou e-mail na URL | Lista fechada e padrão fixo em `parseInboxQuery`; o resto vira "sem filtro" | `inbox.test.ts`, E2E J3.6 |
-| Conteúdo do envio (`payload`) | HTML ou script executado no painel de quem atende (XSS guardado) | Só texto com o escape do React, sem link automático | `submission-detail.test.ts`, E2E J3.6 |
-| `sourcePath` | `//evil.com` virando link para outro site | Só texto, nunca link | `submission-detail.test.ts`, E2E J3.6 |
+| `id` na URL e no formulário | Texto arbitrário chegando ao banco; descobrir se um registro existe | Formato conferido antes do banco; guarda antes do id; mesma resposta para "não existe" e "não pode ver" | `inbox-context.test.ts`, `leads-no-painel.test.ts`, E2E J3.10 e J3.11 |
+| Filtros e página na URL | Operador do PostgREST, valor enorme, nome ou e-mail na URL | Lista fechada e padrão fixo em `parseInboxQuery`; o resto vira "sem filtro" | `inbox.test.ts`, E2E J3.11 |
+| Conteúdo do envio (`payload`) | HTML ou script executado no painel de quem atende (XSS guardado) | Só texto com o escape do React, sem link automático | `submission-detail.test.ts`, E2E J3.11 |
+| `sourcePath` | `//evil.com` virando link para outro site | Só texto, nunca link | `submission-detail.test.ts`, E2E J3.11 |
 | Formulário de status | Forjar `kind`, gravar status inválido, sobrescrever a alteração de outra pessoa | Tipo lido do banco; status de lista fechada; `update` condicionado ao status lido | `inbox.test.ts`, `leads-no-painel.test.ts` |
-| Conta sem o papel, tentando abrir a tela | Tentar ler dados pessoais sem deixar rastro | `access.denied` na trilha, além do log, sem dizer qual registro foi pedido | `inbox-context.test.ts`, E2E J3.5 |
+| Conta sem o papel, tentando abrir a tela | Tentar ler dados pessoais sem deixar rastro | `access.denied` na trilha, além do log, sem dizer qual registro foi pedido | `inbox-context.test.ts`, E2E J3.10 |
 | Trilha de auditoria | Forjar eventos de dados pessoais; gravar conteúdo no evento | `record_audit_event` só aceita `lead.*` e `feedback.*` do `admin`; metadados de lista permitida | `leads_painel.test.sql`, `leads-no-painel.test.ts`, `inbox-context.test.ts` |
 | Pré-carregamento de links | Passar o mouse contar como leitura e gravar evento falso | `prefetch={false}` nos links do painel de envios | Revisão de código |
-| Computador compartilhado | Envio aberto ficar no DOM depois de sair (Activity do Next) | Recarga completa ao sair | E2E J3.8 |
+| Computador compartilhado | Envio aberto ficar no DOM depois de sair (Activity do Next) | Recarga completa ao sair | E2E J3.13 |
 | Logs e cache | Dado pessoal em log ou em `use cache` | Telas sem `use cache`; logger com mascaramento; guarda registra só id e papel | `inbox.test.ts` (arquitetura), `logger.test.ts` |
 
 ## 3. Matriz de acesso observada
@@ -58,7 +58,7 @@ Na tela, "sem permissão" é `/admin/sem-permissao`.
 | `admin` desativado | Acesso pendente | 200, 0 linhas | 0 linhas | 0 linhas |
 | `admin` | Abre | Lê os três tipos | Só `status`; outra coluna, sozinha ou junto, `42501`; valor fora da lista, `23514` | Permitido pela RLS; na tela, só depois de arquivar |
 
-A tela de `editor`, `super_admin` e sem sessão foi vista no navegador (E2E J3.5). A de `pending` e `viewer` está
+A tela de `editor`, `super_admin` e sem sessão foi vista no navegador (E2E J3.10). A de `pending` e `viewer` está
 nos testes de guarda (`inbox-context.test.ts`). A do `admin` desativado segue de `getSessionUser`, que o trata como
 `pending`, sem teste de navegador próprio; a leitura dele pela RLS está em `leads-no-painel.test.ts`.
 
@@ -82,7 +82,7 @@ As mutações de banco foram aplicadas à mão na stack local e desfeitas em seg
 | Policy de `update` com `using (true)` | Passou em `leads-no-painel.test.ts`: sem efeito sem o select. Falha no `leads_painel.test.sql` (teste 28, papel que lê e não altera) |
 | Policy de `delete` com `using (true)` | Idem |
 | Sem `revalidatePath` na Server Action | A lista mostra o status antigo ao voltar: falha na E2E J3.4 |
-| Sem recarga ao sair (situação antes da correção) | O envio aberto continuava no DOM, na tela de login: foi assim que o defeito apareceu. A E2E J3.8 exige a recarga |
+| Sem recarga ao sair (situação antes da correção) | O envio aberto continuava no DOM, na tela de login: foi assim que o defeito apareceu. A E2E J3.13 exige a recarga |
 
 As duas mutações que passaram na integração eram uma lacuna real da primeira versão dos testes: a RLS aplica o
 `select` também em `update` e `delete` com `where`, então um papel sem leitura nunca exercita as policies de
@@ -102,7 +102,7 @@ escrita. Por isso o pgTAP tem o caso com permissão isolada.
 
 - **Aprovação da Benjamin** de quem vê leads e feedbacks, etapas de atendimento e destinatários (ADM-01, TECH-06
   §10, CON-10). Nada disso foi tratado como aprovado.
-- **Homologação:** repetir J3.4 a J3.8 contra o Supabase de homologação (GO-02, QA-06).
+- **Homologação:** repetir J3.4 e J3.10 a J3.13 contra o Supabase de homologação (GO-02, QA-06).
 - **N13** (sessão expirada em ação de escrita) segue no roteiro de QA-06.
 
 ### Riscos residuais
