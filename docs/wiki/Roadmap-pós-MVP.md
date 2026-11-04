@@ -15,6 +15,7 @@ O MVP cobre site institucional, serviços, cases, formulários e o painel de con
 | FUT-06 — Analytics avançado | Indicadores e tratamento de dados definidos antes de implementar, sem cookies; muda o aviso de privacidade e a CSP | 30–46 h | [analytics-avancado.md](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/roadmap/analytics-avancado.md) |
 | FUT-07 — Integrações externas | Analytics sem cookies, monitoramento de erros, Search Console, feed e embeds | Por integração | [integracoes-externas.md](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/roadmap/integracoes-externas.md) |
 | FUT-08 — Módulos internos | Descoberta com a Benjamin; ferramenta de mercado para o genérico, construção só com dados da plataforma | Descoberta: 4–6 h | [modulos-internos.md](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/roadmap/modulos-internos.md) |
+| FUT-10 — Priorização editorial | Modelo para a agência comparar ideias pelo que os editores permitem; a decisão é da Benjamin | Sem desenvolvimento na rotina | [priorizacao-editorial.md](https://github.com/NucleoTechFecap/landing-agencia-benjamin/blob/main/docs/roadmap/priorizacao-editorial.md) |
 
 ## Evoluções ainda sem especificação
 
@@ -22,7 +23,6 @@ O MVP cobre site institucional, serviços, cases, formulários e o painel de con
 | --- | --- |
 | FUT-05 | Fluxo editorial de revisão e aprovação antes de publicar |
 | FUT-09 | Filtros, busca e relacionamentos de conteúdo |
-| FUT-10 | Novas seções, conteúdos e cases |
 
 ## Melhorias técnicas já mapeadas
 

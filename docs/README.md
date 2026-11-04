@@ -102,3 +102,4 @@
 | [Analytics avançado de desempenho do site](roadmap/analytics-avancado.md) | FUT-06 |
 | [Planejamento de integrações externas](roadmap/integracoes-externas.md) | FUT-07 |
 | [Módulos internos para a operação da agência](roadmap/modulos-internos.md) | FUT-08 |
+| [Priorização de novas seções, conteúdos e cases](roadmap/priorizacao-editorial.md) | FUT-10 |
