@@ -294,6 +294,18 @@ export async function updateMediaDetails(
   await deps.store.updateMedia(ref.id, { alt_text: alt, decorative }, ref.expectedUpdatedAt);
 
   const altChanged = (alt ?? "") !== asset.alt;
+  // A trilha não tem evento próprio de mídia editada, e criar um exige migration: vale como edição
+  // de conteúdo, porque o texto alternativo aparece nas páginas que usam o arquivo. O texto não vai à trilha.
+  await deps.audit({
+    event: "content.updated",
+    resourceId: ref.id,
+    metadata: {
+      entity: "media",
+      altChanged,
+      decorative,
+      publishedUses: usage.filter(({ status }) => status === "published").length,
+    },
+  });
   for (const { entity, slug, status } of usage) {
     if (status === "published") deps.invalidate({ entity, slug });
   }

@@ -459,6 +459,19 @@ describe("biblioteca: exclusão e edição (ADM-09)", () => {
       expect(env.tables.media_assets[0].updated_at).not.toBe(VERSION);
     });
 
+    it("editar deixa rastro na trilha, sem o texto alternativo", async () => {
+      const env = library();
+      await updateMediaDetails(env.deps, actor("editor"), ref, { alt: "Equipe no estúdio", decorative: false });
+      expect(env.audits).toEqual([
+        expect.objectContaining({
+          event: "content.updated",
+          resourceId: ref.id,
+          metadata: expect.objectContaining({ entity: "media", altChanged: true }),
+        }),
+      ]);
+      expect(JSON.stringify(env.audits)).not.toContain("Equipe no estúdio");
+    });
+
     it("leitor não edita", async () => {
       const env = library();
       await expect(
