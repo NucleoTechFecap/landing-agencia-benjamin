@@ -27,7 +27,7 @@ preserva conteúdo desatualizado após arquivar algo, ou — pior — que expõe
   público (invariante I1). A pré-visualização do painel lê direto da fonte, sem cache.
 - Páginas de detalhe usam `generateStaticParams` com os slugs publicados (prerender no build) e
   ISR com App Shell para slugs publicados depois.
-- A API `/api/v1` usa o mesmo repositório e `Cache-Control: s-maxage=300, stale-while-revalidate=3600`.
+- A API `/api/v1` usa o mesmo repositório e `Cache-Control: s-maxage=240, stale-while-revalidate=60`.
 
 ### 2. Tags
 
@@ -107,7 +107,7 @@ não invalida o cache.
 | Publicação/edição/arquivamento pelo painel | **≤ 5 s** para refletir no site (próxima requisição) |
 | Alteração fora do painel com webhook | **≤ 60 s** |
 | Pior caso (invalidação falhou) | ≤ 1 h (revalidate do `cacheLife`) |
-| CDN da API `/api/v1` | ≤ 5 min (`s-maxage=300`) |
+| CDN da API `/api/v1` | ≤ 5 min (`s-maxage=240` + `stale-while-revalidate=60`) |
 
 ### 5. SEO
 

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-02).
  29/10/2026 Vinicius Binda             301 para o endereço atual do recurso (DB-08).
+ 04/11/2026 Vinícius Nishimura Reis  Stale de 60 s, dentro da meta de 5 min do ADR-0006 (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -27,8 +28,11 @@ import type { z } from "zod";
 import { searchParamsToObject, zodFieldErrors, type ApiErrorBody, type ApiSuccess } from "@/lib/domain/api/contracts";
 import { AppError, newRequestId, toPublicError } from "./errors";
 
-/** Cache de CDN para leituras públicas: 5 min frescas + 1 h servindo stale enquanto revalida. */
-export const PUBLIC_CACHE_CONTROL = "public, s-maxage=300, stale-while-revalidate=3600";
+/**
+ * Cache de CDN para leituras públicas. As duas parcelas somam a meta de 5 min do ADR-0006: com um
+ * stale maior, uma URL de pouco tráfego entregaria página arquivada bem depois disso.
+ */
+export const PUBLIC_CACHE_CONTROL = "public, s-maxage=240, stale-while-revalidate=60";
 
 function requestIdFrom(request: Request): string {
   return request.headers.get("x-request-id") ?? request.headers.get("x-vercel-id") ?? newRequestId();
