@@ -77,10 +77,10 @@ export async function login(page: Page, account: Account) {
   await expect(page).toHaveURL(/\/admin$/);
 }
 
-/** Capturas de tela ficam fora do repositório: só são gravadas com E2E_EVIDENCE_DIR. */
+/** Capturas de tela ficam fora do Git, em test-results/evidencias: só são gravadas com E2E_EVIDENCE=1. */
 export async function saveEvidence(page: Page, name: string, fullPage = true) {
-  const dir = process.env.E2E_EVIDENCE_DIR;
-  if (!dir) return;
+  if (process.env.E2E_EVIDENCE !== "1") return;
+  const dir = join("test-results", "evidencias");
   mkdirSync(dir, { recursive: true });
   await page.screenshot({ path: join(dir, `${name}.png`), fullPage });
 }
