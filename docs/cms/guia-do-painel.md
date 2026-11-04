@@ -122,8 +122,8 @@ Matriz completa em [perfis e permissões](../seguranca/perfis-e-permissoes.md).
 
 ## Menu do painel
 
-O menu fica à esquerda no computador, organizado em grupos: Visão geral, Conteúdo do site, Comunicação, Biblioteca e
-Administração. O item da tela atual fica destacado.
+O menu fica à esquerda no computador, organizado em grupos: Visão geral (com o histórico de alterações), Conteúdo do
+site, Comunicação, Biblioteca e Administração (com a aparência do site). O item da tela atual fica destacado.
 
 - **Recolher menu**, no rodapé, deixa só os ícones e dá mais espaço para o conteúdo. O nome de cada item aparece ao
   passar o mouse. A escolha fica guardada neste navegador.
@@ -174,7 +174,7 @@ pedir aprovação.
 | ------------- | --------------- | ----------- |
 | "Para publicar, falta:" | Rascunho incompleto: a mesma lista que aparece ao lado do formulário | Complete quando o material chegar. Ninguém é obrigado a publicar |
 | "No ar com pendências:" | Item publicado que não passaria na conferência hoje (por exemplo, a categoria dele saiu do ar) | Corrija o item, ou o conteúdo de que ele depende |
-| "Avisos:" | Item publicado com algo a decidir: serviço sem área publicada, destaques acima do limite, página sem rota no site ou data de publicação futura | Avalie: o site segue de pé |
+| "Avisos:" | Item publicado com algo a decidir: serviço sem área publicada, destaques acima do limite no site ou data de publicação futura | Avalie: o site segue de pé |
 | "Textos provisórios, sem outra pendência" | Item marcado como provisório, sem outro problema. A lista começa recolhida; clique para abrir | Desmarque só depois da aprovação da Benjamin. Enquanto houver texto provisório publicado, o go-live fica bloqueado |
 
 Ficam fora da fila: item publicado em dia, rascunho completo (na coluna **Revisão** aparece "Pronto para
@@ -186,31 +186,104 @@ persistir, envie o código ao NúcleoTech.
 
 ## Páginas e textos (`/admin/paginas`)
 
-Cada rota do site (Home, Sobre, Áreas de atuação, Serviços, Cases, Contato e Privacidade) tem seções
-fixas e pode ter uma página no painel. A lista mostra todas as rotas; **Criar conteúdo** abre a página
-daquela rota, sempre como rascunho.
+Aqui muda quase tudo o que o visitante lê. A lista tem três partes:
+
+- **As páginas do site** (Home, Sobre, Áreas, Serviços, Cases, Contato, Feedback e Privacidade).
+- **As páginas que vocês criaram**, cada uma com endereço próprio.
+- **O que aparece em várias páginas:** menu, rodapé e textos gerais, os formulários do site e os textos fixos das
+  páginas de serviço e de case.
+
+Em uma página sem conteúdo ainda, **Criar conteúdo** abre um rascunho. Enquanto ela não for publicada, o site continua
+com os textos originais. Depois de publicada, **salvar muda o site na hora, sem deploy**.
+
+### Textos e imagens
+
+Cada seção da página abre e fecha, com todos os textos, imagens, ícones, botões e a cor de fundo dela.
+
+- **Voltar ao texto original** aparece embaixo do campo alterado e desfaz só aquele campo. O site só guarda o que
+  difere do original.
+- **Esconder esta seção do site** tira a seção sem apagar o que está escrito nela.
+- O texto entre chaves, como `{total}`, é trocado pelo valor real. A dica do campo diz o que cada um significa.
+- As listas de serviços, cases e áreas vêm das telas próprias de cada um. Aqui ficam os títulos e chamadas em volta.
+
+### Criar uma página nova
+
+**Nova página** pede título e endereço. Em branco, o endereço sai do título. Ela nasce como rascunho e só vai ao ar ao
+publicar; depois da primeira publicação, o endereço não muda.
+
+Monte o conteúdo com blocos, na ordem que quiser:
+
+| Bloco | O que faz |
+| ----- | --------- |
+| Abertura com título e botões | Como primeiro bloco, vira o topo da página. Só nas páginas novas |
+| Texto | Título opcional e parágrafos, um por linha |
+| Texto com imagem | Parágrafos, imagem à direita ou à esquerda, e botão opcional |
+| Imagem | Uma imagem larga, com legenda |
+| Cartões | Até 12, cada um com ícone ou imagem, título, texto e link |
+| Lista de destaques | Um item por linha: `Título \| texto opcional` |
+| Galeria de imagens | Até 24 imagens da biblioteca |
+| Perguntas frequentes | Perguntas que abrem e fecham |
+| Botões | Até 4 botões, com título e texto opcionais |
+| Nosso time | Nome, cargo e foto. Publique só o que a pessoa autorizou |
+| Chamada para ação | Título, texto, botão e destino |
+
+Os blocos também podem ser acrescentados às páginas do site: eles entram depois das seções fixas. Para a página nova
+aparecer no menu, acrescente o endereço dela em **Menu, rodapé e textos gerais**.
+
+### SEO e compartilhamento
+
+A aba **SEO e compartilhamento** tem o título e a descrição para buscadores, as palavras-chave, a opção de não listar a
+página e o cartão que aparece ao compartilhar: título, descrição e imagem (Open Graph). As duas prévias acompanham o que
+você digita. O que ficar em branco segue o padrão da página. Serviços e cases têm o mesmo formulário, numa aba própria.
+
+### Blocos e dados
 
 | Campo | Obrigatório para | Observação |
 | ----- | ---------------- | ---------- |
-| Título interno | salvar | Identifica a página no painel e na API |
+| Título | salvar | Nas páginas do site, é só o nome interno. Nas novas, aparece no topo se a página não começar por uma abertura |
 | Descrição | — | Até 300 caracteres |
 | Texto provisório | — | Nasce marcado. Desmarque só depois da aprovação da Benjamin: o site não mostra aviso ao visitante, mas o go-live fica bloqueado enquanto houver texto provisório publicado |
-| Blocos | publicar | Ao menos um |
+| Conteúdo | publicar | Página nova: ao menos um bloco. Página do site: ao menos um bloco, um texto alterado ou o SEO preenchido |
 
-Os blocos são editados um de cada vez, com **Editar**, **Subir**, **Descer** e **Excluir**. Em página
-publicada, salvar um bloco muda o site na hora. A última exclusão é recusada: despublique a página antes.
+Os blocos são editados um de cada vez, com **Editar**, **Subir**, **Descer** e **Excluir**. Em página publicada, a
+exclusão do último bloco é recusada quando ela ficaria vazia: despublique a página antes.
 
-| Bloco | Onde | O que faz |
-| ----- | ---- | --------- |
-| Manifesto | Só na Home, um | **Substitui** o manifesto do topo da Home |
-| Sobre a Benjamin | Só em Sobre, um | **Substitui** os textos de quem somos, proposta, modelo de atuação e FECAP, em Sobre e na Home |
-| Texto | Qualquer página | Título opcional e parágrafos, um por linha (até 12) |
-| Lista de destaques | Qualquer página | Um item por linha: `Título \| texto opcional` (até 12) |
-| Nosso time | Qualquer página | Nome, cargo e foto da biblioteca, na ordem da tela. Publique só o que a pessoa autorizou. Sem esse bloco, a seção não existe no site. A foto fica gravada no bloco: se trocar a imagem na biblioteca, escolha de novo |
-| Chamada para ação | Qualquer página | Título, texto, botão e destino (rota do site ou link https) |
+Despublicar ou arquivar a página do site devolve os textos originais. Os blocos **Manifesto** e **Sobre a Benjamin**
+continuam valendo, mas o caminho mais simples agora é **Textos e imagens**, que vale por cima deles.
 
-Sem página publicada, o site continua com os textos atuais de cada seção. Despublicar ou arquivar a
-página devolve esses textos. Contato, redes sociais e CTAs têm telas próprias (ADM-10 e ADM-11).
+## Aparência do site (`/admin/aparencia`)
+
+Cores, fontes, logotipos, ícone da aba e imagem padrão de compartilhamento. Só o papel Administrador altera; Editor e
+Leitor só veem. **Salvar vai direto ao ar**, em todas as páginas.
+
+- A **prévia** acompanha as cores e as fontes enquanto você escolhe.
+- O **contraste** é conferido a cada mudança. Abaixo de 3:1, o texto fica ilegível e o painel não salva. Entre 3:1 e
+  4,5:1, ele avisa e deixa salvar.
+- **Voltar à identidade da marca** só preenche o formulário: nada muda até salvar.
+- Os ícones e stickers ilustrados são arquivos da marca, com as cores deles: não acompanham a paleta.
+- Fontes: há uma lista fechada, porque cada uma é baixada com o site e precisa de licença livre. Outra fonte, como a
+  Aptly, depende de licença e de uma alteração do NúcleoTech.
+- Logotipos vêm da biblioteca, em PNG ou WebP. A biblioteca não aceita SVG, por segurança.
+
+## Histórico de alterações (`/admin/historico`)
+
+Toda edição fica guardada: páginas, blocos, áreas, serviços, categorias, cases, CTAs, configurações e aparência.
+
+- **Histórico de alterações**, no menu, mostra tudo o que mudou no site, das alterações mais recentes às mais antigas,
+  com o nome de quem alterou e o horário.
+- **Ver histórico e restaurar**, ao lado de cada item, mostra as versões só dele.
+- Ao abrir uma versão, a tabela compara **Hoje** e **Nesta versão**, campo a campo.
+- **Restaurar esta versão** traz o conteúdo de volta. Em item publicado, o site muda na hora. Nada se perde: o conteúdo
+  atual continua guardado, e a restauração vira uma versão nova, que também pode ser desfeita.
+
+O que a restauração não faz:
+
+- Não muda o endereço nem o estado do item (publicado, rascunho ou arquivado).
+- Não recria item excluído: a versão fica guardada, mas o botão não aparece.
+- Não traz de volta arquivo apagado da biblioteca: nesse caso, ela avisa quais imagens faltam, e nada muda.
+- Item arquivado precisa voltar a rascunho antes.
+
+Editor restaura o que ele pode editar. Leitor vê o histórico, sem o botão.
 
 ## Áreas de atuação (`/admin/areas`)
 

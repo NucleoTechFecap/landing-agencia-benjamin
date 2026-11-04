@@ -72,6 +72,12 @@ Regras em código (`RETENTION_RULES`, `retentionActionFor`, `planRetention`, `an
 | Feedback anônimo | 24 meses | Excluir | ⏳ |
 | Registro com *legal hold* | Suspenso | Manter | — |
 
+**Histórico de versões (`content_versions`).** Guarda cópias do conteúdo do site. O campo `team` dos cases e o bloco
+"Nosso time" têm nomes e fotos de pessoas, e `created_by` liga cada versão à conta de quem alterou. Se alguém pedir a
+remoção do próprio nome, apague ou edite também as versões, com o service role, no SQL Editor: o painel não altera nem
+apaga versões, de propósito. Excluir a conta deixa `created_by` nulo, e o nome some da linha do tempo. A retenção
+automática ainda não existe (FUT-04 §12).
+
 **Plano de execução (implementável — detalhado em DBX-05):**
 
 1. Rotina mensal (cron da Vercel → Route Handler protegido por segredo, ou `pg_cron` no Supabase)
