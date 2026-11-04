@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Falha ao gravar bloco é auditada e expira o cache (TECH-13, #369).
+ 04/11/2026 Vinícius Nishimura Reis  Foto do time só do bucket de mídia e só imagem (TECH-13, #369).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -368,10 +369,11 @@ describe("CMS de páginas — Nosso time (ADM-05)", () => {
     });
   });
 
-  it("recusa foto fora da biblioteca ou sem texto alternativo", async () => {
-    const env = setup({ media_assets: [media("sem-alt", null)] });
+  it("recusa foto fora da biblioteca, sem texto alternativo ou que não é imagem", async () => {
+    const pdf = { ...media("documento", "Regulamento"), path: "imagens/documento.pdf", mime_type: "application/pdf" };
+    const env = setup({ media_assets: [media("sem-alt", null), pdf] });
     const id = await createPage(env);
-    for (const photoId of ["nao-existe", "sem-alt"]) {
+    for (const photoId of ["nao-existe", "sem-alt", "documento"]) {
       await expect(saveBlock(env.deps, env.actor("editor"), env.ref(id), team(photoId))).rejects.toMatchObject({
         code: "VALIDATION_FAILED",
         fieldErrors: { members: [expect.stringContaining("Ana Souza")] },
