@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-18).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -226,14 +227,12 @@ describe("visão geral: o que precisa de revisão (ADM-18)", () => {
     expect(inQueue(review, "contato")!.notes.provisional).toBe(true);
   });
 
-  it("avisos de integridade, data futura e página sem rota aparecem só para quem está publicado", async () => {
+  it("avisos de integridade e data futura aparecem só para quem está publicado", async () => {
     const { review } = await load();
     expect(inQueue(review, "servico-area-rascunho")!.notes.warnings).toEqual(["Serviço publicado sem área publicada."]);
     expect(inQueue(review, "servico-futuro")!.notes.warnings).toContain(FUTURE_PUBLICATION_WARNING);
-    expect(inQueue(review, "sem-rota")!.notes.warnings).toEqual([
-      "Esta página não tem rota no site: fica salva, mas o visitante não a vê.",
-    ]);
-    // Rascunho sem rota não recebe o aviso: ainda não foi ao ar.
+    // Página criada no painel tem endereço próprio: publicada e completa, não pede revisão.
+    expect(inQueue(review, "sem-rota")).toBeUndefined();
     expect(inQueue(review, "sobre")!.notes.warnings).toEqual([]);
   });
 

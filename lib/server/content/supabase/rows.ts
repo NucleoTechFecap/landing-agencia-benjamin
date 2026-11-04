@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Áreas, serviços, vínculos e mídia do CMS (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -63,6 +64,8 @@ export interface ServiceRow extends PublishableRow {
   image_media_id: string | null;
   featured: boolean;
   sort_order: number;
+  /** jsonb validado em seo-schema.ts. */
+  seo?: unknown;
 }
 
 export interface ServiceAreaRow {
@@ -97,6 +100,8 @@ export interface CaseRow extends PublishableRow {
   team: string[];
   featured: boolean;
   sort_order: number;
+  /** jsonb validado em seo-schema.ts. */
+  seo?: unknown;
 }
 
 export interface CaseServiceRow {
@@ -139,6 +144,9 @@ export interface PageRow extends PublishableRow {
   slug: string;
   title: string;
   description: string | null;
+  /** jsonb validados em catalog/index.ts e seo-schema.ts. */
+  fields?: unknown;
+  seo?: unknown;
 }
 
 export interface BlockRow {
@@ -159,6 +167,8 @@ export interface SiteSettingsRow {
   contact: unknown;
   socials: unknown;
   keywords: string[] | null;
+  /** jsonb validado em theme.ts. */
+  theme?: unknown;
 }
 
 const PUBLISHABLE = "status, provisional, published_at, archived_at, updated_at";
@@ -166,17 +176,17 @@ const PUBLISHABLE = "status, provisional, published_at, archived_at, updated_at"
 /** Colunas pedidas ao PostgREST, por tabela. Nada de `*`: o site só lê o que exibe. */
 export const COLUMNS = {
   areas: `id, slug, name, summary, description, highlights, icon, sort_order, ${PUBLISHABLE}`,
-  services: `id, slug, name, summary, description, examples, icon, image_media_id, featured, sort_order, ${PUBLISHABLE}`,
+  services: `id, slug, name, summary, description, examples, icon, image_media_id, featured, sort_order, seo, ${PUBLISHABLE}`,
   service_areas: "service_id, area_id",
   media_assets: "id, path, mime_type, width, height, alt_text, decorative",
   case_categories: `id, slug, name, description, sort_order, ${PUBLISHABLE}`,
-  cases: `id, slug, title, client_name, category_id, delivery_type, summary, challenge, solution, results, cover_media_id, external_links, reference_month, team, featured, sort_order, ${PUBLISHABLE}`,
+  cases: `id, slug, title, client_name, category_id, delivery_type, summary, challenge, solution, results, cover_media_id, external_links, reference_month, team, featured, sort_order, seo, ${PUBLISHABLE}`,
   case_services: "case_id, service_id",
   case_media: "case_id, media_id, sort_order",
   ctas: `id, label, placement, target_kind, target_path, target_url, target_service_id, target_case_id, target_area_id, sort_order, ${PUBLISHABLE}`,
-  pages: `id, slug, title, description, ${PUBLISHABLE}`,
+  pages: `id, slug, title, description, fields, seo, ${PUBLISHABLE}`,
   blocks: "id, page_id, type, content, sort_order",
-  site_settings: "name, short_name, tagline, description, manifesto, about, contact, socials, keywords",
+  site_settings: "name, short_name, tagline, description, manifesto, about, contact, socials, keywords, theme",
 } as const;
 
 export type CmsTable = keyof typeof COLUMNS;

@@ -25,6 +25,7 @@
  02/11/2026 Vinícius Nishimura Reis  Gravação de item com relações, como no banco (TECH-13, #314).
  04/11/2026 Vinícius Nishimura Reis  Configuração institucional, com a linha única do banco (ADM-10).
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,6 +35,7 @@ import {
   assembleAreasAndServices,
   assembleCasesAndCategories,
   assemblePages,
+  toPage,
   toCta,
   toMediaMap,
   toSiteSettings,
@@ -53,6 +55,7 @@ import type {
   SiteSettingsRow,
 } from "../content/supabase/rows";
 import { AppError } from "../errors";
+import type { ContentVersion } from "@/lib/domain/content/versions";
 import type { CmsSnapshot, CmsStore, EntityTable, RedirectEntity, Row } from "./store";
 import { toMediaAsset } from "./supabase-store";
 
@@ -110,6 +113,7 @@ export interface MemoryTables {
   slug_redirects: SlugRedirectRow[];
   /** Linha única, como no banco: no máximo um item. */
   site_settings: (SiteSettingsRow & { updated_at: string })[];
+  content_versions: ContentVersion[];
 }
 
 export interface SlugRedirectRow {
@@ -117,6 +121,9 @@ export interface SlugRedirectRow {
   old_slug: string;
   entity_id: string | null;
 }
+
+/** Quem aparece como autor nos testes: no banco, é a sessão. */
+export const MEMORY_AUTHOR = { id: "00000000-0000-4000-8000-00000000a0a0", name: "Pessoa de Teste" };
 
 const REDIRECT_ENTITY: Partial<Record<EntityTable, RedirectEntity>> = { services: "service", cases: "case" };
 
@@ -141,6 +148,7 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
     blocks: [],
     slug_redirects: [],
     site_settings: [],
+    content_versions: [],
     ...structuredClone(seed),
   };
   let clock = Date.parse("2026-10-26T12:00:00.000Z");
@@ -335,6 +343,74 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
       const [row] = tables.site_settings;
       if (!row) return null;
       return { settings: toSiteSettings(row, siteSettings).settings, updatedAt: row.updated_at };
+    },
+
+    async readPage(id) {
+      const row = tables.pages.find((page) => page.id === id);
+      if (!row) return null;
+      return toPage(
+        row,
+        tables.blocks.filter((block) => block.page_id === id),
+      ).page;
+    },
+
+    async savePageDocument(id, expectedUpdatedAt, document) {
+      const row = tables.pages.find((page) => page.id === id);
+      if (!row) throw new AppError("NOT_FOUND");
+      if (row.updated_at !== expectedUpdatedAt) throw new AppError("CONFLICT");
+      Object.assign(row, structuredClone(document.values), { updated_at: tick() });
+      tables.blocks = [
+        ...tables.blocks.filter((block) => block.page_id !== id),
+        ...document.blocks.map((block, index) => ({
+          id: crypto.randomUUID(),
+          page_id: id,
+          type: block.type,
+          content: structuredClone(block.content),
+          sort_order: index,
+        })),
+      ];
+      return { id, updatedAt: row.updated_at };
+    },
+
+    async insertVersion(input) {
+      const same = tables.content_versions.filter(
+        (version) => version.entity === input.entity && version.entityId === input.entityId,
+      );
+      tables.content_versions.push({
+        entity: input.entity,
+        entityId: input.entityId,
+        version: same.length + 1,
+        action: input.action,
+        status: input.status,
+        label: input.label,
+        summary: input.summary ?? null,
+        snapshot: structuredClone(input.snapshot),
+        restoredFrom: input.restoredFrom ?? null,
+        authorId: MEMORY_AUTHOR.id,
+        authorName: MEMORY_AUTHOR.name,
+        createdAt: tick(),
+      });
+    },
+
+    async countVersions(entity, entityId) {
+      return tables.content_versions.filter((version) => version.entity === entity && version.entityId === entityId)
+        .length;
+    },
+
+    async listVersions({ entity, entityId, limit }) {
+      return tables.content_versions
+        .filter((version) => (!entity || version.entity === entity) && (!entityId || version.entityId === entityId))
+        .slice()
+        .reverse()
+        .slice(0, limit);
+    },
+
+    async readVersion(entity, entityId, number) {
+      return (
+        tables.content_versions.find(
+          (version) => version.entity === entity && version.entityId === entityId && version.version === number,
+        ) ?? null
+      );
     },
 
     async saveSettings(values, expectedUpdatedAt) {

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 27/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -46,6 +47,17 @@ export const checked = (form: FormData, name: string): boolean => form.get(name)
 export const many = (form: FormData, name: string): string[] => [
   ...new Set(form.getAll(name).filter((value): value is string => typeof value === "string" && value !== "")),
 ];
+
+/** Campos do formulário de SEO; a imagem chega como id da biblioteca. */
+export const seoInputFromForm = (form: FormData) => ({
+  title: text(form, "title"),
+  description: text(form, "description"),
+  keywords: text(form, "keywords"),
+  noindex: checked(form, "noindex"),
+  ogTitle: text(form, "ogTitle"),
+  ogDescription: text(form, "ogDescription"),
+  ogImageId: text(form, "ogImageId"),
+});
 
 /** Item em edição: id + versão lida (campos ocultos). Ausente = criação. */
 export function itemRef(form: FormData): ItemRef | undefined {
