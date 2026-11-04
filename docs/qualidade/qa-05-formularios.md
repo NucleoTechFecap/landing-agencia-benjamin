@@ -4,7 +4,7 @@
 | ------------ | ------------------------------------------------------------------------------------------------------- |
 | Issue        | QA-05 (#183)                                                                                            |
 | Execução     | 04/11/2026                                                                                              |
-| Versão       | `8e55596`, branch `test/qa-06-acesso-links-e-telas`, sobre a `main` em `6959c27`                         |
+| Versão       | `b40318f`, branch `test/qa-06-acesso-links-e-telas`, sobre a `main` em `4e0f40c`                         |
 | Ambiente     | Local: `next start` (build de produção) + Supabase local (Postgres 17, RLS real), Chrome headless. `NOTIFY_PROVIDER=log`, destinatários em `@benjamin.test` |
 | Base         | Conferência contra [FORM-10](form-10-entrega-de-contatos.md) e os critérios CA-14, CA-15 e CA-16 da [matriz](matriz-de-testes.md). O que já tinha evidência não foi refeito à mão: foi repetido pelas baterias |
 | **Fora do escopo: não executado** | **Entrega real de e-mail.** Depende do destinatário oficial (CON-10) e do domínio verificado no Resend. Nenhum e-mail saiu do ambiente, e nada rodou contra o site publicado |
@@ -99,15 +99,16 @@ tentativas esgotadas têm testes unitários próprios em `submission-service.tes
 
 ## 7. Resultado
 
+Em `b40318f`, sobre `4e0f40c`.
+
 | Bateria | Resultado em 04/11/2026 |
 | ------- | ----------------------- |
-| `npx supabase test db`, banco limpo | `Files=10, Tests=260, Result: PASS` (`form_submissions_rls.test.sql` e `leads_painel.test.sql` inclusive) |
-| `npm run test:supabase` | 17 arquivos, 165 de 165 (`formularios.test.ts` e `leads-no-painel.test.ts` inclusive) |
-| `formularios.spec.ts`, desktop, Postgres local | 24 de 24 |
+| `npx supabase test db`, banco limpo | `Files=10, Tests=260, Result: PASS` |
+| `npm run test:supabase` | 19 arquivos, 187 de 187 |
+| `formularios.spec.ts`, desktop, Postgres local | 24 de 24, com a mesma contagem da seção 3 |
 | `job-de-notificacoes.spec.ts`, com destinatário fictício, `--repeat-each=3` | 6 de 6, com `sent` |
-| `job-de-notificacoes.spec.ts`, sem destinatário, dentro de `npm run test:e2e:cms` | Passou, com `skipped`; a bateria inteira, 361 de 361 |
+| `job-de-notificacoes.spec.ts`, sem destinatário, dentro de `npm run test:e2e:cms` | Passou, com `skipped`. A bateria inteira: 425 de 425 (421 em paralelo e 4 de `@home-global`, em série) |
 | Entrega real de e-mail | **Não executada** (CON-10) |
-
 
 ## 8. O que falta para fechar
 
