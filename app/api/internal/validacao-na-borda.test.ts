@@ -28,7 +28,11 @@ const invalidate = vi.hoisted(() => vi.fn());
 const retry = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/config/server-env", () => ({ getServerEnv: () => env }));
-vi.mock("@/lib/server/content/invalidate", () => ({ invalidateContentFromRoute: invalidate }));
+vi.mock("@/lib/server/content/invalidate", () => ({
+  MAX_WARMED_PATHS: 12,
+  expireSecondPass: vi.fn(),
+  invalidateContentFromRoute: invalidate,
+}));
 vi.mock("@/lib/server/forms/deps", () => ({ getSubmissionDeps: () => ({}) }));
 vi.mock("@/lib/server/forms/submission-service", () => ({ retryPendingNotifications: retry }));
 
