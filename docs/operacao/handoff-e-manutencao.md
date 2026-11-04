@@ -49,7 +49,8 @@
 | Invalidar cache manualmente | Em incidente | `POST /api/internal/revalidate` (ADR-0006) |
 
 As rotinas com frequência fixa já são issues no Project 4, com a label `manutencao`: #302 a #309
-(MANUT-01 a MANUT-08). Cada execução é registrada num comentário da issue correspondente.
+(MANUT-01 a MANUT-08). Cada execução é registrada num comentário da issue correspondente. O que uma
+rotina encontrar segue a proposta de severidade e correção de [GO-11](suporte-e-evolucao.md).
 
 ## 4. Tarefas de manutenção visíveis à equipe
 
