@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Logotipo horizontal em SVG (UX-14).
  01/11/2026 Vinícius Nishimura Reis  Endereço sem mapa e redes vazias no rodapé (LAY-03).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Crédito avisa da nova aba; sem chamada para a própria página de contato (INT-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,6 +30,7 @@ import Link from "next/link";
 import { MAIN_NAVIGATION, SECONDARY_NAVIGATION } from "@/lib/config/navigation";
 import type { SiteSettings } from "@/lib/domain/content/types";
 import { Container } from "../ui/container";
+import { FooterContactLink } from "./contact-cta";
 import { SocialLinks } from "./social-links";
 
 /** Rodapé com contato, redes sociais, navegação e créditos (LAY-03). */
@@ -89,9 +91,7 @@ export function SiteFooter({ settings, year }: { settings: SiteSettings; year: n
             ) : settings.contact.address ? (
               <p>{settings.contact.address}</p>
             ) : null}
-            <Link href="/contato" className="inline-block font-bold underline underline-offset-4">
-              Envie uma mensagem
-            </Link>
+            <FooterContactLink />
           </address>
           <SocialLinks socials={settings.socials} className="mt-6" />
         </div>
@@ -107,6 +107,7 @@ export function SiteFooter({ settings, year }: { settings: SiteSettings; year: n
             className="font-bold underline underline-offset-4"
           >
             NúcleoTech FECAP
+            <span className="sr-only"> (abre em nova aba)</span>
           </a>
           .
         </p>
