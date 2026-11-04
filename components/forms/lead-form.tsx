@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  04/11/2026 Vinícius Nishimura Reis  Página estática para o envio sem JavaScript (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Envio pelo onSubmit do hook (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -53,7 +54,7 @@ function LeadFormInner({
   preselectedService?: string;
   onReset: () => void;
 }) {
-  const { state, formAction, pending, meta, formRef, errors, values } = useSubmission(
+  const { state, formAction, onSubmit, pending, meta, formRef, errors, values } = useSubmission(
     action,
     STANDALONE_FORM_PATHS.lead,
   );
@@ -61,7 +62,7 @@ function LeadFormInner({
     return <FormSuccess protocol={state.protocol} title="Pedido recebido!" onReset={onReset} />;
   }
   return (
-    <form ref={formRef} action={formAction} noValidate className="relative space-y-5">
+    <form ref={formRef} action={formAction} onSubmit={onSubmit} noValidate className="relative space-y-5">
       <TechnicalFields meta={meta} />
       <HoneypotField />
       <FormErrorBanner state={state} />

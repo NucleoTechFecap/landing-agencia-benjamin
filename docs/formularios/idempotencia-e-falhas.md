@@ -45,9 +45,14 @@
 | S12 | Produção sem armazenamento persistente configurado | Erro 503 | — | — | `app.error.service_unavailable` (nunca grava em memória fora do dev) |
 | S13 | Notificação esgotou as 5 tentativas | (Já viu sucesso) | Mantido, `failed`, tentativas 5 | Sai da fila, sem bloquear os envios novos; reenvio manual ([handoff](../operacao/handoff-e-manutencao.md)) | `forms.notification.failed` |
 | S14 | Envio sem JavaScript ou antes da hidratação (campos técnicos vazios) | Página recarrega com o resultado: confirmação, ou erro por campo com os valores repreenchidos | Criado, sem `source_path` | Enviada | `persisted`; sem o tempo mínimo (seção 7) |
+| S15 | Rede cai, resposta se perde ou a plataforma responde com erro antes da aplicação | Aviso no próprio formulário, sem código de atendimento, com tudo o que foi digitado; pode reenviar com o mesmo `submissionId` | Criado só se o POST chegou ao servidor | Como S1 ou, no reenvio, S3 | Nenhum no servidor quando o POST não chega |
 
-S1–S10 e S13 são testes automatizados; S11 é garantido pela constraint `unique` e pelo tratamento de
+S1–S10, S13 e S14 são testes automatizados, e S14 e S15 têm E2E em `tests/e2e/formularios.spec.ts`; S11 é garantido pela constraint `unique` e pelo tratamento de
 `DuplicateSubmissionError`, testado no banco real (`formularios.test.ts`); S12 por `resolveStore()`.
+
+S15 é o motivo de o formulário hidratado chamar a action dentro de `try/catch`, no `onSubmit` de
+`use-submission.ts`: no `useActionState`, a rejeição subia para o `error.tsx` e o visitante perdia o texto.
+O `try/catch` não pode ficar em volta da action entregue ao `useActionState` (seção 7).
 
 ## 4. Fluxo
 

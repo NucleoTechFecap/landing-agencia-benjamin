@@ -22,7 +22,7 @@
 */
 
 import { randomInt, randomUUID } from "node:crypto";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page, type Route } from "@playwright/test";
 
 /*
  * Os envios contam para o limite real de 5 por IP em 10 min (TECH-07), que o teste não afrouxa: cada
@@ -33,10 +33,20 @@ test.beforeEach(async ({ page }) => {
   await page.setExtraHTTPHeaders({ "x-forwarded-for": `198.51.${randomInt(256)}.${randomInt(1, 255)}` });
 });
 
+const NETWORK_WARNING = /Não conseguimos enviar agora/;
 const CONSENT_ERROR = "É preciso declarar ciência do aviso de privacidade.";
 
 /** Texto único: o mesmo conteúdo em 10 min voltaria como duplicado do envio de outro teste. */
 const uniqueText = (label: string) => `${label} para o teste automatizado ${randomUUID()}.`;
+
+/** Espera a hidratação e o tempo mínimo de preenchimento (abaixo dele o envio é tratado como robô). */
+async function waitUntilHumanlyReady(page: Page) {
+  await expect(page.locator('input[name="submissionId"]')).not.toHaveValue("");
+  await page.waitForTimeout(3_100);
+}
+
+const isPost = (route: Route) => route.request().method() === "POST";
+const protocolOf = (submissionId: string) => `AB-${submissionId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
 
 async function fillContact(page: Page, message: string) {
   await page.getByLabel(/^Nome/).fill("Pessoa de Teste E2E");
@@ -55,6 +65,79 @@ async function fillFeedback(page: Page, message: string) {
   await page.getByText("Aluno(a)", { exact: true }).click();
   await page.getByLabel(/^Seu feedback/).fill(message);
 }
+
+test.describe("FORM-08 · falha de rede no envio", () => {
+  const contactRoute = (url: URL) => url.pathname === "/contato";
+
+  async function openFilledContact(page: Page) {
+    await page.goto("/contato?tipo=contato");
+    await waitUntilHumanlyReady(page);
+    const message = uniqueText("Mensagem de contato");
+    await fillContact(page, message);
+    await page.getByLabel(/aviso de privacidade/).check();
+    return { message, submissionId: await page.locator('input[name="submissionId"]').inputValue() };
+  }
+
+  async function expectFormPreserved(page: Page, message: string) {
+    await expect(page.getByRole("alert").filter({ hasText: NETWORK_WARNING })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Algo deu errado por aqui." })).toHaveCount(0);
+    await expect(page.getByLabel(/^Nome/)).toHaveValue("Pessoa de Teste E2E");
+    await expect(page.getByLabel(/^E-mail/)).toHaveValue("teste.e2e@exemplo.com");
+    await expect(page.getByLabel(/^Assunto/)).toHaveValue("duvida");
+    await expect(page.getByLabel(/^Mensagem/)).toHaveValue(message);
+    await expect(page.getByLabel(/aviso de privacidade/)).toBeChecked();
+  }
+
+  test("conexão caiu: mostra o aviso, mantém o que foi digitado e o reenvio funciona", async ({ page }) => {
+    const { message, submissionId } = await openFilledContact(page);
+    await page.route(contactRoute, (route) => (isPost(route) ? route.abort("connectionfailed") : route.fallback()));
+
+    await page.getByRole("button", { name: "Enviar mensagem" }).click();
+    await expectFormPreserved(page, message);
+    await expect(page.getByRole("alert").filter({ hasText: NETWORK_WARNING })).toBeFocused();
+    await expect(page.getByText("Código de atendimento")).toHaveCount(0);
+
+    await page.unroute(contactRoute);
+    await page.getByRole("button", { name: "Enviar mensagem" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Mensagem enviada!" })).toBeVisible();
+    await expect(page.getByText(protocolOf(submissionId))).toBeVisible();
+  });
+
+  test("resposta perdida depois de salvar: o reenvio não duplica e devolve o mesmo protocolo", async ({ page }) => {
+    const { message, submissionId } = await openFilledContact(page);
+    let saved = false;
+    let retryBody = "";
+    await page.route(contactRoute, async (route) => {
+      if (!isPost(route)) return route.fallback();
+      const response = await route.fetch();
+      if (saved) {
+        retryBody = await response.text();
+        return route.fulfill({ response });
+      }
+      saved = response.ok();
+      await route.abort("connectionreset");
+    });
+
+    await page.getByRole("button", { name: "Enviar mensagem" }).click();
+    await expectFormPreserved(page, message);
+    expect(saved).toBe(true);
+
+    await page.getByRole("button", { name: "Enviar mensagem" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Mensagem enviada!" })).toBeVisible();
+    await expect(page.getByText(protocolOf(submissionId))).toBeVisible();
+    expect(retryBody).toContain('"duplicate":true');
+  });
+
+  test("resposta que não é da aplicação (erro 500 da plataforma): mesmo aviso, formulário de pé", async ({ page }) => {
+    const { message } = await openFilledContact(page);
+    await page.route(contactRoute, (route) =>
+      isPost(route) ? route.fulfill({ status: 500, contentType: "text/html", body: "<h1>500</h1>" }) : route.fallback(),
+    );
+
+    await page.getByRole("button", { name: "Enviar mensagem" }).click();
+    await expectFormPreserved(page, message);
+  });
+});
 
 test.describe("FORM-08 · sem JavaScript", () => {
   test.use({ javaScriptEnabled: false });
