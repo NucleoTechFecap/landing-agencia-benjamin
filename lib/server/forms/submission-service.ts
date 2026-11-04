@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-07).
  13/10/2026 Vinícius Nishimura Reis  Tipo de estado movido para o domínio (estrutura da landing).
  02/11/2026 Vinícius Nishimura Reis  Confere o serviço na lista antes de gravar a categoria (TECH-06).
+ 04/11/2026 Vinícius Nishimura Reis  Valores devolvidos ao formulário vêm do domínio (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -39,7 +40,7 @@ import {
   type RecipientConfig,
 } from "@/lib/domain/forms/routing";
 import { parseSubmission, type SubmissionInput, type SubmissionKind } from "@/lib/domain/forms/schemas";
-import type { FormActionState } from "@/lib/domain/forms/state";
+import { echoValues, type FormActionState } from "@/lib/domain/forms/state";
 import { AppError, toPublicError } from "../errors";
 import { logger } from "../logger";
 import { DuplicateSubmissionError, type Notifier, type SubmissionRecord, type SubmissionStore } from "./types";
@@ -60,18 +61,6 @@ export interface SubmissionDeps {
 export interface SubmissionContext {
   requestId: string;
   ip?: string | null;
-}
-
-const TECHNICAL_FIELDS = new Set(["website", "startedAt", "privacyConsent"]);
-
-/** Valores digitados para repreencher o formulário após erro (funciona sem JavaScript). */
-function echoValues(raw: Record<string, unknown>): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(raw).filter(([key, value]) => typeof value === "string" && !TECHNICAL_FIELDS.has(key)) as [
-      string,
-      string,
-    ][],
-  );
 }
 
 const NON_PAYLOAD_FIELDS = new Set(["website", "startedAt", "submissionId", "sourcePath"]);

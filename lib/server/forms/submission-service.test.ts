@@ -121,8 +121,7 @@ describe("envio sem JavaScript: campos técnicos vazios (FORM-08)", () => {
   });
 
   it("o tempo mínimo não se aplica, como a quem omite o campo: não é uma brecha nova", async () => {
-    const { startedAt: _omitted, ...withoutField } = lead();
-    expect((await processSubmission("lead", withoutField, context, deps)).status).toBe("success");
+    expect((await processSubmission("lead", lead({ startedAt: undefined }), context, deps)).status).toBe("success");
     expect(store.all()).toHaveLength(1);
   });
 

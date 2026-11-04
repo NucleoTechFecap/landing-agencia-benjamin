@@ -109,7 +109,7 @@ submitContact(prev, formData) / submitFeedback(prev, formData)
 type FormActionState =
   | { status: "idle" }
   | { status: "success"; protocol: string; duplicate: boolean }
-  | { status: "error"; code: ErrorCode; message: string; requestId: string;
+  | { status: "error"; code: ErrorCode | "NETWORK_ERROR"; message: string; requestId: string;
       fieldErrors?: Record<string, string[]>; values?: Record<string, string> }  // values para repreencher (sem campos técnicos)
 ```
 
@@ -120,6 +120,7 @@ type FormActionState =
 | Reenvio do mesmo `submissionId` | `success`, `duplicate: true`, mesmo protocolo | — |
 | Limite de envios | `error` | `RATE_LIMITED` |
 | Banco indisponível | `error` | `SERVICE_UNAVAILABLE` |
+| A action não respondeu (rede, resposta perdida). Só existe no navegador, com `requestId: "navegador"` | `error` | `NETWORK_ERROR` |
 
 Regras de idempotência e falhas: TECH-07.
 

@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  25/10/2026 Caio Moraes              Cores de erro via tokens do tema (LAY-04).
  04/11/2026 Vinícius Nishimura Reis  Botão disponível antes da hidratação (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Envio pelo onSubmit do hook (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -38,12 +39,12 @@ export function FeedbackForm({ action }: { action: FormAction }) {
 }
 
 function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: () => void }) {
-  const { state, formAction, pending, meta, formRef, errors, values } = useSubmission(action);
+  const { state, formAction, onSubmit, pending, meta, formRef, errors, values } = useSubmission(action);
   if (state.status === "success") {
     return <FormSuccess protocol={state.protocol} title="Obrigado pelo feedback!" onReset={onReset} />;
   }
   return (
-    <form ref={formRef} action={formAction} noValidate className="relative space-y-6">
+    <form ref={formRef} action={formAction} onSubmit={onSubmit} noValidate className="relative space-y-6">
       <TechnicalFields meta={meta} />
       <HoneypotField />
       <FormErrorBanner state={state} />
