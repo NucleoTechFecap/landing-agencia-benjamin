@@ -48,7 +48,9 @@
 | Atribuir papéis `admin`/`super_admin` | ✔ | ✖ | ✖ | ✖ | ✖ |
 | Ler trilha de auditoria | ✔ | ✔ | ✖ | ✖ | ✖ |
 
-¹ Editor altera CTAs de destaque da Home; contato institucional e redes sociais ficam com `admin`.
+¹ Editor altera CTAs de destaque da Home; contato institucional e redes sociais ficam com `admin`. A matriz e a
+RLS de `cta` não distinguem posição: o editor também grava CTA de rodapé e de páginas internas, posições que o
+site ainda não exibe. Falta decidir se isso muda antes de o site exibi-las (ADM-11).
 ² Acesso emergencial a leads (suporte) exige atribuição temporária de `admin`, registrada na auditoria.
 
 ## 4. Regras de ciclo de vida das contas

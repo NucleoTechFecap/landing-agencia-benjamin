@@ -163,8 +163,10 @@ Envios não têm rota em `/api/v1`: a consulta só existe nas telas do painel, c
 e os parâmetros da URL passam por lista fechada em `parseInboxQuery` (`lib/domain/forms/inbox.ts`).
 Valor malformado vira "sem filtro"; id malformado responde como inexistente, sem chegar ao banco.
 
-Entidades com Zod próprio: case (`case-schema.ts` — CASE-11); serviço, área, categoria, CTA e
-página seguem o mesmo padrão rascunho/publicação, com campos obrigatórios de TECH-05 §5.
+Entidades com Zod próprio: case (`case-schema.ts` — CASE-11) e CTA (`cta-schema.ts` — ADM-11); serviço,
+área, categoria e página seguem o mesmo padrão rascunho/publicação, com campos obrigatórios de TECH-05 §5.
+`saveCta` recebe `{ label, placement, targetKind, targetPath?, targetUrl?, targetId?, order }` e usa só o campo
+do tipo de destino escolhido. O CTA não tem slug: o serviço pula as regras de endereço para o tipo sem `slugSource`.
 
 **Implementação (ADM-07).** `lib/server/cms/content-service.ts` aplica, para toda entidade
 descrita em `lib/server/cms/entities.ts`: permissão → Zod da entidade → versão otimista

@@ -6,7 +6,7 @@
 | Execução     | 27/10/2026                                                                              |
 | Ambiente     | Local: `next start` (build de produção) + Supabase local (Postgres 17, RLS e Storage reais), Chromium headless |
 | Escopo       | Áreas (ADM-07), serviços (ADM-06), cases e categorias (ADM-08), biblioteca de mídia, site lendo o CMS (INT-02) |
-| Fora do escopo | CTAs e configuração no painel (ADM-10/11 — telas ainda não existem); páginas e blocos (ADM-05 — testes próprios em `lib/server/cms/pages.test.ts` e `tests/integration/supabase/cms-paginas.test.ts`); homologação (GO-02) |
+| Fora do escopo | Contato e redes (ADM-10) e CTAs (ADM-11), criados depois desta execução; os CTAs têm testes próprios em `lib/server/cms/ctas.test.ts`, `tests/integration/supabase/cms-ctas.test.ts` e `tests/e2e/jornada-home-cms.spec.ts`; páginas e blocos (ADM-05 — testes próprios em `lib/server/cms/pages.test.ts` e `tests/integration/supabase/cms-paginas.test.ts`); homologação (GO-02) |
 
 ## 1. Como reexecutar
 
@@ -71,8 +71,7 @@ Todos foram encontrados durante a execução, corrigidos e retestados nos PRs in
 
 - Reexecutar CT-02 a CT-15 em **homologação** com o Supabase de homologação (GO-02) — roteiro
   manual do QA (QA-11).
-- A tela de CTAs (ADM-11) entra nesta matriz quando existir; as regras de servidor já são as mesmas
-  (`content-service.ts`). As telas de páginas e blocos (ADM-05) e de contato e redes (ADM-10, testes
-  próprios em `lib/server/cms/settings-service.test.ts` e
-  `tests/integration/supabase/configuracao-institucional.test.ts`) ainda precisam entrar nesta matriz na
-  próxima execução.
+- As telas de páginas e blocos (ADM-05), de contato e redes (ADM-10, testes próprios em
+  `lib/server/cms/settings-service.test.ts` e `tests/integration/supabase/configuracao-institucional.test.ts`)
+  e de CTAs (ADM-11) ainda precisam entrar nesta matriz na próxima execução. O CT-01 já inclui o CTA: passou a
+  300 combinações.

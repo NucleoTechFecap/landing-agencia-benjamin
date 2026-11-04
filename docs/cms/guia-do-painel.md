@@ -35,12 +35,12 @@ e-mail, defina a nova senha e entre.
 Clique em **Sair**, no canto superior direito. Faça isso sempre que usar um computador compartilhado.
 Não compartilhe a senha nem o link recebido por e-mail.
 
-No início do painel, módulos marcados como "Em construção" (como os CTAs) ainda não podem ser editados por
-aqui.
+No início do painel, módulos marcados como "Em construção" (como usuários e papéis) ainda não podem ser usados
+por aqui.
 
 ## Editar e publicar, passo a passo
 
-O fluxo é o mesmo para áreas, serviços, categorias e cases. O exemplo usa um serviço.
+O fluxo é o mesmo para áreas, serviços, categorias, cases e CTAs. O exemplo usa um serviço.
 
 1. **Abrir.** No início, clique em **Serviços** e depois no item. Para criar, use **Novo serviço**: todo
    item novo nasce como Rascunho e não aparece no site.
@@ -117,7 +117,7 @@ fica destacado.
 
 - Cada pessoa vê só os módulos que o papel permite: Editor e Leitor não veem Leads, Usuários nem
   Auditoria. Isso é só o que aparece: cada tela e cada ação conferem de novo a permissão no servidor.
-- **Em construção** marca módulo sem tela ainda, como contato e CTAs. Não é link e nada pode ser editado
+- **Em construção** marca módulo sem tela ainda, como usuários e papéis. Não é link e nada pode ser editado
   por ali.
 - Pelo teclado, o primeiro Tab da página oferece **Pular para o conteúdo**, sem passar pelo menu.
 
@@ -201,7 +201,7 @@ quais são.
 | Áreas de atuação | publicar | Ao menos uma; áreas em rascunho não aparecem no site |
 | Ícone | — | Um dos 14 ícones oficiais |
 | Imagem | — | Escolhida na biblioteca de mídia; precisa de texto alternativo |
-| Destaque na Home | — | Até 6 serviços publicados em destaque (acima disso o painel avisa) |
+| Destaque na Home | — | Até 6 serviços publicados em destaque. Acima disso o painel avisa e a Home mostra os 6 primeiros, pela ordem |
 | Ordem | — | Menor aparece primeiro |
 
 A página pública do serviço já traz o botão de contato com o serviço pré-selecionado no
@@ -283,7 +283,7 @@ rascunho ou arquivado) a usar — o painel lista quais.
 | Links externos | — | Um por linha: `Rótulo \| https://endereço` (até 10). Para clipping de imprensa, acrescente veículo e data: `Matéria \| https://… \| Estadão \| 2026-09-15` |
 | Mês de referência | — | Não pode estar no futuro |
 | Equipe | — | Um nome por linha, só com autorização |
-| Destaque na Home | — | Até 6 cases em destaque |
+| Destaque na Home | — | Até 6 cases em destaque. Acima disso a Home mostra os 6 primeiros, pela ordem |
 
 Dá para salvar o case aos poucos, enquanto o material da Benjamin chega: a lista "Para publicar,
 falta" mostra primeiro os campos vazios e, depois de completos, as regras que dependem de outros
@@ -358,6 +358,60 @@ corrigir dados e anonimizar um feedback não são feitos pelo painel: fale com o
 - O painel limpa da memória do navegador o que estava aberto quando você clica em **Sair**. Em computador
   compartilhado, saia sempre ao terminar.
 
+## CTAs e destaques da Home (`/admin/ctas`)
+
+CTA é o botão que leva o visitante ao próximo passo, como "Quero um projeto" ou "Ver cases". Texto e destino
+são trocados aqui, sem mexer em código e sem novo deploy. O fluxo é o de sempre: o CTA nasce como rascunho,
+só aparece no site depois de publicado, e despublicar tira o botão na hora.
+
+| Campo | Obrigatório para | Observação |
+| ----- | ---------------- | ---------- |
+| Texto do botão | salvar | De 2 a 40 caracteres |
+| Posição | salvar | Onde o botão aparece (quadro abaixo) |
+| Tipo de destino | salvar | Muda o campo seguinte (quadro abaixo) |
+| Ordem | — | Menor aparece primeiro **dentro da mesma posição**. O primeiro botão ganha o destaque de cor |
+
+| Posição | Onde aparece | Sem nenhum botão publicado |
+| ------- | ------------ | -------------------------- |
+| Home: topo | Junto do manifesto, na primeira dobra | O topo fica só com o manifesto |
+| Home: faixa final | Faixa "Tem um projeto em mente?", no fim da Home | A faixa inteira não aparece |
+| Rodapé, página de serviço, página de case | **Ainda não aparecem no site.** Dá para deixar pronto, mas publicar não muda nenhuma página | — |
+
+| Tipo de destino | Como escolher | Se o destino sair do site |
+| --------------- | ------------- | ------------------------- |
+| Página do site | Lista com as páginas fixas (Sobre, Serviços, Cases, Contato…) | — |
+| Serviço, Case ou Área | Lista com os itens. O botão acompanha o item se o endereço dele mudar | O botão passa a levar à lista (Serviços, Cases ou Áreas) e o painel avisa. Nunca dá "página não encontrada" |
+| Formulário de contato | Direto, ou com um serviço já marcado no formulário | Abre o formulário sem o serviço |
+| Link externo | Link completo, começando com `https://` | — |
+
+O painel recusa o que levaria o visitante a lugar errado:
+
+- link sem `https://` ou com `javascript:`, espaços, usuário ou senha;
+- página fora da lista. Para abrir um serviço ou case específico, use o tipo Serviço ou Case;
+- botão da Home que levaria para a própria Home;
+- destino que foi excluído: a lista "Para publicar, falta" pede outro. Enquanto isso, se o botão já estiver
+  publicado, o site usa a lista como destino.
+
+Ao lado do formulário, **Para onde o botão leva hoje** mostra o endereço que o visitante abre agora. Depois de
+publicar, confira na Home.
+
+### Destaques da Home
+
+Não existe cadastro separado de destaque. Ele é marcado em cada item, na opção **Destacar na Home**:
+
+- **Serviços em destaque**: no cadastro do serviço, em `/admin/servicos`;
+- **Cases em destaque**: no cadastro do case, em `/admin/cases`.
+
+A parte de baixo de `/admin/ctas` mostra o que está marcado, quantos estão no site e leva até cada item. Só
+aparece na Home o que está publicado, até 6 de cada tipo. Sem nenhum destaque, a Home mostra um aviso no lugar
+da lista, em vez de um espaço em branco.
+
+### O que ainda não se edita por aqui
+
+Os títulos e as descrições das seções Áreas, Serviços e Cases da Home (por exemplo, "Seis frentes, um mesmo
+time.") ainda são fixos e dependem do NúcleoTech. Se uma sétima área for criada, avise para o título ser
+ajustado.
+
 ## Mensagens comuns
 
 | Mensagem | O que fazer |
@@ -366,6 +420,7 @@ corrigir dados e anonimizar um feedback não são feitos pelo painel: fale com o
 | "O conteúdo foi alterado por outra pessoa" | Outra pessoa salvou o mesmo item depois que você abriu a tela. Recarregue a página e refaça a alteração |
 | "Esta operação deixaria páginas do site quebradas" | Resolva os itens listados (ex.: vincule o serviço a outra área) antes de arquivar |
 | "Já existe um item com este endereço" | Escolha outro slug |
+| "Este botão já fica na Home e levaria para ela mesma" | Escolha outra página de destino para o CTA |
 | "Não foi possível registrar a operação na auditoria" | Nada foi alterado. Tente de novo; se persistir, envie o código de atendimento ao NúcleoTech |
 
 Toda publicação, despublicação, arquivamento, exclusão e alteração de contato e redes fica registrada na
