@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 28/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  28/10/2026 Vinicius Binda             Criação inicial (DBX-02).
  02/11/2026 Vinicius Binda             Trava por tabela, transação e consistência dos dados fictícios (ARC-11).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,7 +31,7 @@ import { findIntegrityIssues } from "@/lib/domain/content/integrity";
 import { isValidSlug } from "@/lib/domain/content/slug";
 import { isPubliclyVisible } from "@/lib/domain/content/visibility";
 import { seedSnapshot, siteSettings } from "../content/index";
-import { buildContentSeed, SEED_PATH, seedDataset } from "./content-seed.mjs";
+import { buildContentSeed, buildInitialLoad, INITIAL_LOAD_PATH, SEED_PATH, seedDataset } from "./content-seed.mjs";
 
 const seed = readFileSync(SEED_PATH, "utf8");
 const dataset = seedDataset(seedSnapshot);
@@ -128,5 +129,24 @@ describe("dados fictícios do seed (ARC-11)", () => {
       expect(existsSync(new URL(`../public${ref.src}`, import.meta.url)), ref.src).toBe(true);
       expect(ref.alt.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("supabase/carga-inicial.sql (editor do site)", () => {
+  const load = readFileSync(INITIAL_LOAD_PATH, "utf8");
+
+  it("está em dia com content/ (senão: npm run carga:write)", () => {
+    expect(load).toBe(buildInitialLoad(seedSnapshot, siteSettings));
+  });
+
+  it("traz os serviços e os cases que o site mostra, sem nada fictício", () => {
+    for (const item of [...seedSnapshot.services, ...seedSnapshot.cases]) expect(load).toContain(`'${item.slug}'`);
+    expect(load).not.toMatch(/fict[íi]ci/i);
+  });
+
+  it("roda numa transação e nunca sobrescreve o que já existe", () => {
+    expect(load.indexOf("\nbegin;\n")).toBeGreaterThan(0);
+    expect(load.trimEnd().endsWith("commit;")).toBe(true);
+    expect(load.match(/^on conflict .+ do nothing;$/gm)).toHaveLength(load.match(/^insert into /gm)?.length ?? -1);
   });
 });

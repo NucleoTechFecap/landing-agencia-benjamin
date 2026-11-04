@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 28/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  28/10/2026 Vinicius Binda             Criação inicial (DBX-02).
  02/11/2026 Vinicius Binda             Cases e páginas fictícios, transação e trava por tabela (ARC-11).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,12 +37,14 @@
  * Uso (Node 22.18+, ou 22.6+ com a flag, para importar os .ts de content/):
  *   npm run seed:write    regrava supabase/seed.sql
  *   npm run seed:check    falha se supabase/seed.sql estiver desatualizado
+ *   npm run carga:write   regrava supabase/carga-inicial.sql, a carga do conteúdo atual num banco novo
  * O teste content-seed.test.mjs faz a mesma checagem no `npm test`.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 export const SEED_PATH = new URL("../supabase/seed.sql", import.meta.url);
+export const INITIAL_LOAD_PATH = new URL("../supabase/carga-inicial.sql", import.meta.url);
 
 const LONG_AGO = "2026-10-13T00:00:00.000Z";
 
@@ -236,7 +239,7 @@ function insert(table, columns, rows, conflict) {
 const MIME_BY_EXTENSION = { jpg: "image/jpeg", png: "image/png", webp: "image/webp", avif: "image/avif" };
 
 /** Mídia de /public referenciada pelo seed, uma linha por caminho. */
-function collectMedia(services, cases) {
+function collectMedia(services, cases, extras = []) {
   const media = new Map();
   const add = (ref) => {
     if (ref && !media.has(ref.src)) media.set(ref.src, ref);
@@ -246,7 +249,7 @@ function collectMedia(services, cases) {
     add(item.cover);
     item.gallery.forEach(add);
   }
-  add(DEMO.unusedMedia);
+  extras.forEach(add);
   return [...media.values()];
 }
 
@@ -256,7 +259,12 @@ export function seedDataset(snapshot) {
     ...snapshot.services,
     { examples: [], featured: false, order: 99, provisional: true, ...DEMO.archivedService },
   ];
-  return { services, cases: DEMO.cases, pages: DEMO.pages, media: collectMedia(services, DEMO.cases) };
+  return {
+    services,
+    cases: DEMO.cases,
+    pages: DEMO.pages,
+    media: collectMedia(services, DEMO.cases, [DEMO.unusedMedia]),
+  };
 }
 
 const mediaId = (ref) => (ref ? uuid(`media:${ref.src}`) : "null");
@@ -278,11 +286,9 @@ function ctaTargetColumns(target) {
   return [text(columns.path), text(columns.url), uuid(columns.service), uuid(columns.case), uuid(columns.area)];
 }
 
-/** SQL completo do seed para o snapshot e a configuração informados. */
-export function buildContentSeed(snapshot, settings) {
-  const { services, cases, pages, media } = seedDataset(snapshot);
-
-  const sections = [
+/** Instruções de insert de um conjunto de dados, comuns ao seed e à carga inicial. */
+function contentSections(snapshot, settings, { services, cases, pages, media }) {
+  return [
     insert(
       "media_assets",
       ["id", "path", "mime_type", "width", "height", "alt_text", "decorative"],
@@ -488,6 +494,11 @@ export function buildContentSeed(snapshot, settings) {
       "(id)",
     ),
   ];
+}
+
+/** SQL completo do seed para o snapshot e a configuração informados. */
+export function buildContentSeed(snapshot, settings) {
+  const sections = contentSections(snapshot, settings, seedDataset(snapshot));
 
   return `/*
 ════════════════════════════════════════════════════════════════════════════════
@@ -538,6 +549,56 @@ commit;
 `;
 }
 
+/**
+ * Carga inicial de um banco novo: o conteúdo de content/, como o site mostra hoje, sem os fictícios
+ * nem a trava de produção. É o que permite tirar `CONTENT_SOURCE=local` e editar tudo pelo painel.
+ * Mantém os estados e a marca de provisório. Pode rodar de novo: o que já existe não muda.
+ */
+export function buildInitialLoad(snapshot, settings) {
+  const dataset = {
+    services: snapshot.services,
+    cases: snapshot.cases,
+    pages: [],
+    media: collectMedia(snapshot.services, snapshot.cases),
+  };
+  const sections = contentSections(snapshot, settings, dataset);
+  return `/*
+════════════════════════════════════════════════════════════════════════════════
+ Sistema      : Agência Benjamin Landing Page
+ Módulo       : Supabase
+ Arquivo      : carga-inicial.sql
+ Descrição    : Conteúdo atual do site (content/) para o primeiro carregamento de um banco novo.
+
+ Desenvolvedor: Vinícius Nishimura Reis
+
+ Projeto      : Agência Benjamin Landing Page
+ Versão       : 1.0.0
+ Criado em    : 04/11/2026
+ Modificado em: 04/11/2026
+════════════════════════════════════════════════════════════════════════════════
+
+ Histórico
+ ──────────────────────────────────────────────────────────────────────────────
+ Data        Autor                     Descrição
+ ──────────────────────────────────────────────────────────────────────────────
+ 04/11/2026 Vinícius Nishimura Reis  Criação inicial (editor do site).
+──────────────────────────────────────────────────────────────────────────────
+*/
+
+-- GERADO por scripts/content-seed.mjs. Não edite à mão: altere content/ ou o script e rode
+-- \`npm run carga:write\`.
+--
+-- Rodar uma vez, no SQL Editor, com a instrução do responsável (docs/operacao/carga-inicial.md). Traz
+-- os textos provisórios e os cases de content/, com as marcas de provisório. A autorização dos clientes
+-- citados segue pendente (CON-06 a CON-08), como já é hoje no site. Transação única: ou entra tudo, ou
+-- nada. Não sobrescreve o que já existe, então pode rodar de novo sem desfazer edições do painel.
+begin;
+
+${sections.filter(Boolean).join("\n")}
+commit;
+`;
+}
+
 async function loadContent() {
   const load = (file) => import(new URL(`../content/${file}`, import.meta.url).href);
   const [{ areas }, { services }, { cases, categories }, { ctas }, { siteSettings }] = await Promise.all([
@@ -552,6 +613,14 @@ async function loadContent() {
 
 async function run() {
   const { snapshot, settings } = await loadContent();
+  if (process.argv.includes("--carga")) {
+    const load = buildInitialLoad(snapshot, settings);
+    if (process.argv.includes("--write")) {
+      writeFileSync(INITIAL_LOAD_PATH, load);
+      console.log("supabase/carga-inicial.sql atualizado.");
+    } else process.stdout.write(load);
+    return;
+  }
   const sql = buildContentSeed(snapshot, settings);
   if (process.argv.includes("--write")) {
     writeFileSync(SEED_PATH, sql);
