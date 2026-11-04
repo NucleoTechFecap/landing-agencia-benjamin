@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  02/11/2026 Vinícius Nishimura Reis  Autoriza o envio e confere o que chegou ao Storage (TECH-13, #313).
+ 04/11/2026 Vinícius Nishimura Reis  Registra quando um arquivo recusado não sai do bucket (SEG-05).
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
@@ -31,6 +32,7 @@ import {
   buildStoragePath,
   checkDeclaredUpload,
   isUploadPath,
+  uploadIdOf,
   validateUpload,
   type MediaProblem,
 } from "@/lib/domain/media/policy";
@@ -147,7 +149,12 @@ export async function finalizeMediaUpload(
   const registered = (await deps.store.listMedia()).find(isRegistered);
   if (registered) return registered;
 
-  const discard = () => deps.storage.remove(path).catch(() => undefined);
+  // Quem envia vê o motivo da recusa, não a falha da limpeza. O log leva o que a operação precisa para
+  // apagar à mão o arquivo que continua público, sem registro (ADR-0005).
+  const discard = () =>
+    deps.storage
+      .remove(path)
+      .catch((error: unknown) => logger.warn("media.discard.failed", { objectId: uploadIdOf(path), error }));
   const rule = MEDIA_RULES[type];
   const isImage = rule.kind === "image";
   let stored: StoredObject | null;
@@ -251,7 +258,8 @@ export async function deleteMedia(
     await deps.storage.remove(asset.path);
     return [];
   } catch (error) {
-    logger.warn("cms.media.file_left", { id, error: error instanceof Error ? error.message : "desconhecido" });
+    // O registro já saiu: só o UUID do caminho ainda localiza o arquivo, sem expor o nome (ADR-0005).
+    logger.warn("media.delete.file_left", { objectId: uploadIdOf(asset.path), error });
     return ["media-file-left"];
   }
 }

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ARC-10).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
  02/11/2026 Vinícius Nishimura Reis  Limites do ADR-0005, envio declarado e caminho de volta (TECH-13, #313).
+ 04/11/2026 Vinícius Nishimura Reis  Identificador do objeto para os logs (SEG-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,6 +31,7 @@ import {
   isUploadPath,
   publicMediaUrl,
   sniffMimeType,
+  uploadIdOf,
   validateUpload,
   type UploadCandidate,
 } from "./policy";
@@ -49,6 +51,13 @@ const candidate = (overrides: Partial<UploadCandidate>): UploadCandidate => ({
   width: 2400,
   height: 1350,
   ...overrides,
+});
+
+describe("uploadIdOf (SEG-05)", () => {
+  it("devolve só o UUID, nunca o nome do arquivo", () => {
+    const uuid = "11111111-2222-4333-8444-555555555555";
+    expect(uploadIdOf(buildStoragePath("Ana Souza 11999998888.png", "image/png", uuid))).toBe(uuid);
+  });
 });
 
 describe("sniffMimeType", () => {

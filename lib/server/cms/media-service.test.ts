@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,12 +19,13 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  02/11/2026 Vinícius Nishimura Reis  Testes dos passos de autorizar e conferir o envio (TECH-13, #313).
+ 04/11/2026 Vinícius Nishimura Reis  Registro do arquivo recusado que não sai do bucket (SEG-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
 import type { Role } from "@/lib/domain/auth/rbac";
 import type { AuditInput } from "../audit";
 import {
@@ -190,6 +191,49 @@ describe("passo 3: conferir e registrar (ADM-08 / ARC-10 / TECH-13)", () => {
       code: "PAYLOAD_TOO_LARGE",
     });
     expect(env.objects.has(PATH)).toBe(false);
+  });
+
+  describe("arquivo recusado que não sai do bucket (SEG-05)", () => {
+    const warnings = () => warn.mock.calls.map(([line]) => JSON.parse(String(line)));
+    let warn: MockInstance<typeof console.warn>;
+    beforeEach(() => {
+      warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    });
+    afterEach(() => warn.mockRestore());
+
+    it("registra como achar o objeto, sem o nome do arquivo, e quem envia vê o motivo da recusa", async () => {
+      const env = setup();
+      env.deps.storage.remove = async () => Promise.reject(new Error("política do Storage recusou"));
+      env.objects.set(PATH, stored(new TextEncoder().encode("<svg onload=alert(1)>"), "image/webp"));
+      await expect(finalizeMediaUpload(env.deps, env.actor("editor"), upload())).rejects.toMatchObject({
+        code: "UNSUPPORTED_MEDIA_TYPE",
+      });
+      expect(warnings()).toEqual([
+        expect.objectContaining({
+          level: "warn",
+          event: "media.discard.failed",
+          objectId: UUID,
+          error: expect.objectContaining({ message: "política do Storage recusou" }),
+        }),
+      ]);
+      expect(JSON.stringify(warnings())).not.toContain("capa-da-campanha");
+    });
+
+    it("falha ao gravar o registro: o erro original sobe e a limpeza que falhou é registrada", async () => {
+      const env = setup({ failInsert: true });
+      env.deps.storage.remove = async () => Promise.reject(new Error("Storage fora"));
+      env.objects.set(PATH, stored(webp, "image/webp"));
+      await expect(finalizeMediaUpload(env.deps, env.actor("editor"), upload())).rejects.toThrow("banco fora");
+      expect(warnings()).toEqual([expect.objectContaining({ event: "media.discard.failed", objectId: UUID })]);
+    });
+
+    it("limpeza que funciona não registra nada", async () => {
+      const env = setup();
+      env.objects.set(PATH, stored(new TextEncoder().encode("<svg onload=alert(1)>"), "image/webp"));
+      await expect(finalizeMediaUpload(env.deps, env.actor("editor"), upload())).rejects.toBeDefined();
+      expect(env.objects.has(PATH)).toBe(false);
+      expect(warn).not.toHaveBeenCalled();
+    });
   });
 
   it("caminho forjado é recusado sem tocar no Storage", async () => {

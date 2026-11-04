@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,10 +23,12 @@
  26/10/2026 Vinícius Nishimura Reis  Limite de envio das Server Actions para mídia (ADM-08).
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
  02/11/2026 Vinícius Nishimura Reis  bodySizeLimit de volta ao padrão: o arquivo não passa pela action (TECH-13, #313).
+ 04/11/2026 Vinícius Nishimura Reis  Content-Security-Policy em todas as respostas (SEG-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { NextConfig } from "next";
+import { buildContentSecurityPolicy } from "./lib/domain/security/http-policy";
 
 // Mídia do CMS servida pelo Supabase Storage (ARC-10): somente o bucket público "media"
 // do projeto configurado no ambiente pode ser otimizado pelo next/image.
@@ -35,8 +37,18 @@ const mediaPatterns = supabaseUrl ? [new URL("/storage/v1/object/public/media/**
 
 const isProduction = process.env.NEXT_PUBLIC_SITE_ENV === "production";
 
-// Cabeçalhos de segurança básicos (refinamento de CSP/sessão em SEG-06).
+// `headers()` é resolvido no build: a CSP vale para o ambiente e o Supabase daquele build.
+const contentSecurityPolicy = buildContentSecurityPolicy({
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  NEXT_PUBLIC_SITE_ENV: process.env.NEXT_PUBLIC_SITE_ENV,
+  NEXT_PUBLIC_SUPABASE_URL: supabaseUrl,
+  development: process.env.NODE_ENV === "development",
+  vercelPreview: process.env.VERCEL_ENV === "preview",
+});
+
+// Cabeçalhos de segurança (SEG-06: docs/seguranca/protecao-de-rotas.md).
 const securityHeaders = [
+  { key: "Content-Security-Policy", value: contentSecurityPolicy },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Frame-Options", value: "DENY" },

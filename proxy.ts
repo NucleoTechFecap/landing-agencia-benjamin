@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,12 +21,15 @@
  13/10/2026 Vinícius Nishimura Reis  Barreira de autenticação para rotas não públicas do painel (ADM-03).
  13/10/2026 Vinícius Nishimura Reis  404 real para serviços e cases inexistentes (estrutura da landing).
  29/10/2026 Vinicius Binda             301 de endereço antigo ou com maiúsculas para o atual (DB-08).
+ 04/11/2026 Vinícius Nishimura Reis  Cookies de sessão com HttpOnly, SameSite e Secure (SEG-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { publicEnv } from "@/lib/config/public-env";
 import { LOGIN_PATH, isPublicAdminPath } from "@/lib/domain/auth/redirect";
+import { sessionCookieOptions } from "@/lib/domain/security/http-policy";
 import { resolveDetailSlug, type DetailRoute } from "@/lib/server/content/published-slugs";
 
 /**
@@ -48,6 +51,7 @@ export async function proxy(request: NextRequest) {
   if (!url || !anonKey) return isPublic ? response : redirectToLogin(request, pathname + search);
 
   const supabase = createServerClient(url, anonKey, {
+    cookieOptions: sessionCookieOptions(publicEnv),
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll: (cookiesToSet) => {

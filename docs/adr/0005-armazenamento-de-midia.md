@@ -6,7 +6,7 @@
 | Status       | **Aceita** — coordenação técnica                                  |
 | Data         | 13/10/2026                                                        |
 | Decisor      | Vinícius Nishimura Reis (`@Vinishireis`)                          |
-| Código       | `lib/domain/media/policy.ts` + testes · `next.config.ts` (`images`) |
+| Código       | `lib/domain/media/policy.ts` + testes · `lib/server/cms/media-service.ts`, `media-storage.ts` · `next.config.ts` (`images`) |
 
 ## Contexto
 
@@ -88,6 +88,7 @@ sequenceDiagram
   A->>A: validateUpload (tipo gravado, assinatura, tamanho real, dimensões)
   alt recusado
     A->>S: remove (política "quem enviou apaga arquivo sem registro")
+    Note over A: se nada foi apagado, log media.discard.failed
     A-->>E: erro no campo do arquivo
   else aceito
     A->>D: insert {path, mime, size, width, height, alt}
@@ -103,6 +104,32 @@ caminho imprevisível e só nos tipos permitidos pelo bucket.
 sem registro no bucket. Não há limpeza automática no MVP. Para encontrá-los, comparar
 `storage.objects` com `media_assets`.
 
+**Arquivo recusado que não sai do bucket (SEG-05).** Quem envia vê o motivo da recusa, e a falha da
+limpeza vai para o log, como `media.discard.failed`. O Storage não acusa quando nada foi apagado: sem
+permissão ou com o objeto ausente, responde sucesso com lista vazia. Por isso `remove` só conta como
+removido o que voltou nessa lista. O log traz só o UUID do caminho (`objectId`), sem o nome do arquivo,
+que pode ter dado pessoal. Para apagar à mão no painel do Supabase, o caminho sai de:
+
+```sql
+select name from storage.objects where bucket_id = 'media' and name like '%<objectId>%';
+```
+
+### Riscos residuais (SEG-05)
+
+Levantados na revisão de SEG-05 e ainda sem mitigação. **Mitigar ou aceitar é decisão da coordenação
+técnica, ainda não tomada.**
+
+| Risco | Efeito | Mitigação possível |
+| ----- | ------ | ------------------- |
+| **EXIF não é removido** | Foto enviada como veio fica pública com os metadados: localização GPS, aparelho, data e às vezes autor. É dado pessoal se a foto for de pessoa ou feita por ela | Recodificar no envio; até lá, orientar a equipe a exportar sem metadados |
+| **Sem recodificação** | Só a assinatura, o tamanho e as dimensões são conferidos, e o arquivo é guardado byte a byte. Um arquivo válido pode carregar conteúdo extra depois da imagem (poliglota). O impacto é limitado: o Storage serve com o tipo gravado, em outra origem | Recodificar no envio |
+| **AVIF sem limite de dimensão** | `readImageDimensions` devolve `null` para AVIF (`dimensions.ts`), então o limite de 4000 px não é aplicado. Um AVIF de até 5 MB com dimensões muito grandes é aceito, e o custo de abri-lo cai sobre o otimizador do `next/image` | Ler o cabeçalho do AVIF, ou recusar imagem sem dimensões legíveis |
+| **Cabeçalho truncado ou ilegível sem limite de dimensão** | JPEG, PNG ou WebP com a assinatura certa e o cabeçalho cortado ou fora do esperado também devolve `null`: o envio continua, sem dimensões e sem o limite. O arquivo pode nem abrir no site | Recusar imagem sem dimensões legíveis |
+| **PDF não é inspecionado** | Só a assinatura é conferida. Um PDF pode conter JavaScript ou links, executados pelo leitor de quem abrir. Ele abre pela URL do Storage, em outra origem, nunca embutido no site | Conferência manual na publicação |
+
+Quem envia já é da equipe autenticada, com `media:create`: nenhum desses caminhos está aberto ao
+visitante.
+
 ## Exclusão e edição (ADM-09)
 
 `deleteMedia` exige `media:delete`, recusa arquivo em uso e lista os usos. A foto do bloco "Nosso time"
@@ -110,8 +137,8 @@ fica em JSON, sem FK: só essa busca a enxerga, então uma exclusão direta pela
 `media:delete`, ou uma foto escolhida entre a busca e a gravação escapam dela. Capa, galeria e imagem de
 serviço têm também a FK `restrict`.
 
-O registro sai antes do arquivo. Se o Storage falhar, sobra um arquivo sem registro, e o painel avisa. A
-ordem inversa poderia tirar do ar uma imagem em uso. Arquivo com caminho em `/public` não passa pelo
+O registro sai antes do arquivo. Se o Storage falhar, sobra um arquivo sem registro: o painel avisa e o log
+traz `media.delete.file_left` com o `objectId`, para apagar à mão como descrito acima. A ordem inversa poderia tirar do ar uma imagem em uso. Arquivo com caminho em `/public` não passa pelo
 Storage.
 
 `updateMediaDetails` exige `media:edit` e usa versão otimista. A foto do bloco "Nosso time" guarda uma

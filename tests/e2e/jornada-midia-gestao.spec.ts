@@ -114,11 +114,19 @@ test.describe("Biblioteca de mídia · detalhe, edição e exclusão @cms", () =
 
   test("administrador abre pela lista, corrige o texto e exclui o arquivo sem uso", async ({ page }) => {
     const file = await seedAsset("livre");
+    const blocked: string[] = [];
+    page.on("console", (message) => {
+      if (message.text().includes("Content Security Policy")) blocked.push(message.text());
+    });
     await login(page, accounts.admin);
     await page.goto("/admin/midia");
     await page.getByRole("link", { name: `Detalhes de ${file.fileName}` }).click();
     await expect(page).toHaveURL(new RegExp(`/admin/midia/${file.id}$`));
     await expect(page.getByText("Nenhum conteúdo usa este arquivo.")).toBeVisible();
+    // A imagem vem do Storage: precisa passar pela CSP (SEG-06).
+    const image = page.getByRole("img", { name: "Texto original" });
+    await expect.poll(() => image.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(0);
+    expect(blocked).toEqual([]);
 
     await altField(page).fill("Texto corrigido no painel");
     await page.getByRole("button", { name: "Salvar alterações" }).click();
