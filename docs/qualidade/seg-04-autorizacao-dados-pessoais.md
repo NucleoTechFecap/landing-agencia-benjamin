@@ -3,7 +3,7 @@
 | Campo        | Valor                                                                                    |
 | ------------ | ---------------------------------------------------------------------------------------- |
 | Issue        | SEG-04 (#98)                                                                             |
-| Execução     | 04/11/2026, sobre a tela de FORM-09 (#75), na branch `feat/form-09-leads-no-painel`       |
+| Execução     | 04/11/2026, sobre a tela de FORM-09 (#75), com a `main` em `6a2120c`                      |
 | Ambiente     | Local: `next start` (build de produção) + Supabase local (Postgres 17, Auth, RLS e PostgREST reais), Chrome headless |
 | Fora do escopo | Homologação e produção (GO-02): nada aqui foi executado contra banco remoto           |
 | Decisão pendente | Quem pode ver leads e feedbacks ainda aguarda a Agência Benjamin ([ADM-01 §5](../seguranca/perfis-e-permissoes.md), [TECH-06 §10](../formularios/captacao-e-roteamento.md)). Os testes provam a proposta atual; se a matriz mudar, mudam juntos |
@@ -92,11 +92,12 @@ escrita. Por isso o pgTAP tem o caso com permissão isolada.
 
 | Bateria | Resultado em 04/11/2026 |
 | ------- | ----------------------- |
-| `npm run verify` | Verde: 75 arquivos e 961 testes passando, 140 testes pulados (entre eles os 15 arquivos de integração, que precisam do Supabase e rodam na linha abaixo); build de produção ok |
+| `npm run verify` | Verde: 91 arquivos e 1206 testes passando, 167 testes pulados (entre eles os 17 arquivos de integração, que precisam do Supabase e rodam na linha abaixo); build de produção ok |
 | `npx supabase test db`, banco limpo | `Files=10, Tests=260, Result: PASS` (`leads_painel.test.sql`: 46) |
-| `npm run test:supabase` | 15 arquivos, 138 testes, `PASS` (`leads-no-painel.test.ts`: 63) |
+| `npm run test:supabase` | 17 arquivos, 165 testes, `PASS` (`leads-no-painel.test.ts`: 63) |
 | `npm run test:e2e:cms -- tests/e2e/jornada-leads-cms.spec.ts --repeat-each=3` | 24 de 24 (8 cenários, 3 vezes cada) |
-| `npm run test:e2e:cms`, todas as jornadas `@cms` | 30 de 30 |
+| `npm run test:e2e:cms`, todas as jornadas `@cms` | 101 de 101, inclusive `/admin/leads` e o detalhe em 360, 768 e 1280 px, com texto nos limites dos formulários (`painel-responsivo.spec.ts`) |
+| Playwright desktop, sem Supabase: `jornada-visitante`, `formularios`, `seguranca-cabecalhos`, `estados-globais` | 52 passaram; 10 pulados, que precisam do Supabase e rodam na bateria `@cms` |
 
 ## 6. O que continua pendente
 
