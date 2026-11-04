@@ -33,6 +33,7 @@
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case Meridiano (CASE-06).
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case FECAP (CASE-07).
  04/11/2026 Vinícius Nishimura Reis  Item Eventos e Parcerias (SOB-05).
+ 04/11/2026 Vinícius Nishimura Reis  Item Social Media (SOB-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -215,6 +216,11 @@ describe("itens de conteúdo do MVP", () => {
   checkArea("eventos-e-parcerias", {
     order: 1,
     services: ["eventos"],
+    provisional: true,
+  });
+  checkArea("social-media", {
+    order: 2,
+    services: ["estrategia-digital", "social-media", "producao-de-conteudo"],
     provisional: true,
   });
   checkArea("copywriting", {
