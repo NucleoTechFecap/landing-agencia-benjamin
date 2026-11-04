@@ -42,6 +42,7 @@
 
 ## Regras de negócio e conteúdo
 
+- [Design system do painel (Benjamin Studio)](cms/design-system-do-painel.md): tokens, componentes e regras para novas telas
 - [Guia do painel (CMS) para a equipe da Benjamin](cms/guia-do-painel.md) — ADM-07 (áreas), ADM-06 (serviços), ADM-08 (cases, categorias e envio de mídia)
 
 | Documento | Issue |
