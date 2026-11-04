@@ -90,6 +90,7 @@
 | [Decisão técnica de go/no-go](operacao/go-no-go.md) | TECH-14 |
 | [Publicação da primeira versão](operacao/publicacao-mvp.md) | GO-06 |
 | [Handoff técnico e manutenção](operacao/handoff-e-manutencao.md) | GO-09 |
+| [Suporte, correções e evolução depois do lançamento](operacao/suporte-e-evolucao.md) | GO-11 |
 
 ## Evoluções pós-MVP
 
