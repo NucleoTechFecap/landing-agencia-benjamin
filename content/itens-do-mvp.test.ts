@@ -35,6 +35,7 @@
  04/11/2026 Vinícius Nishimura Reis  Item Eventos e Parcerias (SOB-05).
  04/11/2026 Vinícius Nishimura Reis  Item Social Media (SOB-06).
  04/11/2026 Vinícius Nishimura Reis  Item Comunicação Interna (SOB-07).
+ 04/11/2026 Vinícius Nishimura Reis  Item Estratégia Digital (SERV-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -52,7 +53,7 @@ import { isPubliclyVisible, visibleSorted } from "../lib/domain/content/visibili
 import { seedSnapshot } from "./index";
 
 /*
- * Um bloco por item das tasks de conteúdo (SOB-05…10, SERV-06…11, CASE-05…10). Cada item é
+ * Um bloco por item das tasks de conteúdo (SOB-05…10, SERV-03…11, CASE-05…10). Cada item é
  * conferido como o site e o painel o usam: publicável pelas regras do CMS, ícone oficial,
  * relações (área ↔ serviços, serviço ↔ cases, categoria ↔ cases), CTA de contato e mídia
  * sem link quebrado. O texto é provisório até a aprovação da Benjamin (CON-05) e as fichas
@@ -243,6 +244,12 @@ describe("itens de conteúdo do MVP", () => {
   checkArea("assessoria-de-imprensa", {
     order: 6,
     services: ["assessoria-de-imprensa"],
+    provisional: true,
+  });
+  checkService("estrategia-digital", {
+    areas: ["social-media", "copywriting"],
+    cases: [],
+    featured: true,
     provisional: true,
   });
   checkService("producao-de-conteudo", {

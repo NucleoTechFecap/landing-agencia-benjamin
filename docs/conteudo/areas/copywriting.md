@@ -21,7 +21,7 @@
 
 ## Relações
 
-- **Serviços desta área** (vínculo feito no cadastro do serviço): Estratégia Digital, [Produção de Conteúdo](../servicos/producao-de-conteudo.md), [Copywriting](../servicos/copywriting.md).
+- **Serviços desta área** (vínculo feito no cadastro do serviço): [Estratégia Digital](../servicos/estrategia-digital.md), [Produção de Conteúdo](../servicos/producao-de-conteudo.md), [Copywriting](../servicos/copywriting.md).
 
 ## Para a Benjamin aprovar (SOB-08)
 
