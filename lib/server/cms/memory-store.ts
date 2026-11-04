@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,16 +23,19 @@
  29/10/2026 Vinicius Binda             Imita o trigger track_slug: endereços antigos e reservados (DB-08).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  Gravação de item com relações, como no banco (TECH-13, #314).
+ 04/11/2026 Vinícius Nishimura Reis  Configuração institucional, com a linha única do banco (ADM-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
+import { siteSettings } from "@/content";
 import {
   assembleAreasAndServices,
   assembleCasesAndCategories,
   assemblePages,
   toCta,
   toMediaMap,
+  toSiteSettings,
 } from "../content/supabase/mappers";
 import type {
   AreaRow,
@@ -46,6 +49,7 @@ import type {
   PageRow,
   ServiceAreaRow,
   ServiceRow,
+  SiteSettingsRow,
 } from "../content/supabase/rows";
 import { AppError } from "../errors";
 import type { CmsSnapshot, CmsStore, EntityTable, RedirectEntity, Row } from "./store";
@@ -103,6 +107,8 @@ export interface MemoryTables {
   pages: PageRow[];
   blocks: BlockRow[];
   slug_redirects: SlugRedirectRow[];
+  /** Linha única, como no banco: no máximo um item. */
+  site_settings: (SiteSettingsRow & { updated_at: string })[];
 }
 
 export interface SlugRedirectRow {
@@ -133,6 +139,7 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
     pages: [],
     blocks: [],
     slug_redirects: [],
+    site_settings: [],
     ...structuredClone(seed),
   };
   let clock = Date.parse("2026-10-26T12:00:00.000Z");
@@ -301,6 +308,20 @@ export function createMemoryCmsStore(seed: Partial<MemoryTables> = {}) {
     async removeBlock(id) {
       if (!tables.blocks.some((row) => row.id === id)) throw new AppError("NOT_FOUND");
       tables.blocks = tables.blocks.filter((row) => row.id !== id);
+    },
+
+    async readSettings() {
+      const [row] = tables.site_settings;
+      if (!row) return null;
+      return { settings: toSiteSettings(row, siteSettings).settings, updatedAt: row.updated_at };
+    },
+
+    async saveSettings(values, expectedUpdatedAt) {
+      const [row] = tables.site_settings;
+      if ((row?.updated_at ?? null) !== expectedUpdatedAt) throw new AppError("CONFLICT");
+      if (row) Object.assign(row, structuredClone(values), { updated_at: tick() });
+      else
+        tables.site_settings.push({ ...(structuredClone(values) as unknown as SiteSettingsRow), updated_at: tick() });
     },
   };
 

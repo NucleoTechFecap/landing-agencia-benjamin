@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,11 +23,13 @@
  29/10/2026 Vinicius Binda             Leitura de public.slug_redirects (DB-08).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  Serviço e case gravados pelas funções do banco (TECH-13, #314).
+ 04/11/2026 Vinícius Nishimura Reis  Leitura e gravação da configuração institucional (ADM-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { siteSettings } from "@/content";
 import {
   assembleAreasAndServices,
   assembleCasesAndCategories,
@@ -35,6 +37,7 @@ import {
   toCta,
   toMediaMap,
   toMediaRef,
+  toSiteSettings,
 } from "../content/supabase/mappers";
 import {
   COLUMNS,
@@ -49,6 +52,7 @@ import {
   type PageRow,
   type ServiceAreaRow,
   type ServiceRow,
+  type SiteSettingsRow,
 } from "../content/supabase/rows";
 import { AppError } from "../errors";
 import { logger } from "../logger";
@@ -260,6 +264,47 @@ export function createSupabaseCmsStore(client: SupabaseClient, supabaseUrl: stri
         operation: "delete",
       });
       if (!rows?.length) throw new AppError("NOT_FOUND");
+    },
+
+    async readSettings() {
+      const row = await run<SiteSettingsRow & { updated_at: string }>(
+        client.from("site_settings").select(`${COLUMNS.site_settings}, updated_at`).maybeSingle(),
+        { table: "site_settings", operation: "select" },
+      );
+      if (!row) return null;
+      const { settings, problems } = toSiteSettings(row, siteSettings);
+      if (problems.length) logger.error("cms.settings.invalid_sections", { problems });
+      return { settings, updatedAt: row.updated_at };
+    },
+
+    async saveSettings(values, expectedUpdatedAt) {
+      const context = { table: "site_settings", operation: "save" };
+      if (expectedUpdatedAt === null) {
+        const { error } = await client.from("site_settings").insert(values);
+        // Linha única: chave repetida quer dizer que outra pessoa criou a linha antes desta gravação.
+        if (error?.code === "23505") throw new AppError("CONFLICT", { internal: { ...context, code: error.code } });
+        if (error) throw toCmsError(error, context);
+        return;
+      }
+      const row = await run<{ updated_at: string }>(
+        client
+          .from("site_settings")
+          .update(values)
+          .eq("id", true)
+          .eq("updated_at", expectedUpdatedAt)
+          .select("updated_at")
+          .maybeSingle(),
+        context,
+      );
+      if (row) return;
+      // Nenhuma linha: mudou desde a leitura ou a RLS barrou a gravação.
+      const current = await run<{ updated_at: string }>(
+        client.from("site_settings").select("updated_at").maybeSingle(),
+        context,
+      );
+      if (current?.updated_at !== expectedUpdatedAt) throw new AppError("CONFLICT");
+      logger.warn("cms.update.denied_by_rls", { table: "site_settings" });
+      throw new AppError("FORBIDDEN");
     },
   };
 }
