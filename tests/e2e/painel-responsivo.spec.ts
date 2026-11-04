@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Telas de leads e feedbacks (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Telas de CTAs e destaques da Home (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -141,6 +142,7 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
     media: "",
     submission: "",
     submissionArchived: "",
+    cta: "",
   };
   const accounts: { admin?: Account; viewer?: Account } = {};
   const contexts: BrowserContext[] = [];
@@ -229,6 +231,12 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
       client_name: "Cliente fictício",
       summary: "Resumo do case arquivado na verificação de responsividade.",
     });
+    ids.cta = await insert("ctas", {
+      label: long("Cta", 40),
+      placement: "home-highlight",
+      target_kind: "external",
+      target_url: `https://exemplo.com/${"x".repeat(200)}`,
+    });
     ids.page = await insert("pages", {
       slug: `responsivo-${suffix}`,
       title: long("Pagina"),
@@ -303,6 +311,10 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
   test.afterAll(async () => {
     for (const context of contexts.splice(0)) await context.close();
     if (!client) return;
+    await client
+      .from("ctas")
+      .delete()
+      .eq("id", ids.cta || "00000000-0000-4000-8000-000000000000");
     await client.from("cases").delete().in("id", [ids.case, ids.caseArchived].filter(Boolean));
     await client
       .from("pages")
@@ -389,6 +401,9 @@ test.describe("Painel · todas as telas em 360, 768 e 1280 px @cms", () => {
     screen("cases", "cases", /Cases/),
     screen("case-novo", "cases/novo", /Novo case/),
     screen("case-editar", "cases/[id]", /^Case-/, () => `/admin/cases/${ids.case}`),
+    screen("ctas", "ctas", /CTAs e destaques da Home/),
+    screen("cta-novo", "ctas/novo", /Novo CTA/),
+    screen("cta-editar", "ctas/[id]", /^Cta-/, () => `/admin/ctas/${ids.cta}`),
     screen("midia", "midia", /Biblioteca de mídia/),
     screen("leads", "leads", /Leads e feedbacks/),
     screen("lead-detalhe", "leads/[id]", /^AB-/, () => `/admin/leads/${ids.submission}`),
