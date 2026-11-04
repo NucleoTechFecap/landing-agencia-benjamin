@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  02/11/2026 Vinícius Nishimura Reis  Autoriza o envio e confere o que chegou ao Storage (TECH-13, #313).
+ 04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -33,9 +34,12 @@ import {
   validateUpload,
   type MediaProblem,
 } from "@/lib/domain/media/policy";
+import type { CmsWarning } from "@/lib/domain/content/cms-form";
+import { describeMediaUsage, findMediaUsage, usageRequiresAlt } from "@/lib/domain/media/usage";
 import { AppError } from "../errors";
-import type { CmsActor, CmsDeps } from "./content-service";
-import type { MediaAsset } from "./store";
+import { logger } from "../logger";
+import type { CmsActor, CmsDeps, ItemRef } from "./content-service";
+import type { CmsStore, MediaAsset } from "./store";
 
 /** Início de um objeto do Storage, com o tamanho total e o tipo gravados nele. */
 export interface StoredObject {
@@ -202,4 +206,88 @@ export async function finalizeMediaUpload(
     metadata: { mimeType: type, size: stored.size },
   });
   return asset;
+}
+
+async function findAsset(store: CmsStore, id: string): Promise<MediaAsset> {
+  const asset = (await store.listMedia()).find((item) => item.id === id);
+  if (!asset) throw new AppError("NOT_FOUND");
+  return asset;
+}
+
+/**
+ * Exclui da biblioteca (ADR-0005): só `media:delete` e só arquivo sem uso. A busca de usos cobre a
+ * foto do bloco "Nosso time", que fica em JSON, e dá a lista ao painel; a FK do banco segura uma
+ * corrida nos outros usos. O registro sai antes do arquivo: se o Storage falhar, sobra um arquivo
+ * sem uso, e o contrário tiraria do ar uma imagem em uso.
+ */
+export async function deleteMedia(
+  deps: CmsDeps & { storage: MediaStorage },
+  actor: CmsActor,
+  id: string,
+): Promise<CmsWarning[]> {
+  if (!can(actor.role, "media", "delete")) throw new AppError("FORBIDDEN");
+  const asset = await findAsset(deps.store, id);
+  const usage = findMediaUsage(asset, await deps.store.snapshot());
+  if (usage.length) {
+    throw new AppError("CONFLICT", {
+      message: "Este arquivo está em uso e não pode ser excluído. Troque ou retire antes:",
+      fieldErrors: { impacto: usage.map(describeMediaUsage) },
+    });
+  }
+
+  const audit = (outcome: "success" | "failure") =>
+    deps.audit({ event: "media.deleted", resourceId: id, outcome, metadata: { mimeType: asset.mimeType } });
+  await audit("success");
+  try {
+    await deps.store.removeMedia(id);
+  } catch (error) {
+    await audit("failure").catch(() => undefined);
+    throw error;
+  }
+
+  // Caminho que começa com "/" é arquivo versionado em /public: não está no bucket.
+  if (asset.path.startsWith("/")) return [];
+  try {
+    await deps.storage.remove(asset.path);
+    return [];
+  } catch (error) {
+    logger.warn("cms.media.file_left", { id, error: error instanceof Error ? error.message : "desconhecido" });
+    return ["media-file-left"];
+  }
+}
+
+/**
+ * Edita texto alternativo e a marcação de decorativa. Imagem em conteúdo publicado ou na foto do
+ * time não pode ficar sem texto: o painel recusaria publicar ou salvar o item depois (R12).
+ */
+export async function updateMediaDetails(
+  deps: CmsDeps,
+  actor: CmsActor,
+  ref: ItemRef,
+  meta: UploadMeta,
+): Promise<CmsWarning[]> {
+  if (!can(actor.role, "media", "edit")) throw new AppError("FORBIDDEN");
+  const asset = await findAsset(deps.store, ref.id);
+  const invalidAlt = altError(asset.mimeType, meta);
+  if (invalidAlt) throw invalidAlt;
+
+  const usage = findMediaUsage(asset, await deps.store.snapshot());
+  const isImage = MEDIA_RULES[asset.mimeType]?.kind === "image";
+  const decorative = isImage && meta.decorative;
+  if (decorative && usage.some(usageRequiresAlt)) {
+    throw new AppError("VALIDATION_FAILED", {
+      fieldErrors: {
+        decorative: ["Esta imagem está em conteúdo publicado ou no bloco Nosso time e precisa de texto alternativo."],
+      },
+    });
+  }
+
+  const alt = decorative ? null : meta.alt.trim() || null;
+  await deps.store.updateMedia(ref.id, { alt_text: alt, decorative }, ref.expectedUpdatedAt);
+
+  const altChanged = (alt ?? "") !== asset.alt;
+  for (const { entity, slug, status } of usage) {
+    if (status === "published") deps.invalidate({ entity, slug });
+  }
+  return altChanged && usage.some((item) => item.place === "foto do time") ? ["media-alt-team"] : [];
 }

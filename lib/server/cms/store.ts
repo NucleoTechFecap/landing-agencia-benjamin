@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,6 +23,7 @@
  29/10/2026 Vinicius Binda             Endereços antigos e reservados (retiredSlugs) (DB-08).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  saveWithRelations no lugar de syncLinks e syncGallery (TECH-13, #314).
+ 04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -67,8 +68,12 @@ export interface MediaRow {
 /** Arquivo da biblioteca de mídia, como o painel lista para escolha. */
 export interface MediaAsset extends MediaRef {
   id: string;
+  /** Chave do bucket ou caminho em /public (começa com "/"). */
+  path: string;
   mimeType: string;
   decorative: boolean;
+  /** Versão otimista, como nos itens de conteúdo. */
+  updatedAt: string;
 }
 
 /** Tipos com página própria, cujo endereço antigo redireciona (public.slug_redirects, DB-08). */
@@ -117,6 +122,14 @@ export interface CmsStore {
   remove(table: EntityTable, id: string): Promise<void>;
   /** Registra um arquivo já enviado ao Storage na biblioteca de mídia. */
   insertMedia(values: MediaRow): Promise<MediaAsset>;
+  /** Grava só se `updated_at` ainda for `expectedUpdatedAt`. */
+  updateMedia(
+    id: string,
+    values: Pick<MediaRow, "alt_text" | "decorative">,
+    expectedUpdatedAt: string,
+  ): Promise<MediaAsset>;
+  /** Apaga o registro. CONFLICT se o banco recusar por uso (FK restrict de capa, galeria e imagem). */
+  removeMedia(id: string): Promise<void>;
   /** Blocos não têm estado nem versão próprios: a versão que vale é a da página (page-blocks.ts). */
   insertBlock(values: BlockValues): Promise<void>;
   updateBlock(id: string, values: Partial<BlockValues>): Promise<void>;
