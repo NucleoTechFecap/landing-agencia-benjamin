@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,11 +23,12 @@
  29/10/2026 Vinicius Binda             Endereços antigos e reservados (retiredSlugs) (DB-08).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  saveWithRelations no lugar de syncLinks e syncGallery (TECH-13, #314).
+ 04/11/2026 Vinícius Nishimura Reis  Leitura e gravação da configuração institucional (ADM-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
-import type { ContentSnapshot, MediaRef, Page } from "@/lib/domain/content/types";
+import type { ContentSnapshot, MediaRef, Page, SiteSettings } from "@/lib/domain/content/types";
 
 /** Tabelas de itens editáveis no painel. */
 export type EntityTable = "areas" | "services" | "case_categories" | "cases" | "ctas" | "pages";
@@ -86,6 +87,12 @@ export type ItemRelations =
   | { table: "services"; areaIds: readonly string[] }
   | { table: "cases"; serviceIds: readonly string[]; galleryIds: readonly string[] };
 
+/** Configuração institucional como o painel lê: a versão otimista é o `updated_at` da linha única. */
+export interface StoredSettings {
+  settings: SiteSettings;
+  updatedAt: string;
+}
+
 /**
  * Persistência usada pela camada de serviço do CMS. A implementação de produção grava com a
  * sessão de quem está logado (a RLS do banco é a segunda barreira, ADR-0003); a de memória
@@ -121,4 +128,11 @@ export interface CmsStore {
   insertBlock(values: BlockValues): Promise<void>;
   updateBlock(id: string, values: Partial<BlockValues>): Promise<void>;
   removeBlock(id: string): Promise<void>;
+  /** Linha única de site_settings; `null` enquanto ela não existe (ambiente recém-criado). */
+  readSettings(): Promise<StoredSettings | null>;
+  /**
+   * Grava só se `updated_at` ainda for `expectedUpdatedAt`. Com `null`, cria a linha: quem chega
+   * depois de outra criação recebe CONFLICT.
+   */
+  saveSettings(values: Row, expectedUpdatedAt: string | null): Promise<void>;
 }
