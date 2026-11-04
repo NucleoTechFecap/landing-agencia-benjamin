@@ -21,7 +21,7 @@
 
 ## Relações
 
-- **Serviços desta área** (vínculo feito no cadastro do serviço): [Estratégia Digital](../servicos/estrategia-digital.md), Social Media, [Produção de Conteúdo](../servicos/producao-de-conteudo.md).
+- **Serviços desta área** (vínculo feito no cadastro do serviço): [Estratégia Digital](../servicos/estrategia-digital.md), [Social Media](../servicos/social-media.md), [Produção de Conteúdo](../servicos/producao-de-conteudo.md).
 
 ## Para a Benjamin aprovar (SOB-06)
 
