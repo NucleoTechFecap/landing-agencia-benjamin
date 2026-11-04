@@ -20,10 +20,12 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-12).
  04/11/2026 Vinícius Nishimura Reis  Formulário público grava no Supabase local nas jornadas @cms (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Segunda passada, em série, para jornadas que mexem no conteúdo de todos (HOME-07).
+ 04/11/2026 Vinícius Nishimura Reis  Segredos descartáveis das rotas internas e destinatários fictícios (QA-06, QA-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { execFileSync, spawnSync } from "node:child_process";
+import { randomBytes } from "node:crypto";
 
 /*
  * `npm run test:e2e:cms`: jornadas do editor no CMS (tag @cms) contra o Supabase local.
@@ -53,8 +55,17 @@ const env = {
   E2E_SUPABASE_SERVICE_ROLE_KEY: status.SERVICE_ROLE_KEY,
   // O formulário público grava com service_role: sem ela, o envio iria para a memória do processo.
   SUPABASE_SERVICE_ROLE_KEY: status.SERVICE_ROLE_KEY,
+  // Rotas internas (QA-06, QA-05): segredos descartáveis, gerados a cada execução e fora do que o navegador recebe.
+  CONTENT_REVALIDATE_SECRET: process.env.CONTENT_REVALIDATE_SECRET ?? randomBytes(24).toString("hex"),
+  CRON_SECRET: process.env.CRON_SECRET ?? randomBytes(24).toString("hex"),
+  // Só o `LogNotifier`, com destinatários fictícios: nenhum e-mail sai deste ambiente.
+  NOTIFY_PROVIDER: "log",
+  LEAD_NOTIFICATION_TO: "leads@benjamin.test",
+  CONTACT_NOTIFICATION_TO: "contato@benjamin.test",
+  FEEDBACK_NOTIFICATION_TO: "feedback@benjamin.test",
 };
 delete env.CONTENT_SOURCE;
+delete env.RESEND_API_KEY;
 
 const run = (command, args) => spawnSync(command, args, { stdio: "inherit", env }).status ?? 1;
 const playwright = (...args) =>
