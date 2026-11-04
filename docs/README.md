@@ -99,5 +99,6 @@
 | [Newsletter com gestão de assinantes](roadmap/newsletter.md) | FUT-02 |
 | [Automações de comunicação e campanhas](roadmap/automacoes-de-comunicacao.md) | FUT-03 |
 | [Histórico e restauração de versões do CMS](roadmap/historico-de-versoes.md) | FUT-04 |
+| [Analytics avançado de desempenho do site](roadmap/analytics-avancado.md) | FUT-06 |
 | [Planejamento de integrações externas](roadmap/integracoes-externas.md) | FUT-07 |
 | [Módulos internos para a operação da agência](roadmap/modulos-internos.md) | FUT-08 |
