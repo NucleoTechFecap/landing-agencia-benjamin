@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Tabela sem rolagem lateral, alvos de toque e texto longo (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -65,7 +66,7 @@ export function StatusForm({
             id="status-atendimento"
             name="status"
             defaultValue={current}
-            className="mt-1.5 w-full rounded-2xl border-2 border-benja-noite bg-white px-4 py-2.5 text-sm text-benja-noite focus:border-benja-azul focus:ring-4 focus:ring-benja-azul"
+            className="mt-1.5 min-h-11 w-full rounded-2xl border-2 border-benja-noite bg-white px-4 py-2.5 text-sm text-benja-noite focus:border-benja-azul focus:ring-4 focus:ring-benja-azul"
           >
             {options.map((status) => (
               <option key={status} value={status}>
@@ -77,7 +78,7 @@ export function StatusForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-full bg-benja-verde px-5 py-2.5 text-sm font-bold text-benja-nyanza transition hover:bg-benja-noite disabled:cursor-wait disabled:opacity-60"
+          className="min-h-11 rounded-full bg-benja-verde px-5 py-2.5 text-sm font-bold text-benja-nyanza transition hover:bg-benja-noite disabled:cursor-wait disabled:opacity-60"
         >
           {pending ? "Salvando…" : "Salvar status"}
         </button>

@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Tabela sem rolagem lateral, alvos de toque e texto longo (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -61,7 +62,7 @@ export function DeleteSubmissionForm({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-full border-2 border-benja-erro bg-white px-5 py-2.5 font-bold text-benja-erro transition hover:bg-benja-erro-fundo disabled:cursor-wait disabled:opacity-60"
+            className="min-h-11 rounded-full border-2 border-benja-erro bg-white px-5 py-2.5 font-bold text-benja-erro transition hover:bg-benja-erro-fundo disabled:cursor-wait disabled:opacity-60"
           >
             Excluir definitivamente
           </button>

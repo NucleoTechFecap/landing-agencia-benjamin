@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
+ 04/11/2026 Vinícius Nishimura Reis  Tabela sem rolagem lateral, alvos de toque e texto longo (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -45,8 +46,10 @@ export function SubmissionContent({ record }: { record: SubmissionDetail }) {
         <dl className="space-y-4">
           {fields.map((field) => (
             <div key={field.label}>
-              <dt className="text-xs font-bold tracking-wider text-benja-grafite/80 uppercase">{field.label}</dt>
-              <dd className="mt-1 break-words whitespace-pre-wrap">{field.value}</dd>
+              <dt className="text-xs font-bold tracking-wider wrap-anywhere text-benja-grafite/80 uppercase">
+                {field.label}
+              </dt>
+              <dd className="mt-1 wrap-anywhere whitespace-pre-wrap">{field.value}</dd>
             </div>
           ))}
         </dl>
@@ -105,7 +108,7 @@ export function SubmissionRecordPanel({
         {rows.map(([label, value]) => (
           <div key={label}>
             <dt className="font-bold">{label}</dt>
-            <dd className="text-benja-grafite/80">{value}</dd>
+            <dd className="wrap-anywhere text-benja-grafite/80">{value}</dd>
           </div>
         ))}
       </dl>

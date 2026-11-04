@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
+ 04/11/2026 Vinícius Nishimura Reis  Tabela sem rolagem lateral, alvos de toque e texto longo (FORM-09).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -76,7 +77,8 @@ export function NotificationBadge({ status }: { status: NotificationStatus }) {
 
 /**
  * O protocolo é o link de abertura. Sem prefetch, porque abrir um envio gera evento na trilha de acesso:
- * passar o mouse não pode contar como leitura (TECH-08).
+ * passar o mouse não pode contar como leitura (TECH-08). No celular, as colunas viram linhas sob o
+ * protocolo: o status e a notificação ficam à vista sem rolar a tabela de lado.
  */
 export function SubmissionTable({
   inbox,
@@ -85,43 +87,61 @@ export function SubmissionTable({
   inbox: InboxPage;
   services: readonly { slug: string; name: string }[];
 }) {
+  const column = "hidden px-3 py-3 md:table-cell";
   return (
-    <div className="overflow-x-auto rounded-3xl border-2 border-benja-noite/15 bg-white">
-      <table className="w-full min-w-[820px] text-left text-sm">
+    // `relative`: o texto sr-only é absoluto e, sem isso, escapa do quadro e alarga a página no celular.
+    <div className="relative overflow-x-auto rounded-3xl border-2 border-benja-noite/15 bg-white">
+      <table className="w-full text-left text-sm">
         <caption className="sr-only">Envios recebidos, do mais novo ao mais antigo</caption>
         <thead className="border-b-2 border-benja-noite/10 text-xs tracking-wider text-benja-grafite/80 uppercase">
           <tr>
-            {["Protocolo", "Nome", "Tipo", "Categoria", "Status", "Notificação", "Recebido em"].map((column) => (
-              <th key={column} scope="col" className="px-4 py-3">
-                {column}
+            <th scope="col" className="px-3 py-3">
+              Protocolo
+            </th>
+            {["Nome", "Tipo e categoria", "Status", "Notificação", "Recebido em"].map((name) => (
+              <th key={name} scope="col" className={column}>
+                {name}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {inbox.items.map((item) => (
-            <tr key={item.id} className="border-b border-benja-noite/5 last:border-0">
-              <td className="px-4 py-3 font-semibold whitespace-nowrap">
-                <Link
-                  href={`${INBOX_PATH}/${item.id}`}
-                  prefetch={false}
-                  className="font-mono text-benja-verde underline-offset-4 hover:underline"
-                >
-                  {item.protocol}
-                </Link>
-              </td>
-              <td className="max-w-56 px-4 py-3 break-words">{item.name ?? "Anônimo"}</td>
-              <td className="px-4 py-3">{SUBMISSION_KIND_LABELS[item.kind]}</td>
-              <td className="px-4 py-3">{categoryLabel(item.category, services)}</td>
-              <td className="px-4 py-3">
-                <AttendanceBadge status={item.status} />
-              </td>
-              <td className="px-4 py-3 whitespace-nowrap">
-                <NotificationBadge status={item.notificationStatus} />
-              </td>
-              <td className="px-4 py-3 whitespace-nowrap text-benja-grafite/80">{formatDateTime(item.createdAt)}</td>
-            </tr>
-          ))}
+          {inbox.items.map((item) => {
+            const name = item.name ?? "Anônimo";
+            const type = `${SUBMISSION_KIND_LABELS[item.kind]} · ${categoryLabel(item.category, services)}`;
+            const received = formatDateTime(item.createdAt);
+            return (
+              <tr key={item.id} className="border-b border-benja-noite/5 align-top last:border-0">
+                <td className="px-3 py-3 font-semibold">
+                  <Link
+                    href={`${INBOX_PATH}/${item.id}`}
+                    prefetch={false}
+                    className="inline-block py-1 font-mono whitespace-nowrap text-benja-verde underline-offset-4 hover:underline"
+                  >
+                    {item.protocol}
+                  </Link>
+                  <div className="mt-1 space-y-1 text-xs font-normal md:hidden">
+                    <p className="text-sm font-semibold wrap-anywhere">{name}</p>
+                    <p className="wrap-anywhere">{type}</p>
+                    <p className="flex flex-wrap gap-1.5">
+                      <AttendanceBadge status={item.status} />
+                      <NotificationBadge status={item.notificationStatus} />
+                    </p>
+                    <p className="text-benja-grafite/80">Recebido em {received}</p>
+                  </div>
+                </td>
+                <td className={`${column} wrap-anywhere`}>{name}</td>
+                <td className={`${column} wrap-anywhere`}>{type}</td>
+                <td className={column}>
+                  <AttendanceBadge status={item.status} />
+                </td>
+                <td className={column}>
+                  <NotificationBadge status={item.notificationStatus} />
+                </td>
+                <td className={`${column} text-benja-grafite/80`}>{received}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
