@@ -18,10 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { can, type Action, type Role } from "../auth/rbac";
+import { NOTIFICATION_RETRY } from "./idempotency";
 import {
   CONTACT_SUBJECTS,
   FEEDBACK_PROFILES,
@@ -63,6 +65,41 @@ export function isSubmissionStatus(value: unknown): value is SubmissionStatus {
   return typeof value === "string" && (SUBMISSION_STATUSES as readonly string[]).includes(value);
 }
 
+/** Valores do check `form_submissions.notification_status` (um teste compara com a migration). */
+export const NOTIFICATION_STATUSES = ["sent", "pending", "failed", "skipped"] as const;
+export type NotificationStatus = (typeof NOTIFICATION_STATUSES)[number];
+
+export const NOTIFICATION_STATUS_LABELS: Record<NotificationStatus, string> = {
+  sent: "Enviada",
+  pending: "Pendente",
+  failed: "Falhou",
+  skipped: "Sem destinatário",
+};
+
+export function isNotificationStatus(value: unknown): value is NotificationStatus {
+  return typeof value === "string" && (NOTIFICATION_STATUSES as readonly string[]).includes(value);
+}
+
+/**
+ * O que a situação do e-mail significa para quem atende (INT-07). O registro vem antes do e-mail
+ * (TECH-07): o envio está no painel em qualquer caso, e é por isso que a tela precisa dizer quando
+ * ele não chegou à caixa de ninguém.
+ */
+export function describeNotification(status: NotificationStatus, attempts: number): string {
+  switch (status) {
+    case "sent":
+      return "O e-mail foi aceito pelo provedor. Se a caixa de destino o devolver, o painel não fica sabendo.";
+    case "pending":
+      return "O e-mail ainda não foi enviado. O reenvio automático tenta de novo.";
+    case "skipped":
+      return "Não há destinatário configurado neste ambiente, então nenhum e-mail foi enviado. Atenda por aqui.";
+    case "failed":
+      return attempts >= NOTIFICATION_RETRY.maxAttempts
+        ? `O e-mail não chegou: as ${NOTIFICATION_RETRY.maxAttempts} tentativas acabaram e não há novo reenvio automático. Atenda por aqui e avise o NúcleoTech.`
+        : `O e-mail não chegou (${attempts} de ${NOTIFICATION_RETRY.maxAttempts} tentativas). O reenvio automático tenta de novo. Enquanto isso, atenda por aqui.`;
+  }
+}
+
 /** Recurso RBAC de cada tipo: contato também tem dados pessoais e segue a regra do lead (TECH-06 §8). */
 export const SUBMISSION_RESOURCE = {
   lead: "lead",
@@ -101,6 +138,7 @@ export interface InboxQuery {
   status?: SubmissionStatus;
   /** Categoria completa, como gravada: `contact:imprensa`. */
   category?: string;
+  notification?: NotificationStatus;
 }
 
 type RawParams = Record<string, string | string[] | undefined>;
@@ -125,6 +163,9 @@ export function parseInboxQuery(raw: RawParams, allowedKinds: readonly Submissio
 
   const status = first(raw.status);
   if (isSubmissionStatus(status)) query.status = status;
+
+  const notification = first(raw.notificacao);
+  if (isNotificationStatus(notification)) query.notification = notification;
 
   const category = first(raw.categoria);
   if (category && category.length <= CATEGORY_MAX_LENGTH && CATEGORY_PATTERN.test(category)) {
@@ -153,6 +194,7 @@ export function inboxHref(query: Partial<InboxQuery>): string {
   if (query.kind) params.set("tipo", query.kind);
   if (query.status) params.set("status", query.status);
   if (query.category) params.set("categoria", query.category);
+  if (query.notification) params.set("notificacao", query.notification);
   if (query.page && query.page > 1) params.set("pagina", String(query.page));
   const search = params.toString();
   return search ? `${INBOX_PATH}?${search}` : INBOX_PATH;
@@ -215,6 +257,8 @@ export interface InboxItem {
   /** Nulo em feedback anônimo. */
   name: string | null;
   status: SubmissionStatus;
+  notificationStatus: NotificationStatus;
+  notificationAttempts: number;
   createdAt: string;
 }
 

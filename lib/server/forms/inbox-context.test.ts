@@ -162,6 +162,8 @@ describe("openSubmission", () => {
     payload: { name: "Pessoa Fictícia", email: "pessoa@exemplo.test" },
     source_path: "/contato",
     status: "novo",
+    notification_status: "skipped",
+    notification_attempts: 0,
     created_at: "2026-11-04T10:00:00Z",
     updated_at: "2026-11-04T10:00:00Z",
   };

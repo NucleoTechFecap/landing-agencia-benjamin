@@ -18,13 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { readFileSync } from "node:fs";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it, vi } from "vitest";
-import { changeSubmissionStatus, getSubmission, listSubmissions } from "./inbox";
+import { changeSubmissionStatus, countFailedNotifications, getSubmission, listSubmissions } from "./inbox";
 
 const ID = "00000000-0000-4000-8000-000000000601";
 const ALL = ["lead", "contact", "feedback"] as const;
@@ -148,6 +149,8 @@ describe("listSubmissions", () => {
     kind: "lead",
     category: "lead:nao-sei",
     status: "novo",
+    notification_status: "failed",
+    notification_attempts: 2,
     created_at: "2026-11-04T10:00:00Z",
     name: "Pessoa Fictícia",
   };
@@ -202,6 +205,13 @@ describe("listSubmissions", () => {
     await expect(listSubmissions(db, { page: 3 }, ALL)).resolves.toMatchObject({ page: 1, items: [], total: 0 });
   });
 
+  it("traz a situação da notificação e filtra por ela (INT-07)", async () => {
+    const { db, calls } = fakeDb([{ data: [row], error: null, count: 1 }]);
+    const inbox = await listSubmissions(db, { page: 1, notification: "failed" }, ALL);
+    expect(calls).toContainEqual(["eq", ["notification_status", "failed"]]);
+    expect(inbox.items[0]).toMatchObject({ notificationStatus: "failed", notificationAttempts: 2 });
+  });
+
   it("nome vazio vira anônimo", async () => {
     const { db } = fakeDb([{ data: [{ ...row, name: "" }], error: null, count: 1 }]);
     const inbox = await listSubmissions(db, { page: 1 }, ALL);
@@ -213,6 +223,21 @@ describe("listSubmissions", () => {
     const error = await listSubmissions(db, { page: 1 }, ALL).catch((caught) => caught);
     expect(error).toMatchObject({ code: "SERVICE_UNAVAILABLE" });
     expect(error.message).not.toContain("detalhe interno");
+  });
+});
+
+describe("countFailedNotifications", () => {
+  it("conta só o que falhou, dentro dos tipos permitidos", async () => {
+    const { db, calls } = fakeDb([{ data: null, error: null, count: 3 }]);
+    await expect(countFailedNotifications(db, ALL)).resolves.toBe(3);
+    expect(calls).toContainEqual(["in", ["kind", ALL]]);
+    expect(calls).toContainEqual(["eq", ["notification_status", "failed"]]);
+  });
+
+  it("sem tipo permitido não consulta o banco", async () => {
+    const { db, calls } = fakeDb([]);
+    await expect(countFailedNotifications(db, [])).resolves.toBe(0);
+    expect(calls).toEqual([]);
   });
 });
 

@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -25,7 +26,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { SubmissionDetail } from "@/lib/domain/forms/inbox";
-import { SubmissionContent, SubmissionRecordPanel } from "./submission-detail";
+import { NotificationPanel, SubmissionContent, SubmissionRecordPanel } from "./submission-detail";
 
 const record: SubmissionDetail = {
   id: "00000000-0000-4000-8000-000000000601",
@@ -34,6 +35,8 @@ const record: SubmissionDetail = {
   category: "contact:imprensa",
   name: "Pessoa Fictícia",
   status: "novo",
+  notificationStatus: "sent",
+  notificationAttempts: 1,
   createdAt: "2026-11-04T10:00:00Z",
   updatedAt: "2026-11-04T10:00:00Z",
   sourcePath: "/contato",
@@ -99,5 +102,25 @@ describe("SubmissionRecordPanel", () => {
 
   it("mostra o protocolo", () => {
     expect(panel("/contato")).toContain("AB-000000");
+  });
+});
+
+describe("NotificationPanel (INT-07)", () => {
+  const notification = (notificationStatus: SubmissionDetail["notificationStatus"], notificationAttempts = 1) =>
+    renderToStaticMarkup(
+      createElement(NotificationPanel, { record: { ...record, notificationStatus, notificationAttempts } }),
+    );
+
+  it.each([
+    ["sent", "Enviada"],
+    ["pending", "Pendente"],
+    ["failed", "Falhou"],
+    ["skipped", "Sem destinatário"],
+  ] as const)("%s aparece como %s, em texto", (status, label) => {
+    expect(notification(status)).toContain(label);
+  });
+
+  it("deixa claro quando o contato não chegou por e-mail", () => {
+    expect(notification("failed", 5)).toContain("não há novo reenvio automático");
   });
 });

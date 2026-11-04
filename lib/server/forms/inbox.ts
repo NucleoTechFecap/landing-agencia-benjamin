@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,6 +35,7 @@ import {
   type InboxItem,
   type InboxPage,
   type InboxQuery,
+  type NotificationStatus,
   type SubmissionDetail,
   type SubmissionStatus,
 } from "@/lib/domain/forms/inbox";
@@ -49,10 +51,12 @@ import { AppError } from "../errors";
 const TABLE = "form_submissions";
 
 /** Lista: nome e dados de controle, sem o restante do conteúdo enviado (TECH-08 §4). */
-const LIST_COLUMNS = "id, protocol, kind, category, status, created_at, name:payload->>name";
+const LIST_COLUMNS =
+  "id, protocol, kind, category, status, notification_status, notification_attempts, created_at, name:payload->>name";
 
 /** Detalhe: sem `ip_hash`, `fingerprint` e `last_notification_error`, que o atendimento não precisa ver. */
-const DETAIL_COLUMNS = "id, protocol, kind, category, payload, source_path, status, created_at, updated_at";
+const DETAIL_COLUMNS =
+  "id, protocol, kind, category, payload, source_path, status, notification_status, notification_attempts, created_at, updated_at";
 
 interface ListRow {
   id: string;
@@ -60,6 +64,8 @@ interface ListRow {
   kind: SubmissionKind;
   category: string;
   status: SubmissionStatus;
+  notification_status: NotificationStatus;
+  notification_attempts: number;
   created_at: string;
   name: string | null;
 }
@@ -88,6 +94,8 @@ const toItem = (row: ListRow): InboxItem => ({
   category: row.category,
   name: row.name || null,
   status: row.status,
+  notificationStatus: row.notification_status,
+  notificationAttempts: row.notification_attempts,
   createdAt: row.created_at,
 });
 
@@ -104,6 +112,7 @@ export async function listSubmissions(
     if (query.kind) builder = builder.eq("kind", query.kind);
     if (query.status) builder = builder.eq("status", query.status);
     if (query.category) builder = builder.eq("category", query.category);
+    if (query.notification) builder = builder.eq("notification_status", query.notification);
     const { from, to } = pageRange(page);
     return builder
       .order("created_at", { ascending: false })
@@ -128,6 +137,21 @@ export async function listSubmissions(
   return { items: (result.data ?? []).map(toItem), total, page, totalPages: totalPages(total) };
 }
 
+/**
+ * Quantos envios visíveis estão com o e-mail em `failed` (INT-07): a equipe precisa saber disso sem
+ * depender de o e-mail chegar. Conta só o que a RLS deixa ver.
+ */
+export async function countFailedNotifications(db: SupabaseClient, kinds: readonly SubmissionKind[]): Promise<number> {
+  if (kinds.length === 0) return 0;
+  const { count, error } = await db
+    .from(TABLE)
+    .select("id", { count: "exact", head: true })
+    .in("kind", kinds)
+    .eq("notification_status", "failed");
+  if (error) throw dbFailure(error);
+  return count ?? 0;
+}
+
 /** Registro aberto, ou `null` se não existe, se o id é inválido ou se a RLS não deixa ver. */
 export async function getSubmission(db: SupabaseClient, id: string): Promise<SubmissionDetail | null> {
   if (!isSubmissionId(id)) return null;
@@ -141,6 +165,8 @@ export async function getSubmission(db: SupabaseClient, id: string): Promise<Sub
     category: data.category,
     name: presentName(data.payload),
     status: data.status,
+    notificationStatus: data.notification_status,
+    notificationAttempts: data.notification_attempts,
     createdAt: data.created_at,
     payload: data.payload,
     sourcePath: data.source_path,

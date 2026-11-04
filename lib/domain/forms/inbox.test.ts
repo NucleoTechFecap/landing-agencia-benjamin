@@ -18,17 +18,21 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { NOTIFICATION_RETRY } from "./idempotency";
 import {
   INBOX_PAGE_SIZE,
+  NOTIFICATION_STATUSES,
   SUBMISSION_RESOURCE,
   SUBMISSION_STATUSES,
   categoryLabel,
   categoryOptions,
+  describeNotification,
   inboxHref,
   isSubmissionId,
   kindsAllowed,
@@ -112,6 +116,13 @@ describe("parseInboxQuery", () => {
     expect(parse({ categoria }).category).toBeUndefined();
   });
 
+  it("aceita a situação da notificação só de lista fechada", () => {
+    expect(parse({ notificacao: "failed" }).notification).toBe("failed");
+    for (const notificacao of ["falhou", "FAILED", "eq.failed", ""]) {
+      expect(parse({ notificacao }).notification).toBeUndefined();
+    }
+  });
+
   it("categoria de outro tipo não combina com o tipo escolhido", () => {
     expect(parse({ tipo: "lead", categoria: "contact:imprensa" })).toEqual({ page: 1, kind: "lead" });
   });
@@ -150,6 +161,7 @@ describe("paginação", () => {
     expect(inboxHref({ page: 2, status: "novo", category: "contact:imprensa" })).toBe(
       "/admin/leads?status=novo&categoria=contact%3Aimprensa&pagina=2",
     );
+    expect(inboxHref({ notification: "failed" })).toBe("/admin/leads?notificacao=failed");
   });
 });
 
@@ -169,6 +181,35 @@ describe("status por tipo", () => {
     const sql = readFileSync("supabase/migrations/20261013000400_form_submissions.sql", "utf8");
     const check = /check \(status in \(([^)]+)\)\)/.exec(sql)?.[1] ?? "";
     expect(check.split(",").map((value) => value.trim().replaceAll("'", ""))).toEqual([...SUBMISSION_STATUSES]);
+  });
+});
+
+describe("situação da notificação (INT-07)", () => {
+  it("a lista é a mesma do check da migration", () => {
+    const sql = readFileSync("supabase/migrations/20261013000400_form_submissions.sql", "utf8");
+    const check = /check \(notification_status in \(([^)]+)\)\)/.exec(sql)?.[1] ?? "";
+    expect(
+      check
+        .split(",")
+        .map((value) => value.trim().replaceAll("'", ""))
+        .sort(),
+    ).toEqual([...NOTIFICATION_STATUSES].sort());
+  });
+
+  it("diz que o contato não chegou por e-mail quando falhou ou não tem destinatário", () => {
+    expect(describeNotification("failed", 1)).toContain("não chegou");
+    expect(describeNotification("failed", 1)).toContain("reenvio automático tenta de novo");
+    expect(describeNotification("skipped", 0)).toContain("nenhum e-mail foi enviado");
+  });
+
+  it("avisa quando as tentativas acabaram", () => {
+    const text = describeNotification("failed", NOTIFICATION_RETRY.maxAttempts);
+    expect(text).toContain("não há novo reenvio automático");
+    expect(text).toContain("NúcleoTech");
+  });
+
+  it("não promete entrega além do que o provedor aceitou", () => {
+    expect(describeNotification("sent", 1)).toContain("aceito pelo provedor");
   });
 });
 
