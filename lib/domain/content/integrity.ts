@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-05).
+ 04/11/2026 Vinícius Nishimura Reis  Mensagem clara para CTA cujo destino foi excluído (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -156,8 +157,13 @@ export function findIntegrityIssues(snapshot: ContentSnapshot, now: Date = new D
           : reference.type === "case"
             ? caseIds.has(reference.id)
             : areaIds.has(reference.id);
-      if (!exists) push("R04", "error", "cta", cta.id, `Destino inexistente: ${reference.type} ${reference.id}.`);
-      else if (visible(cta) && !resolveCtaHref(target, snapshot, now).isTargetVisible) {
+      if (!exists) {
+        // Id vazio: o item apontado foi excluído e a coluna virou nula (on delete set null).
+        const message = reference.id
+          ? `Destino inexistente: ${reference.type} ${reference.id}.`
+          : "O destino deste botão foi excluído. Escolha outro: até lá, o site usa o link de fallback.";
+        push("R04", "error", "cta", cta.id, message);
+      } else if (visible(cta) && !resolveCtaHref(target, snapshot, now).isTargetVisible) {
         push("R08", "warning", "cta", cta.id, "Destino não publicado: o site usará o link de fallback.");
       }
     }
