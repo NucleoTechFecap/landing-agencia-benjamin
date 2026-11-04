@@ -22,6 +22,7 @@
  04/11/2026 Vinícius Nishimura Reis  Duplo clique e novo envio depois da confirmação (FORM-08).
  04/11/2026 Vinícius Nishimura Reis  Feedback: anônimo, pedido de retorno e perfil (FORM-05).
  04/11/2026 Vinícius Nishimura Reis  Ciência do aviso de privacidade nos três formulários (SEG-03).
+ 04/11/2026 Vinícius Nishimura Reis  Página de privacidade pelo rodapé e pelos formulários (SEG-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -409,4 +410,46 @@ test.describe("SEG-03 · ciência do aviso de privacidade", () => {
       expect(posts).toHaveLength(0);
     });
   }
+});
+
+test.describe("SEG-10 · página de privacidade", () => {
+  test("o rodapé leva a /privacidade, que responde 200", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("contentinfo").getByRole("link", { name: "Aviso de privacidade" }).click();
+    await expect(page).toHaveURL(/\/privacidade$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Aviso de privacidade" })).toBeVisible();
+
+    const response = await page.goto("/privacidade");
+    expect(response?.status()).toBe(200);
+  });
+
+  test("o link do formulário abre o aviso em nova aba, sem perder o que foi digitado", async ({ page, context }) => {
+    await page.goto("/feedback");
+    await expect(page.locator('input[name="submissionId"]')).not.toHaveValue("");
+    await page.getByLabel(/^Seu feedback/).fill("Texto que não pode se perder");
+
+    const [notice] = await Promise.all([
+      context.waitForEvent("page"),
+      page
+        .locator("form")
+        .getByRole("link", { name: /aviso de privacidade/ })
+        .click(),
+    ]);
+    await expect(notice).toHaveURL(/\/privacidade$/);
+    await expect(notice.getByRole("heading", { level: 1, name: "Aviso de privacidade" })).toBeVisible();
+    await expect(page.getByLabel(/^Seu feedback/)).toHaveValue("Texto que não pode se perder");
+  });
+
+  test("sem JavaScript, os formulários em página própria também linkam o aviso", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    for (const path of ["/contato/projeto", "/contato/mensagem", "/feedback"]) {
+      await page.goto(path);
+      await expect(page.locator("form").getByRole("link", { name: /aviso de privacidade/ })).toHaveAttribute(
+        "href",
+        "/privacidade",
+      );
+    }
+    await context.close();
+  });
 });
