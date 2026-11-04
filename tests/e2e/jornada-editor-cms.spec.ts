@@ -20,11 +20,13 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-12).
  27/10/2026 Vinícius Nishimura Reis  Jornadas em série: a massa do beforeAll é compartilhada (TECH-12).
  04/11/2026 Vinícius Nishimura Reis  Chega ao módulo pelo menu do painel (ADM-04).
+ 04/11/2026 Vinícius Nishimura Reis  J2.5 recarrega até a versão nova, como promete o ADR-0006 (QA-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { ACTION_TIMEOUT_MS, publishBudgetMs } from "./painel-helpers";
 
 /**
  * J2.5/J2.6 — jornada do editor no CMS (TECH-12). Precisa do app construído contra o Supabase
@@ -33,7 +35,6 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
  */
 const SUPABASE_URL = process.env.E2E_SUPABASE_URL;
 const SERVICE_KEY = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
-const PUBLISH_BUDGET_MS = 5_000; // ADR-0006: publicação reflete no site em até 5 s
 
 /**
  * Com Cache Components o Next mantém a rota anterior escondida (Activity) para o "voltar":
@@ -49,6 +50,7 @@ test.describe("J2 · editor publica no CMS e o site mostra @cms", () => {
   test.describe.configure({ mode: "serial" });
   test.skip(!SUPABASE_URL || !SERVICE_KEY, "Requer o Supabase local: npm run test:e2e:cms");
   test.skip(({ isMobile }) => isMobile, "Painel no celular é avaliado em ADM-16.");
+  test.setTimeout(120_000);
 
   const suffix = Math.random().toString(36).slice(2, 8);
   const slug = `case-e2e-${suffix}`;
@@ -141,6 +143,22 @@ test.describe("J2 · editor publica no CMS e o site mostra @cms", () => {
     return (await page.request.get(`/cases/${slug}`)).status();
   }
 
+  /**
+   * Abre a página como um visitante até o conteúdo aparecer, recarregando. A primeira requisição depois de
+   * invalidar pode vir do pré-render anterior (`invalidate.ts`, ADR-0006), e a página já aberta não muda sozinha:
+   * o que o ADR promete é a versão nova na próxima requisição, dentro do prazo.
+   */
+  async function expectOnSite(site: Page, content: Locator, budget: number) {
+    await expect(async () => {
+      await site.goto(`/cases/${slug}`);
+      await expect(content).toBeVisible({ timeout: 1_000 });
+    }).toPass({ timeout: budget });
+  }
+
+  /** Mensagem de confirmação da Server Action. */
+  const expectStatus = (page: Page, text: string) =>
+    expect(page.getByRole("status")).toContainText(text, { timeout: ACTION_TIMEOUT_MS });
+
   test("J2.5 rascunho → publicar → editar → arquivar, refletindo no site sem redeploy", async ({ page }) => {
     await login(page, accounts.editor);
     await page
@@ -151,7 +169,7 @@ test.describe("J2 · editor publica no CMS e o site mostra @cms", () => {
     await visible(page.getByLabel("Título")).fill(`Case E2E ${suffix}`);
     // Endereço em branco: o servidor gera "case-e2e-<sufixo>" a partir do título.
     await visible(page.getByRole("button", { name: "Criar rascunho" })).click();
-    await expect(page.getByRole("status")).toContainText("Rascunho criado");
+    await expectStatus(page, "Rascunho criado");
     await expect(visible(page.getByText("Para publicar, falta:"))).toBeVisible();
     expect(await publicStatus(page)).toBe(404);
 
@@ -161,32 +179,33 @@ test.describe("J2 · editor publica no CMS e o site mostra @cms", () => {
     await visible(page.getByLabel("Resumo")).fill("Resumo do case criado pelo teste ponta a ponta do CMS.");
     await visible(page.getByRole("combobox", { name: /^Capa/ })).selectOption(ids.media);
     await visible(page.getByRole("button", { name: "Salvar alterações" })).click();
-    await expect(page.getByRole("status")).toContainText("Alterações salvas");
+    await expectStatus(page, "Alterações salvas");
     await expect(visible(page.getByText("Para publicar, falta:"))).toHaveCount(0);
 
     await visible(page.getByRole("button", { name: "Publicar", exact: true })).click();
-    await expect(page.getByRole("status")).toContainText("Publicado");
+    await expectStatus(page, "Publicado");
     const published = Date.now();
-    await expect.poll(() => publicStatus(page), { timeout: PUBLISH_BUDGET_MS }).toBe(200);
+    const budget = publishBudgetMs();
+    await expect.poll(() => publicStatus(page), { timeout: budget }).toBe(200);
     const site = await page.context().newPage();
-    await site.goto(`/cases/${slug}`);
-    await expect(site.getByRole("heading", { level: 1, name: `Case E2E ${suffix}` })).toBeVisible();
-    expect(Date.now() - published).toBeLessThan(PUBLISH_BUDGET_MS);
+    await expectOnSite(site, site.getByRole("heading", { level: 1, name: `Case E2E ${suffix}` }), budget);
+    expect(Date.now() - published).toBeLessThan(budget);
 
     await visible(page.getByLabel("Resumo")).fill(
       "Resumo editado no painel: a página pública deve mostrar este texto.",
     );
     await visible(page.getByRole("button", { name: "Salvar alterações" })).click();
-    await expect(page.getByRole("status")).toContainText("Alterações salvas");
-    await site.goto(`/cases/${slug}`);
-    await expect(site.getByText("Resumo editado no painel: a página pública deve mostrar este texto.")).toBeVisible({
-      timeout: PUBLISH_BUDGET_MS,
-    });
+    await expectStatus(page, "Alterações salvas");
+    await expectOnSite(
+      site,
+      site.getByText("Resumo editado no painel: a página pública deve mostrar este texto."),
+      publishBudgetMs(),
+    );
 
     page.once("dialog", (dialog) => dialog.accept());
     await visible(page.getByRole("button", { name: "Arquivar" })).click();
-    await expect(page.getByRole("status")).toContainText("Arquivado");
-    await expect.poll(() => publicStatus(page), { timeout: PUBLISH_BUDGET_MS }).toBe(404);
+    await expectStatus(page, "Arquivado");
+    await expect.poll(() => publicStatus(page), { timeout: publishBudgetMs() }).toBe(404);
   });
 
   test("J2.6 leitor vê o CMS só para leitura e não cria conteúdo", async ({ page }) => {
