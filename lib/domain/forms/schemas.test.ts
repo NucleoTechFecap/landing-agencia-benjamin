@@ -21,6 +21,7 @@
  02/11/2026 Vinícius Nishimura Reis  Serviço de interesse só aceita slug (TECH-06).
  02/11/2026 Vinícius Nishimura Reis  Quebra de linha em nome e empresa (TECH-06).
  04/11/2026 Vinícius Nishimura Reis  Campos técnicos vazios do envio sem JavaScript (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Ciência do aviso de privacidade em contato e feedback (SEG-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -139,6 +140,24 @@ describe("contato institucional", () => {
     expect(parseSubmission("contact", { ...base, subject: "parceria" }).success).toBe(true);
     expect(parseSubmission("contact", { ...base, subject: "vendas" }).success).toBe(false);
   });
+
+  it("recusa envio sem a ciência do aviso de privacidade (SEG-03)", () => {
+    const base = {
+      ...technical,
+      name: "João",
+      email: "joao@x.com",
+      subject: "parceria",
+      message: "Gostaria de propor uma parceria.",
+    };
+    for (const privacyConsent of [undefined, "", "off", false]) {
+      const result = parseSubmission("contact", { ...base, privacyConsent });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(Object.keys(result.fieldErrors)).toEqual(["privacyConsent"]);
+        expect(result.fieldErrors.privacyConsent[0]).toMatch(/aviso de privacidade/);
+      }
+    }
+  });
 });
 
 describe("feedback", () => {
@@ -162,6 +181,17 @@ describe("feedback", () => {
     const result = parseSubmission("feedback", { ...base, allowContact: "on" });
     expect(result.success).toBe(false);
     if (!result.success) expect(result.fieldErrors.email).toBeDefined();
+  });
+
+  it("recusa envio sem a ciência do aviso de privacidade, mesmo anônimo (SEG-03)", () => {
+    for (const privacyConsent of [undefined, "", "off", false]) {
+      const result = parseSubmission("feedback", { ...base, privacyConsent });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(Object.keys(result.fieldErrors)).toEqual(["privacyConsent"]);
+        expect(result.fieldErrors.privacyConsent[0]).toMatch(/aviso de privacidade/);
+      }
+    }
   });
 
   it("valida nota de 1 a 5", () => {

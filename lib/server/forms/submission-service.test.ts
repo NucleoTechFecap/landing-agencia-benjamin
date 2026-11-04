@@ -23,6 +23,7 @@
  04/11/2026 Vinícius Nishimura Reis  Envio sem JavaScript: antispam sem o tempo de preenchimento (FORM-08).
  04/11/2026 Vinícius Nishimura Reis  Falha ao registrar o resultado da notificação não chega ao visitante (FORM-08).
  04/11/2026 Vinícius Nishimura Reis  Eventos de log, sem dados pessoais (FORM-06).
+ 04/11/2026 Vinícius Nishimura Reis  Registro guarda a ciência do aviso de privacidade (SEG-03).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -235,6 +236,29 @@ describe("falha ao registrar o resultado da notificação (FORM-08)", () => {
     now = new Date(T0.getTime() + 2 * 60_000);
     expect(await retryPendingNotifications(deps)).toEqual({ retried: 2 });
     expect(notifier.sent).toHaveLength(2);
+  });
+});
+
+describe("ciência do aviso de privacidade (SEG-03)", () => {
+  const person = { name: "Maria", email: "maria@empresa.com" };
+  const validForms = {
+    lead: lead(),
+    contact: { ...lead(), ...person, subject: "duvida", message: "Mensagem com detalhes suficientes." },
+    feedback: { ...lead(), profile: "aluno", message: "Feedback com detalhes suficientes." },
+  };
+
+  it.each(["lead", "contact", "feedback"] as const)("%s: o registro guarda a ciência declarada", async (kind) => {
+    const result = await processSubmission(kind, validForms[kind], context, deps);
+    expect(result.status).toBe("success");
+    expect(store.all()[0].payload.privacyConsent).toBe(true);
+  });
+
+  it.each(["lead", "contact", "feedback"] as const)("%s: sem a ciência nada é salvo nem notificado", async (kind) => {
+    const result = await processSubmission(kind, { ...validForms[kind], privacyConsent: undefined }, context, deps);
+    expect(result).toMatchObject({ status: "error", code: "VALIDATION_FAILED" });
+    expect(result.status === "error" && result.fieldErrors?.privacyConsent).toBeTruthy();
+    expect(store.all()).toHaveLength(0);
+    expect(notifier.sent).toHaveLength(0);
   });
 });
 
