@@ -256,6 +256,22 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
     }
   });
 
+  test("J3.8 ao sair, o envio aberto não fica na página, nem escondido", async ({ page }) => {
+    await login(page, accounts.admin);
+    await page.goto(`/admin/leads?categoria=${encodeURIComponent(hostile.category)}`);
+    await page.getByRole("link", { name: `AB-${suffix.slice(0, 6).toUpperCase()}` }).click();
+    await expect(visible(page.getByRole("heading", { level: 2, name: "Conteúdo enviado" }))).toBeVisible();
+
+    await visible(page.getByRole("button", { name: "Sair" })).click();
+    await expect(page).toHaveURL(/\/admin\/login\?saiu=ok$/);
+    await expect(page.getByRole("status")).toContainText("Você saiu do painel com segurança");
+    expect(await page.content()).not.toContain("window.__xss");
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/admin\/login/);
+    await expect(page.getByRole("heading", { name: "Conteúdo enviado" })).toHaveCount(0);
+  });
+
   test("J3.7 admin arquiva e só então exclui, e a trilha fica", async ({ page }) => {
     await login(page, accounts.admin);
     await page.goto(`/admin/leads/${removable}`);
