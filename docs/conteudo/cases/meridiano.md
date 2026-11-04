@@ -5,7 +5,7 @@
 | Task | CASE-06 (#161) |
 | Situação | **Bloqueado:** aguardando material e autorização da Benjamin (CON-07, #20) |
 | No site | `/cases/meridiano`, no filtro `/cases?categoria=social-media-e-criacao` |
-| No painel | **Cases e categorias** → Social media e criação para a Meridiano |
+| No painel | **Cases** → Social media e criação para a Meridiano |
 
 ## Bloqueio
 
