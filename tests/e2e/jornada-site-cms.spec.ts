@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  01/11/2026 Vinícius Nishimura Reis  Sufixo de teste com node:crypto (CodeQL).
  01/11/2026 Vinícius Nishimura Reis  Espera curta para o toPass recarregar a página (INT-03).
  02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Edição de manifesto e resumo já publicados chega à Home (HOME-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -164,6 +165,24 @@ test.describe("Painel → site · Home e Sobre @cms", () => {
     await expectOnSite(page, "/sobre", "Proposta, pelo painel.");
     await expectOnSite(page, "/sobre", "FECAP, pelo painel.");
     await expectOnSite(page, "/", "Modelo, pelo painel.");
+  });
+
+  test("editar manifesto e resumo já publicados muda a Home, sem publicar de novo", async ({ page }) => {
+    await login(page);
+    const editBlock = async (editor: string, link: string, field: string, value: string) => {
+      await page.goto(editor);
+      await page.getByRole("link", { name: link }).click();
+      await visible(page.getByLabel(field)).fill(value);
+      await visible(page.getByRole("button", { name: "Salvar bloco" })).click();
+      await expect(page.getByRole("status").getByText("Alterações salvas.")).toBeVisible();
+    };
+    await editBlock(editors.home, "Editar o bloco Manifesto", "Parágrafos", `Manifesto editado ${suffix}.`);
+    await expectOnSite(page, "/", `Manifesto editado ${suffix}.`);
+    await expectOnSite(page, "/", "Texto do painel.", false);
+
+    await editBlock(editors.sobre, "Editar o bloco Sobre", "Modelo de atuação", `Modelo editado ${suffix}.`);
+    await expectOnSite(page, "/", `Modelo editado ${suffix}.`);
+    await expectOnSite(page, "/", "Modelo, pelo painel.", false);
   });
 
   test("bloco acrescentado a uma página publicada entra depois das seções fixas", async ({ page }) => {

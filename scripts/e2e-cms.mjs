@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-12).
  04/11/2026 Vinícius Nishimura Reis  Formulário público grava no Supabase local nas jornadas @cms (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Segunda passada, em série, para jornadas que mexem no conteúdo de todos (HOME-07).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -27,7 +28,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 /*
  * `npm run test:e2e:cms`: jornadas do editor no CMS (tag @cms) contra o Supabase local.
  * Faz o build com as variáveis do stack local (NEXT_PUBLIC_* entram no build) e roda o
- * Playwright só no desktop. Depois, para voltar às jornadas com o conteúdo versionado, rode
+ * Playwright só no desktop, em duas passadas (a segunda é só de @home-global). Depois, para voltar às jornadas com o conteúdo versionado, rode
  * `npm run build` de novo sem as variáveis do Supabase.
  */
 let status;
@@ -56,5 +57,10 @@ const env = {
 delete env.CONTENT_SOURCE;
 
 const run = (command, args) => spawnSync(command, args, { stdio: "inherit", env }).status ?? 1;
+const playwright = (...args) =>
+  run("npx", ["playwright", "test", "--project=desktop", "--pass-with-no-tests", ...args, ...process.argv.slice(2)]);
 if (run("npm", ["run", "build"]) !== 0) process.exit(1);
-process.exit(run("npx", ["playwright", "test", "--grep", "@cms", "--project=desktop", ...process.argv.slice(2)]));
+const parallel = playwright("--grep", "@cms");
+// @home-global tira da Home os CTAs e destaques de todos: roda depois das demais e com um worker só.
+const exclusive = playwright("--grep", "@home-global", "--workers=1");
+process.exit(parallel || exclusive);
