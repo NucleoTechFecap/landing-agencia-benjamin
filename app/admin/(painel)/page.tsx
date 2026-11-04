@@ -25,52 +25,80 @@
  29/10/2026 Caio Moraes              Cores via tokens do tema (ADM-04).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Módulos vêm do registro único, com o card inteiro clicável (ADM-04).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
-import Link from "next/link";
-import { modulesFor } from "@/lib/config/admin-modules";
+import { unstable_rethrow } from "next/navigation";
+import { Suspense } from "react";
+import {
+  AttentionList,
+  DashboardHero,
+  InboxPanel,
+  IndicatorsGrid,
+  QuickActionsGrid,
+  RecentList,
+} from "@/components/admin/dashboard";
+import { Notice, SkeletonBlocks } from "@/components/admin/ui/primitives";
+import type { Role } from "@/lib/domain/auth/rbac";
+import { quickActions } from "@/lib/domain/content/dashboard";
 import { requirePageAccess } from "@/lib/server/auth/guards";
+import { loadDashboard } from "@/lib/server/cms/dashboard";
+import { logger } from "@/lib/server/logger";
 
 export const metadata: Metadata = { title: "Início" };
 
 /**
- * Início do painel: os mesmos módulos do menu, filtrados pelo papel. Não lê conteúdo, então
- * continua de pé se o banco falhar — quem lê é a tela de cada módulo.
+ * Início do painel. A abertura não depende do banco: os dados vêm em seguida, e uma falha de leitura
+ * vira aviso aqui mesmo, com os atalhos de pé. Quem entra em /admin não fica sem caminho para seguir.
  */
 export default async function AdminHomePage() {
   const user = await requirePageAccess("dashboard", "view", "/admin");
   return (
-    <section>
-      <h1 className="text-3xl font-black text-benja-verde">Bem-vindo(a) ao painel</h1>
-      <p className="mt-2 max-w-2xl text-benja-grafite/80">
-        Aqui a equipe da Agência Benjamin atualiza o site sem depender do NúcleoTech. Os módulos com link já funcionam;
-        os demais estão em construção.
-      </p>
-      <ul className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {modulesFor(user.role).map((module) => (
-          <li
-            key={module.name}
-            className="relative rounded-2xl border-2 border-benja-verde/15 bg-white p-5 has-[a:hover]:border-benja-verde"
-          >
-            {module.href ? (
-              <Link
-                href={module.href}
-                prefetch={false}
-                className="font-bold text-benja-verde underline-offset-4 after:absolute after:inset-0 hover:underline"
-              >
-                {module.name}
-              </Link>
-            ) : (
-              <p className="font-bold">{module.name}</p>
-            )}
-            <p className="mt-1 text-xs text-benja-grafite/80">
-              {module.href ? "Disponível" : `Em construção · ${module.issue}`}
-            </p>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <div className="space-y-8">
+      <DashboardHero name={user.name} />
+      <Suspense
+        fallback={
+          <div role="status" aria-label="Carregando os dados do início">
+            <SkeletonBlocks count={6} className="sm:grid-cols-2 xl:grid-cols-3" />
+          </div>
+        }
+      >
+        <DashboardContent role={user.role} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function DashboardContent({ role }: { role: Role }) {
+  let data;
+  try {
+    data = await loadDashboard(role, new Date());
+  } catch (error) {
+    unstable_rethrow(error);
+    logger.error("cms.dashboard.unavailable", { error });
+    return (
+      <div className="space-y-8">
+        <Notice tone="erro" role="alert">
+          <strong>Não foi possível carregar os números agora.</strong> Nada foi perdido. Atualize a página em instantes;
+          se persistir, avise o NúcleoTech.
+        </Notice>
+        <QuickActionsGrid actions={quickActions(role, "/admin/paginas")} />
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-8">
+      <QuickActionsGrid actions={data.actions} />
+      <IndicatorsGrid indicators={data.indicators} />
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <RecentList items={data.recent} />
+        <div className="min-w-0 space-y-6">
+          <InboxPanel indicators={data.inbox} />
+          <AttentionList items={data.review} total={data.reviewTotal} />
+        </div>
+      </div>
+    </div>
   );
 }
