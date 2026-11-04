@@ -19,13 +19,16 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Publishable } from "@/lib/domain/content/types";
-import { StatusBadge } from "./status-badge";
+import { StudioIcon } from "../ui/icons";
+import { EmptyPanel } from "../ui/primitives";
+import { StatusBadge, badgeBase } from "./status-badge";
 
 const dateTime = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short",
@@ -44,6 +47,8 @@ export interface CmsRow extends Publishable {
   order: number;
   /** Colunas extras específicas da entidade (ex.: nº de serviços). */
   extra?: ReactNode;
+  /** Marcado para aparecer em destaque na Home. */
+  featured?: boolean;
 }
 
 /**
@@ -64,16 +69,15 @@ export function CmsTable({
   const sorted = [...rows].sort((a, b) => a.order - b.order || a.title.localeCompare(b.title, "pt-BR"));
   const active = sorted.filter((row) => row.status !== "archived");
   const archived = sorted.filter((row) => row.status === "archived");
-  if (!rows.length)
-    return (
-      <div className="rounded-3xl border-2 border-dashed border-benja-noite/25 bg-white p-8 text-center">{empty}</div>
-    );
+  if (!rows.length) return <EmptyPanel>{empty}</EmptyPanel>;
   return (
     <div className="space-y-6">
       <Table rows={active} basePath={basePath} extraHeader={extraHeader} caption="Itens ativos" />
       {archived.length ? (
-        <details className="rounded-3xl border-2 border-benja-noite/15 bg-white p-4">
-          <summary className="cursor-pointer py-2.5 font-bold">Arquivados ({archived.length})</summary>
+        <details className="studio-card p-4">
+          <summary className="flex min-h-11 cursor-pointer items-center font-bold">
+            Arquivados ({archived.length})
+          </summary>
           <div className="mt-4">
             <Table rows={archived} basePath={basePath} extraHeader={extraHeader} caption="Itens arquivados" />
           </div>
@@ -94,36 +98,32 @@ function Table({
   extraHeader?: string;
   caption: string;
 }) {
-  if (!rows.length) return <p className="text-sm text-benja-grafite/80">Nenhum item ativo.</p>;
+  if (!rows.length) return <p className="text-sm text-studio-suave">Nenhum item ativo.</p>;
   return (
     // `relative`: o texto sr-only é absoluto e, sem isso, escapa da rolagem e alarga a página no celular.
-    <div className="relative overflow-x-auto rounded-3xl border-2 border-benja-noite/15 bg-white">
-      <table className="w-full text-left text-sm">
+    <div className="studio-card relative overflow-x-auto">
+      <table className="studio-tabela">
         <caption className="sr-only">{caption}</caption>
-        <thead className="border-b-2 border-benja-noite/10 text-xs tracking-wider text-benja-grafite/80 uppercase">
+        <thead>
           <tr>
-            <th scope="col" className="hidden px-4 py-3 md:table-cell">
+            <th scope="col" className="hidden md:table-cell">
               Ordem
             </th>
-            <th scope="col" className="px-4 py-3">
-              Nome
-            </th>
+            <th scope="col">Nome</th>
             {extraHeader ? (
-              <th scope="col" className="hidden px-4 py-3 md:table-cell">
+              <th scope="col" className="hidden md:table-cell">
                 {extraHeader}
               </th>
             ) : null}
-            <th scope="col" className="px-4 py-3">
-              Estado
-            </th>
-            <th scope="col" className="hidden px-4 py-3 md:table-cell">
+            <th scope="col">Estado</th>
+            <th scope="col" className="hidden md:table-cell">
               Atualizado em
             </th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.id} className="border-b border-benja-noite/5 last:border-0">
+            <tr key={row.id}>
               <td className="hidden px-4 py-3 tabular-nums md:table-cell">{row.order}</td>
               <td className="px-4 py-3 font-semibold wrap-anywhere">
                 <Link
@@ -135,7 +135,7 @@ function Table({
                   {row.title}
                 </Link>
                 {/* No celular, as colunas secundárias viram linhas sob o nome: o estado fica à vista sem rolar. */}
-                <div className="mt-1 space-y-0.5 text-xs font-normal text-benja-grafite/80 md:hidden">
+                <div className="mt-1 space-y-0.5 text-xs font-normal text-studio-suave md:hidden">
                   {extraHeader ? (
                     <p>
                       {extraHeader}: {row.extra}
@@ -146,9 +146,19 @@ function Table({
               </td>
               {extraHeader ? <td className="hidden px-4 py-3 wrap-anywhere md:table-cell">{row.extra}</td> : null}
               <td className="px-4 py-3">
-                <StatusBadge status={row.status} provisional={row.provisional} />
+                <span className="inline-flex flex-wrap items-center gap-1.5">
+                  <StatusBadge status={row.status} provisional={row.provisional} />
+                  {row.featured ? (
+                    <span className={`${badgeBase} border-benja-verde bg-benja-nyanza text-benja-verde`}>
+                      <StudioIcon name="estrela" size={12} />
+                      Destaque
+                    </span>
+                  ) : null}
+                </span>
               </td>
-              <td className="hidden px-4 py-3 text-benja-grafite/80 md:table-cell">{formatDateTime(row.updatedAt)}</td>
+              <td className="hidden px-4 py-3 whitespace-nowrap text-studio-suave md:table-cell">
+                {formatDateTime(row.updatedAt)}
+              </td>
             </tr>
           ))}
         </tbody>

@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-11).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -57,14 +58,13 @@ export default async function CtasAdminPage({ searchParams }: PageProps<"/admin/
   );
   return (
     <>
-      <CmsHeader title="CTAs e destaques da Home" trail={[{ label: "CTAs e destaques" }]}>
+      <CmsHeader
+        title="CTAs e destaques da Home"
+        description="Os botões do site são editados aqui, sem mexer em código. Todo CTA novo nasce como rascunho e só aparece depois de publicado."
+      >
         {can(user.role, "cta", "create") ? <CmsLinkButton href="/admin/ctas/novo">Novo CTA</CmsLinkButton> : null}
       </CmsHeader>
       <FlashMessage ok={query.ok} aviso={query.aviso} />
-      <p className="mb-6 max-w-2xl text-sm text-benja-grafite/80">
-        Os botões do site são editados aqui, sem mexer em código. Todo CTA novo nasce como rascunho e só aparece depois
-        de publicado.
-      </p>
       <div className="space-y-8">
         {placements.map((placement) => {
           const rows = snapshot.ctas.filter((cta) => cta.placement === placement);
@@ -72,15 +72,15 @@ export default async function CtasAdminPage({ searchParams }: PageProps<"/admin/
           const notice = !rows.some((cta) => isPubliclyVisible(cta, now)) ? WITHOUT_LIVE_CTA[placement] : undefined;
           return (
             <section key={placement} aria-labelledby={`posicao-${placement}`}>
-              <h2 id={`posicao-${placement}`} className="text-xl font-black text-benja-verde">
+              <h2 id={`posicao-${placement}`} className="studio-titulo-secao">
                 {CTA_PLACEMENT_LABELS[placement]}
               </h2>
               {onSite ? null : (
-                <p className="mt-1 text-sm text-benja-grafite/80">
+                <p className="mt-1 text-sm text-studio-suave">
                   O site ainda não mostra botões nesta posição: publicar aqui não muda nenhuma página.
                 </p>
               )}
-              {notice && rows.length ? <p className="mt-1 text-sm text-benja-grafite/80">{notice}</p> : null}
+              {notice && rows.length ? <p className="mt-1 text-sm text-studio-suave">{notice}</p> : null}
               <div className="mt-3">
                 <CmsTable
                   basePath="/admin/ctas"

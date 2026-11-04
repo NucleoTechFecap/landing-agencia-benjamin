@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Link para os serviços da área (ADM-06).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -59,12 +60,12 @@ export default async function EditAreaPage({ params, searchParams }: PageProps<"
 
   return (
     <>
-      <CmsHeader title={area.name} trail={[{ label: "Áreas", href: "/admin/areas" }, { label: area.name }]} />
+      <CmsHeader title={area.name} />
       <FlashMessage ok={query.ok} aviso={query.aviso} />
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="rounded-3xl border-2 border-benja-noite/15 bg-white p-4 sm:p-6">
+        <div className="studio-card p-4 sm:p-6">
           {area.status === "archived" ? (
-            <p className="mb-5 rounded-2xl bg-benja-creme px-4 py-3 text-sm">
+            <p className="mb-5 rounded-studio-md bg-studio-realce px-4 py-3 text-sm">
               Área arquivada: restaure como rascunho para editar.
             </p>
           ) : null}
@@ -82,7 +83,7 @@ export default async function EditAreaPage({ params, searchParams }: PageProps<"
             updatedAt={area.updatedAt}
             commands={allowedCommands(area.status, user.role, "area")}
           />
-          <section className="rounded-3xl border-2 border-benja-noite/15 bg-white p-5 text-sm">
+          <section className="studio-card p-5 text-sm">
             <h2 className="font-bold">Serviços desta área</h2>
             {services.length ? (
               <ul className="mt-2 space-y-2">
@@ -99,7 +100,7 @@ export default async function EditAreaPage({ params, searchParams }: PageProps<"
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-benja-grafite/80">
+              <p className="mt-2 text-studio-suave">
                 Nenhum serviço vinculado. O vínculo é feito no cadastro do serviço.
               </p>
             )}

@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-11).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,11 +37,11 @@ export default async function NewCtaPage() {
   const snapshot = await loadCmsSnapshot();
   return (
     <>
-      <CmsHeader title="Novo CTA" trail={[{ label: "CTAs e destaques", href: "/admin/ctas" }, { label: "Novo" }]} />
-      <p className="mb-6 max-w-2xl text-sm text-benja-grafite/80">
+      <CmsHeader title="Novo CTA" />
+      <p className="mb-6 max-w-2xl text-sm text-studio-suave">
         O CTA nasce como rascunho e só aparece no site depois de publicado.
       </p>
-      <div className="max-w-3xl rounded-3xl border-2 border-benja-noite/15 bg-white p-6">
+      <div className="max-w-3xl studio-card p-6">
         <CtaForm action={saveCta} options={ctaTargetOptions(snapshot)} />
       </div>
     </>

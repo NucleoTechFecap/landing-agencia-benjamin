@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,11 +35,11 @@ export default async function NewAreaPage() {
   await requirePageAccess("area", "create", "/admin/areas/nova");
   return (
     <>
-      <CmsHeader title="Nova área" trail={[{ label: "Áreas", href: "/admin/areas" }, { label: "Nova" }]} />
-      <p className="mb-6 max-w-2xl text-sm text-benja-grafite/80">
+      <CmsHeader title="Nova área" />
+      <p className="mb-6 max-w-2xl text-sm text-studio-suave">
         A área nasce como rascunho e só aparece no site depois de publicada. Nome e endereço bastam para salvar.
       </p>
-      <div className="max-w-3xl rounded-3xl border-2 border-benja-noite/15 bg-white p-4 sm:p-6">
+      <div className="max-w-3xl studio-card p-4 sm:p-6">
         <AreaForm action={saveArea} />
       </div>
     </>

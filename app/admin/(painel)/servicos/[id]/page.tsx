@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-06).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Link para a prévia protegida (ADM-14).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -61,15 +62,12 @@ export default async function EditServicePage({ params, searchParams }: PageProp
 
   return (
     <>
-      <CmsHeader
-        title={service.name}
-        trail={[{ label: "Serviços", href: "/admin/servicos" }, { label: service.name }]}
-      />
+      <CmsHeader title={service.name} />
       <FlashMessage ok={query.ok} aviso={query.aviso} />
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="rounded-3xl border-2 border-benja-noite/15 bg-white p-4 sm:p-6">
+        <div className="studio-card p-4 sm:p-6">
           {service.status === "archived" ? (
-            <p className="mb-5 rounded-2xl bg-benja-creme px-4 py-3 text-sm">
+            <p className="mb-5 rounded-studio-md bg-studio-realce px-4 py-3 text-sm">
               Serviço arquivado: restaure como rascunho para editar.
             </p>
           ) : null}
@@ -94,7 +92,7 @@ export default async function EditServicePage({ params, searchParams }: PageProp
             updatedAt={service.updatedAt}
             commands={allowedCommands(service.status, user.role, "service")}
           />
-          <section className="rounded-3xl border-2 border-benja-noite/15 bg-white p-5 text-sm">
+          <section className="studio-card p-5 text-sm">
             <h2 className="font-bold">Cases com este serviço</h2>
             {cases.length ? (
               <ul className="mt-2 space-y-2">
@@ -106,9 +104,9 @@ export default async function EditServicePage({ params, searchParams }: PageProp
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-benja-grafite/80">Nenhum case relacionado ainda.</p>
+              <p className="mt-2 text-studio-suave">Nenhum case relacionado ainda.</p>
             )}
-            <p className="mt-3 text-benja-grafite/80">
+            <p className="mt-3 text-studio-suave">
               O botão &quot;Fale com a gente&quot; da página do serviço já leva ao contato com este serviço
               pré-selecionado.
             </p>
