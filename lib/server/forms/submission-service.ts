@@ -21,6 +21,7 @@
  13/10/2026 Vinícius Nishimura Reis  Tipo de estado movido para o domínio (estrutura da landing).
  02/11/2026 Vinícius Nishimura Reis  Confere o serviço na lista antes de gravar a categoria (TECH-06).
  04/11/2026 Vinícius Nishimura Reis  Valores devolvidos ao formulário vêm do domínio (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Falha ao gravar o resultado da notificação fica no log e não chega ao visitante (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -192,26 +193,52 @@ async function serviceExists(input: SubmissionInput, deps: SubmissionDeps): Prom
   }
 }
 
+/**
+ * Grava o resultado da notificação. Quando isto roda o envio já está salvo: um erro aqui fica no log e
+ * não chega ao visitante, que já pode receber o protocolo. O registro continua como estava, e a rotina
+ * de reenvio o pega de novo; o `Idempotency-Key` evita o e-mail repetido por 24 h (FORM-08).
+ */
+async function saveNotificationResult(
+  record: SubmissionRecord,
+  patch: Pick<SubmissionRecord, "notificationStatus" | "notificationAttempts" | "lastNotificationError" | "updatedAt">,
+  deps: SubmissionDeps,
+) {
+  try {
+    await deps.store.updateNotification(record.id, patch);
+  } catch (error) {
+    logger.error("forms.notification.status_update_failed", {
+      submissionId: record.id,
+      notificationStatus: patch.notificationStatus,
+      error,
+    });
+  }
+}
+
 /** Envia a notificação e registra o resultado; erros nunca sobem para o visitante. */
 async function deliverNotification(record: SubmissionRecord, input: SubmissionInput, deps: SubmissionDeps) {
-  // A categoria que vale é a gravada, inclusive no reenvio, quando a lista de serviços pode ter mudado.
-  const decision = { ...routeSubmission(input), category: record.category };
-  const recipients = resolveRecipients(decision, deps.recipients);
   const attempts = record.notificationAttempts + 1;
   const updatedAt = deps.now().toISOString();
 
-  if (recipients.length === 0) {
-    logger.warn("forms.notification.skipped", { submissionId: record.id, reason: "no_recipients" });
-    await deps.store.updateNotification(record.id, {
-      notificationStatus: "skipped",
-      notificationAttempts: record.notificationAttempts,
-      lastNotificationError: "Sem destinatário configurado.",
-      updatedAt,
-    });
-    return;
-  }
-
   try {
+    // A categoria que vale é a gravada, inclusive no reenvio, quando a lista de serviços pode ter mudado.
+    const decision = { ...routeSubmission(input), category: record.category };
+    const recipients = resolveRecipients(decision, deps.recipients);
+
+    if (recipients.length === 0) {
+      logger.warn("forms.notification.skipped", { submissionId: record.id, reason: "no_recipients" });
+      await saveNotificationResult(
+        record,
+        {
+          notificationStatus: "skipped",
+          notificationAttempts: record.notificationAttempts,
+          lastNotificationError: "Sem destinatário configurado.",
+          updatedAt,
+        },
+        deps,
+      );
+      return;
+    }
+
     const serviceSlug = input.kind === "lead" ? input.data.serviceInterest : undefined;
     const content = buildNotification(input, decision, {
       protocol: record.protocol,
@@ -220,22 +247,28 @@ async function deliverNotification(record: SubmissionRecord, input: SubmissionIn
       serviceName: serviceSlug && deps.serviceName ? await deps.serviceName(serviceSlug) : undefined,
     });
     await deps.notifier.send({ ...content, to: recipients, idempotencyKey: `submission-${record.id}` });
-    await deps.store.updateNotification(record.id, {
-      notificationStatus: "sent",
-      notificationAttempts: attempts,
-      lastNotificationError: null,
-      updatedAt,
-    });
-    logger.info("forms.notification.sent", { submissionId: record.id, attempts });
   } catch (error) {
-    await deps.store.updateNotification(record.id, {
-      notificationStatus: "failed",
-      notificationAttempts: attempts,
-      lastNotificationError: error instanceof Error ? error.message.slice(0, 200) : "erro desconhecido",
-      updatedAt,
-    });
+    await saveNotificationResult(
+      record,
+      {
+        notificationStatus: "failed",
+        notificationAttempts: attempts,
+        lastNotificationError: error instanceof Error ? error.message.slice(0, 200) : "erro desconhecido",
+        updatedAt,
+      },
+      deps,
+    );
     logger.error("forms.notification.failed", { submissionId: record.id, attempts, error });
+    return;
   }
+
+  // Fora do `try`: e-mail já entregue não vira "failed" porque a gravação do resultado falhou.
+  await saveNotificationResult(
+    record,
+    { notificationStatus: "sent", notificationAttempts: attempts, lastNotificationError: null, updatedAt },
+    deps,
+  );
+  logger.info("forms.notification.sent", { submissionId: record.id, attempts });
 }
 
 /** Reenvia notificações pendentes/falhas respeitando o backoff (rotina agendada). */
