@@ -7,7 +7,7 @@
 | Versão       | 1.2.0                                                                   |
 | Data         | 04/11/2026                                                              |
 | Depende de   | [TECH-06](captacao-e-roteamento.md), [TECH-02](../api/contratos.md)     |
-| Código       | `lib/domain/forms/idempotency.ts`, `lib/server/forms/*` + `submission-service.test.ts` (cenários S1–S10 e S13) |
+| Código       | `lib/domain/forms/idempotency.ts`, `lib/server/forms/*` + `submission-service.test.ts` (cenários S1–S10, S13, S14 e S16), `components/forms/use-submission.ts` + `tests/e2e/formularios.spec.ts` (S14 e S15) |
 | Encaminhado a | FORM-03/04/05 (formulários), FORM-07 (antispam), FORM-08 (estados), DB-06/DB-07 (persistência) |
 
 ## 1. Garantias
@@ -155,3 +155,12 @@ conteúdo continuam valendo nesse caminho, com testes em `submission-service.tes
 **Limite conhecido.** Sem JavaScript o `submissionId` é gerado no servidor a cada POST, então a proteção
 contra reenvio é só a deduplicação por conteúdo. Um duplo clique nesse caminho, com os dois POSTs simultâneos,
 pode gravar dois registros: a impressão digital não tem `unique` no banco.
+
+## 8. Riscos em aberto
+
+Registrados em 04/11/2026 para decisão, sem correção nesta versão.
+
+| Risco | Efeito para o visitante | O que decidir |
+| ----- | ----------------------- | ------------- |
+| **Sucesso falso do antispam.** Envio em menos de 3 s (preenchimento automático e clique rápido) ou honeypot preenchido pelo navegador ou gerenciador de senhas responde como sucesso (S6) | Vê "Pedido recebido!" com protocolo, e **nada é salvo nem notificado**. A única pista é o log `forms.submission.spam_suspected` | Guardar o envio suspeito para conferência, em vez de descartá-lo, ou pedir nova tentativa no caso do tempo mínimo |
+| **Limite por IP em rede compartilhada.** O limite de 5 envios em 10 min soma os três formulários por IP (S9) | Na rede da FECAP, em que muitas pessoas saem pelo mesmo IP, o sexto envio em 10 min recebe "Muitas tentativas…", mesmo vindo de outra pessoa. O risco maior é o feedback pedido ao fim de um evento | Aumentar o limite, contar por formulário ou combinar IP com outro sinal |
