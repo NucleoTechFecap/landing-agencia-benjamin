@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Exclusão de envio arquivado, a pedido do titular (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Tentativa negada de abrir envios vai para a trilha (SEG-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -43,12 +44,18 @@ import { changeSubmissionStatus, deleteSubmission, getSubmission, type InboxDeps
  * Guarda das telas de envios: a tela serve a dois recursos (`lead` e `feedback`), então entra quem
  * tem ao menos um. `requirePageAccess` resolve sessão e conta pendente; aqui fica o recorte por tipo.
  * Roda antes de qualquer leitura e antes de validar o id, para não revelar se um registro existe.
+ * Tentar abrir dados pessoais sem permissão fica na trilha, não só no log (CA-23).
  */
 export async function requireInboxPage(path: string): Promise<{ user: SessionUser; kinds: SubmissionKind[] }> {
   const user = await requirePageAccess("dashboard", "view", path);
   const kinds = kindsAllowed(user.role, "view");
   if (kinds.length === 0) {
     logger.warn("auth.page.denied", { userId: user.id, role: user.role, resource: "lead|feedback", action: "view" });
+    await recordAuditEvent({
+      event: "access.denied",
+      outcome: "denied",
+      metadata: { resource: "lead", action: "view" },
+    });
     redirect(FORBIDDEN_PATH);
   }
   return { user, kinds };

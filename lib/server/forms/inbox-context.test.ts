@@ -102,6 +102,11 @@ describe("requireInboxPage", () => {
     currentUser = user(role);
     await expect(requireInboxPage("/admin/leads")).rejects.toThrow("REDIRECT:/admin/sem-permissao");
     expect(createSessionClient).not.toHaveBeenCalled();
+    expect(recordAuditEvent).toHaveBeenCalledWith({
+      event: "access.denied",
+      outcome: "denied",
+      metadata: { resource: "lead", action: "view" },
+    });
   });
 
   it("admin entra e vê os três tipos", async () => {

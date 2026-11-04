@@ -204,6 +204,18 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
         await expect(page.getByRole("heading", { name: "Sem permissão" })).toBeVisible();
         await expect(page.locator("body")).not.toContainText("window.__xss");
       }
+      // A tentativa fica na trilha, sem dizer qual registro foi pedido.
+      const denied = await db
+        .from("audit_log")
+        .select("event, outcome, resource_id, metadata")
+        .eq("actor_id", accounts[role].id)
+        .eq("event", "access.denied");
+      expect(denied.data).toHaveLength(3);
+      expect(denied.data?.[0]).toMatchObject({
+        outcome: "denied",
+        resource_id: null,
+        metadata: { resource: "lead", action: "view" },
+      });
     });
   }
 
