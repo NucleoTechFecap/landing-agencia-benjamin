@@ -177,7 +177,7 @@ export function CaseDetailSections({ detail, related }: { detail: CaseDetail; re
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-bold text-benja-verde underline underline-offset-4"
+                        className="inline-block py-0.5 font-bold text-benja-verde underline underline-offset-4"
                       >
                         {link.label}
                         <span className="sr-only"> (abre em nova aba)</span>

@@ -75,7 +75,7 @@ export function ItemPanel({
             href={previewHref}
             target="_blank"
             prefetch={false}
-            className="block font-bold text-benja-verde underline underline-offset-4"
+            className="block py-1 font-bold text-benja-verde underline underline-offset-4"
           >
             Ver prévia<span className="sr-only"> (abre em nova aba)</span>
           </Link>
