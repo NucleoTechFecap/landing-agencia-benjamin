@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -28,14 +29,14 @@ import { CmsHeader } from "@/components/admin/cms/cms-header";
 import { FlashMessage } from "@/components/admin/cms/flash-message";
 import { SubmissionFilters } from "@/components/admin/leads/submission-filters";
 import { InboxPagination, SubmissionTable } from "@/components/admin/leads/submission-table";
-import { EmptyState } from "@/components/ui/states";
+import { EmptyPanel, Notice } from "@/components/admin/ui/primitives";
 import { INBOX_PATH, inboxHref, parseInboxQuery } from "@/lib/domain/forms/inbox";
 import { listServices } from "@/lib/server/content/repository";
 import { countFailedNotifications, listSubmissions } from "@/lib/server/forms/inbox";
 import { requireInboxPage } from "@/lib/server/forms/inbox-context";
 import { createSessionClient } from "@/lib/server/supabase/server";
 
-export const metadata: Metadata = { title: "Leads e feedbacks" };
+export const metadata: Metadata = { title: "Contatos e feedbacks" };
 
 /**
  * Envios recebidos (FORM-09). A guarda vem antes de ler filtros ou dados, a consulta usa a sessão de
@@ -54,10 +55,13 @@ export default async function LeadsAdminPage({ searchParams }: PageProps<"/admin
   ]);
   return (
     <>
-      <CmsHeader title="Leads e feedbacks" trail={[{ label: "Leads e feedbacks" }]} />
+      <CmsHeader
+        title="Contatos e feedbacks"
+        description="O que chega pelos formulários do site, do mais novo ao mais antigo."
+      />
       <FlashMessage ok={params.ok} />
       {failed > 0 ? (
-        <p className="mb-6 rounded-2xl border-2 border-benja-erro bg-benja-erro-fundo px-4 py-3 text-sm text-benja-erro-texto">
+        <Notice tone="erro" className="mb-6">
           <strong>
             {failed === 1 ? "1 envio não chegou por e-mail." : `${failed} envios não chegaram por e-mail.`}
           </strong>{" "}
@@ -69,7 +73,7 @@ export default async function LeadsAdminPage({ searchParams }: PageProps<"/admin
           >
             Ver quais são
           </Link>
-        </p>
+        </Notice>
       ) : null}
       <SubmissionFilters query={query} kinds={kinds} services={services} />
       {inbox.items.length ? (
@@ -78,9 +82,9 @@ export default async function LeadsAdminPage({ searchParams }: PageProps<"/admin
           <InboxPagination inbox={inbox} query={query} />
         </>
       ) : (
-        <EmptyState className="bg-white" action={{ href: INBOX_PATH, label: "Ver todos os envios" }}>
-          Nenhum envio encontrado com estes filtros.
-        </EmptyState>
+        <EmptyPanel title="Nenhum envio encontrado." action={{ href: INBOX_PATH, label: "Ver todos os envios" }}>
+          Não há envios com estes filtros.
+        </EmptyPanel>
       )}
     </>
   );

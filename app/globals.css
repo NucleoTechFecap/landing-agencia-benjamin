@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,10 +22,13 @@
  25/10/2026 Caio Moraes              Tokens de erro dos formulários (LAY-04).
  29/10/2026 Caio Moraes              Tokens do painel administrativo (ADM-04).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Importa o design system do painel (studio.css).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 @import "tailwindcss";
+@import "./admin/studio.css";
 
 /* html.motion: animações ligadas (MotionGate). Sem ela (sem JavaScript, movimento reduzido, falha ao
    carregar o motor) o site usa as transições simples em CSS e mostra tudo direto. */
@@ -61,6 +64,8 @@
   --color-benja-admin-fundo: #f4f7ec;
   --color-benja-verde-hover: #03621f;
   --color-benja-sucesso-fundo: #e3f9da;
+  /* Laranja escurecido para texto e números sobre branco (5,4:1); o da marca fica em 2,9:1. */
+  --color-benja-laranja-texto: #b34a0f;
   /* Tipografia: Poppins (texto e títulos — hierarquia do brandbook). Aptly, usada no
      logotipo, depende de licença (LAY-06) e não é carregada no site. */
   --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;

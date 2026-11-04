@@ -20,6 +20,7 @@
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-04, ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Conta de teste com o papel super_admin (QA-06).
  04/11/2026 Vinícius Nishimura Reis  Prazo de publicação e espera de Server Action para máquina carregada (QA-06).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -95,6 +96,11 @@ export async function saveEvidence(page: Page, name: string, fullPage = true) {
   const dir = join("test-results", "evidencias");
   mkdirSync(dir, { recursive: true });
   await page.screenshot({ path: join(dir, `${name}.png`), fullPage });
+}
+
+/** Confirma na janela do painel, já aberta pelo clique de quem chama. */
+export async function acceptConfirmation(page: Page, label: string) {
+  await page.locator("dialog[open]").getByRole("button", { name: label, exact: true }).click();
 }
 
 export const panelMenu = (page: Page) => page.getByRole("navigation", { name: "Módulos do painel" });

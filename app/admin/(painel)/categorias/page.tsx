@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,10 +38,7 @@ export default async function CategoriesAdminPage({ searchParams }: PageProps<"/
   const casesIn = (id: string) => snapshot.cases.filter((item) => item.categoryId === id).length;
   return (
     <>
-      <CmsHeader
-        title="Categorias de cases"
-        trail={[{ label: "Cases", href: "/admin/cases" }, { label: "Categorias" }]}
-      >
+      <CmsHeader title="Categorias de cases">
         {can(user.role, "category", "create") ? (
           <CmsLinkButton href="/admin/categorias/nova">Nova categoria</CmsLinkButton>
         ) : null}

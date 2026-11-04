@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,12 +37,11 @@ export default async function PagesAdminPage({ searchParams }: PageProps<"/admin
   const [snapshot, query] = await Promise.all([loadCmsSnapshot(), searchParams]);
   return (
     <>
-      <CmsHeader title="Páginas e textos" trail={[{ label: "Páginas e textos" }]} />
+      <CmsHeader
+        title="Páginas e textos"
+        description="Cada página do site tem seções fixas. Aqui você troca o manifesto e o texto Sobre, e acrescenta blocos depois das seções fixas. Sem conteúdo publicado, o site continua com os textos atuais."
+      />
       <FlashMessage ok={query.ok} aviso={query.aviso} />
-      <p className="mb-6 max-w-3xl text-benja-grafite/80">
-        Cada página do site tem seções fixas. Aqui você troca o manifesto e o texto Sobre, e acrescenta blocos depois
-        das seções fixas. Sem conteúdo publicado, o site continua com os textos atuais.
-      </p>
       <PagesTable pages={snapshot.pages} canCreate={can(user.role, "page", "create")} />
     </>
   );

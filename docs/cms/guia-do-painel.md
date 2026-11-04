@@ -32,19 +32,17 @@ e-mail, defina a nova senha e entre.
 
 ### Sair
 
-Clique em **Sair**, no canto superior direito. Faça isso sempre que usar um computador compartilhado.
-Não compartilhe a senha nem o link recebido por e-mail.
-
-No início do painel, módulos marcados como "Em construção" (como usuários e papéis) ainda não podem ser usados
-por aqui.
+Clique em **Sair**, no rodapé do menu. No celular e no tablet, ele também fica no seu perfil, no canto superior direito
+(o círculo com as suas iniciais). Faça isso sempre que usar um computador compartilhado. Não compartilhe a senha nem o
+link recebido por e-mail.
 
 ## Editar e publicar, passo a passo
 
 O fluxo é o mesmo para áreas, serviços, categorias, cases e CTAs. O exemplo usa um serviço.
 
-1. **Abrir.** No início, clique em **Serviços** e depois no item. Para criar, use **Novo serviço**: todo
+1. **Abrir.** No menu, clique em **Serviços** e depois no item. Para criar, use **Novo serviço**: todo
    item novo nasce como Rascunho e não aparece no site.
-2. **Editar.** Altere os campos. Se precisar de imagem, envie-a antes na **Biblioteca de mídia** (com
+2. **Editar.** Altere os campos. Se precisar de imagem, envie-a antes em **Imagens e arquivos** (com
    texto alternativo) e escolha-a no formulário.
 3. **Salvar.** Clique em **Salvar alterações**. Em rascunho, nada vai ao ar. Em item **já publicado**,
    salvar já muda o site.
@@ -117,26 +115,54 @@ stateDiagram-v2
 
 Contato, links e redes sociais são uma exceção: só o Administrador altera. Veja a seção própria, abaixo.
 
-Leads e feedbacks têm dados pessoais: só o Administrador vê. O NúcleoTech (Super administrador), o
+Contatos e feedbacks têm dados pessoais: só o Administrador vê. O NúcleoTech (Super administrador), o
 Editor e o Leitor recebem "Sem permissão". A lista de quem pode ver ainda aguarda a aprovação da Benjamin.
 
 Matriz completa em [perfis e permissões](../seguranca/perfis-e-permissoes.md).
 
 ## Menu do painel
 
-O menu fica à esquerda no computador. No celular e no tablet, use o botão **Abrir menu**, logo abaixo do
-cabeçalho; ele fecha com **Fechar menu**, com a tecla Esc ou ao escolher um módulo. O item da tela atual
-fica destacado.
+O menu fica à esquerda no computador, organizado em grupos: Visão geral, Conteúdo do site, Comunicação, Biblioteca e
+Administração. O item da tela atual fica destacado.
 
-- Cada pessoa vê só os módulos que o papel permite: Editor e Leitor não veem Leads, Usuários nem
-  Auditoria. Isso é só o que aparece: cada tela e cada ação conferem de novo a permissão no servidor.
-- **Em construção** marca módulo sem tela ainda, como usuários e papéis. Não é link e nada pode ser editado
-  por ali.
+- **Recolher menu**, no rodapé, deixa só os ícones e dá mais espaço para o conteúdo. O nome de cada item aparece ao
+  passar o mouse. A escolha fica guardada neste navegador.
+- No celular e no tablet, use **Abrir menu**, no canto superior esquerdo. O menu abre por cima da tela e fecha com
+  **Fechar menu**, com a tecla Esc, tocando fora dele ou ao escolher um módulo.
+- O cabeçalho mostra onde você está (a trilha) e traz **Ver site**, que abre o site em outra aba.
+- Cada pessoa vê só os módulos que o papel permite: Editor e Leitor não veem Contatos e feedbacks. Isso é só o que
+  aparece: cada tela e cada ação conferem de novo a permissão no servidor.
+- Módulo que ainda não tem tela, como usuários e papéis, não aparece no menu.
 - Pelo teclado, o primeiro Tab da página oferece **Pular para o conteúdo**, sem passar pelo menu.
 
-O início do painel (`/admin`) mostra os mesmos módulos em cartões.
+## Início do painel (`/admin`)
 
-## Visão geral dos conteúdos (`/admin/conteudos`)
+Mostra o que importa para começar o dia, sempre com dados reais:
+
+- **Ações rápidas:** os atalhos que o seu papel pode usar.
+- **Como está o conteúdo:** cases, serviços, rascunhos e o que precisa de revisão. Cada número leva à lista de onde ele
+  vem.
+- **Caixa de entrada:** solicitações e feedbacks novos, só para quem pode lê-los.
+- **Conteúdos recentes** e **Pedem atenção:** para retomar o trabalho.
+
+Se o banco falhar, o início avisa e mantém os atalhos. Nenhum número é inventado no lugar do que não foi lido.
+
+## Listas de cases, serviços e áreas
+
+Mostram cartões, com capa ou ícone, ou uma tabela: escolha em **Cartões** e **Tabela**. A escolha fica guardada neste
+navegador. **Buscar** procura no nome e na linha de apoio, sem diferenciar acento, e **Estado** filtra por publicado,
+rascunho ou arquivado.
+
+## Formulários
+
+- Ao alterar um campo, aparece **Alterações não salvas** ao lado do botão de salvar. Se você tentar sair, o painel
+  pergunta antes.
+- O botão de salvar fica sempre à vista no fim da tela, mesmo em formulários longos.
+- Na capa do case e na imagem do serviço, a prévia muda conforme a escolha. **Enviar imagem para a biblioteca** salva o
+  arquivo e volta para o formulário.
+- Despublicar, arquivar e excluir pedem confirmação em uma janela. Cancelar ou apertar Esc não muda nada.
+
+## Revisão de conteúdos (`/admin/conteudos`)
 
 Reúne em uma tela páginas, áreas, serviços, categorias e cases: o que está publicado, o estado de cada
 item, quando foi atualizado e o link para abrir. Use aqui para saber o que falta antes de publicar ou de
@@ -260,7 +286,7 @@ O que **não** se edita aqui:
 Os dados oficiais de contato ainda dependem da definição da agência (CON-10). Esta tela só altera o que
 estiver no site: preencher um campo aqui não conta como aprovação.
 
-## Biblioteca de mídia (`/admin/midia`)
+## Imagens e arquivos (`/admin/midia`)
 
 Envie aqui as imagens antes de usá-las em cases e serviços. Nos formulários, o link **Enviar imagem
 para a biblioteca** abre esta tela e, depois do envio, volta para o item que você estava editando
@@ -313,7 +339,7 @@ Dá para salvar o case aos poucos, enquanto o material da Benjamin chega: a list
 falta" mostra primeiro os campos vazios e, depois de completos, as regras que dependem de outros
 conteúdos (como a categoria estar publicada).
 
-## Leads e feedbacks (`/admin/leads`)
+## Contatos e feedbacks (`/admin/leads`)
 
 Tudo o que chega pelos formulários do site fica aqui, mesmo se o e-mail de aviso falhar. Só quem é
 Administrador abre esta tela.

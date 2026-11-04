@@ -20,12 +20,14 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  01/11/2026 Vinícius Nishimura Reis  Sufixo de teste com node:crypto (CodeQL).
  04/11/2026 Vinícius Nishimura Reis  Chega ao módulo pelo menu do painel (ADM-04).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { randomBytes } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { acceptConfirmation } from "./painel-helpers";
 
 /**
  * Editor de páginas e blocos (ADM-05). Precisa do app construído contra o Supabase local e da
@@ -179,8 +181,8 @@ test.describe("Painel · páginas e blocos @cms", () => {
   test("despublicada, a página sai da leitura pública na hora", async ({ page, request }) => {
     await login(page, accounts.editor);
     await page.goto(pageUrl);
-    page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Despublicar" }).click();
+    await acceptConfirmation(page, "Despublicar");
     await expect(page.getByRole("status").getByText("Despublicado")).toBeVisible();
     expect((await request.get(`/api/v1/pages/${slug}`)).status()).toBe(404);
   });

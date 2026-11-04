@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -73,11 +74,7 @@ export function MediaDetailsForm({
           Imagem decorativa (não transmite informação; fica com texto alternativo vazio)
         </CheckboxField>
       ) : null}
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-full bg-benja-verde px-6 py-3 font-bold text-benja-nyanza transition hover:bg-benja-noite disabled:cursor-wait disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} className="studio-btn studio-btn-primario">
         {pending ? "Salvando…" : "Salvar alterações"}
       </button>
     </form>

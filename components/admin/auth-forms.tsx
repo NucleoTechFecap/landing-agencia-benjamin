@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Formulário único no shell; next por promessa (B-08) (ADM-02).
  29/10/2026 Caio Moraes              Cores via tokens do tema (ADM-04).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,27 +30,26 @@
 import Link from "next/link";
 import { Suspense, use, useActionState } from "react";
 import type { AuthFormState } from "@/lib/domain/auth/redirect";
+import { Notice } from "./ui/primitives";
 
 type AuthAction = (state: AuthFormState, formData: FormData) => Promise<AuthFormState>;
 
-const input =
-  "w-full rounded-xl border-2 border-benja-verde/20 bg-white px-4 py-3 text-base outline-none transition focus:border-benja-lima focus:ring-4 focus:ring-benja-lima/25";
-const button =
-  "w-full rounded-full bg-benja-verde px-6 py-3 font-bold text-benja-nyanza transition hover:bg-benja-verde-hover disabled:cursor-wait disabled:opacity-60";
+const input = "w-full";
+const button = "studio-btn studio-btn-primario w-full";
 
 function Feedback({ state }: { state: AuthFormState }) {
   if (state.error) {
     return (
-      <p role="alert" className="rounded-xl bg-benja-erro-fundo px-4 py-3 text-sm font-medium text-benja-erro-texto">
+      <Notice tone="erro" role="alert">
         {state.error}
-      </p>
+      </Notice>
     );
   }
   if (state.message) {
     return (
-      <p role="status" className="rounded-xl bg-benja-sucesso-fundo px-4 py-3 text-sm font-medium text-benja-verde">
+      <Notice tone="sucesso" role="status">
         {state.message}
-      </p>
+      </Notice>
     );
   }
   return null;
@@ -71,7 +71,7 @@ export function LoginForm({ action, next }: { action: AuthAction; next?: Promise
         </Suspense>
       ) : null}
       <div className="space-y-1">
-        <label htmlFor="email" className="text-sm font-semibold">
+        <label htmlFor="email" className="text-sm font-bold">
           E-mail
         </label>
         <input
@@ -85,7 +85,7 @@ export function LoginForm({ action, next }: { action: AuthAction; next?: Promise
         />
       </div>
       <div className="space-y-1">
-        <label htmlFor="password" className="text-sm font-semibold">
+        <label htmlFor="password" className="text-sm font-bold">
           Senha
         </label>
         <input
@@ -102,10 +102,7 @@ export function LoginForm({ action, next }: { action: AuthAction; next?: Promise
         {pending ? "Entrando…" : "Entrar"}
       </button>
       <p className="text-center text-sm">
-        <Link
-          href="/admin/recuperar-senha"
-          className="inline-block py-1 font-semibold text-benja-verde underline underline-offset-4"
-        >
+        <Link href="/admin/recuperar-senha" className="studio-link inline-block py-1">
           Esqueci minha senha
         </Link>
       </p>
@@ -122,7 +119,7 @@ export function ResetRequestForm({ action }: { action: AuthAction }) {
   return (
     <form action={formAction} className="space-y-4" noValidate>
       <div className="space-y-1">
-        <label htmlFor="email" className="text-sm font-semibold">
+        <label htmlFor="email" className="text-sm font-bold">
           E-mail cadastrado
         </label>
         <input
@@ -140,10 +137,7 @@ export function ResetRequestForm({ action }: { action: AuthAction }) {
         {pending ? "Enviando…" : "Enviar link"}
       </button>
       <p className="text-center text-sm">
-        <Link
-          href="/admin/login"
-          className="inline-block py-1 font-semibold text-benja-verde underline underline-offset-4"
-        >
+        <Link href="/admin/login" className="studio-link inline-block py-1">
           Voltar ao login
         </Link>
       </p>
@@ -156,7 +150,7 @@ export function NewPasswordForm({ action }: { action: AuthAction }) {
   return (
     <form action={formAction} className="space-y-4" noValidate>
       <div className="space-y-1">
-        <label htmlFor="password" className="text-sm font-semibold">
+        <label htmlFor="password" className="text-sm font-bold">
           Nova senha
         </label>
         <input
@@ -169,12 +163,12 @@ export function NewPasswordForm({ action }: { action: AuthAction }) {
           aria-describedby="password-hint"
           className={input}
         />
-        <p id="password-hint" className="text-xs text-benja-grafite/70">
+        <p id="password-hint" className="text-xs text-studio-suave">
           Mínimo de 12 caracteres, combinando letras e números.
         </p>
       </div>
       <div className="space-y-1">
-        <label htmlFor="confirmation" className="text-sm font-semibold">
+        <label htmlFor="confirmation" className="text-sm font-bold">
           Confirme a nova senha
         </label>
         <input

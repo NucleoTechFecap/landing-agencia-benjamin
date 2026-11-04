@@ -20,6 +20,7 @@
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Situação da notificação e filtro (INT-07).
  04/11/2026 Vinícius Nishimura Reis  Tabela sem rolagem lateral, alvos de toque e texto longo (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -38,8 +39,7 @@ import {
 } from "@/lib/domain/forms/inbox";
 import { SUBMISSION_KIND_LABELS, type SubmissionKind } from "@/lib/domain/forms/schemas";
 
-const control =
-  "mt-1.5 min-h-11 w-full rounded-2xl border-2 border-benja-noite bg-white px-4 py-2.5 text-sm text-benja-noite focus:border-benja-azul focus:ring-4 focus:ring-benja-azul";
+const control = "mt-1.5 w-full text-benja-noite";
 
 function Filter({
   name,
@@ -85,7 +85,7 @@ export function SubmissionFilters({
       prefetch={false}
       role="search"
       aria-label="Filtrar envios"
-      className="mb-6 grid items-end gap-4 rounded-3xl border-2 border-benja-noite/15 bg-white p-5 sm:grid-cols-2 lg:grid-cols-5"
+      className="studio-card mb-6 grid items-end gap-4 p-5 sm:grid-cols-2 lg:grid-cols-5"
     >
       <Filter name="tipo" label="Tipo" value={query.kind}>
         <option value="">Todos</option>
@@ -124,16 +124,13 @@ export function SubmissionFilters({
         ))}
       </Filter>
       <div className="flex items-center gap-4">
-        <button
-          type="submit"
-          className="min-h-11 rounded-full bg-benja-verde px-5 py-2.5 text-sm font-bold text-benja-nyanza transition hover:bg-benja-noite"
-        >
+        <button type="submit" className="studio-btn studio-btn-primario">
           Filtrar
         </button>
         <Link
           href={INBOX_PATH}
           prefetch={false}
-          className="inline-block py-1 text-sm font-semibold underline underline-offset-4"
+          className="inline-block py-1 text-sm font-semibold text-benja-verde underline underline-offset-4"
         >
           Limpar
         </Link>

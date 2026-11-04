@@ -19,22 +19,38 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-04).
  04/11/2026 Vinícius Nishimura Reis  Exemplo de módulo em construção não depende de uma tela (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
-import { createElement } from "react";
+import { createElement, type ComponentProps } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { modulesFor } from "@/lib/config/admin-modules";
+import { navigationFor } from "@/lib/config/admin-modules";
 import { PanelMenu } from "./panel-menu";
+import { PanelShell } from "./panel-shell";
 
 const pathname = vi.hoisted(() => ({ current: "/admin" }));
 vi.mock("next/navigation", () => ({ usePathname: () => pathname.current }));
 
-const render = (role: Parameters<typeof modulesFor>[0] = "admin") =>
-  renderToStaticMarkup(createElement(PanelMenu, { modules: modulesFor(role) }));
+const render = (role: Parameters<typeof navigationFor>[0] = "admin", collapsed = false) =>
+  renderToStaticMarkup(createElement(PanelMenu, { navigation: navigationFor(role), collapsed }));
 
-const currentLinks = (markup: string) => markup.match(/<a[^>]*aria-current="page"[^>]*>[^<]*/g) ?? [];
+const shellProps = (initialCollapsed: boolean): Omit<ComponentProps<typeof PanelShell>, "children"> => ({
+  navigation: navigationFor("admin"),
+  user: { name: "Pessoa de Teste", roleLabel: "Administrador (Benjamin)" },
+  signOut: async () => {},
+  initialCollapsed,
+});
+
+const renderShell = (initialCollapsed = false) =>
+  renderToStaticMarkup(
+    createElement(PanelShell, { ...shellProps(initialCollapsed), children: "conteúdo" } as ComponentProps<
+      typeof PanelShell
+    >),
+  );
+
+const currentLinks = (markup: string) => markup.match(/<a[^>]*aria-current="page"[^>]*>.*?<\/a>/g) ?? [];
 
 describe("menu do painel (ADM-04)", () => {
   beforeEach(() => {
@@ -54,35 +70,58 @@ describe("menu do painel (ADM-04)", () => {
     expect(links[0]).toContain("Cases");
   });
 
-  it("módulo em construção aparece com o aviso e sem link", () => {
-    // Módulo próprio do teste: cada tela entregue sai do registro, e o exemplo não pode depender dela.
-    const markup = renderToStaticMarkup(
-      createElement(PanelMenu, {
-        modules: [{ name: "Módulo de exemplo", resource: "page", action: "view", issue: "ADM-00" }],
-      }),
-    );
-    expect(markup).toMatch(/<p[^>]*>Módulo de exemplo<span[^>]*>Em construção<\/span><\/p>/);
-    expect(markup).not.toMatch(/<a[^>]*>Módulo de exemplo/);
-  });
-
-  it("só mostra o que veio filtrado pelo papel", () => {
-    expect(render("admin")).toContain("Leads e feedbacks");
-    expect(render("viewer")).not.toContain("Leads e feedbacks");
+  it("mostra os grupos e só o que veio filtrado pelo papel", () => {
+    expect(render("admin")).toContain("Conteúdo do site");
+    expect(render("admin")).toContain("Contatos e feedbacks");
+    expect(render("viewer")).not.toContain("Contatos e feedbacks");
     expect(render("viewer")).toContain("Cases");
   });
 
-  it("no celular começa fechado, com o botão ligado ao menu; nas telas grandes o menu fica sempre aberto", () => {
-    const markup = render();
-    const navId = markup.match(/<nav id="([^"]+)"/)?.[1];
-    expect(markup).toContain(`aria-controls="${navId}"`);
-    expect(markup).toContain('aria-expanded="false"');
-    expect(markup).toContain("Abrir menu");
-    expect(markup).toMatch(/<nav[^>]*aria-label="Módulos do painel"[^>]*class="hidden [^"]*lg:block/);
+  it("não mostra módulo sem tela", () => {
+    expect(render("admin")).not.toContain("Em construção");
+    expect(render("admin")).not.toContain("Usuários e papéis");
   });
 
   it("todo item tem área de toque de ao menos 44 px", () => {
-    const markup = render();
-    for (const element of markup.match(/<a [^>]*>/g) ?? []) expect(element).toContain("min-h-11");
-    expect(markup).toMatch(/<button[^>]*min-h-12/);
+    for (const element of render().match(/<a [^>]*>/g) ?? []) expect(element).toContain("min-h-11");
+  });
+
+  it("recolhido, o nome continua no link para leitores de tela", () => {
+    const markup = render("admin", true);
+    expect(markup).toMatch(/<a [^>]*href="\/admin\/cases"[^>]*>.*?<span class="[^"]*lg:sr-only[^"]*">Cases<\/span>/);
+  });
+});
+
+describe("casca do painel", () => {
+  beforeEach(() => {
+    pathname.current = "/admin/cases";
+  });
+
+  it("no celular a gaveta começa fechada e o botão diz o estado", () => {
+    const markup = renderShell();
+    expect(markup).toMatch(/<button[^>]*aria-expanded="false"[^>]*aria-label="Abrir menu"/);
+    expect(markup).toMatch(/<aside[^>]*class="[^"]*invisible -translate-x-full/);
+    expect(markup).not.toContain(" inert");
+  });
+
+  it("o menu recolhido vem do que o servidor leu no cookie, sem piscar ao carregar", () => {
+    expect(renderShell(true)).toContain("lg:w-studio-menu-recolhido");
+    expect(renderShell(true)).toContain("Expandir menu");
+    expect(renderShell(false)).toContain("Recolher menu");
+  });
+
+  it("identifica a pessoa, oferece a saída e abre o site em outra aba", () => {
+    const markup = renderShell();
+    expect(markup).toContain("Pessoa de Teste");
+    expect(markup).toContain("Administrador (Benjamin)");
+    expect(markup).toContain("Sair");
+    expect(markup).toMatch(/<a [^>]*target="_blank"[^>]*>.*?Ver site.*?\(abre em nova aba\)/);
+  });
+
+  it("traz a trilha da tela atual e o atalho para o conteúdo", () => {
+    const markup = renderShell();
+    expect(markup).toContain('aria-label="Trilha"');
+    expect(markup).toContain("Pular para o conteúdo");
+    expect(markup).toContain('id="conteudo"');
   });
 });

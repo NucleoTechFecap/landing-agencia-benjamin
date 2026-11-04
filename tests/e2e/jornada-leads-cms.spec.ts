@@ -18,13 +18,14 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (FORM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { randomBytes, randomInt, randomUUID } from "node:crypto";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { panelMenu } from "./painel-helpers";
+import { acceptConfirmation, panelMenu } from "./painel-helpers";
 
 /**
  * J3.4 e J3.10 a J3.13 — envio público consultado no painel (FORM-09, INT-07, SEG-04). Precisa do app construído
@@ -147,9 +148,9 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
     expect(protocol).not.toBe("");
 
     await login(page, accounts.admin);
-    await panelMenu(page).getByRole("link", { name: "Leads e feedbacks" }).click();
+    await panelMenu(page).getByRole("link", { name: "Contatos e feedbacks" }).click();
     await expect(page).toHaveURL(/\/admin\/leads$/);
-    await expect(visible(page.getByRole("heading", { level: 1, name: "Leads e feedbacks" }))).toBeVisible();
+    await expect(visible(page.getByRole("heading", { level: 1, name: "Contatos e feedbacks" }))).toBeVisible();
 
     await visible(page.getByLabel("Tipo")).selectOption("contact");
     await visible(page.getByLabel("Categoria", { exact: true })).selectOption("contact:imprensa");
@@ -198,7 +199,7 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
   for (const role of ["editor", "super_admin"] as const) {
     test(`J3.10 ${role} recebe "sem permissão" e não vê dado nenhum`, async ({ page }) => {
       await login(page, accounts[role]);
-      await expect(page.getByRole("link", { name: "Leads e feedbacks" })).toHaveCount(0);
+      await expect(page.getByRole("link", { name: "Contatos e feedbacks" })).toHaveCount(0);
       for (const path of ["/admin/leads", `/admin/leads/${hostile.id}`, "/admin/leads/nao-e-uuid"]) {
         await page.goto(path);
         await expect(page).toHaveURL(/\/admin\/sem-permissao$/);
@@ -254,7 +255,7 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
   test("J3.11 entrada malformada não quebra a tela nem expõe erro interno", async ({ page }) => {
     await login(page, accounts.admin);
     await page.goto("/admin/leads?pagina=-1&tipo=orcamento&status=eq.novo&categoria=fulano%40exemplo.test");
-    await expect(page.getByRole("heading", { level: 1, name: "Leads e feedbacks" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Contatos e feedbacks" })).toBeVisible();
     await expect(page.getByLabel("Tipo")).toHaveValue("");
     await expect(page.locator("body")).not.toContainText("fulano@exemplo.test");
 
@@ -295,8 +296,8 @@ test.describe("J3 · envio público consultado no painel @cms", () => {
     await page.getByRole("button", { name: "Salvar status" }).click();
     await expect(visible(page.getByRole("status")).filter({ hasText: "Alterações salvas" })).toBeVisible();
 
-    page.once("dialog", (dialog) => dialog.accept());
     await visible(page.getByRole("button", { name: "Excluir definitivamente" })).click();
+    await acceptConfirmation(page, "Excluir definitivamente");
     await expect(page).toHaveURL(/\/admin\/leads\?ok=excluido$/);
     await expect(visible(page.getByRole("status")).filter({ hasText: "Excluído definitivamente" })).toBeVisible();
 

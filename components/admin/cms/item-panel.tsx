@@ -21,6 +21,7 @@
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Link para a prévia protegida (ADM-14).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -51,12 +52,12 @@ export function ItemPanel({
   children?: ReactNode;
 }) {
   return (
-    <aside className="min-w-0 space-y-4 wrap-anywhere">
-      <section className="space-y-2 rounded-3xl border-2 border-benja-noite/15 bg-white p-5 text-sm">
+    <aside className="min-w-0 space-y-4 wrap-anywhere xl:sticky xl:top-20 xl:self-start">
+      <section className="studio-card space-y-2 p-5 text-sm">
         <StatusBadge status={item.status} provisional={item.provisional} />
-        <p className="text-benja-grafite/80">Atualizado em {formatDateTime(item.updatedAt)}</p>
+        <p className="text-studio-suave">Atualizado em {formatDateTime(item.updatedAt)}</p>
         {item.publishedAt ? (
-          <p className="text-benja-grafite/80">Publicado pela primeira vez em {formatDateTime(item.publishedAt)}</p>
+          <p className="text-studio-suave">Publicado pela primeira vez em {formatDateTime(item.publishedAt)}</p>
         ) : null}
         {item.status === "published" && publicHref ? (
           <Link
@@ -65,30 +66,25 @@ export function ItemPanel({
             // Sem prefetch: regenerar a rota enquanto o item é despublicado gravaria a versão antiga
             // depois da invalidação, e o site ficaria com ela até o fim do cacheLife.
             prefetch={false}
-            className="inline-block py-1 font-bold text-benja-verde underline underline-offset-4"
+            className="studio-link inline-block py-1"
           >
             Ver no site<span className="sr-only"> (abre em nova aba)</span>
           </Link>
         ) : null}
         {previewHref && item.status !== "archived" ? (
-          <Link
-            href={previewHref}
-            target="_blank"
-            prefetch={false}
-            className="block py-1 font-bold text-benja-verde underline underline-offset-4"
-          >
+          <Link href={previewHref} target="_blank" prefetch={false} className="studio-link block py-1">
             Ver prévia<span className="sr-only"> (abre em nova aba)</span>
           </Link>
         ) : null}
         {item.provisional ? (
-          <p className="rounded-xl bg-benja-creme px-3 py-2">
+          <p className="rounded-studio-sm bg-studio-realce px-3 py-2">
             Marcado como <strong>provisório</strong>: aguardando texto aprovado pela Benjamin. O go-live é bloqueado
             enquanto houver item provisório publicado.
           </p>
         ) : null}
       </section>
       {item.status !== "published" && item.status !== "archived" && missing.length ? (
-        <section className="rounded-3xl border-2 border-benja-laranja bg-white p-5 text-sm">
+        <section className="studio-card border-benja-laranja p-5 text-sm">
           <h2 className="font-bold">Para publicar, falta:</h2>
           <ul className="mt-2 list-disc space-y-1 pl-5">
             {missing.map((problem) => (
@@ -98,7 +94,7 @@ export function ItemPanel({
         </section>
       ) : null}
       {warnings.length ? (
-        <section className="rounded-3xl border-2 border-benja-laranja bg-white p-5 text-sm">
+        <section className="studio-card border-benja-laranja p-5 text-sm">
           <h2 className="font-bold">Avisos</h2>
           <ul className="mt-2 list-disc space-y-1 pl-5">
             {warnings.map((warning) => (

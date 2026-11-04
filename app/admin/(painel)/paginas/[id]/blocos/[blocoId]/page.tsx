@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -43,15 +44,8 @@ export default async function EditBlockPage({ params }: PageProps<"/admin/pagina
   if (page.status === "archived") redirect(`/admin/paginas/${id}`);
   return (
     <>
-      <CmsHeader
-        title={`Editar bloco: ${BLOCK_LABELS[block.type]}`}
-        trail={[
-          { label: "Páginas e textos", href: "/admin/paginas" },
-          { label: page.title, href: `/admin/paginas/${id}` },
-          { label: "Editar bloco" },
-        ]}
-      />
-      <div className="max-w-3xl rounded-3xl border-2 border-benja-noite/15 bg-white p-4 sm:p-6">
+      <CmsHeader title={`Editar bloco: ${BLOCK_LABELS[block.type]}`} />
+      <div className="max-w-3xl studio-card p-4 sm:p-6">
         <BlockForm
           action={saveBlockAction}
           page={{ id: page.id, updatedAt: page.updatedAt }}

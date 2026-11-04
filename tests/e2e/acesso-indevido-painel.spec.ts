@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (QA-06).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -56,7 +57,13 @@ import {
  * sistema de arquivos e do manifesto do build, para uma rota nova não escapar.
  */
 /** O que só existe dentro do painel: nenhum destes textos pode chegar a quem não entrou. */
-const PANEL_MARKS = ["Módulos do painel", "Bem-vindo", "Visão geral", "Leads e feedbacks", "Biblioteca de mídia"];
+const PANEL_MARKS = [
+  "Módulos do painel",
+  "Bem-vindo",
+  "Revisão de conteúdos",
+  "Contatos e feedbacks",
+  "Imagens e arquivos",
+];
 
 /** Autorização por escrito de quais rotas abrem sem sessão: rota nova aqui é decisão, não acidente. */
 const AUTHORIZED_PUBLIC_ROUTES = ["/admin/auth/callback", "/admin/login", "/admin/recuperar-senha"];

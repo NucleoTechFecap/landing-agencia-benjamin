@@ -21,12 +21,13 @@
  27/10/2026 Vinícius Nishimura Reis  Jornadas em série: a massa do beforeAll é compartilhada (TECH-12).
  04/11/2026 Vinícius Nishimura Reis  Chega ao módulo pelo menu do painel (ADM-04).
  04/11/2026 Vinícius Nishimura Reis  J2.5 recarrega até a versão nova, como promete o ADR-0006 (QA-06).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { ACTION_TIMEOUT_MS, publishBudgetMs } from "./painel-helpers";
+import { acceptConfirmation, ACTION_TIMEOUT_MS, publishBudgetMs } from "./painel-helpers";
 
 /**
  * J2.5/J2.6 — jornada do editor no CMS (TECH-12). Precisa do app construído contra o Supabase
@@ -165,7 +166,9 @@ test.describe("J2 · editor publica no CMS e o site mostra @cms", () => {
       .getByRole("navigation", { name: "Módulos do painel" })
       .getByRole("link", { name: "Cases", exact: true })
       .click();
-    await page.getByRole("link", { name: "Novo case" }).click();
+    // O início também tem o atalho "Novo case": espera a lista, para não clicar na tela que está saindo.
+    await expect(page).toHaveURL(/\/admin\/cases$/);
+    await visible(page.getByRole("link", { name: "Novo case" })).click();
     await visible(page.getByLabel("Título")).fill(`Case E2E ${suffix}`);
     // Endereço em branco: o servidor gera "case-e2e-<sufixo>" a partir do título.
     await visible(page.getByRole("button", { name: "Criar rascunho" })).click();
@@ -202,8 +205,8 @@ test.describe("J2 · editor publica no CMS e o site mostra @cms", () => {
       publishBudgetMs(),
     );
 
-    page.once("dialog", (dialog) => dialog.accept());
     await visible(page.getByRole("button", { name: "Arquivar" })).click();
+    await acceptConfirmation(page, "Arquivar");
     await expectStatus(page, "Arquivado");
     await expect.poll(() => publicStatus(page), { timeout: publishBudgetMs() }).toBe(404);
   });

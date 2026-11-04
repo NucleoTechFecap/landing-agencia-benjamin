@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,13 +38,13 @@ export default async function NewCasePage({ searchParams }: PageProps<"/admin/ca
   const [snapshot, images, query] = await Promise.all([loadCmsSnapshot(), loadImageOptions(), searchParams]);
   return (
     <>
-      <CmsHeader title="Novo case" trail={[{ label: "Cases", href: "/admin/cases" }, { label: "Novo" }]} />
+      <CmsHeader title="Novo case" />
       <FlashMessage ok={query.ok} aviso={query.aviso} />
-      <p className="mb-6 max-w-2xl text-sm text-benja-grafite/80">
+      <p className="mb-6 max-w-2xl text-sm text-studio-suave">
         O case nasce como rascunho. Título e endereço bastam para salvar; complete aos poucos enquanto o material da
         Benjamin chega e publique quando a lista de pendências zerar.
       </p>
-      <div className="max-w-4xl rounded-3xl border-2 border-benja-noite/15 bg-white p-4 sm:p-6">
+      <div className="max-w-4xl studio-card p-4 sm:p-6">
         <CaseForm
           action={saveCase}
           categories={snapshot.categories}

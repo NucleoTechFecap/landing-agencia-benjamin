@@ -1,0 +1,295 @@
+/*
+════════════════════════════════════════════════════════════════════════════════
+ Sistema      : Agência Benjamin Landing Page
+ Módulo       : App
+ Arquivo      : studio.css
+ Descrição    : Design system do painel (Benjamin Studio): tokens, utilitários e controles de formulário.
+
+ Desenvolvedor: Vinícius Nishimura Reis
+
+ Projeto      : Agência Benjamin Landing Page
+ Versão       : 1.0.0
+ Criado em    : 04/11/2026
+ Modificado em: 04/11/2026
+════════════════════════════════════════════════════════════════════════════════
+
+ Histórico
+ ──────────────────────────────────────────────────────────────────────────────
+ Data        Autor                     Descrição
+ ──────────────────────────────────────────────────────────────────────────────
+ 04/11/2026 Vinícius Nishimura Reis  Criação inicial (reestruturação do painel).
+──────────────────────────────────────────────────────────────────────────────
+*/
+
+/*
+ * As cores de marca continuam em globals.css (Guia de Marca 2025). Aqui ficam só os papéis de interface
+ * do painel. Contraste conferido: `studio-suave` sobre branco 7,8:1 e sobre papel 7,3:1 (WCAG 1.4.3);
+ * `studio-controle` sobre branco 4,1:1 e sobre papel 3,8:1 (borda de campo, WCAG 1.4.11).
+ */
+@theme {
+  --color-studio-papel: #f7f8ef;
+  --color-studio-realce: #f0f4e0;
+  --color-studio-linha: #dde2cf;
+  --color-studio-controle: #77806e;
+  --color-studio-suave: #4b5546;
+  --color-studio-menu-profundo: #003a15;
+
+  --radius-studio-sm: 0.625rem;
+  --radius-studio-md: 0.875rem;
+  --radius-studio-lg: 1.25rem;
+  --radius-studio-xl: 1.75rem;
+
+  /* A sombra dura vem do logotipo e dos stickers: só em foco de atenção, nunca como elevação genérica. */
+  --shadow-studio-pop: 3px 3px 0 0 var(--color-benja-verde);
+  --shadow-studio-pop-lima: 3px 3px 0 0 var(--color-benja-lima);
+  --shadow-studio-flutuante: 0 18px 44px -18px rgb(0 58 21 / 0.4);
+
+  --ease-studio: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --spacing-studio-menu: 17rem;
+  --spacing-studio-menu-recolhido: 5rem;
+  --spacing-studio-topo: 4rem;
+  --spacing-studio-conteudo: 80rem;
+
+  --animate-studio-entrada: studio-entrada 180ms var(--ease-studio) both;
+
+  @keyframes studio-entrada {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* Superfície padrão de conteúdo. */
+@utility studio-card {
+  border: 1px solid var(--color-studio-linha);
+  border-radius: var(--radius-studio-lg);
+  background: #fff;
+}
+
+/* Cartão inteiro clicável: o destaque usa a sombra dura da marca. */
+@utility studio-card-ativo {
+  transition:
+    transform 160ms var(--ease-studio),
+    box-shadow 160ms var(--ease-studio),
+    border-color 160ms var(--ease-studio);
+
+  &:hover,
+  &:has(a:focus-visible) {
+    transform: translate(-2px, -2px);
+    border-color: var(--color-benja-verde);
+    box-shadow: var(--shadow-studio-pop);
+  }
+}
+
+@utility studio-rotulo {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.25;
+  text-transform: uppercase;
+  color: var(--color-studio-suave);
+}
+
+@utility studio-titulo-secao {
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--color-benja-verde);
+}
+
+@utility studio-btn {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1.5px solid transparent;
+  border-radius: 9999px;
+  padding: 0.5rem 1.125rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  transition:
+    transform 140ms var(--ease-studio),
+    box-shadow 140ms var(--ease-studio),
+    background-color 140ms var(--ease-studio),
+    color 140ms var(--ease-studio);
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+
+@utility studio-btn-primario {
+  background: var(--color-benja-verde);
+  color: var(--color-benja-nyanza);
+
+  &:hover:not(:disabled) {
+    transform: translate(-1px, -1px);
+    box-shadow: var(--shadow-studio-pop-lima);
+  }
+}
+
+@utility studio-btn-secundario {
+  border-color: var(--color-benja-verde);
+  background: #fff;
+  color: var(--color-benja-verde);
+
+  &:hover:not(:disabled) {
+    background: var(--color-benja-nyanza);
+  }
+}
+
+@utility studio-btn-sutil {
+  background: transparent;
+  color: var(--color-benja-verde);
+
+  &:hover:not(:disabled) {
+    background: var(--color-studio-realce);
+  }
+}
+
+@utility studio-btn-perigo {
+  border-color: var(--color-benja-erro);
+  background: #fff;
+  color: var(--color-benja-erro);
+
+  &:hover:not(:disabled) {
+    background: var(--color-benja-erro-fundo);
+  }
+}
+
+@utility studio-link {
+  font-weight: 700;
+  color: var(--color-benja-verde);
+  text-decoration-line: underline;
+  text-underline-offset: 4px;
+}
+
+@utility studio-tabela {
+  width: 100%;
+  text-align: left;
+  font-size: 0.875rem;
+
+  & thead th {
+    border-bottom: 1px solid var(--color-studio-linha);
+    padding: 0.75rem 1rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-studio-suave);
+  }
+
+  & tbody tr {
+    border-bottom: 1px solid var(--color-studio-linha);
+    transition: background-color 120ms var(--ease-studio);
+  }
+
+  & tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  & tbody tr:hover {
+    background: var(--color-studio-papel);
+  }
+}
+
+/* Retícula da identidade em campos de cor (dashboard, login). */
+@utility studio-reticula {
+  background-image: radial-gradient(rgb(0 74 27 / 0.16) 1.2px, transparent 1.6px);
+  background-size: 14px 14px;
+}
+
+/*
+ * Controles de formulário do painel. Sem camada de propósito: regra fora de camada vence os utilitários
+ * do Tailwind, e os campos compartilhados com os formulários públicos (components/forms/fields.tsx)
+ * ganham a aparência do painel sem mudar nada no site. `.studio` só existe na casca do painel e nas
+ * telas de acesso; a prévia (/admin/previa) fica de fora, porque precisa mostrar o site como ele é.
+ */
+.studio input:not([type="checkbox"], [type="radio"], [type="hidden"], [type="file"]),
+.studio select,
+.studio textarea {
+  min-height: 2.75rem;
+  border: 1.5px solid var(--color-studio-controle);
+  border-radius: var(--radius-studio-md);
+  background-color: #fff;
+  padding: 0.5625rem 0.875rem;
+  font-size: 1rem;
+  box-shadow: none;
+  transition:
+    border-color 120ms var(--ease-studio),
+    background-color 120ms var(--ease-studio);
+}
+
+@media (min-width: 64rem) {
+  .studio input:not([type="checkbox"], [type="radio"], [type="hidden"], [type="file"]),
+  .studio select,
+  .studio textarea {
+    font-size: 0.9375rem;
+  }
+}
+
+.studio input:not([type="checkbox"], [type="radio"], [type="hidden"], [type="file"]):hover:not(:disabled),
+.studio select:hover:not(:disabled),
+.studio textarea:hover:not(:disabled) {
+  border-color: var(--color-benja-verde);
+}
+
+.studio input:not([type="checkbox"], [type="radio"], [type="hidden"], [type="file"]):focus,
+.studio select:focus,
+.studio textarea:focus {
+  border-color: var(--color-benja-azul);
+  outline: 2px solid var(--color-benja-azul);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+.studio [aria-invalid="true"]:not(:focus) {
+  border-color: var(--color-benja-erro);
+  background-color: #fff8f4;
+}
+
+.studio input:disabled,
+.studio select:disabled,
+.studio textarea:disabled {
+  border-color: var(--color-studio-linha);
+  background-color: var(--color-studio-papel);
+  color: var(--color-studio-suave);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.studio input[type="file"] {
+  min-height: 2.75rem;
+  border: 1.5px dashed var(--color-studio-controle);
+  border-radius: var(--radius-studio-md);
+  background-color: var(--color-studio-papel);
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.studio input[type="file"]::file-selector-button {
+  min-height: 2.25rem;
+  margin-right: 0.75rem;
+  border: 1.5px solid var(--color-benja-verde);
+  border-radius: 9999px;
+  background: #fff;
+  padding: 0.25rem 0.875rem;
+  font-weight: 700;
+  color: var(--color-benja-verde);
+  cursor: pointer;
+}
+
+.studio dialog::backdrop {
+  background: rgb(0 40 14 / 0.55);
+}

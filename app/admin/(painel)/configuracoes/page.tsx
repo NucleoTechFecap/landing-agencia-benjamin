@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-10).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -48,26 +49,26 @@ export default async function SettingsAdminPage({ searchParams }: PageProps<"/ad
   const canEdit = can(user.role, "settings", "edit");
   return (
     <>
-      <CmsHeader title={TITLE} trail={[{ label: TITLE }]} />
+      <CmsHeader title={TITLE} />
       <FlashMessage ok={query.ok} aviso={query.aviso} />
       <div className="max-w-3xl space-y-6">
         {canEdit ? (
-          <p className="rounded-2xl border-2 border-benja-laranja bg-white px-4 py-3 text-sm text-benja-noite">
+          <p className="rounded-studio-md border border-benja-laranja bg-white px-4 py-3 text-sm text-benja-noite">
             <strong>Salvar vai direto ao ar.</strong> Aqui não há rascunho nem botão de publicar: ao salvar, o site muda
             para todos os visitantes. Confira os links antes.
           </p>
         ) : (
-          <p className="rounded-2xl bg-benja-creme px-4 py-3 text-sm">
+          <p className="rounded-studio-md bg-studio-realce px-4 py-3 text-sm">
             <strong>Somente leitura.</strong> Só o papel Administrador altera estes dados: fale com a coordenação da
             Benjamin se algo precisar mudar.
           </p>
         )}
-        <div className="rounded-3xl border-2 border-benja-noite/15 bg-white p-6">
+        <div className="studio-card p-6">
           <SettingsForm action={saveSettings} settings={settings} updatedAt={updatedAt} readOnly={!canEdit} />
         </div>
-        <p className="text-sm text-benja-grafite/80">
+        <p className="text-sm text-studio-suave">
           Manifesto e textos do Sobre têm rascunho e publicação em{" "}
-          <Link href="/admin/paginas" className="font-semibold text-benja-verde underline underline-offset-4">
+          <Link href="/admin/paginas" className="studio-link">
             Páginas e textos institucionais
           </Link>
           . Os destinatários dos formulários do site são definidos pelo NúcleoTech, fora do painel.

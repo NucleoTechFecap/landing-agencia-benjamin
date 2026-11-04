@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -60,10 +61,10 @@ export default async function MediaDetailPage({ params, searchParams }: PageProp
   const description = asset.decorative ? "Decorativa" : asset.alt || "Sem texto alternativo";
   return (
     <>
-      <CmsHeader title={name} trail={[{ label: "Biblioteca de mídia", href: "/admin/midia" }, { label: name }]} />
+      <CmsHeader title={name} />
       <FlashMessage ok={query.ok} aviso={query.aviso} />
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="min-w-0 space-y-6 rounded-3xl border-2 border-benja-noite/15 bg-white p-6 wrap-anywhere">
+        <section className="min-w-0 space-y-6 studio-card p-6 wrap-anywhere">
           {isImage ? (
             <Image
               src={asset.src}
@@ -71,7 +72,7 @@ export default async function MediaDetailPage({ params, searchParams }: PageProp
               width={asset.width ?? 800}
               height={asset.height ?? 500}
               unoptimized
-              className="max-h-96 w-full rounded-2xl bg-benja-creme object-contain"
+              className="max-h-96 w-full rounded-studio-md bg-studio-realce object-contain"
             />
           ) : (
             <a
@@ -83,7 +84,7 @@ export default async function MediaDetailPage({ params, searchParams }: PageProp
               Abrir PDF<span className="sr-only"> (abre em nova aba)</span>
             </a>
           )}
-          <p className="text-sm text-benja-grafite/80">
+          <p className="text-sm text-studio-suave">
             {asset.width && asset.height ? `${asset.width} × ${asset.height} px · ` : ""}
             {asset.mimeType.replace("image/", "").replace("application/", "").toUpperCase()}
           </p>
@@ -101,40 +102,34 @@ export default async function MediaDetailPage({ params, searchParams }: PageProp
           )}
         </section>
         <div className="min-w-0 space-y-6 wrap-anywhere">
-          <section aria-labelledby="usos" className="rounded-3xl border-2 border-benja-noite/15 bg-white p-5 text-sm">
-            <h2 id="usos" className="font-bold">
+          <section aria-labelledby="usos" className="studio-card p-5 text-sm">
+            <h2 id="usos" className="text-base font-extrabold text-benja-verde">
               Onde é usado
             </h2>
             {usage.length ? (
               <ul className="mt-3 space-y-3">
                 {usage.map((item) => (
                   <li key={`${item.entity}-${item.id}-${item.place}`} className="space-y-1">
-                    <Link
-                      href={`${ADMIN_PATH[item.entity]}/${item.id}`}
-                      className="inline-block py-1 font-semibold text-benja-verde underline underline-offset-4"
-                    >
+                    <Link href={`${ADMIN_PATH[item.entity]}/${item.id}`} className="studio-link inline-block py-1">
                       {item.name}
                     </Link>
-                    <p className="flex flex-wrap items-center gap-2 text-xs text-benja-grafite/80">
+                    <p className="flex flex-wrap items-center gap-2 text-xs text-studio-suave">
                       {item.place} <StatusBadge status={item.status} />
                     </p>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-benja-grafite/80">Nenhum conteúdo usa este arquivo.</p>
+              <p className="mt-2 text-studio-suave">Nenhum conteúdo usa este arquivo.</p>
             )}
           </section>
           {can(user.role, "media", "delete") ? (
-            <section
-              aria-labelledby="excluir"
-              className="space-y-3 rounded-3xl border-2 border-benja-noite/15 bg-white p-5 text-sm"
-            >
-              <h2 id="excluir" className="font-bold">
+            <section aria-labelledby="excluir" className="space-y-3 studio-card p-5 text-sm">
+              <h2 id="excluir" className="text-base font-extrabold text-benja-verde">
                 Excluir
               </h2>
               {usage.length ? (
-                <p className="text-benja-grafite/80">
+                <p className="text-studio-suave">
                   Arquivo em uso não pode ser excluído. Troque ou retire nos conteúdos acima, inclusive rascunhos e
                   arquivados.
                 </p>

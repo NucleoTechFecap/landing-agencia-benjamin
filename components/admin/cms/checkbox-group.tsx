@@ -19,16 +19,21 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-06).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
+ 04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
+
+import Image from "next/image";
 
 export interface CheckboxOption {
   value: string;
   label: string;
   /** Observação curta ao lado do rótulo (ex.: "rascunho"). */
   note?: string;
+  /** Miniatura da opção (galeria de imagens). */
+  imageSrc?: string;
 }
 
 /** Vários valores com o mesmo `name`; o servidor lê com `form.getAll(name)`. */
@@ -51,12 +56,12 @@ export function CheckboxGroup({
   return (
     <fieldset aria-describedby={errors?.length ? errorId : undefined} className="min-w-0">
       <legend className="text-sm font-bold text-benja-noite">{legend}</legend>
-      {hint ? <p className="mt-1 text-xs text-benja-grafite/80">{hint}</p> : null}
+      {hint ? <p className="mt-1 text-xs text-studio-suave">{hint}</p> : null}
       {options.length ? (
         <ul className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
           {options.map((option) => (
             <li key={option.value}>
-              <label className="flex items-center gap-3 rounded-xl border-2 border-benja-noite/15 bg-white px-3 py-2 text-sm has-[:checked]:border-benja-verde has-[:checked]:bg-benja-claro/40">
+              <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-studio-md border border-studio-controle bg-white px-3 py-2 text-sm transition duration-150 ease-studio hover:border-benja-verde has-[:checked]:border-benja-verde has-[:checked]:bg-benja-sucesso-fundo">
                 <input
                   type="checkbox"
                   name={name}
@@ -64,16 +69,26 @@ export function CheckboxGroup({
                   defaultChecked={selected.includes(option.value)}
                   className="size-5 shrink-0 accent-benja-verde"
                 />
+                {option.imageSrc ? (
+                  <Image
+                    src={option.imageSrc}
+                    alt=""
+                    width={56}
+                    height={40}
+                    unoptimized
+                    className="h-10 w-14 shrink-0 rounded-studio-sm bg-studio-realce object-cover"
+                  />
+                ) : null}
                 <span className="min-w-0 wrap-anywhere">
                   {option.label}
-                  {option.note ? <span className="text-benja-grafite/70"> ({option.note})</span> : null}
+                  {option.note ? <span className="text-studio-suave"> ({option.note})</span> : null}
                 </span>
               </label>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="mt-2 text-sm text-benja-grafite/80">Nada cadastrado ainda.</p>
+        <p className="mt-2 text-sm text-studio-suave">Nada cadastrado ainda.</p>
       )}
       {errors?.length ? (
         <p id={errorId} className="mt-1 text-sm font-semibold text-benja-erro">
