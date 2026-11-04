@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
  26/10/2026 Vinícius Nishimura Reis  Logotipo em /brand/logos (UX-14).
  01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
+ 04/11/2026 Vinícius Nishimura Reis  Endereço e redes seguem o que foi salvo no painel (ADM-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,6 +37,30 @@ describe("dados estruturados", () => {
     expect(schema.sameAs).toHaveLength(3);
     expect(schema.parentOrganization.name).toMatch(/FECAP/);
     expect(schema.logo).toBe(`${URL}/brand/logos/logo-horizontal.png`);
+  });
+
+  it("Organization mantém a sede da FECAP em campos separados enquanto o painel citar a mesma rua", () => {
+    expect(organizationSchema(siteSettings, URL).address).toMatchObject({
+      streetAddress: "Av. da Liberdade, 532",
+      addressLocality: "São Paulo",
+      postalCode: "01502-001",
+    });
+  });
+
+  it("Organization usa o endereço salvo no painel, sem cidade e CEP da sede antiga", () => {
+    const schema = organizationSchema({ ...siteSettings, contact: { address: "Rua Nova, 10, Campinas/SP" } }, URL);
+    expect(schema.address).toEqual({
+      "@type": "PostalAddress",
+      streetAddress: "Rua Nova, 10, Campinas/SP",
+      addressCountry: "BR",
+    });
+  });
+
+  it("Organization sem endereço, e-mail ou redes não inventa esses campos", () => {
+    const schema = organizationSchema({ ...siteSettings, contact: {}, socials: {} }, URL);
+    expect(schema).not.toHaveProperty("address");
+    expect(schema).not.toHaveProperty("email");
+    expect(schema.sameAs).toEqual([]);
   });
 
   it("BreadcrumbList numera e monta URLs absolutas", () => {

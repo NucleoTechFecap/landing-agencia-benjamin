@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,12 +20,32 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
  26/10/2026 Vinícius Nishimura Reis  Logotipos em /brand/logos (UX-14).
  01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
+ 04/11/2026 Vinícius Nishimura Reis  Endereço segue o que foi salvo no painel (ADM-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Area, CaseStudy, Service, SiteSettings } from "../content/types";
 
 /** Monta dados estruturados schema.org a partir do conteúdo (SEO e assistentes de IA). */
+
+const FECAP_STREET = "Av. da Liberdade, 532";
+
+/**
+ * O painel guarda o endereço em um texto só. Enquanto ele citar a sede da FECAP, valem os campos
+ * já separados; se mudar, o texto vai inteiro, sem cidade e CEP que seriam da sede antiga.
+ */
+function postalAddress(address: string) {
+  return address.includes(FECAP_STREET)
+    ? {
+        "@type": "PostalAddress",
+        streetAddress: FECAP_STREET,
+        addressLocality: "São Paulo",
+        addressRegion: "SP",
+        postalCode: "01502-001",
+        addressCountry: "BR",
+      }
+    : { "@type": "PostalAddress", streetAddress: address, addressCountry: "BR" };
+}
 
 export function organizationSchema(settings: SiteSettings, siteUrl: string) {
   return {
@@ -41,14 +61,7 @@ export function organizationSchema(settings: SiteSettings, siteUrl: string) {
     image: `${siteUrl}/brand/logos/logo-vertical.png`,
     sameAs: Object.values(settings.socials).filter(Boolean),
     ...(settings.contact.email ? { email: settings.contact.email } : {}),
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "Av. da Liberdade, 532",
-      addressLocality: "São Paulo",
-      addressRegion: "SP",
-      postalCode: "01502-001",
-      addressCountry: "BR",
-    },
+    ...(settings.contact.address ? { address: postalAddress(settings.contact.address) } : {}),
     parentOrganization: {
       "@type": "CollegeOrUniversity",
       name: "FECAP — Fundação Escola de Comércio Álvares Penteado",
