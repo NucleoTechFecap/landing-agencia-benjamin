@@ -2,12 +2,12 @@
 
 | Campo           | Valor                                                                        |
 | --------------- | ---------------------------------------------------------------------------- |
-| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58), DBX-02 (#113), DB-08 (#64), DBX-03 (#114), ARC-11 (#52) |
+| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58), DBX-02 (#113), DB-08 (#64), DBX-03 (#114), ARC-11 (#52), DBX-05 (#116) |
 | Responsável     | Vinicius Binda (`@VinnizzZ`)                                                 |
 | Revisão técnica | Vinícius Nishimura Reis (`@Vinishireis`)                                     |
 | Versão          | 1.0.0                                                                        |
 | Data            | 25/10/2026                                                                   |
-| Migration       | `supabase/migrations/20261025000100_cms_content.sql`, `20261029000100_db08_slugs_e_urls.sql` (§10), `20261030000100_dbx03_indices_rls.sql` (§11) e `20261102000300_tech06_status_de_atendimento.sql` |
+| Migration       | `supabase/migrations/20261025000100_cms_content.sql`, `20261029000100_db08_slugs_e_urls.sql` (§10), `20261030000100_dbx03_indices_rls.sql` (§11) e `20261102000300_tech06_status_de_atendimento.sql` e `20261104000100_dbx05_retencao_formularios.sql` (§12) |
 | Reversão        | `supabase/rollbacks/<migration>.down.sql` (uma por migration, §9)            |
 | Seed            | `supabase/seed.sql`, gerado por `scripts/content-seed.mjs` (só banco local, §9) |
 | Testes          | `supabase/tests/database/cms_content.test.sql` (pgTAP, 84 testes), `slugs_e_urls.test.sql` (pgTAP, 33 testes) e `lib/server/content/content-sql.test.ts` (SQL × regras de domínio) |
@@ -20,7 +20,7 @@ O banco tem três grupos de tabelas. Este documento cobre o grupo de conteúdo e
 | Grupo | Tabelas | Migration |
 | ----- | ------- | --------- |
 | Usuários e acesso | `profiles`, `role_permissions`, `audit_log` | 0100, 0200, 0300 |
-| Formulários (leads, contatos, feedbacks) | `form_submissions` | 0400, 20261102000300 (`update` do painel só em `status`) |
+| Formulários (leads, contatos, feedbacks) | `form_submissions` | 0400, 20261102000300 (`update` do painel só em `status`), 20261104000100 (retenção, §12) |
 | **Conteúdo do CMS** | `pages`, `blocks`, `areas`, `services`, `service_areas`, `case_categories`, `cases`, `case_services`, `case_media`, `ctas`, `media_assets`, `site_settings` | **20261025000100** |
 | Endereços antigos (DB-08) | `slug_redirects` | 20261029000100 |
 | Marcação de produção (ARC-11) | `ambiente_banco` | 20261102000100 |
@@ -392,6 +392,7 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | Site e painel sobre o seed (ARC-11, navegador e `curl`): cases fictícios em `/cases`, rascunho, agendado, arquivado e cliente real com 404, blocos em `/areas`. Login com as 4 contas de `npm run seed:users`: `admin` e `editor` veem 5 cases com o botão de novo case, `viewer` vê os 5 sem o botão, `pending` fica no login com o aviso | Conforme. E2E `@cms` sobre o seed: 18 testes, `PASS` |
 | `supabase/tests/database/cms_gravacao_atomica.test.sql` e `tests/integration/supabase/cms-gravacao-atomica.test.ts` (TECH-13, #314, 02/11/2026): 25 testes pgTAP e 6 de integração. FK inválida em qualquer etapa (área, serviço, galeria, criação) desfaz texto e vínculos; versão desatualizada (`40001`), item inexistente (`P0002`), coluna a mais ou a menos (`22023`) e leitor (`42501`) são recusados; funções `security invoker`, sem execução para `anon`, com `search_path` vazio | `Files=7, Tests=179, Result: PASS`; `npm run test:supabase` 62/62; `npm run test:e2e:cms` 18/18 |
 | `npm run test:migrations` com a `20261102000200`: instalação limpa, upgrade com dados, rollbacks em ordem inversa (duas vezes cada) e reaplicação | Verde em 02/11/2026 |
+| `supabase/tests/database/retencao_formularios.test.sql` e `tests/integration/supabase/retencao.test.ts` (DBX-05, 04/11/2026): último andamento, retenção suspensa, exclusão e anonimização, sem conteúdo fora do banco, auditoria só com contagens, execução travada sem aprovação | 29 testes pgTAP e 7 de integração, só com dados fictícios |
 
 ## 9. Como aplicar, testar e reverter
 
@@ -401,6 +402,7 @@ npx supabase start
 npx supabase db reset
 npx supabase test db          # testes pgTAP de supabase/tests/
 npm run test:supabase         # integração do código com a RLS real (tests/integration/supabase)
+npm run test:restore          # cópia e restauração em stack local nova (DB-10, DBX-05)
 npm run test:migrations       # instalação limpa, seed, upgrade e reversão completa (DBX-02)
 npm run perf:queries          # EXPLAIN ANALYZE vazio e com volume sintético (DBX-03, §11)
 
@@ -412,7 +414,7 @@ npx supabase db push
 
 **Ordem das migrations.** Sequência por timestamp, sem pular: perfis e papéis (0100) → matriz
 RBAC e bucket (0200) → auditoria (0300) → formulários (0400) → conteúdo do CMS (20261025000100)
-→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03) → marcação de produção (20261102000100, ARC-11) → gravação atômica (20261102000200, TECH-13) → `update` do painel só em `status` (20261102000300, TECH-06). Cada uma
+→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03) → marcação de produção (20261102000100, ARC-11) → gravação atômica (20261102000200, TECH-13) → `update` do painel só em `status` (20261102000300, TECH-06) → retenção (20261104000100, DBX-05). Cada uma
 depende só das anteriores. Mudança
 destrutiva em banco com dados é feita em duas releases: primeiro a coluna nova, depois a remoção
 da antiga.
@@ -554,3 +556,19 @@ papel (`anon`, `pending`, `viewer`, `editor`, `admin`) vê as mesmas linhas em c
 **Paginação e filtros testados:** `paginate` e limites de `pageSize` (`contracts.test.ts`), filtros
 sobre conteúdo local (`repository.test.ts`) e sobre a RLS real, com filtros combinados, serviço em
 rascunho e páginas somadas (`tests/integration/supabase/filtros-paginacao.test.ts`).
+
+## 12. Retenção de `form_submissions` (DBX-05)
+
+| Coluna | Tipo | Nulo | Padrão | Regra |
+| ------ | ---- | ---- | ------ | ----- |
+| `last_activity_at` | `timestamptz` | Não | `now()` | Último andamento: criação ou mudança de `status` (trigger `form_submissions_touch_activity`). Tentativa de notificação não conta |
+| `legal_hold` | `boolean` | Não | `false` | Retenção suspensa. Com ela, nenhum papel exclui a linha (`BJ004`). Só muda por SQL de pessoa autorizada |
+| `anonymized_at` | `timestamptz` | Sim | — | Quando o feedback identificado foi anonimizado |
+
+| Função | Quem chama | O que faz |
+| ------ | ---------- | --------- |
+| `retention_subjects()` | `service_role` | Id, tipo, último andamento e se é identificado, sem o conteúdo do envio e sem os que têm retenção suspensa |
+| `apply_retention(p_delete, p_anonymize, p_planned_at, p_origin)` | `service_role` e SQL autorizado | Exclui e anonimiza numa transação, ignora retenção suspensa e andamento depois do plano, e grava `retention.executed` só com contagens |
+
+Prazos e operação: [retenção e descarte](../operacao/retencao-e-descarte.md). Sem índice próprio: a varredura é mensal, numa tabela
+pequena, e índice só onde a medição justificou (§11).

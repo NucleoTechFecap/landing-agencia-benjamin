@@ -46,7 +46,7 @@ stateDiagram-v2
 | Banco (RLS) | `anon`: somente `insert` controlado (via função), **sem** `select/update/delete`. `authenticated`: `select/update/delete` apenas com `has_permission('lead'|'feedback', ação)` |
 | Servidor | Toda listagem/consulta/exportação chama `requirePermission("lead"|"feedback", ação)` |
 | Papéis | Somente `admin` (Benjamin) lê/exporta. `super_admin` não lê por padrão (acesso emergencial = atribuição temporária de `admin`, auditada) |
-| Service role | Usada só por rotinas operacionais (retenção, provisionamento); nunca em rotas públicas |
+| Service role | Usada só por rotinas operacionais (retenção, provisionamento); nunca em rotas públicas. Quem pode restaurar e acessar dados reais: [retenção e descarte §2](../operacao/retencao-e-descarte.md) |
 | Ambientes | Dados reais só em produção; o banco local usa o seed fictício, e homologação usa só conteúdo provisório aprovado (ARC-06/ARC-11) |
 
 ## 4. Consulta restrita e exportação
@@ -72,21 +72,16 @@ Regras em código (`RETENTION_RULES`, `retentionActionFor`, `planRetention`, `an
 | Feedback anônimo | 24 meses | Excluir | ⏳ |
 | Registro com *legal hold* | Suspenso | Manter | — |
 
-**Plano de execução (implementável — detalhado em DBX-05):**
+**Execução (DBX-05):** [retenção e descarte](../operacao/retencao-e-descarte.md).
 
-1. Rotina mensal (cron da Vercel → Route Handler protegido por segredo, ou `pg_cron` no Supabase)
-   lista registros com `last_activity_at`.
-2. `planRetention()` separa `delete`/`anonymize`.
-3. Execução em transação, com `service_role`, registrando **apenas a contagem** e os IDs na
-   auditoria (`retention.executed`).
-4. Cópias semanais criptografadas no Drive institucional ([DB-10](../operacao/backup-e-recuperacao.md)), já que o plano Free
-   não tem backup do provedor. Quantas manter depende da aprovação destes prazos. Restauração de cópia reaplica a rotina antes de
-   reabrir o acesso.
-
-**Lacunas conhecidas, sem migration (FORM-09):** o banco ainda não tem `last_activity_at`, `legal_hold` nem
-`anonymized_at` ([estrutura do banco](../banco/estrutura-do-banco-de-dados.md)), e o `admin` não tem `update`
-em `payload`. Por isso a anonimização de feedback identificado (retenção e revogação do consentimento) não
-é feita pelo painel: depende da rotina de DBX-05.
+1. Rota `/api/internal/jobs/retencao`, protegida por `CRON_SECRET`, chamada à mão uma vez por mês.
+2. `retention_subjects()` entrega id, tipo, último andamento e se é identificado, sem o conteúdo do envio, e
+   `planRetention()` separa `delete`/`anonymize`.
+3. `apply_retention()` executa numa transação e registra `retention.executed` **só com contagens**. Enquanto os prazos
+   não forem aprovados, a rota só simula.
+4. Cópias semanais criptografadas no Drive institucional ([DB-10](../operacao/backup-e-recuperacao.md)), já que o plano
+   Free não tem backup do provedor. Quantas manter depende da aprovação destes prazos. Restaurar uma cópia reaplica a lista
+   de eliminados e a rotina antes de reabrir o acesso.
 
 ## 6. Proteção de PII em logs e notificações
 

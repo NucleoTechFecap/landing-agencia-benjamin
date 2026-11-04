@@ -75,10 +75,10 @@ estruturado (`auth.login.failed`, sem e-mail) e nos *Auth logs* do Supabase.
 
 - Leitura: somente `audit:view` (`super_admin`, `admin`) via RLS. **Leitura anônima: impossível**
   (`revoke all ... from anon` + policy).
-- Escrita: somente pela função `record_audit_event` (sessão obrigatória) e pelas funções SQL de
+- Escrita: somente pela função `record_audit_event` (sessão obrigatória), pelas funções SQL de gestão de acesso e por `apply_retention` (`retention.executed`, sem sessão, só para `service_role`). A função valida o papel e a família do evento no banco; o cliente não escolhe
   gestão de acesso. A função valida o papel e a família do evento no banco; o cliente não escolhe
   uma categoria de auditoria acima das permissões da sessão.
-- Retenção proposta: 24 meses (⏳ aprovação institucional junto a TECH-08).
+- Retenção proposta: 24 meses (⏳ aprovação institucional junto a TECH-08). **Ainda sem rotina:** a tabela não aceita exclusão, nem por `service_role`, então cumprir o prazo exige uma mudança própria antes de 2028 ([retenção e descarte §3](../operacao/retencao-e-descarte.md)).
 
 ### Autorização de eventos (TECH-13)
 

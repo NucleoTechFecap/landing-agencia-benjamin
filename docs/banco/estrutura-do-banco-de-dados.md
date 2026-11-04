@@ -585,6 +585,12 @@ casaria, e **todo** salvamento daria conflito.
 
 ## 9. Formulários e retenção (DBX-05)
 
+> **Superado em 04/11/2026 (DBX-05).** Regras em vigor:
+> [retenção e descarte](../operacao/retencao-e-descarte.md) e [dicionário de dados](dicionario-de-dados.md) §12. Diferenças desta
+> proposta: a consulta abaixo não filtra `anonymized_at`, porque o feedback anonimizado ainda é excluído aos 24 meses; o
+> conteúdo fica no banco (`retention_subjects`, `apply_retention`); a auditoria guarda só contagens; não há índice
+> de varredura nem `handled_by`; e o agendamento ficou para depois da aprovação dos prazos.
+
 Ajustes propostos em `form_submissions` (migration `…0700`):
 
 | Coluna/índice | Por quê |
@@ -780,7 +786,7 @@ Para simular usuário num teste SQL: `set local role authenticated;` e
 | DBX-02 | Banco limpo sobe por comando; rollback testado; seed não roda em produção | §10 |
 | DBX-03 | Índices fundamentados; planos revisados; paginação e filtros testados | §8 · `explain analyze` no PR |
 | DBX-04 | Banco rejeita valores estruturais inválidos; testes de integridade | §5 · testes 2.x, 3.x, 4.x |
-| DBX-05 | Runbook de retenção, restauração e descarte | §9, §12 |
+| DBX-05 | Runbook de retenção, restauração e descarte | [Retenção e descarte](../operacao/retencao-e-descarte.md) · `npm run test:restore` |
 | DBX-06 | Matriz banco × papel; dados pessoais não consultáveis anonimamente | §6 · testes 1.x e 6.x |
 
 Ordem sugerida: **DB-01** (revisar este documento) → **DB-02/DBX-04** (migrations + pgTAP) →

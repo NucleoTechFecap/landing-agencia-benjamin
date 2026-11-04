@@ -38,7 +38,7 @@
 | Atualizar textos, serviços, cases e mídia | Quando necessário | Pela própria Benjamin no painel (GO-08) |
 | Convidar/desligar usuários do painel | Sob demanda | [Administrador inicial](administrador-inicial.md); desligamento no mesmo dia |
 | Conferir notificações com falha | Semanal | A Benjamin vê o aviso e o filtro **Notificação** em `/admin/leads` ([guia](../cms/guia-do-painel.md)). O NúcleoTech não lê os envios no painel: confere só as contagens com `select notification_status, count(*) from form_submissions group by 1` e o job de reenvio (GO-02). Com `notification_attempts = 5` não há novo reenvio automático: corrija a causa e devolva à fila com `update form_submissions set notification_attempts = 0 where id = …` |
-| Retenção de dados pessoais | Mensal | Rotina de DBX-05 com `planRetention` (TECH-08) |
+| Retenção de dados pessoais | Mensal | Simulação pela rota e registro das contagens; exclusão real só depois da aprovação dos prazos ([DBX-05 §4](retencao-e-descarte.md)) |
 | Revisar logs de erro | Semanal | Vercel → Logs filtrando `level=error` (ADR-0004) |
 | Revisar contas ativas e papéis | Mensal | `profiles` + trilha `user.*` na auditoria |
 | Atualizar dependências | Mensal | `npm outdated`, `npm audit`, PR com `npm run verify`, `test:e2e`, `test:supabase` e `test:e2e:cms` |

@@ -44,7 +44,7 @@ Decisão completa: [ADR-0006 — Cache e invalidação](https://github.com/Nucle
   `/contato`, `/feedback`.
 - Painel: `/admin` (login, nova senha, áreas, serviços, categorias, cases e mídia).
 - API: `/api/v1/*` (veja [[API pública]]); health check em `/api/v1/health`.
-- Operação: `/api/internal/revalidate` e `/api/internal/jobs/notificacoes`.
+- Operação: `/api/internal/revalidate`, `/api/internal/jobs/notificacoes` e `/api/internal/jobs/retencao`.
 
 ## Decisões de arquitetura (ADRs)
 

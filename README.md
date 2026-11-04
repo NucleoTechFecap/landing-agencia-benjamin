@@ -466,6 +466,7 @@ O contrato completo está em [`docs/api/contratos.md`](docs/api/contratos.md).
 | ---- | --- |
 | `POST /api/internal/revalidate` | Invalida o cache público por *tag* (`Bearer CONTENT_REVALIDATE_SECRET`) |
 | `GET /api/internal/jobs/notificacoes` | Reenvia notificações pendentes (Vercel Cron, `Bearer CRON_SECRET`) |
+| `GET`, `POST /api/internal/jobs/retencao` | Simula a retenção e, depois de aprovados os prazos, executa com confirmação (`Bearer CRON_SECRET`, [DBX-05](docs/operacao/retencao-e-descarte.md)) |
 | `/sitemap.xml` · `/robots.txt` · `/manifest.webmanifest` | Indexação e PWA básico |
 | `/llms.txt` · `/llms-full.txt` | Resumo e conteúdo completo para assistentes de IA |
 | `/opengraph-image` · `/twitter-image` | Imagens de compartilhamento padrão (há também uma por serviço e por case) |
@@ -556,6 +557,7 @@ npm run release:check   # antes de publicar em produção
 | Domínio, DNS e HTTPS | [GO-03](docs/operacao/dominio-dns-https.md) |
 | Checklist de release e rollback | [GO-01](docs/operacao/release-e-rollback.md) |
 | Backup e recuperação | [DB-10](docs/operacao/backup-e-recuperacao.md) |
+| Retenção e descarte de dados pessoais | [DBX-05](docs/operacao/retencao-e-descarte.md) |
 | Decisão de go/no-go | [TECH-14](docs/operacao/go-no-go.md) |
 | Publicação do MVP | [GO-06](docs/operacao/publicacao-mvp.md) |
 | Handoff e manutenção | [GO-09](docs/operacao/handoff-e-manutencao.md) |

@@ -99,7 +99,7 @@ node --env-file=<arquivo de variáveis> scripts/backup-media.mjs baixar --pasta 
 Depois:
 
 1. Entrar no Google Drive com a conta institucional do NúcleoTech e enviar `agencia-benjamin-copia-AAAA-MM-DD.tar.gpg`.
-2. Conferir no Drive o nome e o tamanho do arquivo.
+2. Conferir no Drive o nome e o tamanho do arquivo e atualizar a [lista de eliminados](retencao-e-descarte.md).
 3. Apagar a cópia local: `rm -rf "$COPIA" "$COPIA.tar.gpg"`.
 4. No painel do Supabase, conferir o uso do banco e da banda e se há aviso de pausa.
 5. Registrar a data e quem fez na tabela do §7.
@@ -142,9 +142,9 @@ Meta: **120 minutos** a partir da decisão.
 6. **Reconfigurar:** Auth conforme [GO-02](provisionamento-producao.md) (URLs, modelos, SMTP, cadastro público
    desligado) e as variáveis da Vercel com a URL e as chaves novas. Depois, publicar de novo e rodar
    `POST /api/internal/revalidate`.
-7. **Reaplicar a retenção de dados pessoais antes de liberar o acesso** (TECH-08). A rotina ainda depende da
-   DBX-05 e da aprovação dos prazos: enquanto isso, a coordenação técnica decide e registra como tratar os
-   dados vencidos.
+7. **Reaplicar a lista de eliminados e a retenção antes de liberar o acesso** (TECH-08), conforme
+   [retenção e descarte §8](retencao-e-descarte.md). Enquanto os prazos não forem aprovados, a rotina só simula, e a
+   coordenação técnica decide e registra como tratar os dados vencidos.
 8. **Conferir antes de abrir:**
    - contagem por tabela contra o que era esperado da cópia;
    - login de uma conta real e leitura pelo painel;
@@ -203,8 +203,8 @@ só com as migrations, restaura e confere:
 - [ ] **Primeira cópia real** da produção, seguindo o §4. Até ela existir, o item E10 do go/no-go segue pendente.
 - [ ] **Onde guardar a senha da criptografia.** Não pode ser o Drive. A documentação cita um "cofre da equipe", sem dizer qual
       é. Sem essa senha, nenhuma cópia pode ser restaurada.
-- [ ] **Quem acessa a conta institucional do Drive.** Com uma conta só, não dá para saber quem fez cada acesso: definir quem
-      tem a senha, com autenticação em dois fatores.
+- [x] **Quem acessa a conta institucional do Drive:** [retenção e descarte §2](retencao-e-descarte.md). Com uma conta só, não dá para saber quem
+      fez cada acesso. Falta confirmar a autenticação em dois fatores.
 - [ ] **Quantas cópias manter.** Segue a retenção da DBX-05, com prazos ainda sem aprovação. Sugestão a validar: as 4 mais
       recentes, apagando as demais do Drive e da lixeira.
 - [ ] **Ensaio em projeto hospedado**, com os dados fictícios, para cobrir o que o §6 não cobre e cronometrar os 120 minutos.

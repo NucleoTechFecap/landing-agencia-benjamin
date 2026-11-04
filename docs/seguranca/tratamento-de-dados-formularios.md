@@ -87,8 +87,8 @@ Detalhamento técnico do ciclo de vida, rotina de descarte e trilha de acesso: T
 | ------ | ------------ |
 | Confirmação/acesso | `admin` localiza no painel pelo protocolo informado pelo titular, ou pelos filtros de tipo, categoria e data, e envia cópia ao titular |
 | Correção | **Ainda não é feita pelo painel:** por regra do banco, o `admin` altera só o status. O fluxo para esse pedido está pendente, junto com o responsável por pedidos de titulares ([TECH-08 §8](ciclo-de-vida-dados-pessoais.md)) |
-| Eliminação | `admin` arquiva e exclui o registro no painel (ação auditada) e apaga o e-mail de notificação da caixa de destino |
-| Revogação do consentimento (feedback) | **Ainda não é feita pelo painel:** a anonimização depende da rotina de DBX-05. Enquanto isso, o `admin` pode excluir o registro |
+| Eliminação | `admin` arquiva e exclui o registro no painel (ação auditada), apaga o e-mail de notificação da caixa de destino e informa o id para a [lista de eliminados](../operacao/retencao-e-descarte.md) |
+| Revogação do consentimento (feedback) | **Ainda não é feita pelo painel:** anonimização por SQL de pessoa autorizada ([retenção e descarte §5](../operacao/retencao-e-descarte.md)). O `admin` também pode excluir o registro |
 
 Canal para pedidos: e-mail do encarregado informado no aviso de privacidade (SEG-02).
 
