@@ -22,6 +22,8 @@
 */
 
 import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test, type Page } from "@playwright/test";
 
@@ -43,6 +45,7 @@ test.describe("Painel · prévia protegida @cms", () => {
   const ids = { service: "", category: "", case: "", page: "", manifesto: "" };
   const slugs = { service: "", case: "" };
   const secret = { service: "", case: "", paragraph: "", manifesto: "" };
+  const asset = { id: "", path: "" };
 
   async function must<T>(query: PromiseLike<{ data: T | null; error: { message: string } | null }>): Promise<T> {
     const { data, error } = await query;
@@ -79,6 +82,23 @@ test.describe("Painel · prévia protegida @cms", () => {
 
     const insert = (table: string, values: Record<string, unknown>) =>
       must<{ id: string }>(admin.from(table).insert(values).select("id").single());
+    // Imagem real no Storage: a prévia precisa carregá-la sob a CSP (SEG-06).
+    const bytes = readFileSync(join(process.cwd(), "public/brand/cases/meridiano.webp"));
+    asset.path = `2026/11/${randomUUID()}-previa-${suffix}.webp`;
+    const upload = await admin.storage.from("media").upload(asset.path, bytes, { contentType: "image/webp" });
+    if (upload.error) throw upload.error;
+    asset.id = (
+      await insert("media_assets", {
+        path: asset.path,
+        mime_type: "image/webp",
+        size_bytes: bytes.length,
+        width: 1200,
+        height: 750,
+        alt_text: "Capa do rascunho",
+        decorative: false,
+      })
+    ).id;
+    const photo = admin.storage.from("media").getPublicUrl(asset.path).data.publicUrl;
     ids.service = (
       await insert("services", {
         slug: slugs.service,
@@ -96,6 +116,7 @@ test.describe("Painel · prévia protegida @cms", () => {
         category_id: ids.category,
         summary: "Resumo do case.",
         challenge: "Desafio do rascunho.",
+        cover_media_id: asset.id,
       })
     ).id;
     ids.page = (await insert("pages", { slug: `previa-pagina-${suffix}`, title: `Página ${suffix}` })).id;
@@ -109,7 +130,10 @@ test.describe("Painel · prévia protegida @cms", () => {
       page_id: ids.page,
       type: "team",
       sort_order: 1,
-      content: { title: "Time da prévia", members: [{ name: "Ana Fictícia", role: "Direção" }] },
+      content: {
+        title: "Time da prévia",
+        members: [{ name: "Ana Fictícia", role: "Direção", photo: { src: photo, alt: "Ana sorrindo" } }],
+      },
     });
     ids.manifesto = (await insert("pages", { slug: `previa-manifesto-${suffix}`, title: `Topo ${suffix}` })).id;
     await insert("blocks", {
@@ -125,6 +149,8 @@ test.describe("Painel · prévia protegida @cms", () => {
     if (ids.case) await admin.from("cases").delete().eq("id", ids.case);
     if (ids.category) await admin.from("case_categories").delete().eq("id", ids.category);
     if (ids.service) await admin.from("services").delete().eq("id", ids.service);
+    if (asset.id) await admin.from("media_assets").delete().eq("id", asset.id);
+    if (asset.path) await admin.storage.from("media").remove([asset.path]);
     for (const account of Object.values(accounts)) if (account.id) await admin.auth.admin.deleteUser(account.id);
   });
 
@@ -138,6 +164,23 @@ test.describe("Painel · prévia protegida @cms", () => {
   }
 
   const servicePreview = () => `/admin/previa/servico/${ids.service}`;
+
+  /** Bloqueios da CSP vão só para o console: sem isto, uma imagem barrada passaria despercebida. */
+  function watchCsp(page: Page) {
+    const blocked: string[] = [];
+    page.on("console", (message) => {
+      if (message.text().includes("Content Security Policy")) blocked.push(message.text());
+    });
+    return blocked;
+  }
+
+  /**
+   * Passa pelo otimizador, na mesma origem. O carregamento em si não dá para conferir aqui: o Next recusa
+   * buscar a imagem no Storage local, por ser IP privado. O caminho direto ao Storage sob a CSP está em
+   * jornada-midia-gestao.
+   */
+  const expectOptimized = (image: ReturnType<Page["getByRole"]>) =>
+    expect(image).toHaveAttribute("src", /^\/_next\/image\?url=/);
 
   test("visitante é levado ao login e não recebe nada do rascunho", async ({ page, request }) => {
     const direct = await request.get(servicePreview(), { maxRedirects: 0 });
@@ -198,9 +241,12 @@ test.describe("Painel · prévia protegida @cms", () => {
   });
 
   test("leitor vê a prévia, mas não ganha botão de gravar", async ({ page }) => {
+    const blocked = watchCsp(page);
     await login(page, accounts.viewer);
     await page.goto(`/admin/previa/case/${ids.case}`);
     await expect(page.getByRole("heading", { level: 1, name: secret.case })).toBeVisible();
+    await expectOptimized(page.getByRole("img", { name: "Capa do rascunho" }));
+    expect(blocked).toEqual([]);
     await expect(page.getByText("Desafio do rascunho.")).toBeVisible();
     await expect(page.getByRole("button", { name: /Publicar|Salvar/ })).toHaveCount(0);
   });
@@ -212,8 +258,11 @@ test.describe("Painel · prévia protegida @cms", () => {
       "href",
       `/admin/previa/pagina/${ids.page}`,
     );
+    const blocked = watchCsp(page);
     await page.goto(`/admin/previa/pagina/${ids.page}`);
     await expect(page.getByText(secret.paragraph)).toBeVisible();
+    await expectOptimized(page.getByRole("img", { name: "Ana sorrindo" }));
+    expect(blocked).toEqual([]);
     await expect(page.getByText("Ana Fictícia")).toBeVisible();
     await expect(page.getByRole("status").first()).toContainText("seções fixas");
     expect(await (await request.get("/")).text()).not.toContain(secret.paragraph);
