@@ -36,6 +36,7 @@ export interface AdminModule {
 
 /** Módulo novo: acrescente uma linha. Quando a tela ficar pronta, troque `issue` por `href`. */
 export const ADMIN_MODULES: readonly AdminModule[] = [
+  { name: "Visão geral dos conteúdos", resource: "dashboard", action: "view", href: "/admin/conteudos" },
   { name: "Páginas e textos", resource: "page", action: "view", href: "/admin/paginas" },
   { name: "Áreas de atuação", resource: "area", action: "view", href: "/admin/areas" },
   { name: "Serviços", resource: "service", action: "view", href: "/admin/servicos" },
