@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 02/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,11 +18,13 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  02/11/2026 Vinícius Nishimura Reis  Criação inicial (TECH-13, #313).
+ 04/11/2026 Vinícius Nishimura Reis  Remoção que não apagou nada é falha, não sucesso (SEG-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { readObjectStart } from "./media-storage";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createSupabaseMediaStorage, readObjectStart } from "./media-storage";
 
 const URL = "https://projeto.supabase.co/storage/v1/object/public/media/a.pdf";
 
@@ -68,5 +70,30 @@ describe("readObjectStart (TECH-13, #313)", () => {
     await expect(readObjectStart(URL, 16)).rejects.toMatchObject({ code: "SERVICE_UNAVAILABLE" });
     respondWith(new Uint8Array(16), { status: 206, headers: { "content-range": "bytes 0-15/*" } });
     await expect(readObjectStart(URL, 16)).rejects.toMatchObject({ code: "SERVICE_UNAVAILABLE" });
+  });
+});
+
+describe("createSupabaseMediaStorage: remoção (SEG-05)", () => {
+  const storageReturning = (result: { data: unknown; error: unknown }) =>
+    createSupabaseMediaStorage({
+      storage: { from: () => ({ remove: async () => result }) },
+    } as unknown as SupabaseClient);
+
+  it("só resolve quando o Storage devolve o objeto removido", async () => {
+    await expect(storageReturning({ data: [{ name: "a.pdf" }], error: null }).remove("a.pdf")).resolves.toBeUndefined();
+  });
+
+  it("erro do Storage vira falha, com a causa", async () => {
+    const error = new Error("fora do ar");
+    await expect(storageReturning({ data: null, error }).remove("a.pdf")).rejects.toMatchObject({
+      code: "SERVICE_UNAVAILABLE",
+      cause: error,
+    });
+  });
+
+  it("lista vazia sem erro (sem permissão ou nada a apagar) também é falha", async () => {
+    await expect(storageReturning({ data: [], error: null }).remove("a.pdf")).rejects.toMatchObject({
+      code: "SERVICE_UNAVAILABLE",
+    });
   });
 });
