@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,7 +35,7 @@ export interface PhotoOption {
 }
 
 const button =
-  "rounded-full border-2 border-benja-noite bg-white px-4 py-1.5 text-xs font-bold text-benja-noite transition hover:bg-benja-creme disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex min-h-11 items-center rounded-full border-2 border-benja-noite bg-white px-4 py-1.5 text-xs font-bold text-benja-noite transition hover:bg-benja-creme disabled:cursor-not-allowed disabled:opacity-40";
 
 const BLANK: TeamMemberInput = { name: "", role: "", photoId: "" };
 
@@ -59,7 +60,7 @@ export function TeamMembersField({
       return next;
     });
   return (
-    <fieldset className="space-y-4">
+    <fieldset className="min-w-0 space-y-4">
       <legend className="text-sm font-bold text-benja-noite">Pessoas</legend>
       <p className="text-xs text-benja-grafite/80">
         Publique só nomes, cargos e fotos que a pessoa autorizou. As fotos vêm da biblioteca de mídia e precisam de
@@ -68,7 +69,7 @@ export function TeamMembersField({
       {errors?.length ? <p className="text-sm font-semibold text-benja-erro">{errors[0]}</p> : null}
       {rows.map((member, index) => (
         <div key={member.key} className="space-y-3 rounded-2xl border-2 border-benja-noite/10 p-4">
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <TextField
               id={`member-${member.key}-name`}
               name="memberName"

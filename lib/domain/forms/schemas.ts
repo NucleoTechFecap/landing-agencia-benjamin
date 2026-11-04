@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (FORM-01).
  02/11/2026 Vinícius Nishimura Reis  Serviço de interesse só aceita slug (TECH-06).
  02/11/2026 Vinícius Nishimura Reis  Nome e empresa em uma linha; lista de serviços conferida no servidor (TECH-06).
+ 04/11/2026 Vinícius Nishimura Reis  Campo técnico vazio vale como ausente: envio sem JavaScript (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -110,18 +111,28 @@ const checkbox = (message: string) =>
 const optionalCheckbox = z.preprocess((value) => value === true || value === "on" || value === "true", z.boolean());
 
 /**
+ * Sem JavaScript, ou antes da hidratação, o navegador manda os campos ocultos vazios. Vazio vale como
+ * ausente, o que não abre brecha no antispam: quem omitia o campo já ficava fora do tempo mínimo
+ * (`isSuspectedBot`), e honeypot, limite por origem e deduplicação por conteúdo seguem valendo (FORM-08).
+ */
+const blankAsUndefined = (value: unknown) => (value === "" ? undefined : value);
+
+/**
  * Campos técnicos comuns (não são dados pessoais): idempotência, antispam e origem.
  * `website` é um honeypot — campo invisível que pessoas reais deixam vazio.
  */
 export const technicalFieldsSchema = z.object({
   submissionId: z.uuid("Envio inválido. Recarregue a página e tente novamente."),
   website: z.string().max(0, "Envio recusado.").optional().default(""),
-  startedAt: z.coerce.number().int().positive().optional(),
-  sourcePath: z
-    .string()
-    .max(200)
-    .regex(/^\/[^\s]*$/)
-    .optional(),
+  startedAt: z.preprocess(blankAsUndefined, z.coerce.number().int().positive().optional()),
+  sourcePath: z.preprocess(
+    blankAsUndefined,
+    z
+      .string()
+      .max(200)
+      .regex(/^\/[^\s]*$/)
+      .optional(),
+  ),
 });
 
 const privacyConsent = checkbox("É preciso declarar ciência do aviso de privacidade.");

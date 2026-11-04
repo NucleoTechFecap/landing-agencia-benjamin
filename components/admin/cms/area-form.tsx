@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -44,7 +45,7 @@ export function AreaForm({ action, area, readOnly }: { action: CmsSaveAction; ar
     >
       {({ errors, value }) => (
         <>
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <TextField
               name="name"
               label="Nome"
@@ -81,7 +82,7 @@ export function AreaForm({ action, area, readOnly }: { action: CmsSaveAction; ar
             errors={errors("highlights")}
             defaultValue={value("highlights", area?.highlights.join("\n"))}
           />
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <SelectField
               name="icon"
               label="Ícone"

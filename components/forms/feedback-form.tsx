@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 25/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,9 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  25/10/2026 Caio Moraes              Cores de erro via tokens do tema (LAY-04).
+ 04/11/2026 Vinícius Nishimura Reis  Botão disponível antes da hidratação (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Envio pelo onSubmit do hook (FORM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Validação no navegador (FORM-04/FORM-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,17 +40,21 @@ export function FeedbackForm({ action }: { action: FormAction }) {
 }
 
 function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: () => void }) {
-  const { state, formAction, pending, meta, formRef, errors, values } = useSubmission(action);
+  const { state, formAction, onSubmit, pending, meta, formRef, errors, values } = useSubmission("feedback", action);
   if (state.status === "success") {
     return <FormSuccess protocol={state.protocol} title="Obrigado pelo feedback!" onReset={onReset} />;
   }
   return (
-    <form ref={formRef} action={formAction} noValidate className="relative space-y-6">
+    <form ref={formRef} action={formAction} onSubmit={onSubmit} noValidate className="relative space-y-6">
       <TechnicalFields meta={meta} />
       <HoneypotField />
       <FormErrorBanner state={state} />
 
-      <fieldset aria-describedby={errors.profile ? "profile-erro" : undefined}>
+      <fieldset
+        role="radiogroup"
+        aria-invalid={errors.profile ? true : undefined}
+        aria-describedby={errors.profile ? "profile-erro" : undefined}
+      >
         <legend className="text-sm font-bold">
           Você é{" "}
           <span aria-hidden className="text-benja-laranja">
@@ -142,9 +149,7 @@ function FeedbackFormInner({ action, onReset }: { action: FormAction; onReset: (
       <CheckboxField name="privacyConsent" required errors={errors.privacyConsent}>
         <PrivacyConsentText />
       </CheckboxField>
-      <SubmitButton pending={pending} ready={Boolean(meta.submissionId)}>
-        Enviar feedback
-      </SubmitButton>
+      <SubmitButton pending={pending}>Enviar feedback</SubmitButton>
     </form>
   );
 }

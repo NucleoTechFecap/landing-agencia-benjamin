@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 27/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-12).
  27/10/2026 Vinícius Nishimura Reis  Jornadas em série: a massa do beforeAll é compartilhada (TECH-12).
+ 04/11/2026 Vinícius Nishimura Reis  Chega ao módulo pelo menu do painel (ADM-04).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -142,7 +143,10 @@ test.describe("J2 · editor publica no CMS e o site mostra @cms", () => {
 
   test("J2.5 rascunho → publicar → editar → arquivar, refletindo no site sem redeploy", async ({ page }) => {
     await login(page, accounts.editor);
-    await page.getByRole("link", { name: "Cases e categorias" }).click();
+    await page
+      .getByRole("navigation", { name: "Módulos do painel" })
+      .getByRole("link", { name: "Cases", exact: true })
+      .click();
     await page.getByRole("link", { name: "Novo case" }).click();
     await visible(page.getByLabel("Título")).fill(`Case E2E ${suffix}`);
     // Endereço em branco: o servidor gera "case-e2e-<sufixo>" a partir do título.

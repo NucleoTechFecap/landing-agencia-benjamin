@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  26/10/2026 Vinícius Nishimura Reis  Campos remontados após erro preservam seleções (ADM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -75,7 +76,7 @@ export function CmsFormShell({
       <fieldset
         key={state.status === "error" ? state.requestId : "inicial"}
         disabled={readOnly || pending}
-        className="space-y-5 disabled:opacity-80"
+        className="min-w-0 space-y-5 disabled:opacity-80"
       >
         {children(fields)}
       </fieldset>

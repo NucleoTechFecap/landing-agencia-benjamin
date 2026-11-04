@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,6 +23,7 @@
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Sem JavaScript o fallback leva às páginas estáticas dos formulários (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,8 +37,10 @@ import { SocialLinks } from "@/components/layout/social-links";
 import { PageBlocks } from "@/components/sections/page-blocks";
 import { PageHero } from "@/components/sections/page-hero";
 import { BrandIcon } from "@/components/ui/brand-icon";
+import { buttonClasses } from "@/components/ui/button-link";
 import { Section } from "@/components/ui/section";
 import { LoadingState } from "@/components/ui/states";
+import { STANDALONE_FORM_PATHS } from "@/lib/config/navigation";
 import { CONTACT_SUBJECTS } from "@/lib/domain/forms/schemas";
 import { getPage, getSiteSettings, listServices } from "@/lib/server/content/repository";
 import { submitContact, submitLead } from "../actions";
@@ -120,13 +123,40 @@ export default async function ContactPage({ searchParams }: PageProps<"/contato"
             <h2 id="formulario-titulo" className="sr-only">
               Formulário de contato
             </h2>
-            <Suspense fallback={<LoadingState label="Carregando formulário…" />}>
+            <Suspense fallback={<ContactFormsFallback />}>
               <ContactForms searchParams={searchParams} />
             </Suspense>
           </div>
         </div>
       </Section>
       <PageBlocks page={page} />
+    </>
+  );
+}
+
+/**
+ * O formulário depende da URL e chega por streaming, trocado no lugar do fallback por um script do React:
+ * sem JavaScript essa troca nunca acontece. Quem está nessa situação escolhe a página estática (FORM-08).
+ */
+function ContactFormsFallback() {
+  return (
+    <>
+      <LoadingState label="Carregando formulário…" className="[@media(scripting:none)]:hidden" />
+      <noscript>
+        <p className="font-bold">Escolha o que você quer enviar:</p>
+        <ul className="mt-4 flex flex-wrap gap-3">
+          <li>
+            <Link href={STANDALONE_FORM_PATHS.lead} className={buttonClasses("primary")}>
+              Quero um projeto
+            </Link>
+          </li>
+          <li>
+            <Link href={STANDALONE_FORM_PATHS.contact} className={buttonClasses("secondary")}>
+              Fale com a gente
+            </Link>
+          </li>
+        </ul>
+      </noscript>
     </>
   );
 }

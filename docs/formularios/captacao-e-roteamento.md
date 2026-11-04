@@ -95,6 +95,8 @@ ao visitante nem apaga o envio. Os cenários completos estão em [TECH-07](idemp
 | Contato ou feedback sem lista própria | Sucesso com protocolo | Salvo | Vai para `LEAD_NOTIFICATION_TO` | — |
 | Sem destinatário em desenvolvimento/preview | Sucesso com protocolo | Salvo, `skipped` | Não é enviada nem reenviada: esses ambientes não mandam e-mail real | Log `forms.notification.skipped` |
 | Provedor fora do ar ou recusa o envio | Sucesso com protocolo | Salvo, `failed` | Job reenvia com espera crescente, até 5 tentativas | Log `forms.notification.failed` |
+| Falha ao gravar o resultado da notificação | Sucesso com protocolo | Salvo, com a notificação como estava | Job tenta de novo; o `Idempotency-Key` evita e-mail repetido por 24 h | Log `forms.notification.status_update_failed` |
+| Rede do visitante cai no envio | Aviso no formulário, com o que digitou; pode reenviar | Só se o POST chegou ao servidor; o reenvio não duplica | Como no envio normal | — |
 | 5 tentativas esgotadas | (Já viu sucesso) | Mantido, `failed` | Sai da fila; os envios novos continuam sendo reenviados | Conferência semanal ([handoff](../operacao/handoff-e-manutencao.md)), com reenvio manual |
 | E-mail aceito pelo provedor e devolvido pela caixa de destino | Sucesso com protocolo | Salvo, `sent` | **Não detectada no MVP** (sem webhook de devolução) | Teste de recebimento no lançamento (CA-15) |
 
