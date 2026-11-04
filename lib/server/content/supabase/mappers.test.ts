@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,12 +22,15 @@
  26/10/2026 Vinícius Nishimura Reis  Testes de categorias, cases e galeria (DB-05).
  26/10/2026 Vinícius Nishimura Reis  Id da mídia no mapeamento e fora do DTO (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
+ 04/11/2026 Vinícius Nishimura Reis  Colunas do destino do CTA, ida e volta (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { describe, expect, it } from "vitest";
 import { siteSettings } from "@/content";
+import type { CtaTarget } from "@/lib/domain/content/types";
 import {
+  ctaTargetColumns,
   toArea,
   toCase,
   toCategory,
@@ -98,6 +101,23 @@ describe("toCta (DB-03)", () => {
   it("destino excluído (FK nula) vira id vazio, que cai no fallback do site", () => {
     expect(toCtaTarget(cta({ target_kind: "case" }))).toEqual({ kind: "case", caseId: "" });
     expect(toCtaTarget(cta({ target_kind: "area" }))).toEqual({ kind: "area", areaId: "" });
+  });
+});
+
+describe("ctaTargetColumns (ADM-11)", () => {
+  it.each<CtaTarget>([
+    { kind: "internal", path: "/sobre" },
+    { kind: "external", url: "https://exemplo.com" },
+    { kind: "service", serviceId: "s1" },
+    { kind: "case", caseId: "c1" },
+    { kind: "area", areaId: "a1" },
+    { kind: "contact" },
+    { kind: "contact", serviceId: "s1" },
+  ])("grava %j só na coluna do tipo e volta igual", (target) => {
+    const columns = ctaTargetColumns(target);
+    expect(toCtaTarget(cta(columns))).toEqual(target);
+    const filled = Object.entries(columns).filter(([key, value]) => key !== "target_kind" && value !== null);
+    expect(filled.length).toBeLessThanOrEqual(1);
   });
 });
 

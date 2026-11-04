@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (QA-04).
+ 04/11/2026 Vinícius Nishimura Reis  CTA entra na matriz de publicação (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -28,7 +29,7 @@ import type { PublicationStatus } from "@/lib/domain/content/publication-status"
 import type { AuditInput } from "../audit";
 import type { ContentChange } from "../content/invalidate";
 import { runContentCommand, type CmsDeps } from "./content-service";
-import { AREA, CASE, CATEGORY, SERVICE, type CmsItem, type EntityDefinition } from "./entities";
+import { AREA, CASE, CATEGORY, CTA, SERVICE, type CmsItem, type EntityDefinition } from "./entities";
 import { createMemoryCmsStore, type MemoryTables } from "./memory-store";
 
 /*
@@ -44,6 +45,7 @@ const ID = {
   category: "c0000000-0000-4000-8000-000000000001",
   case: "ca000000-0000-4000-8000-000000000001",
   cover: "f0000000-0000-4000-8000-000000000001",
+  cta: "d0000000-0000-4000-8000-000000000001",
 };
 
 const VALID: Record<PublicationStatus, Partial<Record<PublicationCommand, PublicationStatus | "deleted">>> = {
@@ -178,6 +180,21 @@ function seed(target: string, status: PublicationStatus): Partial<MemoryTables> 
         decorative: false,
       },
     ],
+    ctas: [
+      {
+        ...state(ID.cta),
+        id: ID.cta,
+        label: "Fale com a gente",
+        placement: "home-highlight",
+        target_kind: "internal",
+        target_path: "/contato",
+        target_url: null,
+        target_service_id: null,
+        target_case_id: null,
+        target_area_id: null,
+        sort_order: 1,
+      },
+    ],
   };
 }
 
@@ -186,6 +203,7 @@ const ENTITIES: [string, EntityDefinition<never, CmsItem>, string, keyof MemoryT
   ["serviço", SERVICE as never, ID.service, "services"],
   ["categoria", CATEGORY as never, ID.category, "case_categories"],
   ["case", CASE as never, ID.case, "cases"],
+  ["CTA", CTA as never, ID.cta, "ctas"],
 ];
 
 const scenarios = ENTITIES.flatMap(([label, def, id, table]) =>
@@ -194,7 +212,7 @@ const scenarios = ENTITIES.flatMap(([label, def, id, table]) =>
   ),
 );
 
-describe("QA-04 — matriz de publicação (4 entidades × 15 transições × 4 papéis)", () => {
+describe("QA-04 — matriz de publicação (5 entidades × 15 transições × 4 papéis)", () => {
   it.each(scenarios)("$label: $from → $command como $role", async ({ def, id, table, from, command, role }) => {
     const { store, tables } = createMemoryCmsStore(seed(id, from));
     const audits: AuditInput[] = [];
