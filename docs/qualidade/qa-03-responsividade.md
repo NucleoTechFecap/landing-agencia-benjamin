@@ -4,10 +4,10 @@
 | ------------ | ------------------------------------------------------------------------------------------------------- |
 | Issue        | QA-03 (#181)                                                                                            |
 | Execução     | 04/11/2026                                                                                              |
-| Versão       | `8e55596`, branch `test/qa-06-acesso-links-e-telas`, sobre a `main` em `6959c27`                         |
+| Versão       | `b40318f`, branch `test/qa-06-acesso-links-e-telas`, sobre a `main` em `4e0f40c`                         |
 | Ambiente     | Local: `next start` (build de produção), Chrome headless, com o conteúdo versionado e com o Supabase local |
 | Escopo       | Rotas públicas em 360, 768, 1280 e 1920 px (CA-06). O painel tem a mesma verificação em `painel-responsivo.spec.ts` (ADM-16) |
-| Fora do escopo | Aparelhos físicos, Safari e Firefox: o Playwright usa o Chrome do sistema. Conteúdo real da agência: os textos seguem provisórios (CON-03 a CON-05), e texto real mais longo pode mudar o resultado. Telas de PRs ainda abertos (prévia, CTAs) |
+| Fora do escopo | Aparelhos físicos, Safari e Firefox: o Playwright usa o Chrome do sistema. Conteúdo real da agência: os textos seguem provisórios (CON-03 a CON-05), e texto real mais longo pode mudar o resultado. |
 
 ## 1. Como reexecutar
 
@@ -98,23 +98,17 @@ plantado (seção 3).
 
 ## 8. Resultado
 
+Em `b40318f`, sobre `4e0f40c`, com a máquina livre. A seção 6 foi medida antes do rebase, sobre `6959c27`, em carga alta provocada.
+
 | Bateria | Resultado em 04/11/2026 |
 | ------- | ----------------------- |
-| `npm run verify` | Verde: 91 arquivos e 1206 testes passando, 167 pulados (entre eles os 17 arquivos de integração, que rodam na linha abaixo); build de produção ok |
-| `npx supabase test db`, banco limpo | `Files=10, Tests=260, Result: PASS` |
-| `npm run test:supabase` | 17 arquivos, 165 de 165 |
-| `npm run test:e2e:cms`, todas as jornadas `@cms` | 361 de 361 |
-| `npm run test:e2e`, build sem Supabase, desktop e celular | 437 passaram, 0 falharam, 699 pulados (`@cms` e o que não depende da largura) |
-| `responsividade-site.spec.ts`, build sem Supabase, `--repeat-each=3` | Dentro da linha de 654 da [QA-06 §9](qa-06-acesso-indevido.md), 0 falhas |
-| `responsividade-site.spec.ts`, build com Supabase, desktop | 73 passaram, 7 pulados |
+| `npm run verify` | Verde: 102 arquivos e 1521 testes passando, 189 pulados (entre eles os 19 arquivos de integração, que rodam na bateria S); build de produção ok |
+| `npm run test:e2e`, build limpo sem Supabase, desktop e celular, com `responsividade-site.spec.ts` | 446 passaram, 0 falharam, 818 pulados (`@cms` e o que não depende da largura) |
+| `responsividade-site.spec.ts` e demais specs desta entrega, sem Supabase, `--repeat-each=3` | 693 passaram, 0 falharam, 1605 pulados |
 | Capturas, `E2E_EVIDENCE=1` | 69 testes passaram, 59 capturas por tela e largura |
-
-As repetições rodaram no commit anterior, `b5b3c8c`. O último commit só acrescenta a verificação da faixa final, repetida 3 vezes à
-parte, sem falha.
-
+| Painel em 360, 768 e 1280 px, com CTAs, detalhe de mídia e prévia (`painel-responsivo.spec.ts`), dentro de `npm run test:e2e:cms` | 425 de 425 (421 em paralelo e 4 de `@home-global`, em série) |
 
 ## 9. Pendências
 
 - Conferir em aparelho físico e em Safari na homologação (QA-11, GO-02).
 - Repetir com os textos aprovados pela agência (CON-03 a CON-05). A verificação é a mesma.
-- Telas dos PRs abertos (prévia, CTAs) entram quando chegarem à `main`.
