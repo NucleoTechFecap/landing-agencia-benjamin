@@ -154,8 +154,14 @@ export async function publishCase(input: { id: string; expectedUpdatedAt: string
 | `delete` | `{ id }` (somente arquivado) | `delete` | 403, 409 |
 | `requestMediaUpload` | `FormData { name, type, size, alt, decorative }` (sem o arquivo) | `media:create` | 413, 415, 422 (ARC-10) |
 | `finishMediaUpload` | `FormData { path, name, type, alt, decorative, voltar? }` | `media:create` | 413, 415, 422 (ARC-10) |
-| `listLeads` | `{ kind?, category?, status?, page, pageSize }` | `lead:view` | 401, 403 |
-| `exportLeads` | filtros | `lead:export` | 401, 403 |
+| `listSubmissions` (`listLeads` nas versões anteriores deste documento) | `{ kind?, status?, category?, notification?, page }`; página fixa de 20 itens | `lead:view` ou `feedback:view`, por tipo | 401, 403 |
+| `changeSubmissionStatus` | `{ id, status, currentStatus }` | `lead:edit` ou `feedback:edit`, pelo tipo gravado | 401, 403, 404, 409, 422 |
+| `deleteSubmission` | `{ id }` (somente arquivado) | `lead:delete` ou `feedback:delete`, pelo tipo gravado | 401, 403, 404, 409 |
+| `exportLeads` (não construído) | filtros | `lead:export` | 401, 403 |
+
+Envios não têm rota em `/api/v1`: a consulta só existe nas telas do painel, com a sessão de quem está logado,
+e os parâmetros da URL passam por lista fechada em `parseInboxQuery` (`lib/domain/forms/inbox.ts`).
+Valor malformado vira "sem filtro"; id malformado responde como inexistente, sem chegar ao banco.
 
 Entidades com Zod próprio: case (`case-schema.ts` — CASE-11); serviço, área, categoria, CTA e
 página seguem o mesmo padrão rascunho/publicação, com campos obrigatórios de TECH-05 §5.

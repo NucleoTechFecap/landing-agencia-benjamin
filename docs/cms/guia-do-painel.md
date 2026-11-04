@@ -104,6 +104,9 @@ stateDiagram-v2
 
 Contato, links e redes sociais são uma exceção: só o Administrador altera. Veja a seção própria, abaixo.
 
+Leads e feedbacks têm dados pessoais: só o Administrador vê. O NúcleoTech (Super administrador), o
+Editor e o Leitor recebem "Sem permissão". A lista de quem pode ver ainda aguarda a aprovação da Benjamin.
+
 Matriz completa em [perfis e permissões](../seguranca/perfis-e-permissoes.md).
 
 ## Menu do painel
@@ -285,6 +288,75 @@ rascunho ou arquivado) a usar — o painel lista quais.
 Dá para salvar o case aos poucos, enquanto o material da Benjamin chega: a lista "Para publicar,
 falta" mostra primeiro os campos vazios e, depois de completos, as regras que dependem de outros
 conteúdos (como a categoria estar publicada).
+
+## Leads e feedbacks (`/admin/leads`)
+
+Tudo o que chega pelos formulários do site fica aqui, mesmo se o e-mail de aviso falhar. Só quem é
+Administrador abre esta tela.
+
+| Tipo | O que é | De onde vem |
+| ---- | ------- | ----------- |
+| Novo projeto | Pedido de quem quer contratar um trabalho | Contato, aba "Quero um projeto" |
+| Contato institucional | Parcerias, imprensa, dúvidas, interesse em participar | Contato, aba "Fale com a gente" |
+| Feedback | Avaliação de clientes, parceiros, alunos e comunidade. Pode ser anônimo | Página de feedback |
+
+### Encontrar um envio
+
+A lista mostra primeiro os mais novos, 20 por página. Use os filtros **Tipo**, **Status**, **Categoria**
+e **Notificação** e clique em **Filtrar**; **Limpar** volta à lista completa. A categoria é o serviço
+pedido, o assunto do contato ou o perfil de quem deu o feedback.
+
+Não há busca por nome ou e-mail, porque esses dados ficariam gravados no endereço da página e no
+histórico do navegador. Se a pessoa informar o protocolo (`AB-XXXXXX`, mostrado na tela de confirmação
+e no e-mail de aviso), procure por ele na lista.
+
+### Abrir e atender
+
+1. Clique no **protocolo** para abrir o envio. Toda abertura fica registrada na trilha de auditoria, com
+   quem abriu e quando.
+2. Leia o conteúdo e responda pelo seu e-mail. O painel não envia resposta e não permite editar o que a
+   pessoa escreveu.
+3. Em **Atendimento**, escolha o novo status e clique em **Salvar status**.
+
+| Tipo | Status disponíveis (proposta, aguardando aprovação da Benjamin) |
+| ---- | --------------------------------------------------------------- |
+| Novo projeto e contato | Novo → Em atendimento → Respondido → Arquivado |
+| Feedback | Novo → Lido → Arquivado |
+
+Se aparecer "O conteúdo foi alterado por outra pessoa", alguém mudou o status enquanto a sua tela estava
+aberta: recarregue a página e veja se ainda precisa alterar.
+
+### O e-mail de aviso chegou?
+
+A coluna **Notificação** e o quadro no detalhe mostram a situação do e-mail enviado à equipe. Quando há
+falha, um aviso aparece no topo da lista, com o link **Ver quais são**.
+
+| Situação | O que significa | O que fazer |
+| -------- | --------------- | ------------ |
+| Enviada | O provedor aceitou o e-mail. Se a caixa de destino o devolver, o painel não fica sabendo | Nada |
+| Pendente | O e-mail ainda não saiu; o reenvio automático tenta de novo | Se demorar, atenda por aqui |
+| Falhou | O e-mail não chegou. O reenvio tenta até 5 vezes | **Atenda por aqui.** Depois das 5 tentativas não há novo reenvio: avise o NúcleoTech |
+| Sem destinatário | Nenhum destinatário configurado neste ambiente, então nada foi enviado | Atenda por aqui. Em produção, avise o NúcleoTech |
+
+Os destinatários de cada formulário são definidos pela Benjamin (CON-10) e ainda estão pendentes.
+
+### Excluir a pedido da pessoa
+
+Quando a pessoa pede a exclusão dos dados, ou no fim do prazo de retenção:
+
+1. Mude o status para **Arquivado** e salve. O botão de excluir só aparece depois disso.
+2. Clique em **Excluir definitivamente** e confirme. Não há como desfazer. A trilha de auditoria guarda
+   quem excluiu e quando, sem o conteúdo.
+3. **Apague também o e-mail de aviso** na caixa de quem recebeu: ele é uma cópia dos dados.
+
+O canal e o responsável por esses pedidos ainda aguardam definição da Benjamin. Exportar para planilha,
+corrigir dados e anonimizar um feedback não são feitos pelo painel: fale com o NúcleoTech.
+
+### Cuidados
+
+- Não encaminhe o conteúdo dos envios nem copie para planilhas ou conversas.
+- O painel limpa da memória do navegador o que estava aberto quando você clica em **Sair**. Em computador
+  compartilhado, saia sempre ao terminar.
 
 ## Mensagens comuns
 

@@ -53,8 +53,10 @@ stateDiagram-v2
 
 | Operação | Regra |
 | -------- | ----- |
-| Listagem | Mostra nome, categoria, status e data; conteúdo completo só ao abrir o registro |
-| Abrir registro | Gera evento de auditoria `lead.viewed`/`feedback.viewed` (sem conteúdo) |
+| Listagem | Mostra nome, categoria, status e data; conteúdo completo só ao abrir o registro. Filtros de lista fechada: nome e e-mail nunca vão para a URL (FORM-09) |
+| Abrir registro | Gera evento de auditoria `lead.viewed`/`feedback.viewed` (sem conteúdo). O conteúdo é exibido como texto com escape, e a página de origem nunca vira link, porque vem do navegador e aceita `//evil.com` (FORM-09) |
+| Excluir registro | Só depois de arquivar, um por vez, com `lead.deleted`/`feedback.deleted` gravado antes (FORM-09) |
+| Sair do painel | Recarga completa da página: sem ela, o Next mantém as telas visitadas no documento, escondidas, e um envio aberto ficaria no DOM depois de sair (SEG-04) |
 | Exportação (eventual) | Somente `admin`, CSV com filtros aplicados, máximo 1 000 linhas por arquivo, evento `lead.exported` com quantidade e filtros; arquivo não fica armazenado na plataforma |
 | Cópia por e-mail | Notificação interna contém os dados (destinatários restritos — CON-10); orientar destinatários a não encaminhar |
 
@@ -80,6 +82,11 @@ Regras em código (`RETENTION_RULES`, `retentionActionFor`, `planRetention`, `an
 4. Cópias semanais criptografadas no Drive institucional ([DB-10](../operacao/backup-e-recuperacao.md)), já que o plano Free
    não tem backup do provedor. Quantas manter depende da aprovação destes prazos. Restauração de cópia reaplica a rotina antes de
    reabrir o acesso.
+
+**Lacunas conhecidas, sem migration (FORM-09):** o banco ainda não tem `last_activity_at`, `legal_hold` nem
+`anonymized_at` ([estrutura do banco](../banco/estrutura-do-banco-de-dados.md)), e o `admin` não tem `update`
+em `payload`. Por isso a anonimização de feedback identificado (retenção e revogação do consentimento) não
+é feita pelo painel: depende da rotina de DBX-05.
 
 ## 6. Proteção de PII em logs e notificações
 
