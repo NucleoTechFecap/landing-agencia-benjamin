@@ -47,6 +47,7 @@ flowchart LR
 | `/cases` | `cases/page.tsx` | Shell estático + filtros por `searchParams` (Suspense) | Portfólio filtrável |
 | `/cases/[slug]` | `cases/[slug]/page.tsx` | `generateStaticParams` + ISR | Detalhe do case |
 | `/contato` | `contato/page.tsx` | Shell estático + abas por `searchParams` | Formulários de projeto e contato |
+| `/contato/projeto` · `/contato/mensagem` | `contato/projeto/page.tsx` · `contato/mensagem/page.tsx` | Estática, `noindex` | Os mesmos formulários para envio sem JavaScript ou antes da hidratação ([FORM-08](../formularios/idempotencia-e-falhas.md)) |
 | `/feedback` | `feedback/page.tsx` | Estática | Formulário de feedback |
 | `/privacidade` | `privacidade/page.tsx` | Estática | Aviso de privacidade (minuta) |
 | 404 | `app/not-found.tsx` | — | HTTP 404 real via `proxy.ts` para slugs inexistentes |

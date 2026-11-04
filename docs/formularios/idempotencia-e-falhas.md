@@ -4,8 +4,8 @@
 | ------------ | ----------------------------------------------------------------------- |
 | Issue        | TECH-07 (#108)                                                          |
 | Responsável  | Vinícius Nishimura Reis (`@Vinishireis`)                                |
-| Versão       | 1.1.0                                                                   |
-| Data         | 02/11/2026                                                              |
+| Versão       | 1.2.0                                                                   |
+| Data         | 04/11/2026                                                              |
 | Depende de   | [TECH-06](captacao-e-roteamento.md), [TECH-02](../api/contratos.md)     |
 | Código       | `lib/domain/forms/idempotency.ts`, `lib/server/forms/*` + `submission-service.test.ts` (cenários S1–S10 e S13) |
 | Encaminhado a | FORM-03/04/05 (formulários), FORM-07 (antispam), FORM-08 (estados), DB-06/DB-07 (persistência) |
@@ -44,6 +44,7 @@
 | S11 | Dois envios simultâneos do mesmo id | Ambos sucesso, um `duplicate` | Um registro (constraint única) | Uma | `persisted` |
 | S12 | Produção sem armazenamento persistente configurado | Erro 503 | — | — | `app.error.service_unavailable` (nunca grava em memória fora do dev) |
 | S13 | Notificação esgotou as 5 tentativas | (Já viu sucesso) | Mantido, `failed`, tentativas 5 | Sai da fila, sem bloquear os envios novos; reenvio manual ([handoff](../operacao/handoff-e-manutencao.md)) | `forms.notification.failed` |
+| S14 | Envio sem JavaScript ou antes da hidratação (campos técnicos vazios) | Página recarrega com o resultado: confirmação, ou erro por campo com os valores repreenchidos | Criado, sem `source_path` | Enviada | `persisted`; sem o tempo mínimo (seção 7) |
 
 S1–S10 e S13 são testes automatizados; S11 é garantido pela constraint `unique` e pelo tratamento de
 `DuplicateSubmissionError`, testado no banco real (`formularios.test.ts`); S12 por `resolveStore()`.
@@ -115,3 +116,33 @@ alter table public.form_submissions enable row level security;  -- sem policy pa
 
 A inserção pública acontece no servidor (Server Action) com credencial restrita; o visitante nunca
 lê a tabela (TECH-08).
+
+## 7. Envio sem JavaScript e antes da hidratação (FORM-08)
+
+**Como funciona.** O formulário usa `useActionState` com a Server Action: o HTML já traz os campos
+`$ACTION_*`, e o navegador consegue fazer o POST sozinho. Por isso nada pode envolver a action antes de
+entregá-la ao `useActionState`, ou o HTML perde esses campos.
+
+**Por que há páginas estáticas para `/contato`.** `/contato` lê a URL (`tipo`, `servico`, `assunto`), então
+o formulário chega por streaming, atrás do `Suspense`. Isso cria dois problemas sem JavaScript, ambos
+reproduzidos no Next 16.4.4:
+
+1. Sem o script do React, o conteúdo fica num `<div hidden>` e o visitante vê "Carregando formulário…" para sempre.
+2. A resposta do POST em rota com Partial Prerendering é renderizada por `resume`, que não recebe o estado da
+   action. O resultado não chega ao HTML, e a hidratação também não o aproveita.
+
+Por isso `/contato/projeto` e `/contato/mensagem` têm o mesmo formulário em página totalmente estática,
+como `/feedback`, onde a resposta do POST traz o resultado no HTML. O `permalink` do `useActionState` aponta
+para elas, e o fallback de `/contato` leva a elas com `<noscript>`. Ficam fora do menu e do sitemap, com
+`noindex`. Quem tem JavaScript continua em `/contato`, com abas e serviço pré-selecionado.
+
+**Decisão sobre o antispam.** Os campos ocultos chegam vazios, e vazio vale como ausente. Sem `startedAt` o
+tempo mínimo de 3 s não se aplica, e o servidor não tem como medi-lo: a página é pré-renderizada, então um
+horário no HTML seria o mesmo para todos os visitantes. **Não é brecha nova**: `startedAt` sempre foi
+opcional, e quem o omitia já ficava fora dessa regra. Honeypot, limite por origem e deduplicação por
+conteúdo continuam valendo nesse caminho, com testes em `submission-service.test.ts`. Valor forjado
+(`startedAt` não numérico, `sourcePath` sem barra) continua recusado.
+
+**Limite conhecido.** Sem JavaScript o `submissionId` é gerado no servidor a cada POST, então a proteção
+contra reenvio é só a deduplicação por conteúdo. Um duplo clique nesse caminho, com os dois POSTs simultâneos,
+pode gravar dois registros: a impressão digital não tem `unique` no banco.

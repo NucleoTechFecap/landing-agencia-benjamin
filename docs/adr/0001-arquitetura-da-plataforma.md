@@ -99,7 +99,8 @@ flowchart LR
   invalidação por tag ao publicar no CMS (detalhe em TECH-09). Páginas dinâmicas por slug usam
   `generateStaticParams` + ISR com App Shell.
 - **Painel:** renderização por requisição (lê sessão), sempre atrás de `<Suspense>`.
-- **Formulários:** Server Actions com aprimoramento progressivo (funcionam sem JavaScript).
+- **Formulários:** Server Actions com aprimoramento progressivo (funcionam sem JavaScript; os de `/contato`,
+  em páginas estáticas próprias: [FORM-08](../formularios/idempotencia-e-falhas.md)).
 
 ## Consequências e trade-offs
 

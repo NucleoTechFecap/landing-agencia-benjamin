@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 04/11/2026 Vinícius Nishimura Reis  Páginas estáticas dos formulários de /contato (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -35,3 +36,9 @@ export const SECONDARY_NAVIGATION = [
   { href: "/feedback", label: "Deixe seu feedback" },
   { href: "/privacidade", label: "Aviso de privacidade" },
 ] as const;
+
+/**
+ * Formulários de /contato em página estática, para quem envia sem JavaScript ou antes da hidratação
+ * (`useSubmission`). Fora do menu, do sitemap e dos buscadores: quem tem JavaScript fica em /contato.
+ */
+export const STANDALONE_FORM_PATHS = { lead: "/contato/projeto", contact: "/contato/mensagem" } as const;

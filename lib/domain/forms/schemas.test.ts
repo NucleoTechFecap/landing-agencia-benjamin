@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (FORM-01).
  02/11/2026 Vinícius Nishimura Reis  Serviço de interesse só aceita slug (TECH-06).
  02/11/2026 Vinícius Nishimura Reis  Quebra de linha em nome e empresa (TECH-06).
+ 04/11/2026 Vinícius Nishimura Reis  Campos técnicos vazios do envio sem JavaScript (FORM-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -73,6 +74,27 @@ describe("formulário de novo projeto (lead)", () => {
   it("recusa envio com honeypot preenchido ou sem submissionId", () => {
     expect(parseSubmission("lead", { ...valid, website: "spam.com" }).success).toBe(false);
     expect(parseSubmission("lead", { ...valid, submissionId: "123" }).success).toBe(false);
+  });
+
+  it("campos técnicos vazios (sem JavaScript) valem como ausentes (FORM-08)", () => {
+    const result = parseSubmission("lead", { ...valid, startedAt: "", sourcePath: "" });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value.data.startedAt).toBeUndefined();
+      expect(result.value.data.sourcePath).toBeUndefined();
+    }
+  });
+
+  it("campo técnico preenchido com valor forjado continua recusado (FORM-08)", () => {
+    for (const forged of [
+      { startedAt: "ontem" },
+      { startedAt: "-1" },
+      { sourcePath: "sem-barra" },
+      { sourcePath: "/a b" },
+    ]) {
+      const result = parseSubmission("lead", { ...valid, ...forged });
+      expect(result.success).toBe(false);
+    }
   });
 
   it("nome e empresa ficam em uma linha: quebra de linha não forja linhas no e-mail (TECH-06)", () => {
