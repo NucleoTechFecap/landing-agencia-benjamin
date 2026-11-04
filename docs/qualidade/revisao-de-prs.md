@@ -15,12 +15,12 @@ Qualquer PR que altere ao menos um dos itens abaixo (os caminhos estão no `CODE
 
 | Categoria | Exemplos | Revisores |
 | --------- | -------- | --------- |
-| Autenticação, sessão e permissões | `proxy.ts`, `lib/*/auth/`, `app/admin/actions.ts` | Coordenação técnica |
+| Autenticação, sessão e permissões | `proxy.ts`, `lib/*/auth/`, `lib/domain/security/`, `app/admin/actions.ts` | Coordenação técnica |
 | Publicação e cache | `lib/*/content/`, Server Actions do CMS | Coordenação técnica + banco |
 | Integrações (CMS ↔ site ↔ API) | INT-02, INT-03, `app/api/`, `lib/domain/api/` | Coordenação técnica |
 | Dados pessoais | `lib/*/forms/`, `form_submissions`, exportação de leads | Coordenação técnica |
 | Banco e RLS | `supabase/migrations/` | Vinícius Binda + coordenação técnica |
-| Configuração/segredos | `lib/config/`, `.env.example`, `next.config.ts` | Coordenação técnica |
+| Configuração/segredos | `lib/config/`, `.env.example`, `next.config.ts`, `instrumentation-client.ts` | Coordenação técnica |
 
 ## 2. Checklist de revisão
 
@@ -56,6 +56,7 @@ Qualquer PR que altere ao menos um dos itens abaixo (os caminhos estão no `CODE
 ### Segurança geral
 - [ ] Entradas validadas com Zod no servidor; uploads pela política de mídia (ARC-10).
 - [ ] Links externos com `rel="noopener noreferrer"`; redirecionamentos internos validados.
+- [ ] Origem nova na CSP é a mínima, na diretiva certa, sem `*`, `https:` ou `'unsafe-eval'`; cliente Supabase novo usa `sessionCookieOptions()` (SEG-06).
 - [ ] Sem segredos no diff.
 
 ## 3. Fluxo
@@ -107,8 +108,10 @@ Verificado e correto: anônimo não lê rascunho, arquivado nem agendado (nem pe
 ler o banco; não há IDOR nem atribuição em massa de campos de controle; a concorrência otimista
 vale no serviço e no `UPDATE`; o upload confere a assinatura dos bytes; o `next` do login não
 redireciona para fora (10 tentativas de bypass); a leitura pública tem três barreiras (RLS,
-filtro de status e data); os cabeçalhos de segurança estão ativos. A CSP continua prevista em
-SEG-06.
+filtro de status e data); os cabeçalhos de segurança estão ativos. A CSP ficou para SEG-06, que a
+entregou depois desta revisão, com os atributos do cookie de sessão: ver
+[proteção de rotas §5](../seguranca/protecao-de-rotas.md#5-cabeçalhos-de-segurança-e-csp-seg-06) e
+[autenticação §2.1](../seguranca/autenticacao.md#21-cookies-da-sessão-seg-06).
 
 ## 6. Revisão técnica de 02/11/2026
 
@@ -126,12 +129,12 @@ ser reproduzido, em geral na Vercel.
 
 | # | Achado | Severidade | Situação |
 | - | ------ | ---------- | -------- |
-| 1 | Segunda expiração do cache só vale depois do reaquecimento: pode chegar a cerca de 8 s, acima da meta de 5 s do ADR-0006 | Baixa | Ordem confirmada; efeito plausível. Em #369 |
-| 2 | 301 permanente com slug reversível: a→b→a pode dar loop para quem guardou o 301 | Baixa | Código confirmado; loop plausível. Em #369 |
-| 3 | Blocos de página sem transação, nem a mitigação que `saveContent` tinha | Baixa | Confirmado. Em #369 |
-| 4 | Rollback da DBX-03 cita a versão errada no `migration repair` | Baixa | Confirmado. Em #369 |
-| 5 | Slug chega ao `use cache` sem validar formato em API e imagens de compartilhamento | Baixa | Código confirmado; impacto plausível. Em #369 |
-| 6 | `stale-while-revalidate=3600` contradiz a meta de 5 min do ADR-0006 | Baixa | Cabeçalho confirmado; efeito plausível. Em #369 |
+| 1 | Segunda expiração do cache só vale depois do reaquecimento: pode chegar a cerca de 8 s, acima da meta de 5 s do ADR-0006 | Baixa | Ordem corrigida em requisição própria (#369); o efeito na Vercel ainda não foi medido |
+| 2 | 301 permanente com slug reversível: a→b→a pode dar loop para quem guardou o 301 | Baixa | Corrigido com `Cache-Control` curto (#369); comportamento real da CDN ainda sem medir |
+| 3 | Blocos de página sem transação, nem a mitigação que `saveContent` tinha | Baixa | Mitigado com auditoria da falha e invalidação (#369); a transação pede RPC e migration |
+| 4 | Rollback da DBX-03 cita a versão errada no `migration repair` | Baixa | Corrigido (#369) |
+| 5 | Slug chega ao `use cache` sem validar formato em API e imagens de compartilhamento | Baixa | Corrigido na DB-09 (#65) |
+| 6 | `stale-while-revalidate=3600` contradiz a meta de 5 min do ADR-0006 | Baixa | Corrigido no cabeçalho (#369); comportamento real da CDN ainda sem medir |
 | 7 | #365: categoria ainda forjável em formato de slug (`lead:urgente-diretoria`), embora o documento dissesse que era recusada | Baixa | Corrigido no próprio #365 |
 | 8 | #365: nome e empresa aceitavam quebra de linha e forjavam linhas no e-mail interno | Baixa | Corrigido no próprio #365 |
 
@@ -156,6 +159,16 @@ Conferindo o GitHub em 02/11:
 Para fechar o critério, falta a coordenação decidir entre uma revisão posterior de Vinícius Binda
 nesses PRs ou a aceitação do risco por escrito (§3). Esta revisão automatizada não preenche essa
 lacuna.
+
+**Atualização de 04/11/2026.** Por decisão explícita do coordenador técnico, Vinícius Nishimura Reis, #378, #379, #380,
+#381, #382, #383, #384, #385, #386, #387, #388, #389 e #390 foram aprovados com a conta `NucleoTechFecap` e mesclados.
+Cada aprovação registra isso. Quem opera essa conta responde também pela autoria, então **elas não atendem "revisor ≠
+autor"**, e nenhum desses PRs teve revisão de outra pessoa. Houve leitura independente automatizada em #372, #377, #380,
+#382, #385 e #386, que também não substitui a revisão humana. O #377 (DB-10) foi aprovado e mesclado pela mesma conta,
+sem registro de quem a operava.
+
+São PRs críticos #381 (sessão e headers), #383 e #388 (dados pessoais), #382 (rascunho) e #380 (exclusão de mídia):
+vale começar por eles a revisão posterior de Vinícius Binda, se a coordenação escolher esse caminho.
 
 ### 6.4 O que não foi verificado
 

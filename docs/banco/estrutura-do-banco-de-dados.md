@@ -712,13 +712,16 @@ Para simular usuário num teste SQL: `set local role authenticated;` e
 
 ## 12. Backup e recuperação (DB-10)
 
-| Item | Proposta |
+> **Superado em 04/11/2026.** A proposta original contava com o plano Pro, homologação e cópia pela API S3. Com o plano
+> Free, não há backup gerenciado. Regras em vigor: [backup e recuperação](../operacao/backup-e-recuperacao.md).
+
+| Item | Em vigor |
 | ---- | -------- |
-| Banco | Backups diários automáticos do Supabase. **Confirmar o plano contratado**: os backups diários começam no plano Pro, e o *point-in-time recovery* é adicional |
-| Cópia própria | `supabase db dump` (schema) + `supabase db dump --data-only` semanal, criptografado e guardado fora do Supabase com acesso nominal |
-| Storage | **Os backups do banco não incluem os arquivos do bucket.** Cópia periódica do bucket `media` via API S3 do Supabase |
-| Restauração | Restaurar em um projeto **novo** → aplicar a rotina de retenção antes de liberar acesso (TECH-08) → apontar a Vercel → `POST /api/internal/revalidate` |
-| Teste | Restaurar o dump de **homologação** num projeto descartável e comparar contagens por tabela. Registrar o resultado na DB-10 |
+| Banco | Sem backup do Supabase (plano Free). Cópia semanal com `db dump`, criptografada, no Google Drive institucional |
+| Storage | **Os dumps não incluem os arquivos do bucket.** Cópia junto, com `scripts/backup-media.mjs` |
+| Metas | Perda de até 7 dias; recuperação em até 120 minutos |
+| Restauração | Projeto **novo** → migrations → `data.sql` → arquivos → reconfigurar → retenção (TECH-08) → conferir |
+| Teste | `npm run test:restore`, em stack local nova e com dados fictícios |
 | Proibido | Copiar dados de produção para dev/hml (ARC-06) |
 
 ---
@@ -763,7 +766,7 @@ Para simular usuário num teste SQL: `set local role authenticated;` e
 | 3 | FKs de CTA com `restrict` | O banco impede CTA órfão (o TECH-05 previa sinalizar órfãos em R04). Mais seguro e já coberto pelo aviso de impacto | Binda + Vinishireis |
 | 4 | Versão otimista por `updated_at` (ms) ou por coluna `version integer` | `updated_at`, como no TECH-04, com a truncagem em ms | Binda |
 | 5 | `save_case` único ou RPCs de vínculo separadas | RPCs separadas no MVP | Murilo (ADM-06/08) |
-| 6 | Plano do Supabase em produção | Pro (backups diários) | Coordenação (GO-02) |
+| 6 | Plano do Supabase em produção | ~~Pro (backups diários)~~ **Free, por enquanto** (04/11/2026, [limitações](../operacao/backup-e-recuperacao.md)) | Coordenação (GO-02) |
 | 7 | Prazos de retenção | Os de `RETENTION_RULES`, pendentes de aprovação | Institucional (SEG-02) |
 
 ---
@@ -775,7 +778,7 @@ Para simular usuário num teste SQL: `set local role authenticated;` e
 | DB-01 | Modelo lógico e convenções documentados e revisados | §2, §3, §4 · revisão no PR |
 | DB-02 | Migrations aplicam e revertem em ambiente limpo | Apêndices A e B · §10.3 (testado) |
 | DB-08 | URLs previsíveis, únicas e com alterações sem colisão | §7 · `slug_redirects` · testes 5.x |
-| DB-10 | Restore descrito e validado com dados de teste | §12 (executar a restauração em hml) |
+| DB-10 | Restore descrito e validado com dados de teste | [Backup e recuperação](../operacao/backup-e-recuperacao.md) · `npm run test:restore` |
 | ARC-11 | Novo ambiente sobe com dados de teste consistentes | §10.4 |
 | DBX-01 | DER e dicionário versionados e revisados | §3, §4 (versionar este arquivo em `docs/banco/`) |
 | DBX-02 | Banco limpo sobe por comando; rollback testado; seed não roda em produção | §10 |

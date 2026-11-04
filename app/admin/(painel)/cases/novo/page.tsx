@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -42,7 +43,7 @@ export default async function NewCasePage({ searchParams }: PageProps<"/admin/ca
         O case nasce como rascunho. Título e endereço bastam para salvar; complete aos poucos enquanto o material da
         Benjamin chega e publique quando a lista de pendências zerar.
       </p>
-      <div className="max-w-4xl rounded-3xl border-2 border-benja-noite/15 bg-white p-6">
+      <div className="max-w-4xl rounded-3xl border-2 border-benja-noite/15 bg-white p-4 sm:p-6">
         <CaseForm
           action={saveCase}
           categories={snapshot.categories}

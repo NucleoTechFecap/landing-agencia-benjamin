@@ -99,7 +99,8 @@ flowchart LR
   invalidação por tag ao publicar no CMS (detalhe em TECH-09). Páginas dinâmicas por slug usam
   `generateStaticParams` + ISR com App Shell.
 - **Painel:** renderização por requisição (lê sessão), sempre atrás de `<Suspense>`.
-- **Formulários:** Server Actions com aprimoramento progressivo (funcionam sem JavaScript).
+- **Formulários:** Server Actions com aprimoramento progressivo (funcionam sem JavaScript; os de `/contato`,
+  em páginas estáticas próprias: [FORM-08](../formularios/idempotencia-e-falhas.md)).
 
 ## Consequências e trade-offs
 
@@ -116,7 +117,7 @@ flowchart LR
 | ----- | --------- |
 | Acoplamento entre site e painel no mesmo deploy | Fronteiras de domínio + revisão de PRs críticos (TECH-13) |
 | Dependência de fornecedores (Vercel, Supabase) | Postgres padrão e Storage compatível com S3 permitem migração; nada de recurso proprietário no domínio |
-| Limites/termos de planos gratuitos (pausa de projeto inativo no Supabase Free; uso comercial no Vercel Hobby) | Decidir plano/conta institucional antes de GO-02 (registrado em ADR-0002) |
+| Limites/termos de planos gratuitos (pausa de projeto inativo no Supabase Free; uso comercial no Vercel Hobby) | Decidir plano/conta institucional antes de GO-02 (registrado em ADR-0002). Em 04/11/2026, a produção ficou no Supabase Free: limitações em [backup e recuperação](../operacao/backup-e-recuperacao.md) |
 | APIs novas do Next.js 16 (Cache Components, `proxy.ts`) pouco conhecidas | Documentação versionada em `node_modules/next/dist/docs` + exemplos no repositório |
 
 ## Revisão

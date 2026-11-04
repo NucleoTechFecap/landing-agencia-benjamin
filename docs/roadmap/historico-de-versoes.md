@@ -23,7 +23,7 @@ sem abrir mão das validações, da auditoria e da atualização do site que o C
 - `updated_at`/`updated_by` em todas as tabelas de conteúdo e concorrência otimista: a segunda
   gravação de quem abriu o formulário antes é recusada (QA-04, CT-07).
 - Exclusão só de item arquivado e só por `admin`; arquivar tira do site sem apagar (TECH-04).
-- Backup diário do banco e da mídia, com restauração assistida (DB-10).
+- Cópia semanal do banco e da mídia, com restauração assistida (DB-10).
 
 O que falta: o **conteúdo** anterior. A auditoria diz quem mudou e quando, mas não guarda o texto
 que existia antes. Um resumo sobrescrito só volta por backup, e o backup restaura o banco inteiro.

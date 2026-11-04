@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -32,6 +32,12 @@
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case Aventura de Construir (CASE-05).
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case Meridiano (CASE-06).
  01/11/2026 Vinícius Nishimura Reis  Conformidade do case FECAP (CASE-07).
+ 04/11/2026 Vinícius Nishimura Reis  Item Eventos e Parcerias (SOB-05).
+ 04/11/2026 Vinícius Nishimura Reis  Item Social Media (SOB-06).
+ 04/11/2026 Vinícius Nishimura Reis  Item Comunicação Interna (SOB-07).
+ 04/11/2026 Vinícius Nishimura Reis  Item Estratégia Digital (SERV-03).
+ 04/11/2026 Vinícius Nishimura Reis  Item Social Media (SERV-04).
+ 04/11/2026 Vinícius Nishimura Reis  Item Eventos (SERV-05).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -49,7 +55,7 @@ import { isPubliclyVisible, visibleSorted } from "../lib/domain/content/visibili
 import { seedSnapshot } from "./index";
 
 /*
- * Um bloco por item das tasks de conteúdo (SOB-08…10, SERV-06…11, CASE-05…10). Cada item é
+ * Um bloco por item das tasks de conteúdo (SOB-05…10, SERV-03…11, CASE-05…10). Cada item é
  * conferido como o site e o painel o usam: publicável pelas regras do CMS, ícone oficial,
  * relações (área ↔ serviços, serviço ↔ cases, categoria ↔ cases), CTA de contato e mídia
  * sem link quebrado. O texto é provisório até a aprovação da Benjamin (CON-05) e as fichas
@@ -211,6 +217,21 @@ function checkCase(
 }
 
 describe("itens de conteúdo do MVP", () => {
+  checkArea("eventos-e-parcerias", {
+    order: 1,
+    services: ["eventos"],
+    provisional: true,
+  });
+  checkArea("social-media", {
+    order: 2,
+    services: ["estrategia-digital", "social-media", "producao-de-conteudo"],
+    provisional: true,
+  });
+  checkArea("comunicacao-interna", {
+    order: 3,
+    services: ["comunicacao-interna"],
+    provisional: true,
+  });
   checkArea("copywriting", {
     order: 4,
     // Na ordem em que aparecem em /areas (campo "ordem" do serviço).
@@ -225,6 +246,24 @@ describe("itens de conteúdo do MVP", () => {
   checkArea("assessoria-de-imprensa", {
     order: 6,
     services: ["assessoria-de-imprensa"],
+    provisional: true,
+  });
+  checkService("estrategia-digital", {
+    areas: ["social-media", "copywriting"],
+    cases: [],
+    featured: true,
+    provisional: true,
+  });
+  checkService("social-media", {
+    areas: ["social-media"],
+    cases: ["meridiano"],
+    featured: true,
+    provisional: true,
+  });
+  checkService("eventos", {
+    areas: ["eventos-e-parcerias"],
+    cases: [],
+    featured: false,
     provisional: true,
   });
   checkService("producao-de-conteudo", {

@@ -14,8 +14,10 @@
 - [x] Conta/plano institucional da **Vercel** para produção (uso comercial; crons frequentes exigem plano pago).
       **Decisão de 27/10/2026:** contas institucionais do NúcleoTech, não contas pessoais (o plano
       Hobby da Vercel não permite uso comercial).
-- [x] Organização/plano do **Supabase** para produção (sem pausa por inatividade; backups diários).
-      **Decisão de 27/10/2026:** organização institucional do NúcleoTech.
+- [x] Organização/plano do **Supabase** para produção.
+      **Decisão de 27/10/2026:** organização institucional do NúcleoTech. **Decisão de 04/11/2026:** plano Free por
+      enquanto, então há pausa por inatividade e nenhum backup do Supabase
+      ([backup e recuperação](backup-e-recuperacao.md)).
 - [ ] Acesso às duas contas na máquina de quem provisiona (`vercel login` e `npx supabase login`).
 - [ ] Conta **Resend** com domínio do remetente verificado. Sem o domínio da Benjamin, ver a
       pendência do remetente em [GO-03 §0](dominio-dns-https.md#0-decisão-de-27102026-publicar-em-vercelapp-até-o-domínio-sair).
@@ -100,12 +102,15 @@
 
 | Item | Situação |
 | ---- | -------- |
-| Decisão de conta e plano | ✅ Contas institucionais do NúcleoTech (Vercel e Supabase) |
+| Decisão de conta e plano | ✅ Contas institucionais do NúcleoTech (Vercel e Supabase). Supabase no plano Free, sem backup gerenciado |
+| Backup | 🟡 Procedimento e restauração validados localmente; primeira cópia real pendente ([DB-10](backup-e-recuperacao.md)) |
 | Projeto na Vercel | 🟡 Existe (`agencia-benjamin`) e publica a cada merge. Ver a divergência abaixo |
 | Projeto no Supabase | 🟡 Existe na organização NucleoTech FECAP. Ver a divergência abaixo. O conteúdo do banco **não foi inspecionado** |
 | Migrations de conteúdo (DB-02) e da TECH-13 (#301, #312) | ✅ Na `main` |
 | Migrations pendentes | ⏳ `20261102000300` (#365) e `20261102000200` (#366) na `main`; `20261102000400` e `20261102000500` (DBX-04) aguardando revisão. Conferir com `db push --remote --dry-run` |
 | Aplicação | 🟡 Next.js 16.4.3 na `main`, 16.4.4 no #368. Falta o release de segurança de 03/11. `vercel.json` em `gru1` |
+| Migrations pendentes | ⏳ `20261102000300` (#365) e `20261102000200` (#366), aguardando revisão. Não aplicadas em ambiente remoto |
+| Aplicação | ✅ Next.js 16.4.5 na `main` desde 04/11 (#378), com o release de segurança de 03/11. `vercel.json` em `gru1` |
 | Acesso às contas na máquina de quem provisiona | ⏳ Em 02/11, a Vercel CLI estava na conta pessoal e a Supabase CLI não via o projeto |
 | Remetente dos formulários (`NOTIFICATION_FROM`) | ⏳ Depende de um domínio verificado no Resend ([GO-03 §0](dominio-dns-https.md#0-decisão-de-27102026-publicar-em-vercelapp-até-o-domínio-sair)) |
 | Destinatários (`*_NOTIFICATION_TO`) | ⏳ No pedido de aprovação preparado para a Benjamin (CON-10) |
@@ -124,8 +129,10 @@ Precisam de decisão de quem responde pela produção antes de qualquer `db push
 **Decisões pedidas:**
 
 1. Esse projeto Supabase é a produção, a homologação ou será substituído por projetos em `sa-east-1`?
-   Não foi possível saber, de fora, se o deploy público já usa esse banco: o formulário de login aparece
-   com ou sem Supabase configurado. A resposta está nas variáveis da Vercel.
+   **Conferido de fora em 04/11/2026: o deploy público não usa banco nenhum.** A CSP publicada não traz a origem do
+   Supabase, e os formulários respondem "serviço indisponível" ([go/no-go §6.1](go-no-go.md)). Para o site funcionar,
+   faltam `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` na Vercel, com as
+   migrations aplicadas antes (GO-04, Vinícius Binda).
 2. A Production Branch da Vercel passa para `production`, ou a documentação muda para o fluxo que
    está em uso?
 

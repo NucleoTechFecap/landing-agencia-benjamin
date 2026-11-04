@@ -74,11 +74,13 @@ dig +short www.<domínio> CNAME          # cname.vercel-dns.com.
 dig +short <domínio> A                  # 76.76.21.21
 curl -sI https://<domínio> | head -3    # 308 → https://www.<domínio>/
 curl -sI https://www.<domínio> | grep -i strict-transport-security
+curl -sI https://www.<domínio> | grep -i content-security-policy
 curl -s https://www.<domínio>/robots.txt   # Allow: / e Sitemap com o domínio oficial
 ```
 
 - [ ] Domínio resolve para a produção e redireciona apex → `www` (ou o inverso decidido).
 - [ ] Certificado válido (SSL Labs nota A ou superior) e HSTS presente.
+- [ ] Roteiro de cabeçalhos, CSP e cookies de [proteção de rotas §5.4](../seguranca/protecao-de-rotas.md#54-verificação-em-homologação-e-produção-critério-de-seg-06-pendente) executado no domínio oficial.
 - [ ] Canonical, Open Graph, sitemap e `llms.txt` usando o domínio oficial.
 - [ ] E-mail de teste dos formulários entregue com SPF/DKIM válidos (cabeçalho `Authentication-Results`).
 

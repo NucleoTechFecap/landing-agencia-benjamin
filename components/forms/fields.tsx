@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,8 @@
  25/10/2026 Caio Moraes              Cores de erro via tokens do tema (LAY-04).
  26/10/2026 Vinícius Nishimura Reis  SelectField exibe a dica do campo (ADM-06).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 03/11/2026 Julia                    Foco, placeholder e asterisco com contraste mínimo (SEG-07).
+ 04/11/2026 Vinícius Nishimura Reis  Select avisa a mudança de valor, para campos que dependem dele (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,7 +31,7 @@
 import type { ReactNode } from "react";
 
 const control =
-  "mt-1.5 w-full rounded-2xl border-2 bg-white px-4 py-3 text-base text-benja-noite outline-none transition placeholder:text-benja-grafite/50 focus:border-benja-azul focus:ring-4 focus:ring-benja-azul/20";
+  "mt-1.5 w-full rounded-2xl border-2 bg-white px-4 py-3 text-base text-benja-noite outline-hidden transition placeholder:text-benja-grafite/70 focus:border-benja-azul focus:ring-4 focus:ring-benja-azul";
 
 function errorId(name: string) {
   return `${name}-erro`;
@@ -41,7 +43,7 @@ function Label({ name, label, required }: { name: string; label: string; require
       {label}
       {required ? (
         <>
-          <span aria-hidden className="text-benja-laranja">
+          <span aria-hidden className="text-benja-erro">
             {" "}
             *
           </span>
@@ -141,8 +143,13 @@ export function TextArea({ rows = 5, maxLength, ...props }: BaseProps & { rows?:
 export function SelectField({
   options,
   placeholder,
+  onValueChange,
   ...props
-}: BaseProps & { options: { value: string; label: string }[]; placeholder?: string }) {
+}: BaseProps & {
+  options: { value: string; label: string }[];
+  placeholder?: string;
+  onValueChange?: (value: string) => void;
+}) {
   const invalid = Boolean(props.errors?.length);
   const id = props.id ?? props.name;
   return (
@@ -153,6 +160,7 @@ export function SelectField({
         name={props.name}
         required={props.required}
         defaultValue={props.defaultValue ?? ""}
+        onChange={onValueChange ? (event) => onValueChange(event.target.value) : undefined}
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy(id, props.errors, props.hint)}
         className={`${control} ${invalid ? "border-benja-erro" : "border-benja-noite"}`}

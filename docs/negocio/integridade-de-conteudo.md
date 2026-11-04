@@ -2,12 +2,12 @@
 
 | Campo           | Valor                                                                  |
 | --------------- | ---------------------------------------------------------------------- |
-| Issue           | TECH-05 (#56)                                                          |
+| Issue           | TECH-05 (#56); regras de CTA no painel: ADM-11 (#87)                   |
 | Responsável     | Vinícius Nishimura Reis (`@Vinishireis`)                               |
 | Revisão técnica | Vinícius Binda (`@VinnizzZ`)                                           |
 | Versão          | 1.0.0                                                                  |
 | Data            | 13/10/2026                                                             |
-| Código          | `lib/domain/content/{types,slug,visibility,integrity}.ts` + testes     |
+| Código          | `lib/domain/content/{types,slug,visibility,integrity,cta-schema}.ts` + testes |
 | Insumo para     | DB-01/DB-02 (modelagem e constraints), ADM-06/07/08 (CRUDs), CASE-11   |
 
 ## 1. Modelo de relacionamentos
@@ -51,7 +51,11 @@ pelo teste "aceita a estrutura do MVP" (`integrity.test.ts`).
 ## 4. Ordenação e destaques
 
 - Toda listagem pública ordena por `order` (crescente) e, em empate, por nome/título (pt-BR).
-- Home: no máximo **6 serviços** e **6 cases** em destaque (`featured`). Acima disso o CMS avisa (R11).
+- Home: no máximo **6 serviços** e **6 cases** em destaque (`featured`). Acima disso o CMS avisa (R11) e a
+  Home mostra os 6 primeiros pela ordem. A marca fica no serviço e no case; `/admin/ctas` mostra o conjunto.
+- CTAs: a ordem vale dentro da mesma posição (`placement`).
+- Sem CTA publicado na posição, a Home não deixa bloco vazio: o topo fica só com o manifesto e a faixa final
+  não aparece. Sem destaque, a seção mostra um aviso (HOME-07).
 
 ## 5. Conteúdo obrigatório para publicar
 
@@ -61,7 +65,7 @@ pelo teste "aceita a estrutura do MVP" (`integrity.test.ts`).
 | Serviço | nome, slug, resumo (≤ 200), descrição, ≥ 1 área |
 | Categoria | nome, slug |
 | Case | ver CASE-11 (título, cliente, categoria, ≥ 1 serviço, resumo, capa com `alt`) |
-| CTA | rótulo (≤ 40), destino válido |
+| CTA | rótulo (2 a 40), posição, destino válido (§6.1) |
 | Imagem | `alt` não vazio (exceto imagem decorativa marcada como tal) |
 
 ## 6. Regras verificadas (`findIntegrityIssues`)
@@ -83,6 +87,22 @@ pelo teste "aceita a estrutura do MVP" (`integrity.test.ts`).
 
 **Erros** bloqueiam a publicação no CMS. **Avisos** aparecem para o editor, mas o site permanece
 íntegro.
+
+### 6.1 Destino do CTA no painel (`cta-schema.ts`, ADM-11)
+
+O painel é mais estrito que R09 e R10, que continuam valendo para o que já está gravado. As regras abaixo
+valem ao salvar e são reaplicadas ao publicar, inclusive sobre linha gravada fora do painel.
+
+| Tipo | Regra |
+| ---- | ----- |
+| Página do site | Caminho exato de `PUBLIC_ROUTE_PREFIXES`, escolhido em lista. Recusa `/servicos/<slug>`, query e âncora: item específico usa o tipo Serviço, Case ou Área, que segue o slug e tem fallback |
+| Link externo | `https://`, até 500 caracteres, sem espaço e sem usuário ou senha na URL. Recusa `javascript:`, `data:` e `http:` |
+| Serviço, Case, Área | Id válido de item escolhido. Rascunho é permitido, com o aviso R08 e fallback. Destino excluído (coluna nula) bloqueia publicar |
+| Contato | Serviço pré-selecionado opcional |
+| Circular | CTA em `home-hero` ou `home-highlight` não pode apontar para `/`. Em `service-detail` e `case-detail`, o laço só existiria na página do próprio item, então não é detectável ao salvar; nenhuma dessas posições é exibida no site ainda |
+
+Só `home-hero` e `home-highlight` aparecem no site. `footer`, `service-detail` e `case-detail` são gravados e
+saem em `/api/v1/ctas`, mas nenhuma página os lê, e o painel avisa isso.
 
 ## 7. Arquivamento, exclusão e fallback de links
 

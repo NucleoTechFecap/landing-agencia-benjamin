@@ -44,13 +44,17 @@ lista permitida.
 | `content.created` · `content.updated` · `content.restored` | Edição | — |
 | `settings.updated` | Contato institucional e redes sociais | ✔ |
 | `media.uploaded` / `media.deleted` | Biblioteca de mídia | — / ✔ |
-| `lead.viewed` · `feedback.viewed` · `lead.status_changed` | Acesso a dados pessoais (trilha de acesso — TECH-08) | — |
+| `lead.viewed` · `feedback.viewed` · `lead.status_changed` | Acesso a dados pessoais (trilha de acesso — TECH-08). `lead.viewed` vale para lead e contato; `lead.status_changed` vale para os três tipos, com o tipo real em `metadata.kind` (FORM-09) | — |
 | `lead.exported` · `lead.deleted` · `feedback.deleted` · `retention.executed` | Saída/eliminação de dados pessoais | ✔ |
-| `access.denied` | Tentativa negada pelo RBAC | — |
+| `access.denied` | Tentativa negada pelo RBAC. Nas Server Actions e na tela de envios (FORM-09); nas demais telas, a negação fica só no log `auth.page.denied` | — |
 
 ¹ **Crítico:** se a auditoria não puder ser gravada, a operação é **abortada**
 (`SERVICE_UNAVAILABLE`). Em operações críticas da aplicação, o evento é gravado **antes** da
 alteração; se a alteração falhar em seguida, registra-se um evento com `outcome: "failure"`.
+
+Abrir um envio grava o evento a cada carga da página, inclusive a recarga depois de salvar o status. Os
+links da lista não fazem pré-carregamento, para passar o mouse não contar como leitura. A lista não gera
+evento: traz só nome, categoria, status e data, sem o conteúdo.
 
 Falhas de login **não** entram na tabela (não há sessão para identificar o ator): ficam no log
 estruturado (`auth.login.failed`, sem e-mail) e nos *Auth logs* do Supabase.
@@ -102,3 +106,7 @@ Eventos fora do catálogo fechado ou incompatíveis com o papel são recusados p
   **check do banco idêntico ao catálogo**.
 - `audit.test.ts` — envio filtrado ao RPC, abort em evento crítico, apenas log em não crítico.
 - `guards.test.ts` — negação de permissão gera `access.denied`.
+- `leads_painel.test.sql` — a guarda aceita os eventos que o painel grava e recusa
+  `feedback.status_changed`, que não existe; só `admin` registra eventos de dados pessoais.
+- `leads-no-painel.test.ts` — com contas reais: evento de status e de exclusão sem conteúdo, e recusa `42501`
+  para os demais papéis.

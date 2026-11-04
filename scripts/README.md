@@ -7,8 +7,10 @@
 | `provision-admin.mjs` | Convida contas do painel com papel inicial, sem compartilhar senhas (INT-08) |
 | `test-supabase.mjs` | `npm run test:supabase`: testes de integração com a RLS real, só contra o Supabase local (DB-03) |
 | `test-migrations.mjs` | `npm run test:migrations`: instalação limpa, seed, upgrade e reversão das migrations no Supabase local (DBX-02) |
+| `test-restore.mjs` | `npm run test:restore`: cópia e restauração em stack local nova, com dados fictícios (apaga o banco local) |
+| `backup-media.mjs` | Copia os arquivos do bucket `media` para uma pasta e os devolve a um projeto, conferindo o conteúdo ([DB-10](../docs/operacao/backup-e-recuperacao.md)) |
 | `explain-queries.mjs` | `npm run perf:queries`: planos de execução das consultas do site e do painel, vazio e com volume sintético, no Supabase local (DBX-03) |
 | `content-seed.mjs` | `npm run seed:write` / `seed:check`: gera `supabase/seed.sql`, com áreas e serviços de `content/` e cases e páginas fictícios (DBX-02, ARC-11) |
 | `seed-users.mjs` | `npm run seed:users`: uma conta de teste por papel, só no Supabase local, com senhas geradas a cada execução (ARC-11) |
 | `brand-vectors.mjs` | `node scripts/brand-vectors.mjs`: gera os SVGs de ícones, stickers e redes sociais a partir dos `.ai` de `assets/brand` (requer Inkscape e `scour`) |
-| `e2e-cms.mjs` | `npm run test:e2e:cms`: build contra o Supabase local e jornadas E2E do CMS (`@cms`, TECH-12) |
+| `e2e-cms.mjs` | `npm run test:e2e:cms`: build contra o Supabase local e jornadas E2E do CMS (`@cms`, TECH-12), com segredos descartáveis nas rotas internas e só o notificador de log (QA-06, QA-05) |

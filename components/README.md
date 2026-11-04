@@ -61,6 +61,10 @@ com as peças compartilhadas de `fields.tsx` (`TextField`, `TextArea`, `SelectFi
 `CheckboxField`, `HoneypotField`) e `form-parts.tsx` (`FormErrorBanner`, `FormSuccess`,
 `SubmitButton`, `PrivacyConsentText`, `TechnicalFields`), usadas em Contato e Feedback.
 
+`useSubmission` concentra o envio: valida no navegador e chama a Server Action com `try/catch`. Sem
+JavaScript, ou antes da hidratação, quem envia é o próprio navegador. Por isso o `useActionState` recebe a
+action pura, sem nada em volta ([por quê](../docs/formularios/idempotencia-e-falhas.md)).
+
 ## motion/ — animações
 
 Os componentes de servidor só declaram o efeito; `engine.tsx` e `scene.ts` fazem o resto

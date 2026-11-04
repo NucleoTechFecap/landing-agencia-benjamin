@@ -34,7 +34,9 @@ pela equipe autorizada, e um workflow de aprovação está planejado em FUT-05.
    com calma usa "Duplicar como rascunho" ou "Despublicar".
 4. **Site e APIs públicas só leem `published`** — a regra fica no repositório de conteúdo e na
    RLS do banco (defesa em profundidade).
-5. **Pré-visualização** de rascunhos acontece apenas no painel, autenticada (ADM-14).
+5. **Pré-visualização** de rascunhos acontece apenas no painel, autenticada (ADM-14), em
+   `/admin/previa/<tipo>/<id>`: mesma permissão de ver o item, sem cache público, sem indexação e sem
+   link de compartilhamento.
 
 ## 3. Fluxo
 

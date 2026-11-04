@@ -398,7 +398,8 @@ A matriz por ambiente (local, preview, homologação e produção) e as regras d
 ├── tests/                       # Integração (jornadas) e E2E (Playwright)
 ├── docs/                        # Requisitos, ADRs, segurança, negócio, operação e roadmap
 ├── proxy.ts                     # Sessão do painel e 404 real para slugs inexistentes
-└── instrumentation.ts           # onRequestError → logger estruturado
+├── instrumentation.ts           # onRequestError → logger estruturado
+└── instrumentation-client.ts    # Antes da hidratação: Zod sem sondagem de eval (CSP)
 ```
 
 As pastas [`components/`](components/README.md), [`lib/`](lib/README.md),
@@ -421,6 +422,7 @@ com as convenções locais.
 | `/servicos` · `/servicos/[slug]` | Catálogo de serviços e detalhe com cases relacionados |
 | `/cases` · `/cases/[slug]` | Portfólio com filtros e detalhe do case |
 | `/contato` | Formulários de novo projeto e de contato |
+| `/contato/projeto` · `/contato/mensagem` | Os mesmos formulários para quem navega sem JavaScript (fora do menu e dos buscadores) |
 | `/feedback` | Formulário de feedback |
 | `/privacidade` | Aviso de privacidade |
 
@@ -494,8 +496,11 @@ flowchart LR
   HMAC, e os logs mascaram dados pessoais automaticamente.
 - **Retenção:** cada formulário tem prazo de exclusão ou anonimização
   ([TECH-08](docs/seguranca/ciclo-de-vida-dados-pessoais.md)).
-- **Cabeçalhos de segurança** em todas as respostas, `poweredByHeader` desativado e `noindex`
-  fora de produção e sempre no `/admin`.
+- **Cabeçalhos de segurança** em todas as respostas, com CSP
+  ([limitação de `'unsafe-inline'`](docs/seguranca/protecao-de-rotas.md#52-limitação-unsafe-inline-em-script-src)),
+  `poweredByHeader` desativado e `noindex` fora de produção e sempre no `/admin`.
+- **Sessão em cookie `HttpOnly`**, `SameSite=Lax` e `Secure` em https
+  ([autenticação](docs/seguranca/autenticacao.md#21-cookies-da-sessão-seg-06)).
 - **Auditoria** *append-only* das operações críticas
   ([TECH-10](docs/seguranca/trilha-de-auditoria.md)).
 
@@ -550,6 +555,7 @@ npm run release:check   # antes de publicar em produção
 | Provisionamento de produção (Vercel + Supabase + Resend) | [GO-02](docs/operacao/provisionamento-producao.md) |
 | Domínio, DNS e HTTPS | [GO-03](docs/operacao/dominio-dns-https.md) |
 | Checklist de release e rollback | [GO-01](docs/operacao/release-e-rollback.md) |
+| Backup e recuperação | [DB-10](docs/operacao/backup-e-recuperacao.md) |
 | Decisão de go/no-go | [TECH-14](docs/operacao/go-no-go.md) |
 | Publicação do MVP | [GO-06](docs/operacao/publicacao-mvp.md) |
 | Handoff e manutenção | [GO-09](docs/operacao/handoff-e-manutencao.md) |

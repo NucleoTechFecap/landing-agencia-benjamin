@@ -9,6 +9,7 @@
 # Autenticação, autorização e sessão
 /proxy.ts                         @Vinishireis
 /lib/domain/auth/                 @Vinishireis
+/lib/domain/security/             @Vinishireis
 /lib/server/auth/                 @Vinishireis
 /app/admin/actions.ts             @Vinishireis
 /app/admin/auth/                  @Vinishireis
@@ -32,6 +33,7 @@
 /lib/config/                      @Vinishireis
 /.env.example                     @Vinishireis
 /next.config.ts                   @Vinishireis
+/instrumentation-client.ts        @Vinishireis
 
 # Contratos de API e integração
 /lib/domain/api/                  @Vinishireis

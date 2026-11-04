@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-02).
  26/10/2026 Vinícius Nishimura Reis  Cliente público fora do Data Cache do fetch (DB-05).
+ 04/11/2026 Vinícius Nishimura Reis  Cookies de sessão com HttpOnly, SameSite e Secure (SEG-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -27,6 +28,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { isSupabaseConfigured, publicEnv } from "@/lib/config/public-env";
+import { sessionCookieOptions } from "@/lib/domain/security/http-policy";
 import { AppError } from "../errors";
 
 function credentials() {
@@ -44,6 +46,7 @@ export async function createSessionClient() {
   const { url, anonKey } = credentials();
   const cookieStore = await cookies();
   return createServerClient(url, anonKey, {
+    cookieOptions: sessionCookieOptions(publicEnv),
     cookies: {
       getAll: () => cookieStore.getAll(),
       setAll: (cookiesToSet) => {

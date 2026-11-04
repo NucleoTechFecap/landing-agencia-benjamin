@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,6 +23,8 @@
 28/10/2026 Codex                     Usa códigos de aviso fechados (TECH-13).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  Envio de mídia em dois passos no servidor, sem receber o arquivo (TECH-13, #313).
+ 04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
+ 04/11/2026 Vinícius Nishimura Reis  Ações aceitam conteúdo sem endereço próprio, como o CTA (ADM-11).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -42,7 +44,7 @@ import { createSessionClient } from "../supabase/server";
 import { runContentCommand, saveContent, type CmsDeps } from "./content-service";
 import type { CmsItem, EntityDefinition } from "./entities";
 import { checked, command, itemRef, text, typedValues } from "./form-data";
-import { finalizeMediaUpload, prepareMediaUpload } from "./media-service";
+import { deleteMedia, finalizeMediaUpload, prepareMediaUpload, updateMediaDetails } from "./media-service";
 import { createSupabaseMediaStorage } from "./media-storage";
 import type { CmsSnapshot } from "./store";
 import { createSupabaseCmsStore } from "./supabase-store";
@@ -121,7 +123,7 @@ const FLASH_BY_COMMAND: Record<Exclude<PublicationCommand, "save" | "delete">, C
 };
 
 /** Server Action de salvar (criar rascunho ou editar), comum a todas as entidades do painel. */
-export async function cmsSaveAction<I extends { slug: string }, T extends CmsItem>(
+export async function cmsSaveAction<I extends { slug?: string }, T extends CmsItem>(
   def: EntityDefinition<I, T>,
   form: FormData,
   raw: unknown,
@@ -139,7 +141,7 @@ export async function cmsSaveAction<I extends { slug: string }, T extends CmsIte
 }
 
 /** Server Action de publicação (publicar, despublicar, arquivar, restaurar, excluir). */
-export async function cmsCommandAction<I extends { slug: string }, T extends CmsItem>(
+export async function cmsCommandAction<I extends { slug?: string }, T extends CmsItem>(
   def: EntityDefinition<I, T>,
   form: FormData,
 ): Promise<CmsFormState> {
@@ -218,4 +220,26 @@ export async function cmsFinishMediaUpload(form: FormData): Promise<CmsFormState
     },
     typedMediaMeta(form),
   );
+}
+
+/** Salva texto alternativo e marcação de decorativa de um arquivo da biblioteca (ADM-09). */
+export async function cmsSaveMedia(form: FormData): Promise<CmsFormState> {
+  return cmsFormAction(
+    "media",
+    "edit",
+    async (user, deps) => {
+      const ref = itemRef(form)!;
+      const warnings = await updateMediaDetails(deps, user, ref, mediaMeta(form));
+      return withFlash(`/admin/midia/${ref.id}`, "salvo", warnings);
+    },
+    typedMediaMeta(form),
+  );
+}
+
+/** Exclui um arquivo sem uso da biblioteca e do Storage (ADM-09). */
+export async function cmsDeleteMedia(form: FormData): Promise<CmsFormState> {
+  return cmsFormAction("media", "delete", async (user, deps) => {
+    const warnings = await deleteMedia({ ...deps, storage: await mediaStorage() }, user, text(form, "id"));
+    return withFlash("/admin/midia", "excluido", warnings);
+  });
 }

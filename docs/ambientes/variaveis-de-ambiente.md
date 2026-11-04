@@ -26,9 +26,9 @@ Legenda: **O** obrigatória · **R** recomendada · **—** não usar · *públi
 
 | Variável | Escopo | Dev | Preview | Hml | Prd | Descrição |
 | -------- | ------ | --- | ------- | --- | --- | --------- |
-| `NEXT_PUBLIC_SITE_URL` | pública | R | R | O | O | Origem canônica (canonical, OG, sitemap, `llms.txt`) |
+| `NEXT_PUBLIC_SITE_URL` | pública | R | R | O | O | Origem canônica (canonical, OG, sitemap, `llms.txt`). Com `http://`, fora de homologação e produção, tira o `Secure` do cookie de sessão e o `upgrade-insecure-requests` da CSP (SEG-06) |
 | `NEXT_PUBLIC_SITE_ENV` | pública | `development` | `preview` | `homologation` | `production` | Controla indexação (`noindex` fora de produção) e exigências de validação |
-| `NEXT_PUBLIC_SUPABASE_URL` | pública | R | O | O | O | URL do projeto Supabase do ambiente |
+| `NEXT_PUBLIC_SUPABASE_URL` | pública | R | O | O | O | URL do projeto Supabase do ambiente. A origem entra na CSP no build (`img-src`, `connect-src`): trocar exige novo build (SEG-06) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | pública | R | O | O | O | Chave anônima (segura com RLS ativa) |
 | `SUPABASE_SERVICE_ROLE_KEY` | servidor | R | — | O* | O* | Ignora RLS. *Somente scripts operacionais (INT-08) e gravação, no servidor, de envios de formulário já validados (`lib/server/supabase/admin.ts`); nunca em leitura de conteúdo nem no cliente |
 | `SUBMISSION_HASH_SECRET` | servidor | R | O | O | O | HMAC de IP/impressão digital de formulários (TECH-07); ≥ 32 caracteres, diferente por ambiente |
@@ -42,6 +42,9 @@ Legenda: **O** obrigatória · **R** recomendada · **—** não usar · *públi
 | `CONTENT_REVALIDATE_SECRET` | servidor | — | — | R | R | Bearer do `POST /api/internal/revalidate` (TECH-09); ≥ 32 caracteres |
 | `CRON_SECRET` | servidor | — | — | R | O | Bearer dos jobs internos (`/api/internal/jobs/*`) chamados pelo Vercel Cron |
 | `LOG_LEVEL` | servidor | `debug` | `info` | `info` | `info` | Nível mínimo dos logs (ARC-09) |
+
+`VERCEL_ENV` é definida pela própria Vercel: em `preview`, a CSP libera a barra de ferramentas e os
+comentários ([proteção de rotas §5](../seguranca/protecao-de-rotas.md#5-cabeçalhos-de-segurança-e-csp-seg-06)).
 
 ## 3. Validação no código
 

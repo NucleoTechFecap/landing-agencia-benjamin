@@ -37,18 +37,20 @@
 | -------- | ---------- | ---- |
 | Atualizar textos, serviços, cases e mídia | Quando necessário | Pela própria Benjamin no painel (GO-08) |
 | Convidar/desligar usuários do painel | Sob demanda | [Administrador inicial](administrador-inicial.md); desligamento no mesmo dia |
-| Conferir notificações com falha | Semanal | `select … from form_submissions where notification_status = 'failed'`; job de reenvio (GO-02). Com `notification_attempts = 5` não há novo reenvio automático: corrija a causa e devolva à fila com `update form_submissions set notification_attempts = 0 where id = …` |
+| Conferir notificações com falha | Semanal | A Benjamin vê o aviso e o filtro **Notificação** em `/admin/leads` ([guia](../cms/guia-do-painel.md)). O NúcleoTech não lê os envios no painel: confere só as contagens com `select notification_status, count(*) from form_submissions group by 1` e o job de reenvio (GO-02). Com `notification_attempts = 5` não há novo reenvio automático: corrija a causa e devolva à fila com `update form_submissions set notification_attempts = 0 where id = …` |
 | Retenção de dados pessoais | Mensal | Rotina de DBX-05 com `planRetention` (TECH-08) |
 | Revisar logs de erro | Semanal | Vercel → Logs filtrando `level=error` (ADR-0004) |
 | Revisar contas ativas e papéis | Mensal | `profiles` + trilha `user.*` na auditoria |
 | Atualizar dependências | Mensal | `npm outdated`, `npm audit`, PR com `npm run verify`, `test:e2e`, `test:supabase` e `test:e2e:cms` |
 | Atualizar Next.js | A cada minor | Ler `node_modules/next/dist/docs/` da nova versão (AGENTS.md) |
 | Rotacionar segredos | Semestral e ao desligar alguém com acesso | [ARC-05 §4](../ambientes/variaveis-de-ambiente.md) |
-| Testar restauração de backup | Trimestral | DB-10 |
+| Copiar banco e arquivos para o Drive institucional | Semanal | [DB-10 §4](backup-e-recuperacao.md): é o único backup no plano Free. Conferir também o uso e se há aviso de pausa |
+| Testar restauração de backup | Trimestral | `npm run test:restore` ([DB-10 §6](backup-e-recuperacao.md)) |
 | Invalidar cache manualmente | Em incidente | `POST /api/internal/revalidate` (ADR-0006) |
 
 As rotinas com frequência fixa já são issues no Project 4, com a label `manutencao`: #302 a #309
-(MANUT-01 a MANUT-08). Cada execução é registrada num comentário da issue correspondente.
+(MANUT-01 a MANUT-08). Cada execução é registrada num comentário da issue correspondente. O que uma
+rotina encontrar segue a proposta de severidade e correção de [GO-11](suporte-e-evolucao.md).
 
 ## 4. Tarefas de manutenção visíveis à equipe
 
