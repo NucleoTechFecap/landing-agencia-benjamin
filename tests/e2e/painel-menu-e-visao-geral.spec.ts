@@ -33,6 +33,7 @@ import {
   newSuffix,
   openMenu,
   panelMenu,
+  saveEvidence,
   serviceClient,
   submitLogin,
   type Account,
@@ -318,10 +319,12 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
       const button = page.getByRole("button", { name: "Abrir menu" });
       await expect(menu).toBeHidden();
       await expect(button).toHaveAttribute("aria-expanded", "false");
+      await saveEvidence(page, "menu-fechado-360", false);
       const box = await button.boundingBox();
       expect(box!.height).toBeGreaterThanOrEqual(44);
 
       await openMenu(page);
+      await saveEvidence(page, "menu-aberto-360");
       const closeButton = page.getByRole("button", { name: "Fechar menu" });
       await expect(closeButton).toHaveAttribute("aria-expanded", "true");
       await expect(menu.getByRole("link", { name: "Início" })).toHaveAttribute("aria-current", "page");
@@ -346,6 +349,7 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
       const first = menu.getByRole("link", { name: "Início" });
       await expect(first).toBeFocused();
       await expect(first).toHaveCSS("outline-style", "solid");
+      await saveEvidence(page, "menu-foco-teclado-360", false);
       await page.keyboard.press("Escape");
       await expect(menu).toBeHidden();
       await expect(button).toBeFocused();
@@ -447,10 +451,12 @@ test.describe("Painel · menu e visão geral dos conteúdos @cms", () => {
     await page.keyboard.press("Tab");
     await expect(page.getByRole("button", { name: "Sair" })).toBeFocused();
     await expect(page.getByRole("button", { name: "Sair" })).toHaveCSS("outline-style", "solid");
+    await saveEvidence(page, "cabecalho-foco-teclado-1280", false);
     await page.keyboard.press("Tab");
     const first = panelMenu(page).getByRole("link", { name: "Início" });
     await expect(first).toBeFocused();
     await expect(first).toHaveCSS("outline-style", "solid");
+    await saveEvidence(page, "menu-foco-teclado-1280", false);
 
     // O atalho leva o foco ao conteúdo, sem passar de novo pelo menu.
     await skip.focus();
