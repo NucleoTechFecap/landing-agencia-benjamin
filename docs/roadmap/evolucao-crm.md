@@ -78,5 +78,5 @@ erDiagram
 - [ ] Priorização no backlog pós-MVP.
 
 **27/10/2026:** as perguntas sobre necessidade, quem usaria e etapas do funil foram incluídas no pedido
-de aprovação à Benjamin ([página](https://claude.ai/artifact/4TJ8vhTDLW6PYfSfCAqLti), decisão 4), marcadas como "pode esperar": o CRM não
+de aprovação à Benjamin (decisão 4), marcadas como "pode esperar": o CRM não
 bloqueia o MVP.

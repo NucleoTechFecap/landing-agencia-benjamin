@@ -170,7 +170,6 @@ em cada etapa.
 | Mapa de campos ([FORM-01](matriz-de-campos.md)) | Pendente |
 | Destinatário de cada formulário (CON-10) | Pendente |
 
-**27/10/2026:** pedido de aprovação preparado ([página para enviar à agência](https://claude.ai/artifact/4TJ8vhTDLW6PYfSfCAqLti),
-decisões 1 a 3). A situação de cada ponto muda para "Aprovado" quando a resposta chegar: registrar na
+**27/10/2026:** pedido de aprovação preparado para a agência (decisões 1 a 3). A situação de cada ponto muda para "Aprovado" quando a resposta chegar: registrar na
 issue TECH-06 data, aprovadores e ajustes, e alterar código e documento no mesmo PR. O código
 implementa a proposta para permitir testes, o que não equivale a aprovação.
