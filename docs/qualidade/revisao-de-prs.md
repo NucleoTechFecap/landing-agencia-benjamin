@@ -128,7 +128,7 @@ ser reproduzido, em geral na Vercel.
 
 | # | Achado | Severidade | Situação |
 | - | ------ | ---------- | -------- |
-| 1 | Segunda expiração do cache só vale depois do reaquecimento: pode chegar a cerca de 8 s, acima da meta de 5 s do ADR-0006 | Baixa | Ordem confirmada; efeito plausível. Em #369 |
+| 1 | Segunda expiração do cache só vale depois do reaquecimento: pode chegar a cerca de 8 s, acima da meta de 5 s do ADR-0006 | Baixa | Ordem corrigida em requisição própria (#369); o efeito na Vercel ainda não foi medido |
 | 2 | 301 permanente com slug reversível: a→b→a pode dar loop para quem guardou o 301 | Baixa | Corrigido com `Cache-Control` curto (#369); comportamento real da CDN ainda sem medir |
 | 3 | Blocos de página sem transação, nem a mitigação que `saveContent` tinha | Baixa | Mitigado com auditoria da falha e invalidação (#369); a transação pede RPC e migration |
 | 4 | Rollback da DBX-03 cita a versão errada no `migration repair` | Baixa | Corrigido (#369) |
