@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-07).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
+ 04/11/2026 Vinícius Nishimura Reis  Link para a prévia protegida (ADM-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -35,12 +36,15 @@ import { StatusBadge } from "./status-badge";
 export function ItemPanel({
   item,
   publicHref,
+  previewHref,
   missing,
   warnings,
   children,
 }: {
   item: Publishable;
   publicHref?: string;
+  /** Prévia protegida (ADM-14); só para os tipos com página própria no site. */
+  previewHref?: string;
   missing: string[];
   warnings: string[];
   children?: ReactNode;
@@ -63,6 +67,16 @@ export function ItemPanel({
             className="inline-block font-bold text-benja-verde underline underline-offset-4"
           >
             Ver no site<span className="sr-only"> (abre em nova aba)</span>
+          </Link>
+        ) : null}
+        {previewHref && item.status !== "archived" ? (
+          <Link
+            href={previewHref}
+            target="_blank"
+            prefetch={false}
+            className="block font-bold text-benja-verde underline underline-offset-4"
+          >
+            Ver prévia<span className="sr-only"> (abre em nova aba)</span>
           </Link>
         ) : null}
         {item.provisional ? (

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 04/11/2026 Vinícius Nishimura Reis  Link para a prévia protegida (ADM-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -31,6 +32,7 @@ import { ItemPanel } from "@/components/admin/cms/item-panel";
 import { PageForm } from "@/components/admin/cms/page-form";
 import { can } from "@/lib/domain/auth/rbac";
 import { addableBlockTypes, pagePath } from "@/lib/domain/content/blocks";
+import { previewPath } from "@/lib/domain/content/preview";
 import { allowedCommands } from "@/lib/domain/content/publication";
 import { requirePageAccess } from "@/lib/server/auth/guards";
 import { publishProblems } from "@/lib/server/cms/content-service";
@@ -80,6 +82,7 @@ export default async function EditPagePage({ params, searchParams }: PageProps<"
         <ItemPanel
           item={page}
           publicHref={path ?? undefined}
+          previewHref={previewPath("pagina", page.id)}
           missing={publishProblems(PAGE, page, snapshot, new Date())}
           warnings={path ? [] : ["Esta página não tem rota no site: fica salva, mas o visitante não a vê."]}
         >

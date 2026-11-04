@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
+ 04/11/2026 Vinícius Nishimura Reis  Link para a prévia protegida (ADM-14).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,6 +31,7 @@ import { FlashMessage } from "@/components/admin/cms/flash-message";
 import { ItemPanel } from "@/components/admin/cms/item-panel";
 import { can } from "@/lib/domain/auth/rbac";
 import { findIntegrityIssues } from "@/lib/domain/content/integrity";
+import { previewPath } from "@/lib/domain/content/preview";
 import { allowedCommands } from "@/lib/domain/content/publication";
 import { requirePageAccess } from "@/lib/server/auth/guards";
 import { publishProblems } from "@/lib/server/cms/content-service";
@@ -72,6 +74,7 @@ export default async function EditCasePage({ params, searchParams }: PageProps<"
         <ItemPanel
           item={item}
           publicHref={CASE.publicPath(item)}
+          previewHref={previewPath("case", item.id)}
           missing={publishProblems(CASE, item, snapshot, now)}
           warnings={warnings}
         >
