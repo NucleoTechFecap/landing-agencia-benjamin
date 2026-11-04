@@ -180,7 +180,18 @@ para a biblioteca** abre esta tela e, depois do envio, volta para o item que voc
 | Texto alternativo | Obrigatório (3 a 160 caracteres), exceto se a imagem for marcada como decorativa |
 
 O arquivo é conferido pelo conteúdo, não só pela extensão: um arquivo renomeado é recusado.
-Excluir arquivo e editar o texto alternativo ficam para o gerenciador completo (ADM-09).
+
+### Detalhes de um arquivo
+
+Na lista, **Detalhes** abre o arquivo, com três coisas:
+
+- **Onde é usado:** os serviços, cases e páginas que usam o arquivo, em qualquer estado.
+- **Texto alternativo:** quem edita mídia pode corrigir e clicar em **Salvar alterações**. Imagem em
+  conteúdo publicado ou no bloco "Nosso time" não pode virar decorativa. Se o arquivo for foto do bloco,
+  abra a página e salve o bloco de novo: ele guarda uma cópia do texto.
+- **Excluir arquivo** (Administrador): só aparece se nenhum conteúdo usa o arquivo, inclusive rascunhos e
+  arquivados. Quem tem a imagem em uso precisa trocá-la antes. A exclusão não tem volta: o arquivo sai da
+  biblioteca e do armazenamento.
 
 ## Categorias de cases (`/admin/categorias`)
 
