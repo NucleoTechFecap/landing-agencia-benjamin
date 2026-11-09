@@ -57,7 +57,7 @@ stateDiagram-v2
 | Camada | Como usa os estados |
 | ------ | ------------------- |
 | Código (fonte única) | `lib/domain/content/publication-status.ts` — `PUBLICATION_STATUSES`, rótulos e cores de selo |
-| Banco | Coluna `status` com `check (status in ('draft','published','archived'))` em todas as tabelas de conteúdo (DB-02/DBX-04) |
+| Banco | Coluna `status` com o enum `publish_status` em todas as tabelas de conteúdo (DB-02) e trigger de transição (DBX-04) |
 | CMS | Selos "Rascunho", "Publicado", "Arquivado"; filtros por estado; botões conforme transições permitidas |
 | Site público | Lê somente `published` com `published_at <= agora` |
 | API `/api/v1` | Mesmo filtro do site; nunca aceita `status` como parâmetro público |

@@ -2,15 +2,15 @@
 
 | Campo           | Valor                                                                        |
 | --------------- | ---------------------------------------------------------------------------- |
-| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58), DBX-02 (#113), DB-08 (#64), DBX-03 (#114), ARC-11 (#52) |
+| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58), DBX-02 (#113), DB-08 (#64), DBX-03 (#114), ARC-11 (#52), DBX-04 (#115) |
 | Responsável     | Vinicius Binda (`@VinnizzZ`)                                                 |
 | Revisão técnica | Vinícius Nishimura Reis (`@Vinishireis`)                                     |
 | Versão          | 1.0.0                                                                        |
 | Data            | 25/10/2026                                                                   |
-| Migration       | `supabase/migrations/20261025000100_cms_content.sql`, `20261029000100_db08_slugs_e_urls.sql` (§10), `20261030000100_dbx03_indices_rls.sql` (§11) e `20261102000300_tech06_status_de_atendimento.sql` |
+| Migration       | `supabase/migrations/20261025000100_cms_content.sql`, `20261029000100_db08_slugs_e_urls.sql` (§10), `20261030000100_dbx03_indices_rls.sql` (§11), `20261102000300_tech06_status_de_atendimento.sql` e `20261102000400_dbx04_integridade_publicacao.sql` (§12) |
 | Reversão        | `supabase/rollbacks/<migration>.down.sql` (uma por migration, §9)            |
 | Seed            | `supabase/seed.sql`, gerado por `scripts/content-seed.mjs` (só banco local, §9) |
-| Testes          | `supabase/tests/database/cms_content.test.sql` (pgTAP, 84 testes), `slugs_e_urls.test.sql` (pgTAP, 33 testes) e `lib/server/content/content-sql.test.ts` (SQL × regras de domínio) |
+| Testes          | `supabase/tests/database/cms_content.test.sql` (pgTAP, 84 testes), `slugs_e_urls.test.sql` (pgTAP, 33 testes), `integridade_publicacao.test.sql` (pgTAP, 48 testes) e `lib/server/content/content-sql.test.ts` (SQL × regras de domínio) |
 | Insumos         | [integridade](../negocio/integridade-de-conteudo.md), [campos do case](../negocio/campos-do-case.md), [fluxo de publicação](../negocio/fluxo-de-publicacao.md), [proteção de rotas](../seguranca/protecao-de-rotas.md), [ADR-0005](../adr/0005-armazenamento-de-midia.md) |
 
 ## 1. Visão geral
@@ -62,8 +62,8 @@ erDiagram
 
 | Relação | Cardinalidade | Implementação | Regra de exclusão | Obrigatoriedade |
 | ------- | ------------- | ------------- | ----------------- | --------------- |
-| Serviço × Área | N:M | `service_areas` (PK composta) | `cascade` nos dois lados | Serviço precisa de ≥ 1 área (R03, na aplicação) |
-| Case × Serviço | N:M | `case_services` (PK composta) | `cascade` nos dois lados | Case publicado precisa de ≥ 1 serviço publicado (R07, na aplicação) |
+| Serviço × Área | N:M | `service_areas` (PK composta) | `cascade` nos dois lados | Serviço publicado precisa de ≥ 1 área (R03, §12); a aplicação exige também em rascunho |
+| Case × Serviço | N:M | `case_services` (PK composta) | `cascade` nos dois lados | Case publicado precisa de ≥ 1 serviço publicado (R07, §12) |
 | Case × Categoria | N:1 | `cases.category_id` | `restrict` (não exclui categoria em uso) | Case publicado exige categoria (constraint) |
 | Case × Área | Derivada | — | — | União das áreas dos serviços; não é gravada |
 | Case × Capa | N:1 | `cases.cover_media_id` | `restrict` (não exclui mídia em uso) | Case publicado exige capa (constraint) |
@@ -84,7 +84,8 @@ erDiagram
 | Texto | `text` com `check (char_length(...))` em vez de `varchar(n)` | Limite explícito e alterável sem reescrever a coluna; mesmo padrão de `profiles` |
 | Slug | `not null unique check (public.is_valid_slug(slug))` | Mesma regra de `validateSlug()`: kebab-case, 3–80 caracteres, sem palavras reservadas; único por tipo. Troca depois de publicar: §10 |
 | Estados | enum `publish_status` (`draft`, `published`, `archived`), padrão `draft` | Fonte única em `publication-status.ts`; o teste falha se divergirem |
-| Publicação | `check (status <> 'published' or published_at is not null)` | Invariante de `checkInvariants()` (TECH-04) |
+| Publicação | `check (status <> 'published' or published_at is not null)`; a data não muda depois de preenchida (§12) | Invariante de `checkInvariants()` (TECH-04) |
+| Transições | Trigger `enforce_publication_state` (§12) | Mesma tabela de `TRANSITIONS`; o teste falha se divergirem |
 | Arquivamento | `check ((status = 'archived') = (archived_at is not null))` | Arquivado tem data; restaurar limpa a data |
 | Campos para publicar | `check (status <> 'published' or (...))` por tabela | Mínimo de `validateForPublish` garantido no banco |
 | Visibilidade pública | `status = 'published' and published_at <= now()` | RN-01: rascunho, arquivado e publicação futura nunca aparecem |
@@ -212,8 +213,8 @@ Campos de controle **comuns** às entidades publicáveis (`areas`, `services`, `
 | `mime_type` | `text` | Não | — | JPG, PNG, WebP, AVIF ou PDF (sem SVG); extensão coerente | — |
 | `size_bytes` | `integer` | Sim | — | Imagem ≤ 5 MB, PDF ≤ 10 MB; nulo para arquivo de `public/` | — |
 | `width`, `height` | `integer` | Sim | — | 1–4000 px; nulos em PDF | `width`, `height` |
-| `alt_text` | `text` | Sim | — | ≤ 160; obrigatório para publicar quem usa a imagem (R12, na aplicação) | `alt` |
-| `decorative` | `boolean` | Não | `false` | Imagem decorativa dispensa `alt` | — |
+| `alt_text` | `text` | Sim | — | ≤ 160; obrigatório para publicar quem usa a imagem (R12, §12) | `alt` |
+| `decorative` | `boolean` | Não | `false` | Imagem decorativa dispensa `alt` no banco; o painel ainda exige (§12) | — |
 | `created_at`, `updated_at`, `updated_by` | — | — | — | Controle | — |
 
 ### `ctas` — chamadas para ação (TECH-05)
@@ -242,7 +243,7 @@ código.
 | `pages` | `description` | `text` | Sim | ≤ 300 (meta description) |
 | `blocks` | `id` | `uuid` | Não | PK |
 | `blocks` | `page_id` | `uuid` | Não | FK `pages` `cascade`; índice `(page_id, sort_order)` |
-| `blocks` | `type` | `text` | Não | kebab-case, ≤ 40 |
+| `blocks` | `type` | `text` | Não | kebab-case, ≤ 40; só os tipos do catálogo abaixo (`blocks_type_catalog`, DBX-04) |
 | `blocks` | `content` | `jsonb` | Não | Objeto JSON; o schema de cada `type` é validado em Zod |
 | `blocks` | `sort_order` | `integer` | Não | ≥ 0 |
 | `blocks` | `created_at`, `updated_at`, `updated_by` | — | — | Controle |
@@ -333,18 +334,17 @@ canônica de `URL.href`.
 
 ## 6. Regras que ficam na aplicação
 
-Estas regras envolvem outras tabelas ou listas do código. O banco garante o mínimo, e
-`findIntegrityIssues` / `validateForPublish` cobrem o resto antes de gravar:
+Estas regras dependem de listas do código ou de data. O restante das regras entre tabelas também é
+validado no banco desde a DBX-04 (§12).
 
-| Regra | Motivo de não ser constraint | Onde reforçar depois |
-| ----- | ---------------------------- | -------------------- |
-| R03 — serviço com ≥ 1 área | Só vale ao publicar; rascunho pode não ter área. Serviço e vínculos já são gravados numa transação (`save_service`, TECH-13) | Trigger *deferrable* (DBX-04) |
-| R05/R06/R07 — dependências publicadas | Depende do estado de outra tabela | Trigger de publicação (DBX-04) |
-| R10 — rota interna conhecida | A lista de rotas está em `integrity.ts` | — |
-| R11 — até 6 destaques | É aviso, não erro | — |
-| R12 — `alt` ao publicar | O `alt` está na mídia, não na entidade | Trigger de publicação (DBX-04) |
-| Transições de estado (TECH-04) | O RLS checa a permissão, não o estado anterior | Trigger de transição (DBX-04) |
-| Mês de referência não futuro | `now()` não pode ir em check | — |
+| Regra | Motivo de não ser constraint |
+| ----- | ---------------------------- |
+| R05 — serviço publicado sem área publicada | É aviso, não erro (TECH-05) |
+| R08 — CTA com destino não publicado | É aviso: o site usa o fallback (TECH-05) |
+| R10 — rota interna conhecida | A lista de rotas está em `integrity.ts` |
+| R11 — até 6 destaques | É aviso, não erro |
+| Dependência já visível (`published_at` alcançado) | O banco confere o status; a data é de `visible()`, porque `now()` muda sem gravação |
+| Mês de referência não futuro | `now()` não pode ir em check |
 
 ## 7. Pendências para decisão
 
@@ -392,6 +392,11 @@ Estas regras envolvem outras tabelas ou listas do código. O banco garante o mí
 | Site e painel sobre o seed (ARC-11, navegador e `curl`): cases fictícios em `/cases`, rascunho, agendado, arquivado e cliente real com 404, blocos em `/areas`. Login com as 4 contas de `npm run seed:users`: `admin` e `editor` veem 5 cases com o botão de novo case, `viewer` vê os 5 sem o botão, `pending` fica no login com o aviso | Conforme. E2E `@cms` sobre o seed: 18 testes, `PASS` |
 | `supabase/tests/database/cms_gravacao_atomica.test.sql` e `tests/integration/supabase/cms-gravacao-atomica.test.ts` (TECH-13, #314, 02/11/2026): 25 testes pgTAP e 6 de integração. FK inválida em qualquer etapa (área, serviço, galeria, criação) desfaz texto e vínculos; versão desatualizada (`40001`), item inexistente (`P0002`), coluna a mais ou a menos (`22023`) e leitor (`42501`) são recusados; funções `security invoker`, sem execução para `anon`, com `search_path` vazio | `Files=7, Tests=179, Result: PASS`; `npm run test:supabase` 62/62; `npm run test:e2e:cms` 18/18 |
 | `npm run test:migrations` com a `20261102000200`: instalação limpa, upgrade com dados, rollbacks em ordem inversa (duas vezes cada) e reaplicação | Verde em 02/11/2026 |
+| `supabase/tests/database/integridade_publicacao.test.sql` (DBX-04, 02/11/2026): estados, slug e FK inválidos, catálogo de blocos, transições, data de publicação, arquivado, R03, R06, R07 e R12 nos dois sentidos, imagem decorativa e PDF, ciclo completo pelo editor, efeito de FK | 48 testes pgTAP; suíte com `Files=10, Tests=262, Result: PASS` |
+| `tests/integration/supabase/integridade-publicacao.test.ts` (DBX-04): commit real pela API, erro chega ao painel sem gravar nada, `service_role` fora das regras entre tabelas, duas pessoas na mesma versão (`update` e `save_service`), 15 rodadas de publicar case contra despublicar categoria, ciclo pelo serviço de conteúdo | 10 testes; integração com 15 arquivos e 85 testes, `PASS` |
+| Corrida com duas sessões `psql` (DBX-04), nas duas ordens: a segunda espera a trava, recebe R06 e o estado final fica consistente | Executado à parte em 02/11/2026 |
+| `npm run test:migrations` com a `20261102000500` (DBX-04): 15 migrations, instalação limpa, seed, upgrade com dados, 15 rollbacks em ordem inversa (duas vezes cada) e reaplicação. Upgrade a partir da `20261102000300` com seed conferido à parte | `Files=10, Tests=262, Result: PASS` em cada etapa |
+| Jornadas do painel com as regras ativas (`playwright --grep @cms --project=desktop`, DBX-04) | 22 testes, `PASS` |
 
 ## 9. Como aplicar, testar e reverter
 
@@ -406,13 +411,13 @@ npm run perf:queries          # EXPLAIN ANALYZE vazio e com volume sintético (D
 
 # Ambiente remoto (hoje só produção): só migrations, nunca o seed
 npx supabase link --project-ref <ref>
-npx supabase db push --dry-run
-npx supabase db push
+npx supabase db push --remote --dry-run
+npx supabase db push --remote   # CLI 3.x: sem --remote, o comando vale para o banco local
 ```
 
 **Ordem das migrations.** Sequência por timestamp, sem pular: perfis e papéis (0100) → matriz
 RBAC e bucket (0200) → auditoria (0300) → formulários (0400) → conteúdo do CMS (20261025000100)
-→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03) → marcação de produção (20261102000100, ARC-11) → gravação atômica (20261102000200, TECH-13) → `update` do painel só em `status` (20261102000300, TECH-06). Cada uma
+→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03) → marcação de produção (20261102000100, ARC-11) → gravação atômica (20261102000200, TECH-13) → integridade de publicação (20261102000400, DBX-04) → código de conflito (20261102000500, DBX-04) → `update` do painel só em `status` (20261102000300, TECH-06). Cada uma
 depende só das anteriores. Mudança
 destrutiva em banco com dados é feita em duas releases: primeiro a coluna nova, depois a remoção
 da antiga.
@@ -554,3 +559,51 @@ papel (`anon`, `pending`, `viewer`, `editor`, `admin`) vê as mesmas linhas em c
 **Paginação e filtros testados:** `paginate` e limites de `pageSize` (`contracts.test.ts`), filtros
 sobre conteúdo local (`repository.test.ts`) e sobre a RLS real, com filtros combinados, serviço em
 rascunho e páginas somadas (`tests/integration/supabase/filtros-paginacao.test.ts`).
+
+## 12. Integridade de publicação (DBX-04)
+
+O painel valida tudo isto antes de gravar e mostra mensagens por campo. O banco é a segunda barreira,
+para quem chama a API direto com a própria sessão e para a corrida entre duas pessoas. Migration:
+`20261102000400_dbx04_integridade_publicacao.sql`.
+
+| Regra | Como é verificada | Vale para | Erro → painel |
+| ----- | ----------------- | --------- | ------------- |
+| Transições de `TRANSITIONS` (arquivado só volta para rascunho) | Trigger `enforce_publication_state`, antes do update | Todos os papéis | `BJ001` → `INVALID_TRANSITION` |
+| `published_at` não muda depois de preenchido (também protege a trava de endereço da DB-08) | Mesmo trigger | Todos os papéis | `BJ001` → `INVALID_TRANSITION` |
+| Item arquivado não é editado; o `set null` automático das FKs continua passando | Mesmo trigger | `authenticated` | `BJ001` → `INVALID_TRANSITION` |
+| Tipo de bloco no catálogo | `check blocks_type_catalog` | Todos os papéis | `23514` → `VALIDATION_FAILED` |
+| R03 — serviço publicado com ≥ 1 área | Trigger adiado | `authenticated` | `BJ003` → `CONFLICT` |
+| R06 — case publicado com categoria publicada | Trigger adiado, nos dois sentidos | `authenticated` | `BJ003` → `CONFLICT` |
+| R07 — case publicado com ≥ 1 serviço publicado | Trigger adiado, nos dois sentidos | `authenticated` | `BJ003` → `CONFLICT` |
+| R12 — capa, galeria e imagem de serviço publicados com `alt` | Trigger adiado, nos dois sentidos | `authenticated` | `BJ003` → `CONFLICT` |
+| Versão desatualizada em `save_service` e `save_case` | Dentro da função | `authenticated` | `BJ002` → `CONFLICT` |
+| Exclusão só de arquivados | RLS (`exclui arquivados`), sem trigger | `authenticated` | Nenhuma linha → `FORBIDDEN` |
+
+"Nos dois sentidos" quer dizer que a regra vale ao publicar o item e também ao mexer na dependência
+depois: despublicar a categoria, tirar o último serviço, despublicar o serviço ou apagar o `alt`.
+
+**Por que adiado.** `save_service` e `save_case` apagam e recriam os vínculos dentro da transação.
+Por isso a verificação roda no fim dela. O erro volta pela API normalmente, HTTP 400 com o código, e
+nada fica gravado. Em pgTAP, que nunca faz commit, use `set constraints all immediate`.
+
+**Quem fica de fora, e o risco aceito.** As regras entre tabelas e a edição de arquivado não valem para
+`service_role` e `postgres`. Preparação de dados e manutenção gravam em etapas, e todo o conteúdo do
+painel já passa pela sessão do usuário. A contrapartida: quem tem a chave de serviço ou o SQL Editor
+pode gravar um estado inconsistente, como um case publicado sem serviço. Em correção manual, prefira
+restaurar, editar e publicar. Transições e `published_at` valem para esses papéis também.
+
+**Duas pessoas ao mesmo tempo.**
+- Mesmo registro: `update ... where updated_at = esperado` deixa só uma gravar, e a outra recebe
+  conflito (`CONFLICT`). Vale para o `update` comum e para as funções de gravação.
+- Registros relacionados: as verificações travam a dependência com `for share`. Se uma pessoa publica o
+  case enquanto outra despublica a categoria, quem chega depois espera e recebe `BJ003`.
+
+**Por que `BJ002` e não `40001`.** O PostgREST trata `40001` como falha passageira e repete a transação.
+Como a versão continua desatualizada, a chamada ficava sem resposta (visto no PostgREST 14.18 da stack
+local). Nenhuma função nossa deve usar esse código para erro de regra. O painel (`toCmsError`) continua
+traduzindo `40001` como `CONFLICT`, para o caso de o código novo rodar com banco sem a
+`20261102000500` ou com ela revertida.
+
+**Divergência conhecida na R12.** O banco aceita imagem decorativa, como diz §5. O painel ainda a recusa
+ao publicar: `toMediaRef` entrega `alt` vazio e `checkMedia` trata como falta de texto. O painel continua
+mais rígido até ser alinhado em issue própria. O banco também dispensa PDF.

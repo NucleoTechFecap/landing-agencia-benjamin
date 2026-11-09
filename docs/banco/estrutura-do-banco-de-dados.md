@@ -93,8 +93,9 @@ alimentam o site a partir de `content/`. Quando as tabelas existirem, só a cama
 | `23503` | Exclusão bloqueada: mídia, categoria ou destino de CTA em uso | `INVALID_TRANSITION` com mensagem "em uso" | 409 |
 | `42501` | RLS ou grant negou | `FORBIDDEN` | 403 |
 | `BJ001` | Transição de estado inválida (ex.: arquivado → publicado) | `INVALID_TRANSITION` | 409 |
-| `BJ002` | Excluir item que não está arquivado | `INVALID_TRANSITION` | 409 |
-| `BJ003` | Publicado sem vínculo obrigatório (serviço sem área, case sem serviço) | `VALIDATION_FAILED` | 422 |
+| `BJ002` | Versão desatualizada em `save_service` e `save_case` | `CONFLICT` | 409 |
+| `40001` | Versão desatualizada, com banco sem a migration `20261102000500` ou com ela revertida | `CONFLICT` | 409 |
+| `BJ003` | Conteúdo publicado ficaria sem dependência obrigatória: área, categoria, serviço ou `alt` ([dicionário de dados](dicionario-de-dados.md) §12) | `CONFLICT` | 409 |
 | `22023` | Parâmetro inválido em função RPC (ex.: galeria com mais de 20 imagens) | `VALIDATION_FAILED` | 422 |
 | 0 linhas no `update` | `updated_at` esperado diferente (concorrência) ou RLS de `using` negou | `CONFLICT` (a guarda do servidor já verificou a permissão antes) | 409 |
 
@@ -347,6 +348,10 @@ A tabela é preenchida **só por trigger** (§7). Ninguém grava nela pela API.
 
 ## 5. Integridade: banco × aplicação (DBX-04)
 
+> **Implementado em 02/11/2026 com diferenças desta proposta (DBX-04).** As regras entre tabelas valem
+> só para `authenticated`, a exclusão de arquivados ficou na RLS e R06 e R12 são triggers adiados.
+> Regras em vigor: [dicionário de dados](dicionario-de-dados.md) §12.
+
 O banco garante a **estrutura**. A aplicação garante regras que dependem de várias linhas ou de
 contexto (`findIntegrityIssues`, `transition()`, schemas Zod). As duas camadas usam os mesmos
 limites.
@@ -373,8 +378,8 @@ limites.
 | Publicar exige campos | `*_publish_requires_fields` (mínimo estrutural) | `validateForPublish` (completo) |
 | Concorrência | `updated_at` em ms | `update … where updated_at = esperado` → `CONFLICT` |
 
-> **Dica:** como a transição é validada no banco, `UPDATE` direto pelo SQL Editor do Supabase
-> também respeita as regras. Para corrigir dados como `postgres`, use uma transação e prefira
+> **Dica:** `UPDATE` direto pelo SQL Editor respeita as transições e a data de publicação, mas não as
+> regras entre tabelas. Para corrigir dados como `postgres`, use uma transação e prefira
 > restaurar → editar → publicar a desligar triggers.
 
 ---
