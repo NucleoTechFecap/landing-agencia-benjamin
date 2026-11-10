@@ -49,7 +49,7 @@ servidor: gravação de formulários e rotinas operacionais.
 | ----- | ------- | -------- |
 | Acesso | `profiles`, `role_permissions` | ✅ na `main` (ADM-02/ADM-03) |
 | Auditoria | `audit_log` | ✅ na `main` (TECH-10) |
-| Formulários | `form_submissions` | ✅ na `main` (TECH-06/07) · **ajustes propostos** para retenção (§9) |
+| Formulários | `form_submissions` | ✅ na `main` (TECH-06/07; forma do envio: DB-06, [dicionário §13](dicionario-de-dados.md)) · **ajustes propostos** para retenção (§9) |
 | Mídia | `media_assets` + bucket `media` | Bucket ✅ na `main` · tabela **proposta** |
 | Taxonomia | `areas`, `services`, `service_areas`, `case_categories` | **Proposta** |
 | Portfólio | `cases`, `case_services`, `case_media`, `case_links` | **Proposta** |
@@ -787,6 +787,7 @@ Para simular usuário num teste SQL: `set local role authenticated;` e
 | DBX-04 | Banco rejeita valores estruturais inválidos; testes de integridade | §5 · testes 2.x, 3.x, 4.x |
 | DBX-05 | Runbook de retenção, restauração e descarte | §9, §12 |
 | DBX-06 | Matriz banco × papel; dados pessoais não consultáveis anonimamente | §6 · testes 1.x e 6.x |
+| DB-06 | Lead válido é registrado; envio inválido não persiste | [Dicionário de dados §13](dicionario-de-dados.md) · `form_submissions_integridade.test.sql` · `formularios.test.ts` |
 
 Ordem sugerida: **DB-01** (revisar este documento) → **DB-02/DBX-04** (migrations + pgTAP) →
 **ARC-11** (seed) → liberar **DB-03/04/05** para o Murilo trocar o `loadSnapshot()` → **DB-08**

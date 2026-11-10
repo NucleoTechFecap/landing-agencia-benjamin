@@ -2,15 +2,15 @@
 
 | Campo           | Valor                                                                        |
 | --------------- | ---------------------------------------------------------------------------- |
-| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58), DBX-02 (#113), DB-08 (#64), DBX-03 (#114), ARC-11 (#52), DBX-04 (#115) |
+| Issues          | DB-01 (#57), DBX-01 (#112), DB-02 (#58), DBX-02 (#113), DB-08 (#64), DBX-03 (#114), ARC-11 (#52), DBX-04 (#115), DB-06 (#62) |
 | Responsável     | Vinicius Binda (`@VinnizzZ`)                                                 |
 | Revisão técnica | Vinícius Nishimura Reis (`@Vinishireis`)                                     |
 | Versão          | 1.0.0                                                                        |
 | Data            | 25/10/2026                                                                   |
-| Migration       | `supabase/migrations/20261025000100_cms_content.sql`, `20261029000100_db08_slugs_e_urls.sql` (§10), `20261030000100_dbx03_indices_rls.sql` (§11), `20261102000300_tech06_status_de_atendimento.sql` e `20261102000400_dbx04_integridade_publicacao.sql` (§12) |
+| Migration       | `supabase/migrations/20261025000100_cms_content.sql`, `20261029000100_db08_slugs_e_urls.sql` (§10), `20261030000100_dbx03_indices_rls.sql` (§11), `20261102000300_tech06_status_de_atendimento.sql`, `20261102000400_dbx04_integridade_publicacao.sql` (§12) e `20261109000100_db06_integridade_dos_envios.sql` (§13) |
 | Reversão        | `supabase/rollbacks/<migration>.down.sql` (uma por migration, §9)            |
 | Seed            | `supabase/seed.sql`, gerado por `scripts/content-seed.mjs` (só banco local, §9) |
-| Testes          | `supabase/tests/database/cms_content.test.sql` (pgTAP, 84 testes), `slugs_e_urls.test.sql` (pgTAP, 33 testes), `integridade_publicacao.test.sql` (pgTAP, 48 testes) e `lib/server/content/content-sql.test.ts` (SQL × regras de domínio) |
+| Testes          | `supabase/tests/database/cms_content.test.sql` (pgTAP, 84 testes), `slugs_e_urls.test.sql` (pgTAP, 33 testes), `integridade_publicacao.test.sql` (pgTAP, 48 testes), `form_submissions_integridade.test.sql` (pgTAP, 40 testes), `lib/server/content/content-sql.test.ts` e `lib/server/forms/forms-sql.test.ts` (SQL × regras de domínio) |
 | Insumos         | [integridade](../negocio/integridade-de-conteudo.md), [campos do case](../negocio/campos-do-case.md), [fluxo de publicação](../negocio/fluxo-de-publicacao.md), [proteção de rotas](../seguranca/protecao-de-rotas.md), [ADR-0005](../adr/0005-armazenamento-de-midia.md) |
 
 ## 1. Visão geral
@@ -20,7 +20,7 @@ O banco tem três grupos de tabelas. Este documento cobre o grupo de conteúdo e
 | Grupo | Tabelas | Migration |
 | ----- | ------- | --------- |
 | Usuários e acesso | `profiles`, `role_permissions`, `audit_log` | 0100, 0200, 0300 |
-| Formulários (leads, contatos, feedbacks) | `form_submissions` | 0400, 20261102000300 (`update` do painel só em `status`) |
+| Formulários (leads, contatos, feedbacks) | `form_submissions` | 0400, 20261102000300 (`update` do painel só em `status`), 20261109000100 (forma do envio, §13) |
 | **Conteúdo do CMS** | `pages`, `blocks`, `areas`, `services`, `service_areas`, `case_categories`, `cases`, `case_services`, `case_media`, `ctas`, `media_assets`, `site_settings` | **20261025000100** |
 | Endereços antigos (DB-08) | `slug_redirects` | 20261029000100 |
 | Marcação de produção (ARC-11) | `ambiente_banco` | 20261102000100 |
@@ -397,6 +397,11 @@ validado no banco desde a DBX-04 (§12).
 | Corrida com duas sessões `psql` (DBX-04), nas duas ordens: a segunda espera a trava, recebe R06 e o estado final fica consistente | Executado à parte em 02/11/2026 |
 | `npm run test:migrations` com a `20261102000500` (DBX-04): 15 migrations, instalação limpa, seed, upgrade com dados, 15 rollbacks em ordem inversa (duas vezes cada) e reaplicação. Upgrade a partir da `20261102000300` com seed conferido à parte | `Files=10, Tests=262, Result: PASS` em cada etapa |
 | Jornadas do painel com as regras ativas (`playwright --grep @cms --project=desktop`, DBX-04) | 22 testes, `PASS` |
+| `supabase/tests/database/form_submissions_integridade.test.sql` (DB-06, 09/11/2026): o que a aplicação grava passa (três tipos, cada assunto e perfil, `nao-sei`, serviço de 80, sem origem, origem com `//` e de 200, descrição de 3.000 caracteres escapados, anonimização da DBX-05); conteúdo, categoria, protocolo, origem, tentativas e erro inválidos recusados com o nome da restrição, no `insert` e no `update`, inclusive com `service_role`; só os válidos ficam na tabela | 40 testes pgTAP; suíte com `Files=12, Tests=348, Result: PASS` |
+| `tests/integration/supabase/formularios.test.ts` (DB-06): envio inválido pelo serviço real não grava nem dispara e-mail; pedido com cada campo no limite chega inteiro; gravação forjada pelo `SupabaseSubmissionStore` recusada com `23514` | 3 testes novos; integração com 20 arquivos e 200 testes, `PASS` |
+| `lib/server/forms/forms-sql.test.ts` (DB-06): protocolo, categorias, origem e tetos do banco × `protocolFromId`, `routeSubmission`, `technicalFieldsSchema` e `deliverNotification`. Conferido que falha ao mudar o protocolo, o limite do slug, o limite e o formato da origem ou o teto do conteúdo só na migration | 6 testes; passa no `npm test` |
+| `npm run test:migrations` com a `20261109000100` (DB-06): 16 migrations, instalação limpa, seed, upgrade a partir da `20261102000500` com dados, 16 rollbacks em ordem inversa (duas vezes cada) e reaplicação | `Files=12, Tests=348, Result: PASS` em cada etapa |
+| Upgrade com envios na tabela (DB-06, à parte): três envios no formato da aplicação e um resto de teste com protocolo `TESTE-DB10`. A conferência do §13 aponta a linha; a migration falha inteira, sem restrição nem registro, e as linhas ficam intactas. Sem o resto de teste, aplica e preserva os envios. O rollback roda duas vezes e a migration reaplica | Conforme, em stack local |
 
 ## 9. Como aplicar, testar e reverter
 
@@ -417,7 +422,7 @@ npx supabase db push --remote   # CLI 3.x: sem --remote, o comando vale para o b
 
 **Ordem das migrations.** Sequência por timestamp, sem pular: perfis e papéis (0100) → matriz
 RBAC e bucket (0200) → auditoria (0300) → formulários (0400) → conteúdo do CMS (20261025000100)
-→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03) → marcação de produção (20261102000100, ARC-11) → gravação atômica (20261102000200, TECH-13) → integridade de publicação (20261102000400, DBX-04) → código de conflito (20261102000500, DBX-04) → `update` do painel só em `status` (20261102000300, TECH-06). Cada uma
+→ ajustes da TECH-13 (20261027000100/0200) → endereços antigos (20261029000100, DB-08) → índices e leitura do painel (20261030000100, DBX-03) → marcação de produção (20261102000100, ARC-11) → gravação atômica (20261102000200, TECH-13) → integridade de publicação (20261102000400, DBX-04) → código de conflito (20261102000500, DBX-04) → `update` do painel só em `status` (20261102000300, TECH-06) → forma dos envios de formulário (20261109000100, DB-06). Cada uma
 depende só das anteriores. Mudança
 destrutiva em banco com dados é feita em duas releases: primeiro a coluna nova, depois a remoção
 da antiga.
@@ -607,3 +612,67 @@ traduzindo `40001` como `CONFLICT`, para o caso de o código novo rodar com banc
 **Divergência conhecida na R12.** O banco aceita imagem decorativa, como diz §5. O painel ainda a recusa
 ao publicar: `toMediaRef` entrega `alt` vazio e `checkMedia` trata como falta de texto. O painel continua
 mais rígido até ser alinhado em issue própria. O banco também dispensa PDF.
+
+## 13. Integridade dos envios de formulário (DB-06)
+
+Os envios são gravados pelo servidor com `service_role`, que passa por cima da RLS. A validação fica na
+aplicação (`lib/domain/forms/schemas.ts`, FORM-01/TECH-06). O banco é a segunda barreira, para o que
+escapar dela, um script de manutenção ou o SQL Editor. Migration:
+`20261109000100_db06_integridade_dos_envios.sql`.
+
+| Restrição | Regra | Mesma regra na aplicação |
+| --------- | ----- | ------------------------ |
+| `form_submissions_payload_object` | Conteúdo é um objeto JSON | `stripTechnical` |
+| `form_submissions_payload_size` | Conteúdo com até 64 KiB em texto | Maior envio aceito: cerca de 20 KB (3.000 caracteres que o JSON escapa em 6 bytes) |
+| `form_submissions_category_format` | `<kind>:<slug>`, com o prefixo do próprio tipo e até 80 caracteres no slug | `routeSubmission`, `SLUG_PATTERN`, `SLUG_MAX_LENGTH` |
+| `form_submissions_protocol_format` | `AB-` e 6 hexadecimais maiúsculos (não é único: a chave é o `id`) | `protocolFromId` |
+| `form_submissions_source_path_format` | Nulo, ou começa com `/`, sem espaço, até 200 caracteres | `technicalFieldsSchema.sourcePath` |
+| `form_submissions_notification_attempts` | Tentativas ≥ 0 | `deliverNotification` |
+| `form_submissions_notification_error_length` | Erro do provedor com até 200 caracteres | `error.message.slice(0, 200)` |
+
+As regras valem para todos os papéis, no `insert` e no `update`. Violação devolve `23514` com o nome da
+restrição.
+
+**O banco nunca é mais rígido que a aplicação.** Um envio que passou na validação e foi recusado aqui chega ao
+visitante como erro de atendimento (`SERVICE_UNAVAILABLE`, log `app.error.service_unavailable` com
+`stage: persist`), e o pedido não fica gravado. Por isso cada regra repete o que o código grava, e
+`lib/server/forms/forms-sql.test.ts` falha se um lado mudar sem o outro: protocolo, categorias de todos os
+assuntos e perfis, origem e tetos. Ao mudar o formato de um campo técnico, altere as duas camadas no mesmo PR.
+
+**O que fica de fora, de propósito:**
+
+- Campos obrigatórios de cada tipo. O mapa de campos aguarda a Agência Benjamin (FORM-01). Por isso o
+  conteúdo é `jsonb`: campo novo muda o Zod, não o banco.
+- Status por tipo. As etapas de atendimento também estão pendentes ([TECH-06 §7](../formularios/captacao-e-roteamento.md)).
+- Formato de `fingerprint` e `ip_hash`. São detalhe do HMAC de `deps.ts`, nunca aparecem para ninguém e
+  podem trocar de algoritmo sem migration.
+- Origem com `//`. A aplicação aceita, e o painel a mostra como texto, nunca como link (SEG-04).
+
+**Antes de aplicar num banco com envios.** O `add constraint` confere as linhas existentes, e a migration
+falha inteira se alguma não servir, sem aplicar nada. Envio gravado pela aplicação sempre serve; linhas
+de teste inseridas à mão podem não servir. Conferência só de leitura, pelo SQL Editor:
+
+```sql
+select
+  count(*) filter (where jsonb_typeof(payload) <> 'object') as conteudo_nao_objeto,
+  count(*) filter (where octet_length(payload::text) > 65536) as conteudo_acima_do_teto,
+  count(*) filter (where not (category ~ '^[a-z]+:[a-z0-9]+(-[a-z0-9]+)*$'
+                              and split_part(category, ':', 1) = kind
+                              and char_length(category) <= char_length(kind) + 1 + 80)) as categoria,
+  count(*) filter (where protocol !~ '^AB-[0-9A-F]{6}$') as protocolo,
+  count(*) filter (where source_path is not null
+                     and not (char_length(source_path) <= 200 and source_path ~ '^/\S*$')) as origem,
+  count(*) filter (where notification_attempts < 0) as tentativas,
+  count(*) filter (where char_length(last_notification_error) > 200) as erro_notificacao
+from public.form_submissions;
+```
+
+Tudo zero: pode aplicar. Algum diferente de zero: não corrija a linha às cegas. Ela é dado pessoal de
+alguém ou um resto de teste, e quem decide é o responsável pelo banco.
+
+**Ordem com as migrations pendentes.** Há duas versões anteriores ainda fora da `main`: `20261104000100`
+(DBX-05) e `20261104000200` (editor do site, #396). Esta não depende delas nem elas desta. Se esta for
+aplicada no remoto antes delas, o `db push` delas vai pedir `--include-all`.
+
+**Reversão.** `supabase/rollbacks/20261109000100_db06_integridade_dos_envios.down.sql` só remove as
+restrições: não apaga dados e pode rodar de novo.
