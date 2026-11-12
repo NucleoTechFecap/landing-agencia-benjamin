@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  04/11/2026 Vinícius Nishimura Reis  Páginas estáticas dos formulários de /contato (FORM-08).
+ 12/11/2026 Codex                     Inclui o blog na navegação (FUT-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,6 +30,7 @@ export const MAIN_NAVIGATION = [
   { href: "/areas", label: "Áreas" },
   { href: "/servicos", label: "Serviços" },
   { href: "/cases", label: "Cases" },
+  { href: "/blog", label: "Blog" },
   { href: "/contato", label: "Contato" },
 ] as const;
 

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,6 +23,7 @@
  29/10/2026 Vinicius Binda             301 de endereço antigo ou com maiúsculas para o atual (DB-08).
  04/11/2026 Vinícius Nishimura Reis  Cookies de sessão com HttpOnly, SameSite e Secure (SEG-06).
  04/11/2026 Vinícius Nishimura Reis  301 de endereço antigo com cache curto (TECH-13, #369).
+ 12/11/2026 Codex                     404 para artigos não publicados (FUT-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,9 +31,11 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { publicEnv } from "@/lib/config/public-env";
 import { LOGIN_PATH, isPublicAdminPath } from "@/lib/domain/auth/redirect";
-import { REDIRECT_CACHE_CONTROL } from "@/lib/domain/content/slug";
+import { isValidSlug, REDIRECT_CACHE_CONTROL } from "@/lib/domain/content/slug";
 import { sessionCookieOptions } from "@/lib/domain/security/http-policy";
 import { resolveDetailSlug, type DetailRoute } from "@/lib/server/content/published-slugs";
+import { getContentSource } from "@/lib/server/content/sources";
+import { createPublicClient } from "@/lib/server/supabase/server";
 
 /**
  * Primeira barreira do painel (ADM-03) e renovação de sessão (ADM-02):
@@ -43,6 +46,7 @@ import { resolveDetailSlug, type DetailRoute } from "@/lib/server/content/publis
  */
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  if (pathname.startsWith("/blog/")) return guardBlogRoute(request, pathname);
   if (!pathname.startsWith("/admin")) return guardDetailRoute(request, pathname);
 
   let response = NextResponse.next({ request });
@@ -71,6 +75,29 @@ export async function proxy(request: NextRequest) {
 
   if (!user && !isPublic) return redirectToLogin(request, pathname + search);
   return response;
+}
+
+async function guardBlogRoute(request: NextRequest, pathname: string) {
+  const slug = pathname.split("/")[2];
+  const lower = slug.toLowerCase();
+  if (!isValidSlug(lower) || getContentSource().name === "local") {
+    return NextResponse.rewrite(new URL("/_conteudo-inexistente", request.url), { status: 404 });
+  }
+  const { data, error } = await createPublicClient()
+    .from("blog_articles")
+    .select("slug")
+    .eq("slug", lower)
+    .eq("status", "published")
+    .lte("published_at", new Date().toISOString())
+    .maybeSingle();
+  if (error) return NextResponse.next();
+  if (!data) return NextResponse.rewrite(new URL("/_conteudo-inexistente", request.url), { status: 404 });
+  if (slug !== lower) {
+    const redirect = NextResponse.redirect(new URL(`/blog/${lower}${request.nextUrl.search}`, request.url), 301);
+    redirect.headers.set("Cache-Control", REDIRECT_CACHE_CONTROL);
+    return redirect;
+  }
+  return NextResponse.next();
 }
 
 /**
@@ -104,5 +131,5 @@ function redirectToLogin(request: NextRequest, next: string) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/servicos/:slug", "/cases/:slug"],
+  matcher: ["/admin/:path*", "/servicos/:slug", "/cases/:slug", "/blog/:slug"],
 };

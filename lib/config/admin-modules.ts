@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 04/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  04/11/2026 Vinícius Nishimura Reis  Tela de leads e feedbacks disponível (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Módulo de CTAs e destaques da Home (ADM-11).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 12/11/2026 Codex                     Inclui artigos no painel (FUT-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -85,6 +86,16 @@ export const ADMIN_MODULES: readonly AdminModule[] = [
     href: "/admin/paginas",
     itemLabel: "Editar página",
     newLabel: "Nova página",
+  },
+  {
+    name: "Blog",
+    resource: "page",
+    action: "view",
+    group: "conteudo",
+    icon: "paginas",
+    href: "/admin/blog",
+    itemLabel: "Editar artigo",
+    newLabel: "Novo artigo",
   },
   {
     name: "Áreas de atuação",

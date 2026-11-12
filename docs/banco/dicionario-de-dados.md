@@ -607,3 +607,12 @@ traduzindo `40001` como `CONFLICT`, para o caso de o código novo rodar com banc
 **Divergência conhecida na R12.** O banco aceita imagem decorativa, como diz §5. O painel ainda a recusa
 ao publicar: `toMediaRef` entrega `alt` vazio e `checkMedia` trata como falta de texto. O painel continua
 mais rígido até ser alinhado em issue própria. O banco também dispensa PDF.
+
+## Blog (FUT-10)
+
+A migration `20261112000100_blog.sql` cria `blog_articles`: slug único, título, resumo, autoria,
+assunto, parágrafos, capa opcional e campos do ciclo de publicação. A permissão usa o recurso `page`;
+RLS limita a leitura pública a artigos publicados cuja data já passou. A chave da capa referencia
+`media_assets` com `ON DELETE RESTRICT`, e triggers preservam texto alternativo e o endereço publicado.
+O rollback correspondente recusa apagar a tabela enquanto houver artigos. Ver [blog](../roadmap/blog-da-benjamin.md)
+e `supabase/tests/database/blog.test.sql`.

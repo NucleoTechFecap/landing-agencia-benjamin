@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -23,6 +23,7 @@
  27/10/2026 Vinícius Nishimura Reis  Correções da revisão de segurança (TECH-13).
  01/11/2026 Vinícius Nishimura Reis  Segunda expiração contra regeneração em andamento (INT-03).
  04/11/2026 Vinícius Nishimura Reis  Segunda expiração em requisição própria, antes de aquecer (TECH-13, #369).
+ 12/11/2026 Codex                     Testa invalidação do blog (FUT-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -46,6 +47,10 @@ const {
 } = await import("./invalidate");
 
 describe("tagsForChange", () => {
+  it("artigo invalida a listagem e aquece o detalhe do blog", () => {
+    expect(tagsForChange({ entity: "blog", slug: "artigo" })).toEqual(["content:blog"]);
+    expect(detailPathsForChange({ entity: "blog", slug: "artigo" })).toEqual(["/blog/artigo"]);
+  });
   it("case publicado invalida lista, detalhe e listas relacionadas", () => {
     expect(tagsForChange({ entity: "case", slug: "meridiano" }).sort()).toEqual(
       ["content:case:meridiano", "content:cases", "content:ctas", "content:services"].sort(),

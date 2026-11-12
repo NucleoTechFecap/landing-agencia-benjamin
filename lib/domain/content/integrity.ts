@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-05).
  04/11/2026 Vinícius Nishimura Reis  Mensagem clara para CTA cujo destino foi excluído (ADM-11).
+ 12/11/2026 Codex                     Admite links internos para o blog (FUT-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,6 +35,7 @@ export const PUBLIC_ROUTE_PREFIXES = [
   "/areas",
   "/servicos",
   "/cases",
+  "/blog",
   "/contato",
   "/feedback",
   "/privacidade",
