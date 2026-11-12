@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 04/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-04).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -100,8 +101,8 @@ describe("item ativo do menu (ADM-04)", () => {
     expect(groups[0]!.modules[0]!.name).toBe("Início");
     const shown = groups.flatMap((group) => group.modules);
     expect(shown.every((entry) => entry.href)).toBe(true);
-    expect(shown.map((entry) => entry.name)).not.toContain("Usuários e papéis");
-    expect(shown.map((entry) => entry.name)).not.toContain("Trilha de auditoria");
+    expect(shown.map((entry) => entry.name)).toContain("Usuários e papéis");
+    expect(shown.map((entry) => entry.name)).toContain("Trilha de auditoria");
 
     const editor = navigationFor("editor");
     expect(editor.flatMap((group) => group.modules).map((entry) => entry.name)).not.toContain("Contatos e feedbacks");

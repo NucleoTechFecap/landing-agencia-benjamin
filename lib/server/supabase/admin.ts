@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,8 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
+ 12/11/2026 Codex                     Cliente também envia convites após guarda (ADM-01).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -30,8 +32,8 @@ let client: SupabaseClient | undefined;
 
 /**
  * Cliente com service_role (ignora RLS). Uso restrito ao servidor para operações que o
- * visitante não pode fazer diretamente no banco: gravar envios de formulário já
- * validados (TECH-07). Nunca usar em leitura de conteúdo nem expor ao cliente.
+ * visitante não pode fazer diretamente no banco: gravar envios validados e convidar
+ * usuários após autorização no servidor. Nunca usar em leitura de conteúdo nem expor ao cliente.
  */
 export function getServiceClient(): SupabaseClient | null {
   const key = getServerEnv().SUPABASE_SERVICE_ROLE_KEY;

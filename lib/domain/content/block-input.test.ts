@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -108,8 +109,8 @@ describe("onde cada bloco pode entrar (ADM-05)", () => {
   });
 
   it("sobre só na página Sobre; os demais em qualquer página, quantas vezes for", () => {
-    expect(addableBlockTypes("sobre", [])).toEqual(["rich-text", "list", "team", "cta", "about"]);
-    expect(addableBlockTypes("home", [manifesto])).toEqual(["rich-text", "list", "team", "cta"]);
-    expect(addableBlockTypes("contato", [])).toEqual(["rich-text", "list", "team", "cta"]);
+    expect(addableBlockTypes("sobre", [])).toEqual(["image", "rich-text", "list", "team", "cta", "about"]);
+    expect(addableBlockTypes("home", [manifesto])).toEqual(["image", "rich-text", "list", "team", "cta"]);
+    expect(addableBlockTypes("contato", [])).toEqual(["image", "rich-text", "list", "team", "cta"]);
   });
 });

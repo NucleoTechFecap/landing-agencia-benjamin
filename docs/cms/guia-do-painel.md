@@ -488,3 +488,46 @@ trilha de auditoria com quem fez e quando (TECH-10).
    ao salvar. Para retirá-lo, use **Despublicar** ou **Arquivar**.
 5. O endereço de um artigo publicado não pode ser alterado. Ele permanece reservado mesmo se o artigo
    for arquivado. Para artigos nunca publicados, um administrador pode excluir após arquivar.
+
+## Usuários e papéis
+
+Administradores acessam **Usuários e papéis** no menu. Para adicionar uma pessoa, informe nome e
+endereço de e-mail em **Convidar pessoa**. O Supabase Auth envia o convite para que ela defina a própria
+senha; o perfil começa como **Acesso pendente**. Depois de confirmar a identidade, selecione o papel
+adequado e salve. Administradores gerenciam apenas editores, leitores e pendentes; somente o
+superadministrador pode gerenciar administradores. Ninguém altera o próprio papel ou desativa a própria
+conta. O banco preserva pelo menos um superadministrador ativo.
+
+Em caso de desligamento, use **Desativar acesso**; a pessoa deixa de ter acesso conforme o papel efetivo
+consultado no servidor e na RLS. O botão **Reativar acesso** reabre o acesso conforme o papel existente.
+As alterações de papel e ativação são registradas na auditoria do banco. A tela lista nomes e papéis;
+ela não divulga a lista de e-mails do provedor de autenticação.
+
+O domínio no Resend precisa estar verificado e o Supabase Auth precisa usar SMTP próprio do Resend ou
+outro provedor configurado para enviar os convites. A configuração da API de notificações dos formulários,
+por si só, não configura o SMTP do Auth. Teste o convite em homologação com destinatário autorizado.
+O envio de mensagens individuais pelo painel ainda não foi implementado.
+
+## Páginas personalizadas e histórico
+
+Em **Páginas**, escolha **Nova página** e informe título e endereço. A página nasce como rascunho em
+`/paginas/<endereço>`; acrescente os blocos necessários e use a prévia antes de publicar. No bloco de
+imagem, escolha um arquivo da biblioteca que tenha texto alternativo. A exclusão de uma imagem usada
+em bloco é impedida. A página precisa ser publicada para ficar acessível aos visitantes; páginas
+anteriores sem rota própria não passam a ser públicas automaticamente.
+
+Abra **Histórico** na edição de uma página para consultar versões e seus autores. A restauração de uma
+versão substitui título, descrição e blocos em uma operação de banco. Se a página estiver publicada,
+ela sai do ar e retorna a rascunho para revisão e publicação posterior. O endereço atual é preservado.
+O histórico começa quando a migration é aplicada; não recupera alterações anteriores. Um arquivo
+usado em uma versão antiga pode ter sido removido, impedindo a restauração até resolver a dependência.
+
+O painel **Atividades** mostra operações registradas na auditoria, com autor, horário e resultado,
+para administradores. Histórico de versões e restauração ainda não abrangem os demais tipos de
+conteúdo, configurações ou arquivos. A edição de blocos existente usa várias gravações; evite que duas
+pessoas editem ou restaurem a mesma página simultaneamente até a operação ser tornada transacional.
+
+O armazenamento privado de documentos e a publicação individual ainda precisam ser implementados.
+A biblioteca de mídia atual é pública desde o envio, inclusive para PDFs; não envie documentos
+privados para ela. As configurações visuais gerais, como logotipo, cores e fontes, ainda não são
+integralmente editáveis pelo painel.

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
  04/11/2026 Vinícius Nishimura Reis  Foto do time só do bucket de mídia e só imagem (TECH-13, #369).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -32,6 +33,10 @@ const block = (type: string, content: unknown) => ({ id: "b1", type, content, or
 describe("catálogo de blocos (DB-03)", () => {
   it("aceita um exemplo válido de cada tipo", () => {
     const examples: Record<string, unknown> = {
+      image: {
+        image: { id: "00000000-0000-4000-8000-000000000001", src: "/brand/foto.webp", alt: "Imagem da equipe" },
+        caption: "Equipe",
+      },
       "rich-text": { title: "Quem somos", paragraphs: ["Primeiro parágrafo.", "Segundo."] },
       list: { items: [{ title: "Prática real", text: "Clientes de verdade." }] },
       team: { members: [{ name: "Melissa Namie", role: "Diretoria" }] },
@@ -80,6 +85,7 @@ describe("catálogo de blocos (DB-03)", () => {
     expect(pagePath("sobre")).toBe("/sobre");
     expect(pagePath("privacidade")).toBe("/privacidade");
     expect(pagePath("landing-campanha")).toBeNull();
+    expect(pagePath("landing-campanha", true)).toBe("/paginas/landing-campanha");
     expect(pagePath("toString")).toBeNull();
   });
 

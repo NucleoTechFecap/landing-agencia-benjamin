@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -39,12 +40,14 @@ export function PageForm({
   page,
   slug,
   defaultTitle,
+  custom = false,
   readOnly,
 }: {
   action: CmsSaveAction;
   page?: Page;
   slug?: string;
   defaultTitle?: string;
+  custom?: boolean;
   readOnly?: boolean;
 }) {
   return (
@@ -57,6 +60,7 @@ export function PageForm({
     >
       {({ errors, value }) => (
         <>
+          {page?.isCustom || custom ? <input type="hidden" name="isCustom" value="on" /> : null}
           {slug ? <input type="hidden" name="slug" value={slug} /> : null}
           <TextField
             name="title"
@@ -67,6 +71,17 @@ export function PageForm({
             errors={errors("title")}
             defaultValue={value("title", page?.title ?? defaultTitle)}
           />
+          {custom && !page ? (
+            <TextField
+              name="slug"
+              label="Endereço da página"
+              required
+              maxLength={80}
+              hint="Letras minúsculas, números e hífens; a página ficará em /paginas/endereco."
+              errors={errors("slug")}
+              defaultValue={value("slug")}
+            />
+          ) : null}
           <TextArea
             name="description"
             label="Descrição"

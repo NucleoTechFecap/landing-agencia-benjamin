@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
  12/11/2026 Codex                     Exercita artigos no sitemap (FUT-10).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,6 +37,7 @@ vi.mock("@/lib/server/blog/repository", () => ({
   listArticles: async () => [{ slug: "artigo", updated_at: "2026-10-20T00:00:00.000Z" }],
 }));
 vi.mock("@/lib/server/content/repository", () => ({
+  listCustomPages: async () => [],
   listServices: async () => [{ slug: "social-media", updatedAt: "2026-10-20T00:00:00.000Z" }],
   listCases: async () => [
     { slug: "no-storage", updatedAt: "2026-10-20T00:00:00.000Z", cover: { src: STORAGE, alt: "Capa" } },

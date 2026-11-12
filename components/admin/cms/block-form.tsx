@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,12 +19,13 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
-import { TextArea, TextField } from "@/components/forms/fields";
+import { SelectField, TextArea, TextField } from "@/components/forms/fields";
 import { blockFormValues, type TeamMemberInput } from "@/lib/domain/content/block-input";
 import type { BlockType, PageBlock } from "@/lib/domain/content/blocks";
 import { CmsFormShell, type CmsSaveAction, type FieldHelpers } from "./form-shell";
@@ -113,6 +114,25 @@ export function BlockForm({
               <>
                 {field("title", "Título", { maxLength: 120 })}
                 {paragraphs(12, 1200)}
+              </>
+            ) : null}
+            {type === "image" ? (
+              <>
+                {field("title", "Título", { maxLength: 120 })}
+                <SelectField
+                  name="imageId"
+                  label="Imagem"
+                  required
+                  placeholder="Escolha uma imagem"
+                  options={photos.map((photo) => ({ value: photo.id, label: photo.label }))}
+                  errors={errors("imageId")}
+                  defaultValue={value(
+                    "imageId",
+                    block?.type === "image" ? photos.find((photo) => photo.src === block.content.image.src)?.id : "",
+                  )}
+                  hint="Escolha uma imagem da biblioteca com texto alternativo."
+                />
+                {field("caption", "Legenda", { maxLength: 300 })}
               </>
             ) : null}
             {type === "list" ? (

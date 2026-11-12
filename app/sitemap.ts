@@ -20,12 +20,13 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (SEO da landing).
  01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
  12/11/2026 Codex                     Inclui artigos publicados (FUT-10).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/config/public-env";
-import { listCases, listServices } from "@/lib/server/content/repository";
+import { listCases, listCustomPages, listServices } from "@/lib/server/content/repository";
 import { listArticles } from "@/lib/server/blog/repository";
 
 const STATIC_ROUTES: {
@@ -49,7 +50,12 @@ const STATIC_ROUTES: {
  * mesmo repositório cacheado do site — sai do sitemap na mesma invalidação, TECH-09).
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [services, cases, articles] = await Promise.all([listServices(), listCases(), listArticles()]);
+  const [services, cases, articles, pages] = await Promise.all([
+    listServices(),
+    listCases(),
+    listArticles(),
+    listCustomPages(),
+  ]);
   return [
     ...STATIC_ROUTES.map((route) => ({
       url: `${siteUrl}${route.path}`,
@@ -75,6 +81,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(item.updated_at),
       changeFrequency: "monthly" as const,
       priority: 0.7,
+    })),
+    ...pages.map((page) => ({
+      url: `${siteUrl}/paginas/${page.slug}`,
+      lastModified: new Date(page.updatedAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
     })),
   ];
 }

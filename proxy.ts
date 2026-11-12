@@ -24,6 +24,7 @@
  04/11/2026 Vinícius Nishimura Reis  Cookies de sessão com HttpOnly, SameSite e Secure (SEG-06).
  04/11/2026 Vinícius Nishimura Reis  301 de endereço antigo com cache curto (TECH-13, #369).
  12/11/2026 Codex                     404 para artigos não publicados (FUT-10).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,6 +37,7 @@ import { sessionCookieOptions } from "@/lib/domain/security/http-policy";
 import { resolveDetailSlug, type DetailRoute } from "@/lib/server/content/published-slugs";
 import { getContentSource } from "@/lib/server/content/sources";
 import { createPublicClient } from "@/lib/server/supabase/server";
+import { isPubliclyVisible } from "@/lib/domain/content/visibility";
 
 /**
  * Primeira barreira do painel (ADM-03) e renovação de sessão (ADM-02):
@@ -46,6 +48,7 @@ import { createPublicClient } from "@/lib/server/supabase/server";
  */
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  if (pathname.startsWith("/paginas/")) return guardCustomPageRoute(request, pathname);
   if (pathname.startsWith("/blog/")) return guardBlogRoute(request, pathname);
   if (!pathname.startsWith("/admin")) return guardDetailRoute(request, pathname);
 
@@ -75,6 +78,21 @@ export async function proxy(request: NextRequest) {
 
   if (!user && !isPublic) return redirectToLogin(request, pathname + search);
   return response;
+}
+
+async function guardCustomPageRoute(request: NextRequest, pathname: string) {
+  const slug = pathname.split("/")[2];
+  if (!isValidSlug(slug)) return NextResponse.rewrite(new URL("/_conteudo-inexistente", request.url), { status: 404 });
+  try {
+    const page = await getContentSource().page(slug);
+    if (!page?.isCustom || !isPubliclyVisible(page)) {
+      return NextResponse.rewrite(new URL("/_conteudo-inexistente", request.url), { status: 404 });
+    }
+  } catch {
+    // Falhas de rede não transformam temporariamente uma página válida em 404.
+    return NextResponse.next();
+  }
+  return NextResponse.next();
 }
 
 async function guardBlogRoute(request: NextRequest, pathname: string) {
@@ -131,5 +149,5 @@ function redirectToLogin(request: NextRequest, next: string) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/servicos/:slug", "/cases/:slug", "/blog/:slug"],
+  matcher: ["/admin/:path*", "/servicos/:slug", "/cases/:slug", "/blog/:slug", "/paginas/:slug"],
 };

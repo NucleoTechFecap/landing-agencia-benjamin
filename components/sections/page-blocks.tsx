@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -119,6 +120,28 @@ function CtaBlock({ id, content }: { id: string; content: BlockContent<"cta"> })
 function Block({ block, tone }: { block: PageBlock; tone: SectionTone }) {
   const id = `bloco-${block.id}`;
   switch (block.type) {
+    case "image": {
+      const image = block.content.image;
+      const known = image.src.startsWith("/") || image.src.startsWith(`${publicEnv.NEXT_PUBLIC_SUPABASE_URL}/`);
+      if (!known) return null;
+      return (
+        <Section tone={tone} labelledBy={block.content.title ? id : undefined}>
+          {block.content.title ? <SectionHeading id={id} title={block.content.title} /> : null}
+          <figure className={block.content.title ? "mt-6" : ""}>
+            <Image
+              src={image.src}
+              alt={image.alt}
+              width={1600}
+              height={900}
+              sizes="(min-width: 1200px) 1152px, 100vw"
+              unoptimized={!known}
+              className="h-auto w-full rounded-3xl border-2 border-benja-noite"
+            />
+            {block.content.caption ? <figcaption className="mt-3 text-sm">{block.content.caption}</figcaption> : null}
+          </figure>
+        </Section>
+      );
+    }
     case "rich-text":
       return <RichTextBlock id={id} content={block.content} tone={tone} />;
     case "list":

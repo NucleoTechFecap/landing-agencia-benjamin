@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -64,6 +65,8 @@ export const filledMembers = (members: readonly TeamMemberInput[]): TeamMemberIn
 export function blockContentFromForm(type: BlockType, { fields, paragraphs, items, members }: BlockFormInput) {
   const field = (name: string) => present(fields[name]);
   switch (type) {
+    case "image":
+      return { title: field("title"), imageId: field("imageId"), caption: field("caption") };
     case "rich-text":
       return { title: field("title"), paragraphs };
     case "list":
@@ -95,6 +98,8 @@ export function blockContentFromForm(type: BlockType, { fields, paragraphs, item
 /** Valores salvos do bloco, no formato dos campos do formulário. */
 export function blockFormValues(block: PageBlock): Record<string, string> {
   switch (block.type) {
+    case "image":
+      return { title: block.content.title ?? "", caption: block.content.caption ?? "" };
     case "rich-text":
       return { title: block.content.title ?? "", paragraphs: block.content.paragraphs.join("\n") };
     case "list":
@@ -122,6 +127,8 @@ const shorten = (value: string) =>
 /** Uma linha que identifica o bloco na lista do painel. */
 export function blockSummary(block: PageBlock): string {
   switch (block.type) {
+    case "image":
+      return shorten(block.content.title ?? block.content.image.alt);
     case "rich-text":
       return shorten(block.content.title ?? block.content.paragraphs[0]);
     case "list":

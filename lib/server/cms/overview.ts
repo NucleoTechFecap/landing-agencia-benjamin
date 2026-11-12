@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 04/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-18).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -81,7 +82,7 @@ function describeGroup<I extends { slug: string }, T extends CmsItem>(
 }
 
 const pageRouteWarning = (page: Page) =>
-  pagePath(page.slug) ? [] : ["Esta página não tem rota no site: fica salva, mas o visitante não a vê."];
+  pagePath(page.slug, page.isCustom) ? [] : ["Esta página não tem rota no site: fica salva, mas o visitante não a vê."];
 
 const GROUPS = [
   describeGroup(PAGE, "Páginas", (page) => page.title, pageRouteWarning),

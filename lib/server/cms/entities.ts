@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -26,6 +26,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  Relações entram na gravação em transação (TECH-13, #314).
  04/11/2026 Vinícius Nishimura Reis  Entidade de CTA, que não tem endereço próprio (ADM-11).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -54,6 +55,7 @@ import type {
   Service,
 } from "@/lib/domain/content/types";
 import { ctaTargetColumns } from "../content/supabase/mappers";
+import { AppError } from "../errors";
 import type { CmsSnapshot, EntityTable, ItemRelations, RedirectEntity, Row } from "./store";
 
 /** Item editável: publicável. O endereço só existe nos tipos com página própria (CTA não tem). */
@@ -342,7 +344,7 @@ export const PAGE: EntityDefinition<PageInput, Page> = {
   key: "pages",
   noun: { singular: "página", article: "a" },
   adminPath: "/admin/paginas",
-  publicPath: (page) => pagePath(page.slug) ?? "/",
+  publicPath: (page) => pagePath(page.slug, page.isCustom) ?? "/",
   inputSchema: pageInputSchema,
   list: (snapshot) => snapshot.pages,
   toValues: (input) => ({
@@ -350,14 +352,25 @@ export const PAGE: EntityDefinition<PageInput, Page> = {
     title: input.title,
     description: input.description ?? null,
     provisional: input.provisional,
+    is_custom: input.isCustom,
   }),
-  merge: (current, input, id) => ({
-    ...(current ?? { ...draftControl, id, blocks: [] }),
-    slug: input.slug,
-    title: input.title,
-    description: input.description,
-    provisional: input.provisional,
-  }),
+  merge: (current, input, id) => {
+    if (current && Boolean(current.isCustom) !== input.isCustom)
+      throw new AppError("VALIDATION_FAILED", { message: "O tipo da página não pode ser alterado." });
+    return {
+      ...(current ?? { ...draftControl, id, blocks: [] }),
+      slug: input.slug,
+      title: input.title,
+      description: input.description,
+      provisional: input.provisional,
+      isCustom: input.isCustom,
+    };
+  },
+  deleteBlockers: (page) =>
+    page.isCustom && page.publishedAt
+      ? ["Páginas publicadas devem permanecer arquivadas para preservar o endereço."]
+      : [],
+  relatedPaths: (page) => (page.isCustom ? [`/paginas/${page.slug}`] : []),
   validateForPublish: (page) => (page.blocks.length ? [] : ["Inclua ao menos um bloco de conteúdo."]),
 };
 

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -25,6 +25,7 @@
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Colunas do destino do CTA para gravar pelo painel (ADM-11).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -257,6 +258,7 @@ export function toPage(row: PageRow, blocks: readonly BlockRow[]): { page: Page;
       slug: row.slug,
       title: row.title,
       description: row.description ?? undefined,
+      isCustom: row.is_custom ?? false,
       blocks: parsed,
     },
     problems,

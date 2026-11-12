@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 25/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  25/10/2026 Vinícius Binda             Criação inicial (DB-01/DBX-01).
  02/11/2026 Vinicius Binda             Transições e catálogo de blocos (DBX-04).
  04/11/2026 Vinícius Nishimura Reis  Posições, destinos e limites do CTA conferidos com o banco (ADM-11).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -84,7 +85,8 @@ describe("consistência conteúdo código × banco (DB-01/DBX-01)", () => {
   });
 
   it("blocks aceita os mesmos tipos de BLOCK_TYPES (DBX-04)", () => {
-    const types = sql.match(/constraint blocks_type_catalog\s+check \(type in \(([^)]+)\)\)/)?.[1] ?? "";
+    const types =
+      [...sql.matchAll(/constraint blocks_type_catalog\s+check \(type in \(([^)]+)\)\)/g)].at(-1)?.[1] ?? "";
     expect(quoted(types).sort()).toEqual([...BLOCK_TYPES].sort());
   });
 

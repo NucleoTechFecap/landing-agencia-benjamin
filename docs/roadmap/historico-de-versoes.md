@@ -1,5 +1,13 @@
 # Histórico e restauração de versões do CMS (pós-MVP)
 
+> **Atualização de implementação (12/11/2026):** a migration `20261112000300` e o painel
+> implementam versões para páginas e blocos. A restauração é uma operação transacional que preserva o
+> endereço atual e retorna páginas publicadas para rascunho. O histórico começa na aplicação da
+> migration; conteúdos anteriores não são recuperados. As demais entidades, comparação e retenção
+> automática continuam pendentes. O texto abaixo registra a proposta original e não descreve por
+> completo essa implementação parcial. As gravações comuns dos blocos ainda usam múltiplas operações;
+> edição concorrente com restauração requer melhoria antes de uso simultâneo seguro.
+
 | Campo        | Valor                                                                                        |
 | ------------ | -------------------------------------------------------------------------------------------- |
 | Issue        | FUT-04 (#205)                                                                                |
