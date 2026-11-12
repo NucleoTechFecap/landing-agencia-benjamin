@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 04/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 09/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (SEG-04).
+ 09/11/2026 Vinicius Binda           Feedback de teste com categoria do próprio tipo (DB-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -243,7 +244,7 @@ describe.runIf(hasSupabaseTestEnv)("dados pessoais no painel: quem lê e quem al
       await must(
         service()
           .from("form_submissions")
-          .insert(row({ id, kind: "feedback" })),
+          .insert(row({ id, kind: "feedback", category: `feedback:seg04-${suffix}` })),
       );
       await expect(
         changeSubmissionStatus(depsFor(admin), "admin", { id, status: "lido", currentStatus: "novo" }),

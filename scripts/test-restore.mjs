@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 04/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 09/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinicius Binda             Criação inicial (DB-10).
+ 09/11/2026 Vinicius Binda           Protocolo do envio fictício no formato que o banco exige (DB-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -192,7 +193,7 @@ async function prepareSource(stack, account) {
 
   const { error: formError } = await admin.from("form_submissions").insert({
     id: randomUUID(),
-    protocol: "TESTE-DB10",
+    protocol: "AB-DB1000",
     kind: "contact",
     category: "contact:geral",
     payload: { nome: "Pessoa Fictícia", email: "pessoa@teste.invalid" },

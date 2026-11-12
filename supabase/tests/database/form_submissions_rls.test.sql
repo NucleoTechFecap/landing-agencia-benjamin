@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 02/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 09/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  02/11/2026 Vinícius Nishimura Reis  Criação inicial (TECH-06).
+ 09/11/2026 Vinicius Binda           Protocolos no formato que a aplicação grava (DB-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -39,9 +40,9 @@ update public.profiles set role = 'editor' where id = '00000000-0000-4000-8000-0
 update public.profiles set role = 'viewer' where id = '00000000-0000-4000-8000-0000000006f1';
 
 insert into public.form_submissions (id, protocol, kind, category, payload, fingerprint) values
-  ('00000000-0000-4000-8000-000000000601', 'AB-TEST01', 'lead', 'lead:audiovisual', '{"name":"Lead"}', 'tech06-lead'),
-  ('00000000-0000-4000-8000-000000000602', 'AB-TEST02', 'contact', 'contact:imprensa', '{"name":"Contato"}', 'tech06-contact'),
-  ('00000000-0000-4000-8000-000000000603', 'AB-TEST03', 'feedback', 'feedback:aluno', '{"message":"Feedback"}', 'tech06-feedback');
+  ('00000000-0000-4000-8000-000000000601', 'AB-000601', 'lead', 'lead:audiovisual', '{"name":"Lead"}', 'tech06-lead'),
+  ('00000000-0000-4000-8000-000000000602', 'AB-000602', 'contact', 'contact:imprensa', '{"name":"Contato"}', 'tech06-contact'),
+  ('00000000-0000-4000-8000-000000000603', 'AB-000603', 'feedback', 'feedback:aluno', '{"message":"Feedback"}', 'tech06-feedback');
 
 -- security_invoker: sem ele a view roda como o dono (postgres) e ignora a RLS que se quer testar.
 create temporary view tech06_visiveis with (security_invoker = true) as
@@ -73,7 +74,7 @@ select throws_ok($$update public.form_submissions set category = 'lead:outro' wh
 select throws_ok($$update public.form_submissions set notification_status = 'sent' where fingerprint = 'tech06-lead'$$,
   '42501', null, 'admin não marca notificação como enviada');
 select throws_ok($$insert into public.form_submissions (id, protocol, kind, category, payload, fingerprint)
-    values ('00000000-0000-4000-8000-000000000604', 'AB-TEST04', 'lead', 'lead:nao-sei', '{}', 'tech06-forjado')$$,
+    values ('00000000-0000-4000-8000-000000000604', 'AB-000604', 'lead', 'lead:nao-sei', '{}', 'tech06-forjado')$$,
   '42501', null, 'nem o admin cria envio pelo painel');
 reset role;
 
@@ -109,7 +110,7 @@ reset role;
 set local role anon;
 select throws_ok($$select * from public.form_submissions$$, '42501', null, 'visitante não lê a tabela (N12)');
 select throws_ok($$insert into public.form_submissions (id, protocol, kind, category, payload, fingerprint)
-    values ('00000000-0000-4000-8000-000000000605', 'AB-TEST05', 'lead', 'lead:nao-sei', '{}', 'tech06-anon')$$,
+    values ('00000000-0000-4000-8000-000000000605', 'AB-000605', 'lead', 'lead:nao-sei', '{}', 'tech06-anon')$$,
   '42501', null, 'visitante não grava direto: só o servidor, depois de validar');
 reset role;
 
@@ -137,10 +138,10 @@ select is_empty($$select kind from tech06_visiveis$$, 'sessão sem usuário não
 reset role;
 
 select throws_ok($$insert into public.form_submissions (id, protocol, kind, category, payload, fingerprint)
-    values ('00000000-0000-4000-8000-000000000601', 'AB-TEST01', 'lead', 'lead:nao-sei', '{}', 'tech06-repetido')$$,
+    values ('00000000-0000-4000-8000-000000000601', 'AB-000601', 'lead', 'lead:nao-sei', '{}', 'tech06-repetido')$$,
   '23505', null, 'mesmo submissionId não vira dois registros (S11)');
 select throws_ok($$insert into public.form_submissions (id, protocol, kind, category, payload, fingerprint)
-    values ('00000000-0000-4000-8000-000000000606', 'AB-TEST06', 'orcamento', 'x', '{}', 'tech06-tipo')$$,
+    values ('00000000-0000-4000-8000-000000000606', 'AB-000606', 'orcamento', 'orcamento:pedido', '{}', 'tech06-tipo')$$,
   '23514', null, 'tipo fora dos três previstos é recusado');
 
 -- ─── Positivo: a exclusão usa a mesma regra por tipo ─────────────────────────

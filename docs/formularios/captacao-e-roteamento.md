@@ -5,10 +5,10 @@
 | Issue           | TECH-06 (#107)                                                          |
 | Responsável     | Vinícius Nishimura Reis (`@Vinishireis`)                                |
 | Revisão técnica | Vinícius Binda (`@VinnizzZ`)                                            |
-| Versão          | 1.2.0 — **implementada; fluxos aguardando aprovação da Agência Benjamin (§10)** |
-| Data            | 04/11/2026 (consulta no painel: FORM-09)                                |
+| Versão          | 1.3.0 — **implementada; fluxos aguardando aprovação da Agência Benjamin (§10)** |
+| Data            | 09/11/2026 (forma do envio no banco: DB-06)                             |
 | Depende de      | [FORM-01](matriz-de-campos.md), [SEG-01](../seguranca/tratamento-de-dados-formularios.md) |
-| Código          | `lib/domain/forms/routing.ts`, `lib/domain/forms/inbox.ts`, `lib/server/forms/*`, `app/admin/(painel)/leads/*`, migrations `0400` e `20261102000300` + testes (§9) |
+| Código          | `lib/domain/forms/routing.ts`, `lib/domain/forms/inbox.ts`, `lib/server/forms/*`, `app/admin/(painel)/leads/*`, migrations `0400`, `20261102000300` e `20261109000100` + testes (§9) |
 
 ## 1. Separação dos fluxos
 
@@ -91,6 +91,7 @@ ao visitante nem apaga o envio. Os cenários completos estão em [TECH-07](idemp
 | -------- | -------------- | -------- | ----------- | ---------------------- |
 | Campo inválido | Erro por campo, valores repreenchidos | — | — | — |
 | Banco indisponível | Erro com código de atendimento; pode reenviar | — | — | Log `app.error.service_unavailable` |
+| Banco recusa a forma de um envio validado (aplicação e banco divergiram, DB-06) | Erro com código de atendimento; o reenvio falha igual | — | — | Log `app.error.service_unavailable` com `23514` e o nome da restrição. `forms-sql.test.ts` impede a divergência ([dicionário §13](../banco/dicionario-de-dados.md)) |
 | Destinatário inválido em qualquer lista, ou `LEAD_NOTIFICATION_TO` ausente, em homologação/produção | Nada: **o build falha** e a versão anterior continua no ar | — | — | Build aponta a variável (`FEEDBACK_NOTIFICATION_TO.0: Destinatário inválido.`) |
 | Contato ou feedback sem lista própria | Sucesso com protocolo | Salvo | Vai para `LEAD_NOTIFICATION_TO` | — |
 | Sem destinatário em desenvolvimento/preview | Sucesso com protocolo | Salvo, `skipped` | Não é enviada nem reenviada: esses ambientes não mandam e-mail real | Log `forms.notification.skipped` |
@@ -144,8 +145,11 @@ grava direto: a gravação é do servidor, depois da validação.
 | -------- | ------- | ------------------ |
 | **Positivo** | Pedido de vídeo vira `lead:audiovisual`, notifica o destinatário comercial, devolve protocolo e o `admin` consulta e altera o status | `jornada-lead.test.ts`, `formularios.test.ts`, `form_submissions_rls.test.sql` |
 | | Pelo navegador: formulário público → lista → detalhe → status, com `lead.viewed` e `lead.status_changed` na trilha | `jornada-leads-cms.spec.ts` (FORM-09) |
+| | Pedido com cada campo no limite (nome, empresa, e-mail de 254, serviço de 80, descrição de 3.000, origem de 200) chega inteiro ao banco real | `formularios.test.ts` (DB-06) |
 | **Negativa de acesso** | `editor`, `viewer`, `super_admin` e conta pendente: 0 linhas e nada alterado. Visitante: `42501`. `admin` tentando reescrever `payload`, `kind`, `category` ou `notification_status`: `42501` | `formularios.test.ts` (Auth e RLS reais), `form_submissions_rls.test.sql` |
 | | Evidência completa, com a API REST direta e entrada malformada | [SEG-04](../qualidade/seg-04-autorizacao-dados-pessoais.md) |
+| | Envio inválido (e-mail, ciência, descrição curta, texto livre no serviço, contato sem assunto, retorno sem e-mail, honeypot, rápido demais) não grava no banco real nem dispara e-mail | `formularios.test.ts` (DB-06) |
+| | Gravação forjada com a credencial do servidor (conteúdo em lista, categoria de outro tipo, protocolo forjado, origem sem barra, tentativas negativas): `23514`, nada gravado | `form_submissions_integridade.test.sql`, `formularios.test.ts` (DB-06) |
 | **Borda** | Texto livre no serviço recusado; serviço fora do ar aceito | `schemas.test.ts` |
 | | Slug que não está na lista vira `lead:nao-sei`, com o pedido aceito, mesmo se a consulta à lista falhar | `submission-service.test.ts` |
 | | Quebra de linha em nome e empresa não forja linhas no e-mail | `schemas.test.ts` |
@@ -154,10 +158,14 @@ grava direto: a gravação é do servidor, depois da validação.
 | | Com só `feedback:view`, o `admin` vê feedback e não vê lead nem contato; com só `lead:view`, o inverso | `form_submissions_rls.test.sql` |
 | | Destinatário inválido barra o build em modo produção | `env.test.ts` + build executado em 02/11/2026 |
 | **Compatibilidade entre módulos** | Formulário → `schemas` → `routing` → `submission-service` → `SupabaseSubmissionStore` → RLS, com os três tipos no banco real; `viewResource` do roteamento igual à regra do banco; migration com upgrade e rollback | `formularios.test.ts`, `jornada-lead.test.ts`, `npm run test:migrations` |
+| | Restrições do banco aceitam tudo o que a aplicação grava: protocolo, categoria de cada assunto e perfil, origem e tetos | `forms-sql.test.ts` (DB-06) |
 
 Resultado em 02/11/2026, em banco local limpo: `npx supabase test db` com `Files=7, Tests=180, PASS`;
 `npm run test:supabase` com 12 arquivos e 62 testes; `npm run test:migrations` com 11 rollbacks, `PASS`
 em cada etapa.
+
+Resultado em 09/11/2026 (DB-06), em banco local limpo: `npx supabase test db` com `Files=12, Tests=348, PASS`;
+`npm run test:supabase` com 20 arquivos e 200 testes; `npm run test:migrations` com 16 rollbacks, `PASS` em cada etapa.
 
 ## 10. Aprovação com a Agência Benjamin
 
