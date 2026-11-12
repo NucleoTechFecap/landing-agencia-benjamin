@@ -85,3 +85,10 @@ N04–N10 estão automatizados em `lib/domain/auth/rbac.test.ts`; N01–N03 em `
 prova por POST real, com Auth e RLS reais, em [QA-06](../qualidade/qa-06-acesso-indevido.md). N05, N08 e N12 também são provados no banco por
 `supabase/tests/database/form_submissions_rls.test.sql` (TECH-06), e pelo painel e pela API REST direta em
 [SEG-04](../qualidade/seg-04-autorizacao-dados-pessoais.md).
+
+## Blog (FUT-10)
+
+O blog usa o recurso existente `page`: suas telas e ações chamam as mesmas guardas e a RLS de
+`blog_articles` consulta `has_permission('page', ...)`. O público só lê artigos publicados com data
+alcançada. A exclusão definitiva é limitada a artigos arquivados que nunca foram publicados, para
+preservar os endereços já divulgados. A decisão sobre revisão por segunda pessoa continua pendente.

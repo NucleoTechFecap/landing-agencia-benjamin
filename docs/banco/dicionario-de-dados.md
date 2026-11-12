@@ -676,3 +676,12 @@ aplicada no remoto antes delas, o `db push` delas vai pedir `--include-all`.
 
 **Reversão.** `supabase/rollbacks/20261109000100_db06_integridade_dos_envios.down.sql` só remove as
 restrições: não apaga dados e pode rodar de novo.
+
+## Blog (FUT-10)
+
+A migration `20261112000100_blog.sql` cria `blog_articles`: slug único, título, resumo, autoria,
+assunto, parágrafos, capa opcional e campos do ciclo de publicação. A permissão usa o recurso `page`;
+RLS limita a leitura pública a artigos publicados cuja data já passou. A chave da capa referencia
+`media_assets` com `ON DELETE RESTRICT`, e triggers preservam texto alternativo e o endereço publicado.
+O rollback correspondente recusa apagar a tabela enquanto houver artigos. Ver [blog](../roadmap/blog-da-benjamin.md)
+e `supabase/tests/database/blog.test.sql`.

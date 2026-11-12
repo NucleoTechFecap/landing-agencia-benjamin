@@ -475,3 +475,16 @@ ajustado.
 
 Toda publicação, despublicação, arquivamento, exclusão e alteração de contato e redes fica registrada na
 trilha de auditoria com quem fez e quando (TECH-10).
+
+## Blog: criar e publicar um artigo
+
+1. No menu **Blog**, selecione **Novo artigo**. Informe título e endereço em letras minúsculas,
+   números e hífens; salve o rascunho.
+2. Acrescente resumo, autoria, assunto opcional e o texto, com um parágrafo por linha. Se houver capa,
+   escolha uma imagem da biblioteca com texto alternativo. Para subtítulos, comece a linha com `## `;
+   para links, escreva `[texto](https://endereço)`. HTML é exibido como texto.
+3. Use **Ver prévia** para conferir o texto no painel. Revise autorização de uso de imagens e autoria.
+4. Com os campos completos, selecione **Publicar**. Uma edição posterior de artigo publicado vai ao ar
+   ao salvar. Para retirá-lo, use **Despublicar** ou **Arquivar**.
+5. O endereço de um artigo publicado não pode ser alterado. Ele permanece reservado mesmo se o artigo
+   for arquivado. Para artigos nunca publicados, um administrador pode excluir após arquivar.
