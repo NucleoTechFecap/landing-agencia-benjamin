@@ -141,12 +141,14 @@ export async function articleCommand(_state: CmsFormState, form: FormData): Prom
     } as const;
     if (requested === "save") throw new AppError("BAD_REQUEST");
     const event = events[requested];
-    if (requested !== "restore")
-      await recordAuditEvent({
+    const audit = (outcome: "success" | "failure") =>
+      recordAuditEvent({
         event,
         resourceId: item.id,
+        outcome,
         metadata: { entity: "page", kind: "blog", slug: item.slug },
       });
+    if (requested !== "restore") await audit("success");
     const client = await createSessionClient();
     const query =
       result.next.status === "deleted"
@@ -160,15 +162,15 @@ export async function articleCommand(_state: CmsFormState, form: FormData): Prom
             })
             .eq("id", item.id)
             .eq("updated_at", ref.expectedUpdatedAt);
-    const { data, error } = await query.select("id").maybeSingle();
-    if (error) throw toCmsError(error, { table: "blog_articles", operation: "command" });
-    if (!data) throw new AppError("CONFLICT");
-    if (requested === "restore")
-      await recordAuditEvent({
-        event,
-        resourceId: item.id,
-        metadata: { entity: "page", kind: "blog", slug: item.slug },
-      });
+    try {
+      const { data, error } = await query.select("id").maybeSingle();
+      if (error) throw toCmsError(error, { table: "blog_articles", operation: "command" });
+      if (!data) throw new AppError("CONFLICT");
+    } catch (error) {
+      if (requested !== "restore") await audit("failure").catch(() => undefined);
+      throw error;
+    }
+    if (requested === "restore") await audit("success");
     if (item.status === "published" || result.next.status === "published") invalidate(item.slug);
     return withFlash(result.next.status === "deleted" ? "/admin/blog" : `/admin/blog/${item.id}`, flashes[requested]);
   });
