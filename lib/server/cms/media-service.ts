@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  02/11/2026 Vinícius Nishimura Reis  Autoriza o envio e confere o que chegou ao Storage (TECH-13, #313).
  04/11/2026 Vinícius Nishimura Reis  Registra quando um arquivo recusado não sai do bucket (SEG-05).
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -309,5 +310,8 @@ export async function updateMediaDetails(
   for (const { entity, slug, status } of usage) {
     if (status === "published") deps.invalidate({ entity, slug });
   }
-  return altChanged && usage.some((item) => item.place === "foto do time") ? ["media-alt-team"] : [];
+  const warnings: CmsWarning[] = [];
+  if (altChanged && usage.some((item) => item.place === "foto do time")) warnings.push("media-alt-team");
+  if (altChanged && usage.some((item) => item.place === "imagem do bloco")) warnings.push("media-alt-block");
+  return warnings;
 }

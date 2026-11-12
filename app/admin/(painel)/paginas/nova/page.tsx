@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -38,6 +39,16 @@ export const metadata: Metadata = { title: "Criar conteúdo da página" };
 export default async function NewPagePage({ searchParams }: PageProps<"/admin/paginas/nova">) {
   await requirePageAccess("page", "create", "/admin/paginas/nova");
   const [{ rota }, snapshot] = await Promise.all([searchParams, loadCmsSnapshot()]);
+  if (rota === undefined) {
+    return (
+      <>
+        <CmsHeader title="Nova página" description="Crie uma página própria e acrescente os blocos no rascunho." />
+        <div className="max-w-3xl studio-card p-4 sm:p-6">
+          <PageForm action={savePage} custom />
+        </div>
+      </>
+    );
+  }
   if (typeof rota !== "string" || !pagePath(rota) || snapshot.pages.some((page) => page.slug === rota)) {
     redirect("/admin/paginas");
   }

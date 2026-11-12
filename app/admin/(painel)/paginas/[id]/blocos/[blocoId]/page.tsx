@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -51,7 +52,7 @@ export default async function EditBlockPage({ params }: PageProps<"/admin/pagina
           page={{ id: page.id, updatedAt: page.updatedAt }}
           type={block.type}
           block={block}
-          photos={block.type === "team" ? await loadPhotoOptions() : []}
+          photos={block.type === "team" || block.type === "image" ? await loadPhotoOptions() : []}
         />
       </div>
     </>

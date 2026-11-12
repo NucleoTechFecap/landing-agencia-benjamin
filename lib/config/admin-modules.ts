@@ -22,6 +22,9 @@
  04/11/2026 Vinícius Nishimura Reis  Módulo de CTAs e destaques da Home (ADM-11).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
  12/11/2026 Codex                     Inclui artigos no painel (FUT-10).
+ 12/11/2026 Codex                     Habilita gestão de usuários (ADM-01).
+ 12/11/2026 Codex                     Expõe histórico de atividades (TECH-10).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -179,7 +182,7 @@ export const ADMIN_MODULES: readonly AdminModule[] = [
     action: "view",
     group: "administracao",
     icon: "configuracoes",
-    issue: "INT-08",
+    href: "/admin/usuarios",
   },
   {
     name: "Trilha de auditoria",
@@ -187,7 +190,7 @@ export const ADMIN_MODULES: readonly AdminModule[] = [
     action: "view",
     group: "administracao",
     icon: "revisao",
-    issue: "TECH-10",
+    href: "/admin/auditoria",
   },
 ];
 

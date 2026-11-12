@@ -114,3 +114,16 @@ trigger de perfil `pending`, `current_app_role()` e RLS de leitura do próprio p
 8. DevTools → Application → Cookies: todo `sb-*` com `HttpOnly`, `Secure` e `SameSite=Lax`; `document.cookie` no console sem `sb-` (SEG-06).
 
 Registrar evidências (prints e data) na issue ADM-02.
+
+## Convites pelo painel
+
+A tela `/admin/usuarios` exige `user:view`; suas ações exigem `user:create` ou `user:edit` no servidor.
+O envio usa `inviteUserByEmail` somente no servidor com a chave privilegiada, depois de autorização,
+validação e registro da tentativa. O perfil nasce `pending`, e a liberação do papel é separada, por
+`assign_role` com a sessão do responsável; ativação usa `set_profile_active`. Essas funções mantêm as
+travas e a auditoria no banco. Nenhum endereço ou conteúdo do convite é registrado na trilha.
+
+O SMTP próprio do Supabase Auth deve estar configurado e validado em cada ambiente; o Resend usado para
+notificações da aplicação não o configura automaticamente. O redirecionamento do convite deve estar na
+lista permitida do Auth e abrir o domínio da aplicação. Em desenvolvimento, o Auth local entrega ao
+Mailpit. Não enviar convites reais como teste sem destinatário autorizado.

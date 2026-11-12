@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 04/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-09).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -73,6 +74,18 @@ describe("findMediaUsage", () => {
   it("encontra a foto do bloco Nosso time, que não tem FK no banco", () => {
     const usage = findMediaUsage(asset, content({ pages: [page([team(asset.src)])] }));
     expect(usage).toMatchObject([{ entity: "page", id: "p1", place: "foto do time" }]);
+  });
+
+  it("identifica imagem de bloco para impedir exclusão e perda de texto alternativo", () => {
+    const image: PageBlock = {
+      id: "b1",
+      type: "image",
+      order: 0,
+      content: { image: { id: asset.id, src: asset.src, alt: "Descrição" } },
+    };
+    const usage = findMediaUsage(asset, content({ pages: [page([image])] }));
+    expect(usage).toMatchObject([{ entity: "page", place: "imagem do bloco" }]);
+    expect(usageRequiresAlt(usage[0]!)).toBe(true);
   });
 
   it("reconhece a foto pelo caminho quando o endereço do projeto mudou", () => {

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,10 +37,14 @@ const sql = readdirSync(MIGRATIONS)
 /** Nomes das colunas declaradas em `create table public.<tabela> ( ... );`. */
 function tableColumns(table: string): string[] {
   const body = sql.match(new RegExp(`create table public\\.${table} \\(([\\s\\S]+?)\\n\\);`))?.[1] ?? "";
-  return body
+  const initial = body
     .split("\n")
     .map((line) => line.trim().match(/^([a-z_]+) /)?.[1])
     .filter((name): name is string => Boolean(name) && name !== "constraint" && name !== "primary");
+  const added = [...sql.matchAll(new RegExp(`alter table public\\.${table} add column ([a-z_]+)`, "gi"))].map(
+    (match) => match[1],
+  );
+  return [...initial, ...added];
 }
 
 describe("colunas lidas pelo site × migration (DB-03)", () => {

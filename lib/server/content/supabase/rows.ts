@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Áreas, serviços, vínculos e mídia do CMS (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -139,6 +140,7 @@ export interface PageRow extends PublishableRow {
   slug: string;
   title: string;
   description: string | null;
+  is_custom?: boolean;
 }
 
 export interface BlockRow {
@@ -174,7 +176,7 @@ export const COLUMNS = {
   case_services: "case_id, service_id",
   case_media: "case_id, media_id, sort_order",
   ctas: `id, label, placement, target_kind, target_path, target_url, target_service_id, target_case_id, target_area_id, sort_order, ${PUBLISHABLE}`,
-  pages: `id, slug, title, description, ${PUBLISHABLE}`,
+  pages: `id, slug, title, description, is_custom, ${PUBLISHABLE}`,
   blocks: "id, page_id, type, content, sort_order",
   site_settings: "name, short_name, tagline, description, manifesto, about, contact, socials, keywords",
 } as const;

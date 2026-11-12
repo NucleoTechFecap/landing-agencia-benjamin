@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Falha ao gravar bloco é auditada e expira o cache (TECH-13, #369).
  04/11/2026 Vinícius Nishimura Reis  Foto do time só do bucket de mídia e só imagem (TECH-13, #369).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -79,6 +80,85 @@ const blocksOf = (env: Env, id: string) =>
   env.tables.blocks.filter((block) => block.page_id === id).sort((a, b) => a.sort_order - b.sort_order);
 
 describe("CMS de páginas — dados e publicação (ADM-05)", () => {
+  it("bloco de imagem aceita somente mídia da biblioteca com texto alternativo", async () => {
+    const env = setup();
+    const id = await createPage(env);
+    await expect(
+      saveBlock(env.deps, env.actor("editor"), env.ref(id), {
+        type: "image",
+        input: form({ fields: { imageId: "inexistente" } }),
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+    const image = await env.deps.store.insertMedia({
+      path: "/brand/foto.webp",
+      mime_type: "image/webp",
+      size_bytes: 10,
+      width: 200,
+      height: 100,
+      alt_text: "Equipe da agência",
+      decorative: false,
+    });
+    await saveBlock(env.deps, env.actor("editor"), env.ref(id), {
+      type: "image",
+      input: form({ fields: { imageId: image.id, caption: "Legenda" } }),
+    });
+    expect(blocksOf(env, id)).toMatchObject([
+      { type: "image", content: { image: { src: "/brand/foto.webp", alt: "Equipe da agência" }, caption: "Legenda" } },
+    ]);
+  });
+  it("cria página própria em rascunho e preserva seu tipo após editar", async () => {
+    const env = setup();
+    const result = await saveContent(env.deps, env.actor("editor"), PAGE, {
+      title: "Projeto especial",
+      slug: "projeto-especial",
+      isCustom: true,
+    });
+    expect(env.page(result.id)).toMatchObject({ status: "draft", is_custom: true });
+    await expect(
+      saveContent(
+        env.deps,
+        env.actor("editor"),
+        PAGE,
+        {
+          title: "Projeto especial",
+          slug: "projeto-especial",
+          isCustom: false,
+        },
+        env.ref(result.id),
+      ),
+    ).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+  });
+
+  it("não permite página própria ocupar o identificador de uma rota institucional", async () => {
+    const env = setup();
+    await expect(
+      saveContent(env.deps, env.actor("editor"), PAGE, {
+        title: "Página",
+        slug: "sobre",
+        isCustom: true,
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+  });
+
+  it("mantém reservado o endereço de página própria que já foi publicada", async () => {
+    const env = setup();
+    const { id } = await saveContent(env.deps, env.actor("admin"), PAGE, {
+      title: "Evento",
+      slug: "evento-especial",
+      isCustom: true,
+    });
+    await saveBlock(env.deps, env.actor("admin"), env.ref(id), textBlock("Informações."));
+    await runContentCommand(env.deps, env.actor("admin"), PAGE, env.ref(id), "publish");
+    expect(env.changes).toContainEqual({
+      entity: "page",
+      slug: "evento-especial",
+      relatedPaths: ["/paginas/evento-especial"],
+    });
+    await runContentCommand(env.deps, env.actor("admin"), PAGE, env.ref(id), "archive");
+    await expect(runContentCommand(env.deps, env.actor("admin"), PAGE, env.ref(id), "delete")).rejects.toMatchObject({
+      code: "CONFLICT",
+    });
+  });
   it("cria como rascunho, guarda a marca de provisório e não mexe no cache público", async () => {
     const env = setup();
     const id = await createPage(env);

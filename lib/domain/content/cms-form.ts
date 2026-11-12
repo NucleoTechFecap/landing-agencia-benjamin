@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,7 +22,9 @@
 28/10/2026 Codex                     Adiciona catálogo fechado de avisos (TECH-13).
  02/11/2026 Vinícius Nishimura Reis  Tíquete do envio direto de mídia (TECH-13, #313).
  04/11/2026 Vinícius Nishimura Reis  Mensagens da tela de contato e redes, que grava direto no ar (ADM-10).
+ 12/11/2026 Codex                     Mensagem de convite ao painel (ADM-01).
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -56,6 +58,8 @@ export const CMS_FLASH = {
   restaurado: "Restaurado como rascunho.",
   excluido: "Excluído definitivamente.",
   enviado: "Arquivo enviado para a biblioteca. Ele já pode ser escolhido nos formulários.",
+  "convite-enviado": "Convite enviado. A conta ficará pendente até receber um papel.",
+  "versao-restaurada": "Versão restaurada como rascunho. Revise o conteúdo antes de publicar.",
   "no-ar": "Salvo e já no ar: o site mostra os dados novos.",
   "sem-alteracao": "Nada mudou: os dados já eram estes, então o site continua igual.",
 } as const;
@@ -74,6 +78,8 @@ export const CMS_WARNING = {
     "O registro saiu da biblioteca, mas o arquivo continua no armazenamento. Avise o NúcleoTech para removê-lo.",
   "media-alt-team":
     "O bloco Nosso time guarda uma cópia do texto alternativo: abra a página e salve o bloco para atualizar a foto.",
+  "media-alt-block":
+    "O bloco de imagem guarda uma cópia do texto alternativo: abra a página e salve o bloco para atualizá-lo.",
 } as const;
 
 export type CmsWarning = keyof typeof CMS_WARNING;

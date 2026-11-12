@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Detalhe de área com serviços (DB-04).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  04/11/2026 Vinícius Nishimura Reis  Seleção de detalhes movida para lib/domain, compartilhada com a prévia (ADM-14).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -49,6 +50,10 @@ import { withPublishedTexts } from "@/lib/domain/content/page-texts";
 import { isPubliclyVisible, visibleSorted } from "@/lib/domain/content/visibility";
 import { CONTENT_TAGS } from "./cache-tags";
 import { getContentSource } from "./sources";
+import { createPublicClient } from "@/lib/server/supabase/server";
+import { AppError } from "@/lib/server/errors";
+import { COLUMNS, type PageRow } from "./supabase/rows";
+import { toPage } from "./supabase/mappers";
 
 /*
  * Repositório de LEITURA PÚBLICA do conteúdo (ADR-0003). Regra de ouro: nada aqui
@@ -102,6 +107,33 @@ export async function getPage(slug: string): Promise<Page | null> {
   cacheLife("hours");
   const page = await getContentSource().page(slug);
   return page && isPubliclyVisible(page) ? page : null;
+}
+
+/** Páginas próprias explicitamente criadas e publicadas, para sitemap e geração de rotas. */
+export async function listCustomPages(): Promise<Page[]> {
+  "use cache";
+  cacheTag(CONTENT_TAGS.all, CONTENT_TAGS.pages);
+  cacheLife("hours");
+  if (getContentSource().name === "local") return [];
+  const client = createPublicClient();
+  const pages: Page[] = [];
+  const now = new Date();
+  const batchSize = 500;
+  for (let offset = 0; ; offset += batchSize) {
+    const { data, error } = await client
+      .from("pages")
+      .select(COLUMNS.pages)
+      .eq("is_custom", true)
+      .eq("status", "published")
+      .lte("published_at", now.toISOString())
+      .order("slug")
+      .range(offset, offset + batchSize - 1);
+    if (error) throw new AppError("SERVICE_UNAVAILABLE");
+    pages.push(
+      ...((data ?? []) as PageRow[]).map((row) => toPage(row, []).page).filter((page) => isPubliclyVisible(page, now)),
+    );
+    if (!data || data.length < batchSize) return pages;
+  }
 }
 
 export async function listAreas(): Promise<Area[]> {

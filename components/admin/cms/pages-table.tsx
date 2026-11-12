@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,11 +20,12 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import Link from "next/link";
-import { PAGE_ROUTE_LABELS, PAGE_ROUTES, ROUTED_PAGE_SLUGS } from "@/lib/domain/content/blocks";
+import { PAGE_ROUTE_LABELS, PAGE_ROUTES, ROUTED_PAGE_SLUGS, pagePath } from "@/lib/domain/content/blocks";
 import type { Page } from "@/lib/domain/content/types";
 import { formatDateTime } from "./cms-table";
 import { StatusBadge } from "./status-badge";
@@ -44,7 +45,12 @@ export function PagesTable({ pages, canCreate }: { pages: Page[]; canCreate: boo
     })),
     ...pages
       .filter((page) => !Object.hasOwn(PAGE_ROUTES, page.slug))
-      .map((page) => ({ slug: page.slug, label: page.title, path: "Sem rota no site", page })),
+      .map((page) => ({
+        slug: page.slug,
+        label: page.title,
+        path: pagePath(page.slug, page.isCustom) ?? "Sem rota no site",
+        page,
+      })),
   ];
   return (
     // `relative`: o texto sr-only é absoluto e, sem isso, escapa da rolagem e alarga a página no celular.

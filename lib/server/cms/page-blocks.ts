@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Falha ao gravar bloco é auditada e expira o cache (TECH-13, #369).
  04/11/2026 Vinícius Nishimura Reis  Foto do time só do bucket de mídia e só imagem (TECH-13, #369).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -46,7 +47,18 @@ export function blockInputFromForm(form: FormData): BlockFormInput {
   const repeated = (name: string) => form.getAll(name).map((value) => (typeof value === "string" ? value : ""));
   const roles = repeated("memberRole");
   const photos = repeated("memberPhoto");
-  const fields = ["title", "text", "label", "href", "intro", "valueProposition", "howWeWork", "fecapRelation"];
+  const fields = [
+    "title",
+    "text",
+    "label",
+    "href",
+    "intro",
+    "valueProposition",
+    "howWeWork",
+    "fecapRelation",
+    "imageId",
+    "caption",
+  ];
   return {
     fields: Object.fromEntries(fields.map((name) => [name, text(form, name)])),
     paragraphs: lines(form, "paragraphs"),
@@ -103,7 +115,12 @@ async function applyChange(deps: CmsDeps, page: Page, action: string, type: stri
       metadata: { entity: "page", slug: page.slug, action, kind: type, fromStatus: page.status },
     });
   const invalidate = () => {
-    if (page.status === "published") deps.invalidate({ entity: "page", slug: page.slug });
+    if (page.status === "published")
+      deps.invalidate({
+        entity: "page",
+        slug: page.slug,
+        ...(page.isCustom ? { relatedPaths: [`/paginas/${page.slug}`] } : {}),
+      });
   };
   try {
     await write();
@@ -152,7 +169,17 @@ export async function saveBlock(deps: CmsDeps, actor: CmsActor, ref: ItemRef, re
   if (restriction) throw new AppError("VALIDATION_FAILED", { message: restriction });
 
   const draft = blockContentFromForm(type, input);
-  const content = type === "team" ? withPhotos(draft, await deps.store.listMedia()) : draft;
+  let content: unknown = draft;
+  if (type === "team") content = withPhotos(draft, await deps.store.listMedia());
+  if (type === "image") {
+    const { imageId, ...rest } = draft as { imageId?: string; title?: string; caption?: string };
+    const asset = (await deps.store.listMedia()).find((item) => item.id === imageId);
+    if (!asset?.alt || !asset.mimeType.startsWith("image/"))
+      throw new AppError("VALIDATION_FAILED", {
+        fieldErrors: { imageId: ["Escolha uma imagem da biblioteca com texto alternativo."] },
+      });
+    content = { ...rest, image: { id: asset.id, src: asset.src, alt: asset.alt } };
+  }
   const parsed = BLOCK_SCHEMAS[type].safeParse(content);
   if (!parsed.success) throw new AppError("VALIDATION_FAILED", { fieldErrors: fieldErrorsOf(parsed.error) });
 

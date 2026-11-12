@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,13 +21,14 @@
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Link para a prévia protegida (ADM-14).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BlockList } from "@/components/admin/cms/block-list";
-import { CmsHeader } from "@/components/admin/cms/cms-header";
+import { CmsHeader, CmsSecondaryLink } from "@/components/admin/cms/cms-header";
 import { CommandBar } from "@/components/admin/cms/command-bar";
 import { FlashMessage } from "@/components/admin/cms/flash-message";
 import { ItemPanel } from "@/components/admin/cms/item-panel";
@@ -50,11 +51,13 @@ export default async function EditPagePage({ params, searchParams }: PageProps<"
   const [snapshot, query] = await Promise.all([loadCmsSnapshot(), searchParams]);
   const page = snapshot.pages.find((item) => item.id === id);
   if (!page) notFound();
-  const path = pagePath(page.slug);
+  const path = pagePath(page.slug, page.isCustom);
   const readOnly = !can(user.role, "page", "edit") || page.status === "archived";
   return (
     <>
-      <CmsHeader title={page.title} />
+      <CmsHeader title={page.title}>
+        <CmsSecondaryLink href={`/admin/paginas/${page.id}/historico`}>Histórico</CmsSecondaryLink>
+      </CmsHeader>
       <FlashMessage ok={query.ok} aviso={query.aviso} />
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-8">
@@ -89,7 +92,9 @@ export default async function EditPagePage({ params, searchParams }: PageProps<"
             action={pageCommand}
             id={page.id}
             updatedAt={page.updatedAt}
-            commands={allowedCommands(page.status, user.role, "page")}
+            commands={allowedCommands(page.status, user.role, "page").filter(
+              (command) => command !== "delete" || !page.isCustom || !page.publishedAt,
+            )}
           />
         </ItemPanel>
       </div>

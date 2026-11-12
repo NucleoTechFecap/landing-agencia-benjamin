@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,12 +21,14 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
  04/11/2026 Vinícius Nishimura Reis  Foto do time só do bucket de mídia e só imagem (TECH-13, #369).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { z } from "zod";
 import { MEDIA_BUCKET } from "@/lib/domain/media/policy";
 import { isValidExternalUrl, isValidInternalPath } from "./integrity";
+import { uuidField } from "./cms-schema";
 import { aboutSchema, manifestoSchema } from "./settings-schema";
 
 /*
@@ -61,7 +63,8 @@ export const PAGE_ROUTE_LABELS: Readonly<Record<RoutedPageSlug, string>> = {
 export const ROUTED_PAGE_SLUGS = Object.keys(PAGE_ROUTES) as RoutedPageSlug[];
 
 /** Rota pública em que a página aparece, ou `null` quando ela ainda não tem rota. */
-export function pagePath(slug: string): string | null {
+export function pagePath(slug: string, isCustom = false): string | null {
+  if (isCustom) return `/paginas/${slug}`;
   return Object.hasOwn(PAGE_ROUTES, slug) ? PAGE_ROUTES[slug as RoutedPageSlug] : null;
 }
 
@@ -92,6 +95,11 @@ const mediaSrc = z
  * vindo do banco (evita XSS); quebras de parágrafo viram itens do array.
  */
 export const BLOCK_SCHEMAS = {
+  image: z.object({
+    title: optionalTitle,
+    image: z.object({ id: uuidField, src: mediaSrc, alt: text(160) }),
+    caption: text(300).optional(),
+  }),
   /** Título opcional e parágrafos. */
   "rich-text": z.object({
     title: optionalTitle,
@@ -149,6 +157,7 @@ export type PageBlock = {
 
 /** Como cada tipo aparece no painel. */
 export const BLOCK_LABELS: Readonly<Record<BlockType, string>> = {
+  image: "Imagem",
   "rich-text": "Texto",
   list: "Lista de destaques",
   team: "Nosso time",

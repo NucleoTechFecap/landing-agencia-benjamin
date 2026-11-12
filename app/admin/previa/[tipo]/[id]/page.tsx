@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 04/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-14).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -86,7 +87,7 @@ async function PagePreview({ page }: { page: Page }) {
       ) : (
         <PageHero
           eyebrow="Página"
-          path={pagePath(page.slug) ?? `/${page.slug}`}
+          path={pagePath(page.slug, page.isCustom) ?? `/${page.slug}`}
           title={page.title}
           description={page.description ? <p>{page.description}</p> : undefined}
           breadcrumbs={[{ label: "Início", href: "/" }, { label: page.title }]}

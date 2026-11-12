@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 04/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-09).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -32,7 +33,7 @@ export interface MediaIdentity {
   path: string;
 }
 
-export type MediaUsagePlace = "imagem" | "capa" | "galeria" | "foto do time";
+export type MediaUsagePlace = "imagem" | "capa" | "galeria" | "foto do time" | "imagem do bloco";
 
 export interface MediaUsage {
   entity: "service" | "case" | "page";
@@ -84,6 +85,10 @@ export function findMediaUsage(
       const { id, slug, title: name, status } = page;
       usage.push({ entity: "page", id, slug, name, status, place: "foto do time" });
     }
+    if (page.blocks.some((block) => block.type === "image" && block.content.image.id === asset.id)) {
+      const { id, slug, title: name, status } = page;
+      usage.push({ entity: "page", id, slug, name, status, place: "imagem do bloco" });
+    }
   }
   return usage;
 }
@@ -98,5 +103,5 @@ export function describeMediaUsage(usage: MediaUsage): string {
  * bloco recusa foto sem texto ao salvar.
  */
 export function usageRequiresAlt(usage: MediaUsage): boolean {
-  return usage.status === "published" || usage.place === "foto do time";
+  return usage.status === "published" || usage.place === "foto do time" || usage.place === "imagem do bloco";
 }

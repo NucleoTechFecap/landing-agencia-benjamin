@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Id da mídia na referência, só para o painel (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -181,6 +182,8 @@ export interface Page extends Publishable {
   slug: string;
   title: string;
   description?: string;
+  /** Somente páginas explicitamente criadas como próprias têm rota dinâmica. */
+  isCustom?: boolean;
   blocks: PageBlock[];
 }
 

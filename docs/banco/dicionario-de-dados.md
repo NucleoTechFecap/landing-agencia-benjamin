@@ -15,6 +15,24 @@
 
 ## 1. Visão geral
 
+### Páginas personalizadas e versões (12/11/2026)
+
+As migrations `20261112000200_paginas_personalizadas.sql` e
+`20261112000300_historico_de_paginas.sql` acrescentam `pages.is_custom` e `page_versions`.
+Páginas antigas recebem `false`; páginas próprias possuem endereço público em `/paginas/<slug>`
+somente após publicação. A marcação é imutável e endereços de páginas fixas são reservados. Blocos
+de imagem validam o arquivo, o endereço e o texto alternativo no banco; arquivos em uso não podem ser
+apagados.
+
+`page_versions` guarda página e blocos ao final de cada transação, com autor quando disponível. A
+leitura exige `page:view` e não há escrita direta por clientes. A função de restauração exige
+`page:edit`, valida concorrência e exige `page:publish` para retirar uma página publicada do ar;
+ela grava a auditoria na mesma transação. Os snapshots podem conter dados pessoais inseridos no
+conteúdo, portanto fazem parte dos backups e precisam de política de retenção e acesso. Não há coleta
+retroativa nem limpeza automática. O rollback de páginas recusa descartar páginas próprias ou blocos
+de imagem. O do histórico recusa descartar versões, exceto com a confirmação operacional explícita
+`benjamin.confirmar_rollback = 'sim'`; preserve os dados antes de qualquer reversão.
+
 O banco tem três grupos de tabelas. Este documento cobre o grupo de conteúdo e referencia os demais.
 
 | Grupo | Tabelas | Migration |

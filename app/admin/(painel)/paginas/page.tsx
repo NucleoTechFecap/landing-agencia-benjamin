@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,11 +19,12 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
-import { CmsHeader } from "@/components/admin/cms/cms-header";
+import { CmsHeader, CmsLinkButton } from "@/components/admin/cms/cms-header";
 import { FlashMessage } from "@/components/admin/cms/flash-message";
 import { PagesTable } from "@/components/admin/cms/pages-table";
 import { can } from "@/lib/domain/auth/rbac";
@@ -40,7 +41,11 @@ export default async function PagesAdminPage({ searchParams }: PageProps<"/admin
       <CmsHeader
         title="Páginas e textos"
         description="Cada página do site tem seções fixas. Aqui você troca o manifesto e o texto Sobre, e acrescenta blocos depois das seções fixas. Sem conteúdo publicado, o site continua com os textos atuais."
-      />
+      >
+        {can(user.role, "page", "create") ? (
+          <CmsLinkButton href="/admin/paginas/nova">Nova página</CmsLinkButton>
+        ) : null}
+      </CmsHeader>
       <FlashMessage ok={query.ok} aviso={query.aviso} />
       <PagesTable pages={snapshot.pages} canCreate={can(user.role, "page", "create")} />
     </>

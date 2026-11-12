@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Tags e invalidação de páginas do CMS (DB-03).
  04/11/2026 Vinícius Nishimura Reis  Segunda expiração em requisição própria, antes de aquecer (TECH-13, #369).
  12/11/2026 Codex                     Inclui invalidação do blog (FUT-10).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -40,7 +41,7 @@ const bodySchema = z.object({
   previousSlug: slug,
   /** Páginas de detalhe a aquecer: só caminhos do próprio site, com formato conhecido. */
   relatedPaths: z
-    .array(z.string().regex(/^\/(servicos|cases|blog)\/[a-z0-9]+(-[a-z0-9]+)*$/))
+    .array(z.string().regex(/^\/(servicos|cases|blog|paginas)\/[a-z0-9]+(-[a-z0-9]+)*$/))
     .max(MAX_WARMED_PATHS)
     .optional(),
   /** Marca a segunda expiração do próprio site (invalidate.ts): não agenda outra. */
