@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,6 +21,7 @@
  27/10/2026 Vinícius Nishimura Reis  Limite de 4 MB conferido no navegador antes do envio (TECH-13).
  02/11/2026 Vinícius Nishimura Reis  Envio direto ao Storage, sem passar pela Server Action (TECH-13, #313).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 12/11/2026 Codex                     Esclarece a visibilidade da biblioteca atual.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -146,7 +147,8 @@ export function MediaUploadForm({
         />
         <p id="file-dica" className="mt-1 text-xs text-studio-suave">
           JPG, PNG, WebP ou AVIF até 5 MB e PDF até 10 MB. Imagens com no máximo 4000 px no maior lado (recomendado:
-          2400 px de largura). SVG não é aceito.
+          2400 px de largura). SVG não é aceito. Arquivos desta biblioteca ficam públicos ao enviar; não envie
+          documentos privados aqui.
         </p>
         {fileErrors?.length ? (
           <p id="file-erro" className="mt-1 text-sm font-semibold text-benja-erro">

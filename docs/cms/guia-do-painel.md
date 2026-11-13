@@ -132,7 +132,8 @@ site, Comunicação, Biblioteca e Administração (com a aparência do site). O 
 - O cabeçalho mostra onde você está (a trilha) e traz **Ver site**, que abre o site em outra aba.
 - Cada pessoa vê só os módulos que o papel permite: Editor e Leitor não veem Contatos e feedbacks. Isso é só o que
   aparece: cada tela e cada ação conferem de novo a permissão no servidor.
-- Módulo que ainda não tem tela, como usuários e papéis, não aparece no menu.
+- Módulo que ainda não tem tela não aparece no menu. **Usuários e papéis** e **Trilha de auditoria**, em
+  Administração, aparecem só para quem tem permissão de ver usuários e auditoria.
 - Pelo teclado, o primeiro Tab da página oferece **Pular para o conteúdo**, sem passar pelo menu.
 
 ## Início do painel (`/admin`)
@@ -561,3 +562,29 @@ trilha de auditoria com quem fez e quando (TECH-10).
    ao salvar. Para retirá-lo, use **Despublicar** ou **Arquivar**.
 5. O endereço de um artigo publicado não pode ser alterado. Ele permanece reservado mesmo se o artigo
    for arquivado. Para artigos nunca publicados, um administrador pode excluir após arquivar.
+
+## Usuários e papéis (`/admin/usuarios`)
+
+Administradores acessam **Usuários e papéis** no menu. Para adicionar uma pessoa, informe nome e
+endereço de e-mail em **Convidar pessoa**. O Supabase Auth envia o convite para que ela defina a própria
+senha; o perfil começa como **Acesso pendente**. Depois de confirmar a identidade, selecione o papel
+adequado e salve. Administradores gerenciam apenas editores, leitores e pendentes; somente o
+superadministrador pode gerenciar administradores. Ninguém altera o próprio papel ou desativa a própria
+conta. O banco preserva pelo menos um superadministrador ativo.
+
+Em caso de desligamento, use **Desativar acesso**; a pessoa deixa de ter acesso conforme o papel efetivo
+consultado no servidor e na RLS. O botão **Reativar acesso** reabre o acesso conforme o papel existente.
+As alterações de papel e ativação são registradas na auditoria do banco. A tela lista nomes e papéis;
+ela não divulga a lista de e-mails do provedor de autenticação.
+
+O domínio no Resend precisa estar verificado e o Supabase Auth precisa usar SMTP próprio do Resend ou
+outro provedor configurado para enviar os convites. A configuração da API de notificações dos formulários,
+por si só, não configura o SMTP do Auth. Teste o convite em homologação com destinatário autorizado.
+O envio de mensagens individuais pelo painel ainda não foi implementado.
+
+## Histórico de atividades (`/admin/auditoria`)
+
+O item **Trilha de auditoria** abre o **Histórico de atividades**: as operações registradas na auditoria,
+com autor, horário e resultado, das mais recentes para as mais antigas, 100 por página. A tela não mostra
+o conteúdo dos formulários nem os detalhes de cada operação. Para ver o que mudou em um conteúdo e
+restaurar uma versão, use o [Histórico de alterações](#histórico-de-alterações-adminhistorico).

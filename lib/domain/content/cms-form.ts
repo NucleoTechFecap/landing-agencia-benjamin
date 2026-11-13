@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 13/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -24,6 +24,7 @@
  04/11/2026 Vinícius Nishimura Reis  Mensagens da tela de contato e redes, que grava direto no ar (ADM-10).
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
  04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
+ 13/11/2026 Vinícius Nishimura Reis  Mensagem de convite ao painel (ADM-01).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -57,6 +58,7 @@ export const CMS_FLASH = {
   restaurado: "Restaurado como rascunho.",
   excluido: "Excluído definitivamente.",
   enviado: "Arquivo enviado para a biblioteca. Ele já pode ser escolhido nos formulários.",
+  "convite-enviado": "Convite enviado. A conta ficará pendente até receber um papel.",
   "no-ar": "Salvo e já no ar: o site mostra os dados novos.",
   "versao-restaurada": "Versão restaurada. O conteúdo anterior continua guardado no histórico.",
   "sem-alteracao": "Nada mudou: os dados já eram estes, então o site continua igual.",
