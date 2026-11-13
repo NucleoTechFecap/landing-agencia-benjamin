@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -24,6 +24,7 @@
  01/11/2026 Vinícius Nishimura Reis  Segunda expiração contra regeneração em andamento (INT-03).
  04/11/2026 Vinícius Nishimura Reis  Segunda expiração em requisição própria, antes de aquecer (TECH-13, #369).
  04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
+ 12/11/2026 Codex                     Invalida artigos do blog (FUT-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,7 +38,7 @@ import type { ContentEntityType } from "@/lib/domain/content/types";
 import { logger } from "../logger";
 import { CONTENT_TAGS } from "./cache-tags";
 
-export type ContentChangeEntity = ContentEntityType | "settings";
+export type ContentChangeEntity = ContentEntityType | "settings" | "blog";
 
 /** Alteração de conteúdo que exige invalidar o cache público (TECH-09). */
 export interface ContentChange {
@@ -67,6 +68,9 @@ export const SECOND_EXPIRATION_DELAY_MS = 3_000;
 export function tagsForChange(change: ContentChange): string[] {
   const tags = new Set<string>();
   switch (change.entity) {
+    case "blog":
+      tags.add(CONTENT_TAGS.blog);
+      break;
     case "settings":
       tags.add(CONTENT_TAGS.settings);
       break;
@@ -113,7 +117,9 @@ export function detailPathsForChange(change: ContentChange): string[] {
         ? [`/cases/${change.slug}`]
         : pageRoute
           ? [pageRoute]
-          : [];
+          : change.slug && change.entity === "blog"
+            ? [`/blog/${change.slug}`]
+            : [];
   return [...new Set([...own, ...(change.relatedPaths ?? [])])].slice(0, MAX_WARMED_PATHS);
 }
 

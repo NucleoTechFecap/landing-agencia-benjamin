@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  25/10/2026 Vinícius Binda             Criação inicial (DB-01/DBX-01).
+ 02/11/2026 Vinicius Binda             Transições e catálogo de blocos (DBX-04).
  04/11/2026 Vinícius Nishimura Reis  Posições, destinos e limites do CTA conferidos com o banco (ADM-11).
  04/11/2026 Vinícius Nishimura Reis  Lista de tipos de bloco conferida com BLOCK_TYPES (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
@@ -27,6 +28,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { BLOCK_TYPES } from "@/lib/domain/content/blocks";
+import { TRANSITIONS } from "@/lib/domain/content/publication";
 import { CTA_LIMITS, CTA_PLACEMENTS, CTA_TARGET_KINDS } from "@/lib/domain/content/cta-schema";
 import { PUBLICATION_STATUSES } from "@/lib/domain/content/publication-status";
 import { RESERVED_SLUGS, SLUG_MAX_LENGTH, SLUG_MIN_LENGTH, SLUG_PATTERN } from "@/lib/domain/content/slug";
@@ -70,6 +72,16 @@ describe("consistência conteúdo código × banco (DB-01/DBX-01)", () => {
     const limits = sql.match(/when mime_type = 'application\/pdf' then (\d+) else (\d+) end/);
     expect(Number(limits?.[1])).toBe(MEDIA_RULES["application/pdf"].maxBytes);
     expect(Number(limits?.[2])).toBe(MEDIA_RULES["image/jpeg"].maxBytes);
+  });
+
+  it("o trigger de estado permite as mesmas transições de TRANSITIONS (DBX-04)", () => {
+    const allowed = functionBody("enforce_publication_state").match(/<> all \(array\[([^\]]+)\]\)/)?.[1] ?? "";
+    const expected = Object.entries(TRANSITIONS).flatMap(([from, commands]) =>
+      Object.values(commands)
+        .filter((to) => to !== "deleted" && to !== from)
+        .map((to) => `${from}>${to}`),
+    );
+    expect(quoted(allowed).sort()).toEqual(expected.sort());
   });
 
   it("ctas aceita as mesmas posições, tipos de destino e limites do formulário do painel", () => {

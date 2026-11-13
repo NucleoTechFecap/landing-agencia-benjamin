@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 04/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-11).
+ 12/11/2026 Codex                     Adiciona o blog aos destinos de CTA (FUT-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -80,6 +81,7 @@ export const CTA_PAGE_LABELS: Readonly<Record<string, string>> = {
   "/areas": "Áreas de atuação",
   "/servicos": "Serviços",
   "/cases": "Cases",
+  "/blog": "Blog",
   "/contato": "Contato",
   "/feedback": "Feedback",
   "/privacidade": "Privacidade",

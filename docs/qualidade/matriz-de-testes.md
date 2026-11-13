@@ -283,6 +283,9 @@ Formulários de novo projeto, contato e feedback validam campos e confirmam com 
 | 14.13 | N | Sem JavaScript, o servidor recusa e devolve o texto | `tests/e2e/formularios.spec.ts` › «feedback inválido destaca o campo e devolve o que foi digitado». `app/(site)/actions.test.ts` › «devolve o erro com o texto digitado, para o envio sem JavaScript repreencher o formulário» | E, U |
 | 14.14 | B | Envio antes da hidratação | `tests/e2e/formularios.spec.ts` › «/contato: o resultado aparece e a página hidrata sem erro»; «/feedback: erro de validação aparece com foco no campo e sem perder o texto» | E |
 | 14.15 | B | Campos técnicos vazios | `lib/domain/forms/schemas.test.ts` › «campos técnicos vazios (sem JavaScript) valem como ausentes (FORM-08)»; «campo técnico preenchido com valor forjado continua recusado (FORM-08)». `lib/server/forms/submission-service.test.ts` › «é aceito e gravado, sem origem» | U |
+| 14.16 | N | Envio inválido não grava no banco real (DB-06) | `tests/integration/supabase/formularios.test.ts` › «envio inválido não grava nada no banco real, nem dispara e-mail (DB-06)» | S |
+| 14.17 | B | Pedido no limite de cada campo chega inteiro (DB-06) | `tests/integration/supabase/formularios.test.ts` › «o pedido no limite de cada campo chega inteiro: o banco não é mais rígido que a validação (DB-06)». `lib/server/forms/forms-sql.test.ts` › «toda categoria de routeSubmission passa em form_submissions_category_format, com o prefixo do tipo»; «o teto do conteúdo cobre com folga o maior envio que a validação aceita» | S, U |
+| 14.18 | N | Banco recusa envio com forma inválida, mesmo do servidor (DB-06) | `supabase/tests/database/form_submissions_integridade.test.sql` › «lead com categoria de feedback é recusado»; «protocolo fora do hexadecimal é recusado»; «service_role também é barrado: a RLS não o alcança, a restrição sim»; «só os 19 envios válidos estão na tabela». `tests/integration/supabase/formularios.test.ts` › «o armazenamento do servidor não grava envio forjado: o banco recusa a forma (23514) (DB-06)» | D, S |
 
 ### CA-15
 
@@ -432,6 +435,7 @@ Leads e feedbacks visíveis apenas para `admin`; acessos auditados.
 | 23.3 | N | `admin` não altera o que foi enviado | `supabase/tests/database/form_submissions_rls.test.sql` › «admin não altera o conteúdo enviado»; «nem o admin cria envio pelo painel» | D |
 | 23.4 | N | Eventos de auditoria por papel | `supabase/tests/database/audit_event_roles.test.sql` › «viewer não pode registrar acesso a lead»; «super_admin não ganha acesso a eventos com dados pessoais» | D |
 | 23.5 | B | Permissão separada por tipo | `supabase/tests/database/form_submissions_rls.test.sql` › «só com feedback:view: enxerga feedback, nem lead nem contato» | D |
+| 23.6 | B | Contato e feedback não se passam por lead (DB-06) | `supabase/tests/database/form_submissions_integridade.test.sql` › «contato com categoria de lead é recusado»; «service_role não grava feedback como lead» | D |
 | — | Lacuna | **Tela de consulta (FORM-09): não existe na `main`.** O evento `lead.viewed` ao abrir um lead: **sem cobertura** em fluxo real (J3.4) | | |
 
 ### CMS: regras complementares

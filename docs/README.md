@@ -101,6 +101,7 @@
 
 | Documento | Issue |
 | --------- | ----- |
+| [Blog da Benjamin: escopo, integração e aceite](roadmap/blog-da-benjamin.md) | FUT-10 |
 | [Evolução do módulo de leads para CRM](roadmap/evolucao-crm.md) | FUT-01 |
 | [Newsletter com gestão de assinantes](roadmap/newsletter.md) | FUT-02 |
 | [Automações de comunicação e campanhas](roadmap/automacoes-de-comunicacao.md) | FUT-03 |

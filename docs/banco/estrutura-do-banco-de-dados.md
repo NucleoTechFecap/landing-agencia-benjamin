@@ -49,7 +49,7 @@ servidor: gravação de formulários e rotinas operacionais.
 | ----- | ------- | -------- |
 | Acesso | `profiles`, `role_permissions` | ✅ na `main` (ADM-02/ADM-03) |
 | Auditoria | `audit_log` | ✅ na `main` (TECH-10) |
-| Formulários | `form_submissions` | ✅ na `main` (TECH-06/07) · **ajustes propostos** para retenção (§9) |
+| Formulários | `form_submissions` | ✅ na `main` (TECH-06/07; forma do envio: DB-06, [dicionário §13](dicionario-de-dados.md)) · **ajustes propostos** para retenção (§9) |
 | Mídia | `media_assets` + bucket `media` | Bucket ✅ na `main` · tabela **proposta** |
 | Taxonomia | `areas`, `services`, `service_areas`, `case_categories` | **Proposta** |
 | Portfólio | `cases`, `case_services`, `case_media`, `case_links` | **Proposta** |
@@ -93,8 +93,9 @@ alimentam o site a partir de `content/`. Quando as tabelas existirem, só a cama
 | `23503` | Exclusão bloqueada: mídia, categoria ou destino de CTA em uso | `INVALID_TRANSITION` com mensagem "em uso" | 409 |
 | `42501` | RLS ou grant negou | `FORBIDDEN` | 403 |
 | `BJ001` | Transição de estado inválida (ex.: arquivado → publicado) | `INVALID_TRANSITION` | 409 |
-| `BJ002` | Excluir item que não está arquivado | `INVALID_TRANSITION` | 409 |
-| `BJ003` | Publicado sem vínculo obrigatório (serviço sem área, case sem serviço) | `VALIDATION_FAILED` | 422 |
+| `BJ002` | Versão desatualizada em `save_service` e `save_case` | `CONFLICT` | 409 |
+| `40001` | Versão desatualizada, com banco sem a migration `20261102000500` ou com ela revertida | `CONFLICT` | 409 |
+| `BJ003` | Conteúdo publicado ficaria sem dependência obrigatória: área, categoria, serviço ou `alt` ([dicionário de dados](dicionario-de-dados.md) §12) | `CONFLICT` | 409 |
 | `22023` | Parâmetro inválido em função RPC (ex.: galeria com mais de 20 imagens) | `VALIDATION_FAILED` | 422 |
 | 0 linhas no `update` | `updated_at` esperado diferente (concorrência) ou RLS de `using` negou | `CONFLICT` (a guarda do servidor já verificou a permissão antes) | 409 |
 
@@ -348,6 +349,10 @@ A tabela é preenchida **só por trigger** (§7). Ninguém grava nela pela API.
 
 ## 5. Integridade: banco × aplicação (DBX-04)
 
+> **Implementado em 02/11/2026 com diferenças desta proposta (DBX-04).** As regras entre tabelas valem
+> só para `authenticated`, a exclusão de arquivados ficou na RLS e R06 e R12 são triggers adiados.
+> Regras em vigor: [dicionário de dados](dicionario-de-dados.md) §12.
+
 O banco garante a **estrutura**. A aplicação garante regras que dependem de várias linhas ou de
 contexto (`findIntegrityIssues`, `transition()`, schemas Zod). As duas camadas usam os mesmos
 limites.
@@ -374,8 +379,8 @@ limites.
 | Publicar exige campos | `*_publish_requires_fields` (mínimo estrutural) | `validateForPublish` (completo) |
 | Concorrência | `updated_at` em ms | `update … where updated_at = esperado` → `CONFLICT` |
 
-> **Dica:** como a transição é validada no banco, `UPDATE` direto pelo SQL Editor do Supabase
-> também respeita as regras. Para corrigir dados como `postgres`, use uma transação e prefira
+> **Dica:** `UPDATE` direto pelo SQL Editor respeita as transições e a data de publicação, mas não as
+> regras entre tabelas. Para corrigir dados como `postgres`, use uma transação e prefira
 > restaurar → editar → publicar a desligar triggers.
 
 ---
@@ -783,6 +788,7 @@ Para simular usuário num teste SQL: `set local role authenticated;` e
 | DBX-04 | Banco rejeita valores estruturais inválidos; testes de integridade | §5 · testes 2.x, 3.x, 4.x |
 | DBX-05 | Runbook de retenção, restauração e descarte | §9, §12 |
 | DBX-06 | Matriz banco × papel; dados pessoais não consultáveis anonimamente | §6 · testes 1.x e 6.x |
+| DB-06 | Lead válido é registrado; envio inválido não persiste | [Dicionário de dados §13](dicionario-de-dados.md) · `form_submissions_integridade.test.sql` · `formularios.test.ts` |
 
 Ordem sugerida: **DB-01** (revisar este documento) → **DB-02/DBX-04** (migrations + pgTAP) →
 **ARC-11** (seed) → liberar **DB-03/04/05** para o Murilo trocar o `loadSnapshot()` → **DB-08**

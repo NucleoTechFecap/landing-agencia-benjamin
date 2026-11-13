@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -25,6 +25,7 @@
  04/11/2026 Vinícius Nishimura Reis  301 de endereço antigo com cache curto (TECH-13, #369).
  04/11/2026 Vinícius Nishimura Reis  404 real e endereço único nas páginas livres (editor do site).
  04/11/2026 Vinícius Nishimura Reis  Endereço que só começa com admin não é o painel.
+ 12/11/2026 Codex                     404 para artigos não publicados (FUT-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -32,9 +33,11 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { publicEnv } from "@/lib/config/public-env";
 import { LOGIN_PATH, isPublicAdminPath } from "@/lib/domain/auth/redirect";
-import { REDIRECT_CACHE_CONTROL } from "@/lib/domain/content/slug";
+import { isValidSlug, REDIRECT_CACHE_CONTROL } from "@/lib/domain/content/slug";
 import { sessionCookieOptions } from "@/lib/domain/security/http-policy";
 import { resolveDetailSlug, resolvePageSlug, type DetailRoute } from "@/lib/server/content/published-slugs";
+import { getContentSource } from "@/lib/server/content/sources";
+import { createPublicClient } from "@/lib/server/supabase/server";
 
 /**
  * Primeira barreira do painel (ADM-03) e renovação de sessão (ADM-02):
@@ -45,6 +48,7 @@ import { resolveDetailSlug, resolvePageSlug, type DetailRoute } from "@/lib/serv
  */
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  if (pathname.startsWith("/blog/")) return guardBlogRoute(request, pathname);
   // Comparar o segmento inteiro: /administracao é uma página livre, não o painel.
   if (pathname !== "/admin" && !pathname.startsWith("/admin/")) return guardDetailRoute(request, pathname);
 
@@ -74,6 +78,29 @@ export async function proxy(request: NextRequest) {
 
   if (!user && !isPublic) return redirectToLogin(request, pathname + search);
   return response;
+}
+
+async function guardBlogRoute(request: NextRequest, pathname: string) {
+  const slug = pathname.split("/")[2];
+  const lower = slug.toLowerCase();
+  if (!isValidSlug(lower) || getContentSource().name === "local") {
+    return NextResponse.rewrite(new URL("/_conteudo-inexistente", request.url), { status: 404 });
+  }
+  const { data, error } = await createPublicClient()
+    .from("blog_articles")
+    .select("slug")
+    .eq("slug", lower)
+    .eq("status", "published")
+    .lte("published_at", new Date().toISOString())
+    .maybeSingle();
+  if (error) return NextResponse.next();
+  if (!data) return NextResponse.rewrite(new URL("/_conteudo-inexistente", request.url), { status: 404 });
+  if (slug !== lower) {
+    const redirect = NextResponse.redirect(new URL(`/blog/${lower}${request.nextUrl.search}`, request.url), 301);
+    redirect.headers.set("Cache-Control", REDIRECT_CACHE_CONTROL);
+    return redirect;
+  }
+  return NextResponse.next();
 }
 
 /**
@@ -110,8 +137,7 @@ export const config = {
     "/admin/:path*",
     "/servicos/:slug",
     "/cases/:slug",
-    // Página livre: um segmento só, fora das rotas fixas e dos arquivos da raiz. Com ponto também: sem isso,
-    // /README.md ou /.env cairiam em app/(site)/[slug], que não consegue responder 404 de verdade.
-    "/:pagina((?!_next$|admin$|api$|sobre$|areas$|servicos$|cases$|contato$|feedback$|privacidade$|opengraph-image|twitter-image|favicon\\.ico$|icon\\.png$|apple-icon\\.png$|robots\\.txt$|sitemap\\.xml$|llms\\.txt$|llms-full\\.txt$|manifest\\.webmanifest$)[^/]+)",
+    "/blog/:slug",
+    "/:pagina((?!_next$|admin$|api$|sobre$|areas$|servicos$|cases$|blog$|contato$|feedback$|privacidade$|opengraph-image|twitter-image|favicon\\.ico$|icon\\.png$|apple-icon\\.png$|robots\\.txt$|sitemap\\.xml$|llms\\.txt$|llms-full\\.txt$|manifest\\.webmanifest$)[^/]+)",
   ],
 };

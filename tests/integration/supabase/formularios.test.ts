@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 02/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 09/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,14 +18,16 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  02/11/2026 Vinícius Nishimura Reis  Criação inicial (TECH-06).
+ 09/11/2026 Vinicius Binda           Envio inválido não grava; o banco aceita o envio no limite e recusa o forjado (DB-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { createHmac, randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { protocolFromId } from "@/lib/domain/forms/routing";
 import { processSubmission, type SubmissionDeps } from "@/lib/server/forms/submission-service";
 import { SupabaseSubmissionStore } from "@/lib/server/forms/supabase-store";
-import { DuplicateSubmissionError, type OutgoingEmail } from "@/lib/server/forms/types";
+import { DuplicateSubmissionError, type OutgoingEmail, type SubmissionRecord } from "@/lib/server/forms/types";
 import {
   anonClient,
   createTestUser,
@@ -194,13 +196,121 @@ describe.runIf(hasSupabaseTestEnv)("formulários no Supabase (TECH-06)", () => {
       serviceClient()
         .from("form_submissions")
         .insert([
-          { ...base, id: retryable, protocol: "AB-RETRY", fingerprint: `retry-${suffix}`, notification_attempts: 4 },
-          { ...base, id: exhausted, protocol: "AB-ESGOT", fingerprint: `esgot-${suffix}`, notification_attempts: 5 },
+          {
+            ...base,
+            id: retryable,
+            protocol: protocolFromId(retryable),
+            fingerprint: `retry-${suffix}`,
+            notification_attempts: 4,
+          },
+          {
+            ...base,
+            id: exhausted,
+            protocol: protocolFromId(exhausted),
+            fingerprint: `esgot-${suffix}`,
+            notification_attempts: 5,
+          },
         ]),
     );
 
     const backlog = (await store.listNotificationBacklog(1000)).map((record) => record.id);
     expect(backlog).toContain(retryable);
     expect(backlog).not.toContain(exhausted);
+  });
+
+  const lead = (overrides: Record<string, unknown> = {}) => ({
+    submissionId: randomUUID(),
+    startedAt,
+    name: "Pessoa Teste",
+    email: `pessoa-${suffix}@empresa.test`,
+    projectDescription: `Campanha de lançamento com vídeo ${randomUUID()}.`,
+    privacyConsent: "on",
+    ...overrides,
+  });
+
+  const storedIds = async (list: string[]) =>
+    (await must(serviceClient().from("form_submissions").select("id").in("id", list))).map((row) => row.id);
+
+  it("envio inválido não grava nada no banco real, nem dispara e-mail (DB-06)", async () => {
+    const context = { requestId: `req-invalido-${suffix}`, ip: null };
+    const before = sent.length;
+    const cases = [
+      { kind: "lead", raw: lead({ email: "pessoa-sem-arroba" }), status: "error" },
+      { kind: "lead", raw: lead({ privacyConsent: undefined }), status: "error" },
+      { kind: "lead", raw: lead({ projectDescription: "Curto." }), status: "error" },
+      { kind: "lead", raw: lead({ serviceInterest: "Urgente diretoria" }), status: "error" },
+      { kind: "contact", raw: lead({ message: `Mensagem sem assunto ${suffix}.` }), status: "error" },
+      {
+        kind: "feedback",
+        raw: { ...lead(), profile: "cliente", message: `Quero retorno ${suffix}.`, allowContact: "on", email: "" },
+        status: "error",
+      },
+      // Robô: responde sucesso para não ensinar o padrão, e não grava.
+      { kind: "lead", raw: lead({ website: "https://spam.test" }), status: "success" },
+      { kind: "lead", raw: lead({ startedAt: String(Date.now()) }), status: "success" },
+    ] as const;
+
+    for (const { kind, raw, status } of cases) {
+      const result = await processSubmission(kind, raw, context, deps);
+      expect(result.status, `${kind}: ${JSON.stringify(raw).slice(0, 80)}`).toBe(status);
+    }
+    expect(await storedIds(cases.map(({ raw }) => raw.submissionId))).toEqual([]);
+    expect(sent).toHaveLength(before);
+  });
+
+  it("o pedido no limite de cada campo chega inteiro: o banco não é mais rígido que a validação (DB-06)", async () => {
+    const id = randomUUID();
+    created.push(id);
+    const slug = `servico-${"x".repeat(72)}`;
+    const result = await processSubmission(
+      "lead",
+      lead({
+        submissionId: id.toUpperCase(),
+        name: "名".repeat(120),
+        email: `${"a".repeat(254 - "@empresa.test".length)}@empresa.test`,
+        phone: "+55 (11) 91234-5678",
+        company: "名".repeat(120),
+        serviceInterest: slug,
+        // O que o JSON mais aumenta: cada caractere de controle vira 6 bytes.
+        projectDescription: `Projeto ${"\u0001".repeat(2992)}`,
+        sourcePath: `/${"a".repeat(199)}`,
+      }),
+      { requestId: `req-limite-${suffix}`, ip: null },
+      deps,
+    );
+    expect(result).toMatchObject({ status: "success", protocol: protocolFromId(id), duplicate: false });
+
+    const row = await must(
+      serviceClient()
+        .from("form_submissions")
+        .select("protocol, category, source_path, payload")
+        .eq("id", id)
+        .single<{ protocol: string; category: string; source_path: string; payload: Record<string, string> }>(),
+    );
+    expect(row.protocol).toMatch(/^AB-[0-9A-F]{6}$/);
+    expect(row.category).toBe(`lead:${slug}`);
+    expect(row.source_path).toHaveLength(200);
+    expect(row.payload.projectDescription).toHaveLength(3000);
+    expect(row.payload.phone).toBe("5511912345678");
+  });
+
+  it("o armazenamento do servidor não grava envio forjado: o banco recusa a forma (23514) (DB-06)", async () => {
+    const valid = await store.findById(ids.contact);
+    const forged: Array<Partial<SubmissionRecord>> = [
+      { payload: [] as unknown as Record<string, unknown> },
+      { category: "lead:audiovisual" },
+      { category: "contact:Assunto Livre" },
+      { protocol: "AB-FORJADO" },
+      { sourcePath: "contato" },
+      { notificationAttempts: -1 },
+    ];
+    const forgedIds: string[] = [];
+    for (const patch of forged) {
+      const id = randomUUID();
+      forgedIds.push(id);
+      const record = { ...valid!, id, protocol: protocolFromId(id), fingerprint: `forjado-${id}`, ...patch };
+      await expect(store.insert(record), JSON.stringify(patch)).rejects.toMatchObject({ code: "23514" });
+    }
+    expect(await storedIds(forgedIds)).toEqual([]);
   });
 });

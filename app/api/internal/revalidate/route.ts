@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Tags e invalidação de páginas do CMS (DB-03).
  04/11/2026 Vinícius Nishimura Reis  Segunda expiração em requisição própria, antes de aquecer (TECH-13, #369).
  04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
+ 12/11/2026 Codex                     Inclui invalidação do blog (FUT-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -35,12 +36,12 @@ import { hasBearerSecret } from "@/lib/server/internal-auth";
 
 const slug = z.string().regex(SLUG_PATTERN).max(80).optional();
 const bodySchema = z.object({
-  entity: z.enum(["settings", "area", "service", "category", "case", "cta", "page"]),
+  entity: z.enum(["settings", "area", "service", "category", "case", "cta", "page", "blog"]),
   slug,
   previousSlug: slug,
   /** Páginas a aquecer: só caminhos do próprio site, com formato conhecido (início, rota, livre ou detalhe). */
   relatedPaths: z
-    .array(z.string().regex(/^\/$|^\/((servicos|cases)\/)?[a-z0-9]+(-[a-z0-9]+)*$/))
+    .array(z.string().regex(/^\/$|^\/((servicos|cases|blog)\/)?[a-z0-9]+(-[a-z0-9]+)*$/))
     .max(MAX_WARMED_PATHS)
     .optional(),
   /** Marca a segunda expiração do próprio site (invalidate.ts): não agenda outra. */

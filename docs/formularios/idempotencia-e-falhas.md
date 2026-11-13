@@ -99,7 +99,9 @@ e a espera real entre tentativas nunca é menor que esse intervalo.
 
 ## 6. Persistência (encaminhado a DB-06/DB-07)
 
-Interface `SubmissionStore` (`lib/server/forms/types.ts`). Tabela sugerida:
+Interface `SubmissionStore` (`lib/server/forms/types.ts`). Tabela proposta aqui, hoje em vigor com os ajustes das
+migrations `20261102000300` (TECH-06) e `20261109000100` (DB-06, forma do envio:
+[dicionário de dados §13](../banco/dicionario-de-dados.md)):
 
 ```sql
 create table public.form_submissions (

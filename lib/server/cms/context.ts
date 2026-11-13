@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -27,6 +27,7 @@
  04/11/2026 Vinícius Nishimura Reis  Ações aceitam conteúdo sem endereço próprio, como o CTA (ADM-11).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
  04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
+ 12/11/2026 Codex                     Invalida capas do blog ao editar mídia (FUT-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -245,6 +246,7 @@ export async function cmsSaveMedia(form: FormData): Promise<CmsFormState> {
     async (user, deps) => {
       const ref = itemRef(form)!;
       const warnings = await updateMediaDetails(deps, user, ref, mediaMeta(form));
+      deps.invalidate({ entity: "blog" });
       return withFlash(`/admin/midia/${ref.id}`, "salvo", warnings);
     },
     typedMediaMeta(form),
