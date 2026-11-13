@@ -29,6 +29,11 @@ flowchart LR
 | 2. Servidor | `requirePageAccess()` em páginas; `requirePermission()` / `guardedAction()` em Server Actions e Route Handlers | Papel lido do banco a cada requisição; `pending` → aviso; sem permissão → 403 |
 | 3. Banco | RLS com `public.has_permission(recurso, ação)`; funções `assign_role` e `set_profile_active` | Mesmo que uma checagem de servidor falhe, o banco recusa a operação |
 
+O proxy também atende às páginas públicas de um segmento (páginas criadas no painel): endereço que não é rota fixa nem
+arquivo da raiz só segue se a página existir e estiver publicada; senão, responde 404 de verdade. Isso cobre também
+`/.env` e `/README.md`, que sem essa checagem cairiam em `app/(site)/[slug]`. Arquivo novo na raiz de `public/` precisa
+entrar no `matcher`: `proxy.test.ts` falha enquanto faltar.
+
 ## 2. Como proteger código novo
 
 **Página do painel**

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 04/11/2026
- Modificado em: 12/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,13 +18,12 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-18).
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import { can, type Action, type Resource, type Role } from "@/lib/domain/auth/rbac";
-import { pagePath } from "@/lib/domain/content/blocks";
 import { findIntegrityIssues } from "@/lib/domain/content/integrity";
 import {
   assembleOverview,
@@ -33,7 +32,7 @@ import {
   type ContentOverview,
   type OverviewGroup,
 } from "@/lib/domain/content/overview";
-import type { ContentEntityType, Page } from "@/lib/domain/content/types";
+import type { ContentEntityType } from "@/lib/domain/content/types";
 import { publishProblems } from "./content-service";
 import { AREA, CASE, CATEGORY, PAGE, SERVICE, type CmsItem, type EntityDefinition } from "./entities";
 import type { CmsSnapshot, CmsStore } from "./store";
@@ -46,7 +45,6 @@ function describeGroup<I extends { slug: string }, T extends CmsItem>(
   def: EntityDefinition<I, T>,
   label: string,
   titleOf: (item: T) => string,
-  extraWarnings: (item: T) => string[] = () => [],
 ) {
   return {
     resource: def.resource,
@@ -71,7 +69,7 @@ function describeGroup<I extends { slug: string }, T extends CmsItem>(
           {
             // Arquivado não é avaliado: `reviewNotes` o deixa fora de qualquer forma.
             missing: item.status === "archived" ? [] : publishProblems(def, item, snapshot, now),
-            warnings: [...warningsOf(def.type, item.id), ...extraWarnings(item)],
+            warnings: warningsOf(def.type, item.id),
           },
           now,
         ),
@@ -81,11 +79,8 @@ function describeGroup<I extends { slug: string }, T extends CmsItem>(
   };
 }
 
-const pageRouteWarning = (page: Page) =>
-  pagePath(page.slug, page.isCustom) ? [] : ["Esta página não tem rota no site: fica salva, mas o visitante não a vê."];
-
 const GROUPS = [
-  describeGroup(PAGE, "Páginas", (page) => page.title, pageRouteWarning),
+  describeGroup(PAGE, "Páginas", (page) => page.title),
   describeGroup(AREA, "Áreas de atuação", (area) => area.name),
   describeGroup(SERVICE, "Serviços", (service) => service.name),
   describeGroup(CATEGORY, "Categorias de cases", (category) => category.name),

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 12/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -25,10 +25,13 @@
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Colunas do destino do CTA para gravar pelo painel (ADM-11).
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
+import { parsePageFields } from "@/lib/domain/content/catalog";
+import { parseSeo } from "@/lib/domain/content/seo-schema";
+import { parseTheme } from "@/lib/domain/content/theme";
 import { parseBlock, type PageBlock } from "@/lib/domain/content/blocks";
 import { parseSettingsSections } from "@/lib/domain/content/settings-schema";
 import type {
@@ -106,8 +109,15 @@ export function toArea(row: AreaRow): Area {
   };
 }
 
+/** SEO gravado: inválido não derruba a página, só volta ao padrão. Ausente não entra no objeto. */
+function seoOf(row: { seo?: unknown }) {
+  const { seo } = parseSeo(row.seo);
+  return Object.keys(seo).length ? { seo } : {};
+}
+
 export function toService(row: ServiceRow, areaIds: string[], image?: MediaRef): Service {
   return {
+    ...seoOf(row),
     ...toPublishable(row),
     id: row.id,
     slug: row.slug,
@@ -165,6 +175,7 @@ export function toCase(
   relations: { serviceIds: string[]; cover?: MediaRef; gallery: MediaRef[] },
 ): CaseStudy {
   return {
+    ...seoOf(row),
     ...toPublishable(row),
     id: row.id,
     slug: row.slug,
@@ -251,6 +262,8 @@ export function toPage(row: PageRow, blocks: readonly BlockRow[]): { page: Page;
     if (result.ok) parsed.push(result.block);
     else problems.push(result.problem);
   }
+  const { fields, problems: fieldProblems } = parsePageFields(row.slug, row.fields);
+  problems.push(...fieldProblems);
   return {
     page: {
       ...toPublishable(row),
@@ -258,8 +271,9 @@ export function toPage(row: PageRow, blocks: readonly BlockRow[]): { page: Page;
       slug: row.slug,
       title: row.title,
       description: row.description ?? undefined,
-      isCustom: row.is_custom ?? false,
       blocks: parsed,
+      fields,
+      ...seoOf(row),
     },
     problems,
   };
@@ -285,6 +299,7 @@ export function toSiteSettings(
   fallback: SiteSettings,
 ): { settings: SiteSettings; problems: string[] } {
   const { sections, problems } = parseSettingsSections(row, fallback);
+  const { theme, problems: themeProblems } = parseTheme(row.theme);
   return {
     settings: {
       name: row.name,
@@ -293,8 +308,9 @@ export function toSiteSettings(
       description: row.description,
       ...sections,
       keywords: row.keywords ?? [],
+      ...(Object.keys(theme).length ? { theme } : {}),
     },
-    problems,
+    problems: [...problems, ...themeProblems.map((problem) => `theme: ${problem}`)],
   };
 }
 

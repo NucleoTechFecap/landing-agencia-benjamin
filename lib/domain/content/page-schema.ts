@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 12/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,29 +19,21 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import { z } from "zod";
 import { nameField, optionalText, slugField } from "./cms-schema";
-import { PAGE_ROUTES } from "./blocks";
 
 /**
  * Página do CMS: o conteúdo mora nos blocos, editados um a um. `provisional` marca texto que
  * ainda espera aprovação da Benjamin (aparece só no painel e bloqueia o go-live, PRJ §40).
  */
-export const pageInputSchema = z
-  .object({
-    title: nameField("o título da página"),
-    slug: slugField,
-    description: optionalText(300),
-    provisional: z.boolean().default(false),
-    isCustom: z.boolean().default(false),
-  })
-  .refine((page) => !page.isCustom || !Object.hasOwn(PAGE_ROUTES, page.slug), {
-    path: ["slug"],
-    message: "Este endereço pertence a uma página institucional.",
-  });
+export const pageInputSchema = z.object({
+  title: nameField("o título da página"),
+  slug: slugField,
+  description: optionalText(300),
+  provisional: z.boolean().default(false),
+});
 
 export type PageInput = z.output<typeof pageInputSchema>;

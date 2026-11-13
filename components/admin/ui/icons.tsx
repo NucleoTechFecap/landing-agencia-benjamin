@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (reestruturação do painel).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -29,6 +30,20 @@ import type { ReactNode } from "react";
  * biblioteca, porque são poucos e nenhuma dependência nova se justifica para isso.
  */
 const PATHS = {
+  aparencia: (
+    <>
+      <path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.4 0 2-.9 2-1.8 0-1.2-.9-1.7-.9-2.7 0-1 .8-1.7 1.8-1.7h2.3a2.3 2.3 0 0 0 2.3-2.3c0-4.6-3.6-8.5-7.5-8.5Z" />
+      <circle cx="8" cy="11" r="1" />
+      <circle cx="11" cy="7.5" r="1" />
+      <circle cx="15" cy="8" r="1" />
+    </>
+  ),
+  historico: (
+    <>
+      <path d="M4 12a8 8 0 1 0 2.6-5.9L4 8.5" />
+      <path d="M4 4.5v4h4M12 8v4.5l3 1.8" />
+    </>
+  ),
   inicio: (
     <>
       <path d="M4 11.5 12 5l8 6.5" />

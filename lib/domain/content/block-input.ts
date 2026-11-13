@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 12/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,7 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -65,15 +65,14 @@ export const filledMembers = (members: readonly TeamMemberInput[]): TeamMemberIn
 export function blockContentFromForm(type: BlockType, { fields, paragraphs, items, members }: BlockFormInput) {
   const field = (name: string) => present(fields[name]);
   switch (type) {
-    case "image":
-      return { title: field("title"), imageId: field("imageId"), caption: field("caption") };
     case "rich-text":
-      return { title: field("title"), paragraphs };
+      return { title: field("title"), fundo: field("fundo"), paragraphs };
     case "list":
-      return { title: field("title"), items: parseItemLines(items) };
+      return { title: field("title"), fundo: field("fundo"), items: parseItemLines(items) };
     case "team":
       return {
         title: field("title"),
+        fundo: field("fundo"),
         members: filledMembers(members).map((member) => ({
           name: member.name,
           role: present(member.role),
@@ -81,7 +80,13 @@ export function blockContentFromForm(type: BlockType, { fields, paragraphs, item
         })),
       };
     case "cta":
-      return { title: field("title"), text: field("text"), label: field("label"), href: field("href") };
+      return {
+        title: field("title"),
+        text: field("text"),
+        label: field("label"),
+        href: field("href"),
+        fundo: field("fundo"),
+      };
     case "manifesto":
       return { title: field("title"), paragraphs };
     case "about":
@@ -92,31 +97,45 @@ export function blockContentFromForm(type: BlockType, { fields, paragraphs, item
         howWeWork: field("howWeWork"),
         fecapRelation: field("fecapRelation"),
       };
+    default:
+      // Os blocos descritos por campos são lidos em readFields, com a biblioteca de mídia.
+      return {};
   }
 }
+
+const background = ({ fundo }: { fundo?: string }): Record<string, string> => (fundo ? { fundo } : {});
 
 /** Valores salvos do bloco, no formato dos campos do formulário. */
 export function blockFormValues(block: PageBlock): Record<string, string> {
   switch (block.type) {
-    case "image":
-      return { title: block.content.title ?? "", caption: block.content.caption ?? "" };
     case "rich-text":
-      return { title: block.content.title ?? "", paragraphs: block.content.paragraphs.join("\n") };
+      return {
+        title: block.content.title ?? "",
+        ...background(block.content),
+        paragraphs: block.content.paragraphs.join("\n"),
+      };
     case "list":
-      return { title: block.content.title ?? "", items: formatItemLines(block.content.items) };
+      return {
+        title: block.content.title ?? "",
+        ...background(block.content),
+        items: formatItemLines(block.content.items),
+      };
     case "team":
-      return { title: block.content.title ?? "" };
+      return { title: block.content.title ?? "", ...background(block.content) };
     case "cta":
       return {
         title: block.content.title,
         text: block.content.text ?? "",
         label: block.content.label,
         href: block.content.href,
+        ...background(block.content),
       };
     case "manifesto":
       return { title: block.content.title, paragraphs: block.content.paragraphs.join("\n") };
     case "about":
       return { ...block.content };
+    default:
+      return {};
   }
 }
 
@@ -127,8 +146,6 @@ const shorten = (value: string) =>
 /** Uma linha que identifica o bloco na lista do painel. */
 export function blockSummary(block: PageBlock): string {
   switch (block.type) {
-    case "image":
-      return shorten(block.content.title ?? block.content.image.alt);
     case "rich-text":
       return shorten(block.content.title ?? block.content.paragraphs[0]);
     case "list":
@@ -140,5 +157,19 @@ export function blockSummary(block: PageBlock): string {
     case "manifesto":
     case "about":
       return shorten(block.content.title);
+    case "hero":
+      return shorten(block.content.titulo);
+    case "media-text":
+      return shorten(block.content.titulo || block.content.paragrafos[0] || "Texto com imagem");
+    case "image":
+      return shorten(block.content.legenda || block.content.imagem.alt || "Imagem");
+    case "cards":
+      return shorten(block.content.titulo || `${block.content.itens.length} cartão(ões)`);
+    case "gallery":
+      return shorten(block.content.titulo || `${block.content.imagens.length} imagem(ns)`);
+    case "faq":
+      return shorten(block.content.titulo || `${block.content.itens.length} pergunta(s)`);
+    case "buttons":
+      return shorten(block.content.titulo || `${block.content.itens.length} botão(ões)`);
   }
 }

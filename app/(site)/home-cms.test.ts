@@ -18,14 +18,15 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (HOME-07).
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { ReactElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { seedSnapshot, siteSettings } from "@/content";
 import type { Service } from "@/lib/domain/content/types";
+import { renderServerTree } from "@/tests/render-server-tree";
 
 type Link = { id: string; label: string; link: { href: string; external: boolean } };
 
@@ -49,7 +50,7 @@ vi.mock("@/lib/server/content/repository", () => ({
 
 const render = async () => {
   const { default: HomePage } = await import("./page");
-  return renderToStaticMarkup((await HomePage()) as ReactElement);
+  return renderServerTree((await HomePage()) as ReactElement);
 };
 
 const link = (label: string, href: string, external = false): Link => ({

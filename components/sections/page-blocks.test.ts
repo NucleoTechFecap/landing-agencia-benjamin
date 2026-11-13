@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 12/11/2026
+ Modificado em: 02/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,7 +20,6 @@
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
  02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -44,23 +43,6 @@ const page = (blocks: Page["blocks"], provisional = false): Page => ({
 const render = (value: Page | null) => renderToStaticMarkup(createElement(PageBlocks, { page: value }));
 
 describe("blocos de página no site (INT-03)", () => {
-  it("exibe imagem com texto alternativo e legenda escapada", () => {
-    const markup = render(
-      page([
-        {
-          id: "img",
-          type: "image",
-          order: 0,
-          content: {
-            image: { id: "00000000-0000-4000-8000-000000000001", src: "/brand/foto.webp", alt: "Equipe" },
-            caption: "Foto <especial>",
-          },
-        },
-      ]),
-    );
-    expect(markup).toContain('alt="Equipe"');
-    expect(markup).toContain("Foto &lt;especial&gt;");
-  });
   it("sem página, sem blocos ou só com seção fixa, não renderiza nada", () => {
     expect(render(null)).toBe("");
     expect(render(page([]))).toBe("");

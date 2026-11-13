@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 12/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,7 +21,7 @@
  02/11/2026 Vinícius Nishimura Reis  Autoriza o envio e confere o que chegou ao Storage (TECH-13, #313).
  04/11/2026 Vinícius Nishimura Reis  Registra quando um arquivo recusado não sai do bucket (SEG-05).
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -222,6 +222,12 @@ async function findAsset(store: CmsStore, id: string): Promise<MediaAsset> {
   return asset;
 }
 
+/** Usos em conteúdo e na aparência do site, que vive na linha de configuração. */
+async function usageOf(deps: Pick<CmsDeps, "store">, asset: MediaAsset) {
+  const [snapshot, stored] = await Promise.all([deps.store.snapshot(), deps.store.readSettings()]);
+  return findMediaUsage(asset, { ...snapshot, theme: stored?.settings.theme });
+}
+
 /**
  * Exclui da biblioteca (ADR-0005): só `media:delete` e só arquivo sem uso. A busca de usos cobre a
  * foto do bloco "Nosso time", que fica em JSON, e dá a lista ao painel; a FK do banco segura uma
@@ -235,7 +241,7 @@ export async function deleteMedia(
 ): Promise<CmsWarning[]> {
   if (!can(actor.role, "media", "delete")) throw new AppError("FORBIDDEN");
   const asset = await findAsset(deps.store, id);
-  const usage = findMediaUsage(asset, await deps.store.snapshot());
+  const usage = await usageOf(deps, asset);
   if (usage.length) {
     throw new AppError("CONFLICT", {
       message: "Este arquivo está em uso e não pode ser excluído. Troque ou retire antes:",
@@ -280,7 +286,7 @@ export async function updateMediaDetails(
   const invalidAlt = altError(asset.mimeType, meta);
   if (invalidAlt) throw invalidAlt;
 
-  const usage = findMediaUsage(asset, await deps.store.snapshot());
+  const usage = await usageOf(deps, asset);
   const isImage = MEDIA_RULES[asset.mimeType]?.kind === "image";
   const decorative = isImage && meta.decorative;
   if (decorative && usage.some(usageRequiresAlt)) {
@@ -308,10 +314,10 @@ export async function updateMediaDetails(
     },
   });
   for (const { entity, slug, status } of usage) {
-    if (status === "published") deps.invalidate({ entity, slug });
+    if (status === "published") {
+      if (entity === "theme") deps.invalidate({ entity: "settings" });
+      else deps.invalidate({ entity, slug });
+    }
   }
-  const warnings: CmsWarning[] = [];
-  if (altChanged && usage.some((item) => item.place === "foto do time")) warnings.push("media-alt-team");
-  if (altChanged && usage.some((item) => item.place === "imagem do bloco")) warnings.push("media-alt-block");
-  return warnings;
+  return altChanged && usage.some((item) => item.place === "foto do time") ? ["media-alt-team"] : [];
 }

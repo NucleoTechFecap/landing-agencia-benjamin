@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
  26/10/2026 Vinícius Nishimura Reis  Montagem do snapshot compartilhada com o painel (ADM-07).
  29/10/2026 Vinicius Binda             Slug atual por resolve_public_slug, com endereços antigos (DB-08).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -190,6 +191,25 @@ export async function fetchPage(client: SupabaseClient, slug: string): Promise<P
   const { page, problems } = toPage(row, blocks);
   if (problems.length) logger.warn("content.page.blocks_skipped", { slug, problems });
   return page;
+}
+
+/** Páginas publicadas, sem blocos: o conteúdo de cada uma é lido só ao abrir. */
+export async function fetchPublishedPages(client: SupabaseClient): Promise<Page[]> {
+  const data = await rows<PageRow>("pages", client.from("pages").select(COLUMNS.pages).eq("status", "published"));
+  return data.map((row) => toPage(row, []).page);
+}
+
+/**
+ * Consulta do proxy. Em falha, responde "sim": a rota confere de novo e mostra o erro certo, em vez de
+ * tirar uma página do ar com um 404 por causa de uma oscilação do banco.
+ */
+export async function isPagePublished(client: SupabaseClient, slug: string): Promise<boolean> {
+  const { data, error } = await client.from("pages").select("id").eq("slug", slug).eq("status", "published").limit(1);
+  if (error) {
+    logger.warn("content.page_check.failed", { slug, error });
+    return true;
+  }
+  return (data ?? []).length > 0;
 }
 
 /**

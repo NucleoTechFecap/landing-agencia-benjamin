@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 12/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,7 +22,6 @@
  26/10/2026 Vinícius Nishimura Reis  Detalhe de área com serviços (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
  04/11/2026 Vinícius Nishimura Reis  Lista de posições do CTA vem do schema do CMS (ADM-11).
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -292,7 +291,7 @@ export function toPageDTO(page: Page): PageDTO {
     slug: page.slug,
     title: page.title,
     description: page.description,
-    path: pagePath(page.slug, page.isCustom),
+    path: pagePath(page.slug),
     blocks: page.blocks.map(({ type, content }) => ({ type, content }) as PageBlockDTO),
   };
 }

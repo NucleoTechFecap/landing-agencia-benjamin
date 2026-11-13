@@ -21,6 +21,7 @@
  01/11/2026 Vinícius Nishimura Reis  Sufixo de teste com node:crypto (CodeQL).
  04/11/2026 Vinícius Nishimura Reis  Chega ao módulo pelo menu do painel (ADM-04).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -146,7 +147,7 @@ test.describe("Painel · páginas e blocos @cms", () => {
     await visible(page.getByLabel("Texto do botão")).fill("Falar");
     await visible(page.getByLabel("Destino")).fill("javascript:alert(1)");
     await visible(page.getByRole("button", { name: "Adicionar bloco" })).click();
-    await expect(page.getByText("Destino desconhecido ou sem https.")).toBeVisible();
+    await expect(page.getByText("Use uma página do site", { exact: false }).first()).toBeVisible();
     await expect(visible(page.getByLabel("Título"))).toHaveValue("Vamos conversar?");
   });
 

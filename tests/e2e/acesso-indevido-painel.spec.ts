@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (QA-06).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -284,6 +285,8 @@ interface Mass {
   page: string;
   pageDraft: string;
   pageArchived: string;
+  /** Com uma versão no histórico: é a que a restauração traz de volta. */
+  pageVersioned: string;
   block: string;
   cta: string;
   ctaDraft: string;
@@ -306,7 +309,7 @@ const WATCHED_COLUMNS: Record<string, (keyof Mass)[]> = {
   services: ["service", "serviceDraft", "serviceArchived"],
   case_categories: ["category", "categoryDraft", "categoryArchived"],
   cases: ["case", "caseDraft", "caseArchived"],
-  pages: ["page", "pageDraft", "pageArchived"],
+  pages: ["page", "pageDraft", "pageArchived", "pageVersioned"],
   blocks: ["block"],
   ctas: ["cta", "ctaDraft", "ctaArchived"],
   media_assets: ["media", "mediaFree", "mediaDisposable"],
@@ -407,7 +410,25 @@ async function seedMass(client: SupabaseClient, suffix: string): Promise<Mass> {
     slug: `acesso-pagina-arquivada-${suffix}`,
     title: `Página arquivada ${suffix}`,
   });
+  const pageVersioned = await insert("pages", {
+    slug: `acesso-pagina-versoes-${suffix}`,
+    title: `Página com versão ${suffix}`,
+  });
   const blockContent = { title: `Bloco ${suffix}`, paragraphs: ["Parágrafo do teste de acesso indevido."] };
+  const { error: versionError } = await client.from("content_versions").insert({
+    entity: "page",
+    entity_id: pageVersioned,
+    version: 1,
+    action: "baseline",
+    status: "draft",
+    label: "Versão antiga",
+    snapshot: {
+      title: `Restaurada ${suffix}`,
+      provisional: false,
+      blocks: [{ type: "rich-text", content: blockContent }],
+    },
+  });
+  if (versionError) throw new Error(`content_versions: ${versionError.message}`);
   const block = await insert("blocks", { page_id: page, type: "rich-text", sort_order: 0, content: blockContent });
   // Página sem bloco não pode ser publicada: o controle de "publicar" depende deste.
   await insert("blocks", { page_id: pageDraft, type: "rich-text", sort_order: 0, content: blockContent });
@@ -462,6 +483,7 @@ async function seedMass(client: SupabaseClient, suffix: string): Promise<Mass> {
     page,
     pageDraft,
     pageArchived,
+    pageVersioned,
     block,
     cta,
     ctaDraft,
@@ -480,6 +502,7 @@ async function removeMass(client: SupabaseClient, mass: Mass | undefined) {
     await client.from(table).delete().in("id", ids);
   }
   await client.from("form_submissions").delete().in("id", [mass.leadNew, mass.leadArchived]);
+  await client.from("content_versions").delete().eq("entity_id", mass.pageVersioned);
   for (const table of ["areas", "services", "case_categories", "cases", "pages"]) {
     await client.from(table).delete().like("slug", `%invasao-%${mass.suffix}%`);
   }
@@ -512,6 +535,9 @@ async function snapshotOf(client: SupabaseClient, mass: Mass) {
   const { data: media } = await client.from("media_assets").select("id").like("path", `%invasao%${mass.suffix}%`);
   rows["media_assets: criados"] = media;
   const { data: settings } = await client.from("site_settings").select("id").like("tagline", `%${mass.suffix}%`);
+  // Só a cor do teste: outra jornada pode estar usando a aparência, mas nunca com este valor.
+  const { data: themed } = await client.from("site_settings").select("id").eq("theme->colors->>verde", "#112233");
+  rows["site_settings: aparência forjada"] = themed;
   rows["site_settings: alteradas"] = settings;
   return rows;
 }
@@ -737,7 +763,122 @@ function contentAttempts(entity: Entity): Attempt[] {
 
 const expectFlight = async (response: APIResponse, text: string) => expect(await response.text()).toContain(text);
 
+/** Mesmo formulário em página, serviço e case. O item do controle fica editável, seja qual for a rodada anterior. */
+function seoAttempt(
+  action: string,
+  table: string,
+  key: "pageVersioned" | "serviceDraft" | "caseDraft",
+  base: string,
+): Attempt {
+  const fields = async (mass: Mass, client: SupabaseClient) => ({
+    id: mass[key],
+    expectedUpdatedAt: await versionOf(client, table, mass[key]),
+    title: `Invasao ${mass.suffix}`,
+    description: "",
+    keywords: "",
+    ogTitle: "",
+    ogDescription: "",
+    ogImageId: "",
+  });
+  return {
+    label: action,
+    action,
+    denied: CONTENT_DENIED,
+    path: (mass) => `${base}/${mass[key]}`,
+    fields,
+    controlFields: async (mass, client) => {
+      await client.from(table).update({ status: "draft", archived_at: null }).eq("id", mass[key]);
+      return fields(mass, client);
+    },
+    control: async (mass, client) => {
+      const { data } = await client.from(table).select("seo").eq("id", mass[key]).single();
+      expect((data!.seo as { title?: string }).title, `${action} gravou`).toBe(`Invasao ${mass.suffix}`);
+    },
+  };
+}
+
 const OTHER_ATTEMPTS: Attempt[] = [
+  seoAttempt("savePageSeoAction", "pages", "pageVersioned", "/admin/paginas"),
+  seoAttempt("saveServiceSeo", "services", "serviceDraft", "/admin/servicos"),
+  seoAttempt("saveCaseSeo", "cases", "caseDraft", "/admin/cases"),
+  {
+    label: "savePageFieldsAction",
+    action: "savePageFieldsAction",
+    denied: CONTENT_DENIED,
+    path: (mass) => `/admin/paginas/${mass.pageVersioned}`,
+    fields: async (mass, client) => ({
+      id: mass.pageVersioned,
+      expectedUpdatedAt: await versionOf(client, "pages", mass.pageVersioned),
+    }),
+    // Controle sem gravar: esta página da massa não tem campos fixos, e a recusa disso só vem depois da guarda.
+    // Gravar exigiria uma página do catálogo, que é única e está em uso por outras jornadas em paralelo.
+    control: async (_mass, _client, response) => {
+      expect(await response.text()).toContain("Esta página não tem campos fixos.");
+    },
+  },
+  {
+    label: "restoreVersionAction",
+    action: "restoreVersionAction",
+    denied: CONTENT_DENIED,
+    path: (mass) => `/admin/historico/page/${mass.pageVersioned}/1`,
+    fields: async (mass, client) => ({
+      entity: "page",
+      entityId: mass.pageVersioned,
+      version: "1",
+      expectedUpdatedAt: await versionOf(client, "pages", mass.pageVersioned),
+    }),
+    control: async (mass, client) => {
+      const { data } = await client.from("pages").select("title").eq("id", mass.pageVersioned).single();
+      expect(data!.title, "versão restaurada").toBe(`Restaurada ${mass.suffix}`);
+    },
+  },
+  {
+    label: "saveTheme",
+    action: "saveTheme",
+    denied: SETTINGS_DENIED,
+    path: () => "/admin/aparencia",
+    fields: async (_mass, client) => {
+      const { data } = await client.from("site_settings").select("updated_at").single();
+      return {
+        "cor.verde": "#112233",
+        "cor.lima": "#24d139",
+        "cor.claro": "#a0ef91",
+        "cor.nyanza": "#f1fcd0",
+        "cor.laranja": "#f1742e",
+        "cor.azul": "#1a44a6",
+        "cor.rosa": "#ffb4e2",
+        "cor.creme": "#edf1cc",
+        "cor.noite": "#161313",
+        "cor.grafite": "#231f20",
+        fontBody: "poppins",
+        fontHeading: "poppins",
+        expectedUpdatedAt: data!.updated_at as string,
+      };
+    },
+    // Controle sem gravar, como em saveSettings: a cor valeria para as jornadas em paralelo.
+    controlFields: async (_mass, client) => {
+      const { data } = await client.from("site_settings").select("updated_at").single();
+      return {
+        "cor.verde": "#004a1b",
+        "cor.lima": "#24d139",
+        "cor.claro": "#a0ef91",
+        "cor.nyanza": "#f1fcd0",
+        "cor.laranja": "#f1742e",
+        "cor.azul": "#1a44a6",
+        "cor.rosa": "#ffb4e2",
+        "cor.creme": "#edf1cc",
+        "cor.noite": "#161313",
+        "cor.grafite": "#231f20",
+        fontBody: "poppins",
+        fontHeading: "poppins",
+        expectedUpdatedAt: data!.updated_at as string,
+      };
+    },
+    control: async (_mass, _client, response) => {
+      const outcome = `${response.headers()["x-action-redirect"] ?? ""} ${await response.text()}`;
+      expect(outcome).toMatch(/ok=sem-alteracao|"CONFLICT"/);
+    },
+  },
   {
     label: "saveBlockAction: novo bloco",
     action: "saveBlockAction",

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 12/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,12 +22,15 @@
  26/10/2026 Vinícius Nishimura Reis  Id da mídia na referência, só para o painel (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
+ 04/11/2026 Vinícius Nishimura Reis  Campos, SEO e aparência editáveis (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { PageBlock } from "./blocks";
+import type { PageFieldsData } from "./catalog";
 import type { PublicationStatus } from "./publication-status";
+import type { SeoData } from "./seo-schema";
+import type { SiteTheme } from "./theme";
 
 /** Campos de controle comuns a todo conteúdo publicável (ADM-12). */
 export interface Publishable {
@@ -87,6 +90,8 @@ export interface Service extends Publishable {
   image?: MediaRef;
   featured: boolean;
   order: number;
+  /** SEO e compartilhamento próprios; vazio segue o nome e o resumo. */
+  seo?: SeoData;
 }
 
 /** Categorias de trabalhos do portfólio (PRJ §12). */
@@ -120,6 +125,8 @@ export interface CaseStudy extends Publishable {
   team: string[];
   featured: boolean;
   order: number;
+  /** SEO e compartilhamento próprios; vazio segue o título e o resumo. */
+  seo?: SeoData;
 }
 
 /** Destino de uma chamada para ação (TECH-05). */
@@ -165,6 +172,8 @@ export interface SiteSettings {
   contact: { email?: string; phone?: string; address?: string; mapsUrl?: string };
   socials: SocialLinks;
   keywords: string[];
+  /** Cores, fontes e logotipos que divergem da marca. Ausente = identidade padrão. */
+  theme?: SiteTheme;
 }
 
 /** Recorte de todo o conteúdo usado nas validações de integridade. */
@@ -182,9 +191,11 @@ export interface Page extends Publishable {
   slug: string;
   title: string;
   description?: string;
-  /** Somente páginas explicitamente criadas como próprias têm rota dinâmica. */
-  isCustom?: boolean;
   blocks: PageBlock[];
+  /** Textos, imagens e botões das seções fixas que divergem do padrão (catalog/index.ts). */
+  fields?: PageFieldsData;
+  /** SEO e Open Graph; vazio segue o padrão da rota. */
+  seo?: SeoData;
 }
 
 export type ContentEntityType = "area" | "service" | "category" | "case" | "cta" | "page";

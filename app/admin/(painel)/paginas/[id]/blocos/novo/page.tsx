@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 12/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,7 +20,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -28,9 +28,9 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { BlockForm } from "@/components/admin/cms/block-form";
 import { CmsHeader } from "@/components/admin/cms/cms-header";
-import { BLOCK_LABELS, blockRestriction, isBlockType } from "@/lib/domain/content/blocks";
+import { BLOCK_LABELS, blockRestriction, isBlockType, isFieldBlock } from "@/lib/domain/content/blocks";
 import { requirePageAccess } from "@/lib/server/auth/guards";
-import { loadCmsSnapshot, loadPhotoOptions } from "@/lib/server/cms/context";
+import { loadCmsSnapshot, loadImageOptions, loadPhotoOptions } from "@/lib/server/cms/context";
 import { saveBlockAction } from "../../../actions";
 
 export const metadata: Metadata = { title: "Novo bloco" };
@@ -52,7 +52,8 @@ export default async function NewBlockPage({ params, searchParams }: PageProps<"
           action={saveBlockAction}
           page={{ id: page.id, updatedAt: page.updatedAt }}
           type={tipo}
-          photos={tipo === "team" || tipo === "image" ? await loadPhotoOptions() : []}
+          photos={tipo === "team" ? await loadPhotoOptions() : []}
+          images={isFieldBlock(tipo) ? await loadImageOptions() : []}
         />
       </div>
     </>

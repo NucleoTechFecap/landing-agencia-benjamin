@@ -1,58 +1,73 @@
 /*
 ════════════════════════════════════════════════════════════════════════════════
  Sistema      : Agência Benjamin Landing Page
- Módulo       : Components
+ Módulo       : Componentes
  Arquivo      : restore-version-form.tsx
- Descrição    : Confirmação de restauração de versão de página.
+ Descrição    : Botão de restaurar uma versão, com confirmação e o erro do servidor na tela.
+
  Desenvolvedor: Vinícius Nishimura Reis
+
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
- Criado em    : 12/11/2026
- Modificado em: 12/11/2026
- Histórico    : 12/11/2026 Codex — Restaurar versões (FUT-04).
+ Criado em    : 04/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
-*/
-"use client";
-import { useActionState } from "react";
-import { CMS_IDLE } from "@/lib/domain/content/cms-form";
-import { ConfirmForm, useHydrated } from "@/components/admin/ui/confirm-form";
-import { CmsFormError } from "./form-error";
-import type { CmsSaveAction } from "./form-shell";
 
+ Histórico
+ ──────────────────────────────────────────────────────────────────────────────
+ Data        Autor                     Descrição
+ ──────────────────────────────────────────────────────────────────────────────
+ 04/11/2026 Vinícius Nishimura Reis  Criação inicial (editor do site).
+──────────────────────────────────────────────────────────────────────────────
+*/
+
+"use client";
+
+import { useActionState } from "react";
+import { CMS_IDLE, type CmsFormState } from "@/lib/domain/content/cms-form";
+import { ConfirmForm } from "../ui/confirm-form";
+import { CmsFormError } from "./form-error";
+
+type RestoreAction = (state: CmsFormState, formData: FormData) => Promise<CmsFormState>;
+
+/** Restaurar passa pelas mesmas regras de salvar; em item publicado, vai ao ar na hora. */
 export function RestoreVersionForm({
   action,
-  id,
-  updatedAt,
+  entity,
+  entityId,
   version,
-  published,
+  expectedUpdatedAt,
+  live,
 }: {
-  action: CmsSaveAction;
-  id: string;
-  updatedAt: string;
-  version: string;
-  published: boolean;
+  action: RestoreAction;
+  entity: string;
+  entityId: string;
+  version: number;
+  expectedUpdatedAt: string | null;
+  /** O conteúdo está no ar: a confirmação avisa que o site muda agora. */
+  live: boolean;
 }) {
-  const [state, submit, pending] = useActionState(action, CMS_IDLE);
-  const ready = useHydrated();
+  const [state, formAction, pending] = useActionState(action, CMS_IDLE);
   return (
     <div className="space-y-3">
       <CmsFormError state={state} />
       <ConfirmForm
-        action={submit}
+        action={formAction}
         confirmation={{
-          title: "Usar esta versão?",
-          message: published
-            ? "A página sairá do ar e voltará a rascunho para revisão. Você poderá publicá-la novamente."
-            : "O conteúdo atual será substituído pelo conteúdo desta versão.",
-          confirmLabel: "Usar esta versão",
+          title: `Restaurar a versão ${version}?`,
+          message: live
+            ? "O site passa a mostrar este conteúdo agora. O conteúdo atual fica guardado no histórico, e dá para voltar a ele."
+            : "O conteúdo atual fica guardado no histórico, e dá para voltar a ele.",
+          confirmLabel: "Restaurar",
           tone: "neutro",
         }}
       >
-        <input type="hidden" name="id" value={id} />
-        <input type="hidden" name="expectedUpdatedAt" value={updatedAt} />
+        <input type="hidden" name="entity" value={entity} />
+        <input type="hidden" name="entityId" value={entityId} />
         <input type="hidden" name="version" value={version} />
-        <button type="submit" disabled={!ready || pending} className="studio-btn studio-btn-primario">
-          Usar esta versão
+        <input type="hidden" name="expectedUpdatedAt" value={expectedUpdatedAt ?? ""} />
+        <button type="submit" disabled={pending} className="studio-btn studio-btn-primario">
+          {pending ? "Restaurando…" : "Restaurar esta versão"}
         </button>
       </ConfirmForm>
     </div>

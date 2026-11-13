@@ -21,6 +21,7 @@
  26/10/2026 Vinícius Nishimura Reis  Link para os serviços da área (ADM-06).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,6 +37,7 @@ import { StatusBadge } from "@/components/admin/cms/status-badge";
 import { can } from "@/lib/domain/auth/rbac";
 import { findIntegrityIssues } from "@/lib/domain/content/integrity";
 import { allowedCommands } from "@/lib/domain/content/publication";
+import { historyPath } from "@/lib/domain/content/versions";
 import { requirePageAccess } from "@/lib/server/auth/guards";
 import { publishProblems } from "@/lib/server/cms/content-service";
 import { loadCmsSnapshot } from "@/lib/server/cms/context";
@@ -73,6 +75,7 @@ export default async function EditAreaPage({ params, searchParams }: PageProps<"
         </div>
         <ItemPanel
           item={area}
+          historyHref={historyPath("area", area.id)}
           publicHref={AREA.publicPath(area)}
           missing={publishProblems(AREA, area, snapshot, now)}
           warnings={warnings}

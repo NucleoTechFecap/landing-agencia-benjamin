@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 12/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,7 +21,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  01/11/2026 Vinícius Nishimura Reis  Seção Nosso time como bloco opcional (SOB-03).
  04/11/2026 Vinícius Nishimura Reis  Foto do time só do bucket de mídia e só imagem (TECH-13, #369).
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -33,15 +33,38 @@ const block = (type: string, content: unknown) => ({ id: "b1", type, content, or
 describe("catálogo de blocos (DB-03)", () => {
   it("aceita um exemplo válido de cada tipo", () => {
     const examples: Record<string, unknown> = {
-      image: {
-        image: { id: "00000000-0000-4000-8000-000000000001", src: "/brand/foto.webp", alt: "Imagem da equipe" },
-        caption: "Equipe",
-      },
       "rich-text": { title: "Quem somos", paragraphs: ["Primeiro parágrafo.", "Segundo."] },
       list: { items: [{ title: "Prática real", text: "Clientes de verdade." }] },
       team: { members: [{ name: "Melissa Namie", role: "Diretoria" }] },
       cta: { title: "Vamos conversar?", label: "Fale com a gente", href: "/contato#formulario" },
       manifesto: { title: "Comunicação que soma diferenças.", paragraphs: ["Toda marca tem algo a dizer."] },
+      hero: {
+        etiqueta: "",
+        titulo: "Abertura",
+        texto: "",
+        icone: { name: "raio", color: "lima" },
+        botao: { label: "Ir", href: "/contato" },
+        botao2: null,
+        fundo: "verde",
+      },
+      "media-text": {
+        titulo: "",
+        paragrafos: ["Texto."],
+        imagem: { src: "/brand/a.webp", alt: "A" },
+        lado: "esquerda",
+        botao: null,
+        fundo: "nyanza",
+      },
+      image: { imagem: { src: "/brand/a.webp", alt: "A" }, legenda: "", fundo: "creme" },
+      cards: {
+        titulo: "",
+        descricao: "",
+        itens: [{ icone: null, imagem: null, titulo: "Um", texto: "", link: null }],
+        fundo: "nyanza",
+      },
+      gallery: { titulo: "", imagens: [{ imagem: { src: "/brand/a.webp", alt: "A" } }], fundo: "nyanza" },
+      faq: { titulo: "", itens: [{ pergunta: "Como?", resposta: "Assim." }], fundo: "nyanza" },
+      buttons: { titulo: "", texto: "", itens: [{ label: "Ir", href: "/contato" }], fundo: "lima" },
       about: {
         title: "Uma agência experimental",
         intro: "Quem somos.",
@@ -65,11 +88,14 @@ describe("catálogo de blocos (DB-03)", () => {
     expect(parseBlock(block("list", "texto solto"))).toMatchObject({ ok: false });
   });
 
-  it("CTA só aponta para rota pública conhecida ou link https", () => {
+  it("CTA só aponta para página do site, https, e-mail ou telefone", () => {
     const cta = (href: string) => parseBlock(block("cta", { title: "Título", label: "Ir", href }));
     expect(cta("/servicos/social-media")).toMatchObject({ ok: true });
     expect(cta("https://www.fecap.br")).toMatchObject({ ok: true });
+    expect(cta("/pagina-nova")).toMatchObject({ ok: true });
     expect(cta("/admin")).toMatchObject({ ok: false });
+    expect(cta("/admin/paginas")).toMatchObject({ ok: false });
+    expect(cta("/api/v1/services")).toMatchObject({ ok: false });
     expect(cta("http://inseguro.com")).toMatchObject({ ok: false });
     expect(cta("javascript:alert(1)")).toMatchObject({ ok: false });
   });
@@ -84,8 +110,9 @@ describe("catálogo de blocos (DB-03)", () => {
   it("relaciona páginas às rotas fixas do site", () => {
     expect(pagePath("sobre")).toBe("/sobre");
     expect(pagePath("privacidade")).toBe("/privacidade");
-    expect(pagePath("landing-campanha")).toBeNull();
-    expect(pagePath("landing-campanha", true)).toBe("/paginas/landing-campanha");
+    expect(pagePath("landing-campanha")).toBe("/landing-campanha");
+    expect(pagePath("site-geral")).toBeNull();
+    expect(pagePath("modelo-servico")).toBeNull();
     expect(pagePath("toString")).toBeNull();
   });
 

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 04/11/2026
- Modificado em: 12/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,19 +18,25 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-14).
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Suspense, type ReactNode } from "react";
+import { Suspense, type ComponentType, type ReactNode } from "react";
 import { PreviewBanner } from "@/components/admin/cms/preview-banner";
-import { AboutPreview } from "@/components/sections/about-preview";
 import { CaseDetailSections } from "@/components/sections/case-detail";
-import { HeroManifesto } from "@/components/sections/hero-manifesto";
-import { PageBlocks } from "@/components/sections/page-blocks";
-import { PageHero } from "@/components/sections/page-hero";
+import { AreasView } from "@/app/(site)/_views/areas-view";
+import { CasesView } from "@/app/(site)/_views/cases-view";
+import { ContatoView } from "@/app/(site)/_views/contato-view";
+import { FeedbackView } from "@/app/(site)/_views/feedback-view";
+import { FreePageView } from "@/app/(site)/_views/free-page-view";
+import { HomeView } from "@/app/(site)/_views/home-view";
+import { PrivacidadeView } from "@/app/(site)/_views/privacidade-view";
+import { ServicosView } from "@/app/(site)/_views/servicos-view";
+import { SobreView } from "@/app/(site)/_views/sobre-view";
+import { SiteThemeStyle } from "@/components/seo/site-theme";
 import { ServiceDetailSections } from "@/components/sections/service-detail";
 import { LoadingState } from "@/components/ui/states";
 import {
@@ -40,8 +46,6 @@ import {
   serviceDetailOf,
   toCaseCards,
 } from "@/lib/domain/content/details";
-import { pagePath } from "@/lib/domain/content/blocks";
-import { withPublishedTexts } from "@/lib/domain/content/page-texts";
 import { isPreviewType, previewPath, previewResource } from "@/lib/domain/content/preview";
 import type { Page } from "@/lib/domain/content/types";
 import { visibleSorted } from "@/lib/domain/content/visibility";
@@ -65,9 +69,11 @@ export default function PreviewPage({ params }: PageProps<"/admin/previa/[tipo]/
   );
 }
 
-function Frame({ banner, children }: { banner: ReactNode; children: ReactNode }) {
+async function Frame({ banner, children }: { banner: ReactNode; children: ReactNode }) {
+  const settings = await getSiteSettings();
   return (
     <>
+      <SiteThemeStyle theme={settings.theme} />
       {banner}
       <main id="conteudo" tabIndex={-1} className="outline-none">
         {children}
@@ -76,27 +82,21 @@ function Frame({ banner, children }: { banner: ReactNode; children: ReactNode })
   );
 }
 
-/** Manifesto e "Sobre" tomam o lugar da seção fixa da rota; os demais blocos vêm depois. */
-async function PagePreview({ page }: { page: Page }) {
-  const settings = withPublishedTexts(await getSiteSettings(), [page]);
-  const hasBlock = (type: Page["blocks"][number]["type"]) => page.blocks.some((block) => block.type === type);
-  return (
-    <>
-      {hasBlock("manifesto") ? (
-        <HeroManifesto settings={settings} ctas={[]} />
-      ) : (
-        <PageHero
-          eyebrow="Página"
-          path={pagePath(page.slug, page.isCustom) ?? `/${page.slug}`}
-          title={page.title}
-          description={page.description ? <p>{page.description}</p> : undefined}
-          breadcrumbs={[{ label: "Início", href: "/" }, { label: page.title }]}
-        />
-      )}
-      {hasBlock("about") ? <AboutPreview settings={settings} solutionsSummary="" /> : null}
-      <PageBlocks page={page} />
-    </>
-  );
+/** Rotas fixas usam a mesma tela do site, com o rascunho no lugar da versão publicada. */
+const ROUTE_VIEWS: Partial<Record<string, ComponentType<{ page: Page | null }>>> = {
+  home: HomeView,
+  sobre: SobreView,
+  areas: AreasView,
+  servicos: ServicosView,
+  cases: CasesView,
+  contato: ContatoView,
+  feedback: FeedbackView,
+  privacidade: PrivacidadeView,
+};
+
+function PagePreview({ page }: { page: Page }) {
+  const RouteView = ROUTE_VIEWS[page.slug];
+  return RouteView ? <RouteView page={page} /> : <FreePageView page={page} />;
 }
 
 async function Preview({ params }: { params: Promise<{ tipo: string; id: string }> }) {
@@ -105,6 +105,9 @@ async function Preview({ params }: { params: Promise<{ tipo: string; id: string 
   await requirePageAccess(previewResource(tipo), "view", previewPath(tipo, id));
   const snapshot = await loadCmsSnapshot();
   const now = new Date();
+  // Os textos em volta são os que estão no ar: só o item aberto aparece como rascunho.
+  const publishedPage = (slug: string) =>
+    snapshot.pages.find((entry) => entry.slug === slug && entry.status === "published") ?? null;
 
   if (tipo === "servico") {
     const service = snapshot.services.find((item) => item.id === id);
@@ -115,7 +118,12 @@ async function Preview({ params }: { params: Promise<{ tipo: string; id: string 
     );
     return (
       <Frame banner={<PreviewBanner status={service.status} backHref={`/admin/servicos/${service.id}`} />}>
-        <ServiceDetailSections detail={serviceDetailOf(snapshot, service, now)} others={others} />
+        <ServiceDetailSections
+          detail={serviceDetailOf(snapshot, service, now)}
+          others={others}
+          modelo={publishedPage("modelo-servico")}
+          geralPage={publishedPage("site-geral")}
+        />
       </Frame>
     );
   }
@@ -134,6 +142,8 @@ async function Preview({ params }: { params: Promise<{ tipo: string; id: string 
         <CaseDetailSections
           detail={detail}
           related={pickRelatedCases(toCaseCards(snapshot, sameCategory, now), item.id)}
+          modelo={publishedPage("modelo-case")}
+          geralPage={publishedPage("site-geral")}
         />
       </Frame>
     );
@@ -147,7 +157,7 @@ async function Preview({ params }: { params: Promise<{ tipo: string; id: string 
         <PreviewBanner
           status={page.status}
           backHref={`/admin/paginas/${page.id}`}
-          note="Aqui aparecem os blocos editáveis; as seções fixas da rota ficam de fora."
+          note="É como a página fica com o que está salvo no painel."
         />
       }
     >

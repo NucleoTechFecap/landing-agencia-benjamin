@@ -20,7 +20,6 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-05).
  04/11/2026 Vinícius Nishimura Reis  Mensagem clara para CTA cujo destino foi excluído (ADM-11).
  12/11/2026 Codex                     Admite links internos para o blog (FUT-10).
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -64,7 +63,6 @@ export interface IntegrityIssue {
 export function isValidInternalPath(path: string): boolean {
   if (!path.startsWith("/") || path.startsWith("//")) return false;
   const pathname = path.split(/[?#]/)[0];
-  if (pathname.startsWith("/paginas/")) return validateSlug(pathname.slice("/paginas/".length)) === null;
   return PUBLIC_ROUTE_PREFIXES.some((prefix) =>
     prefix === "/" ? pathname === "/" : pathname === prefix || pathname.startsWith(`${prefix}/`),
   );

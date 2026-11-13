@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -31,7 +32,7 @@ const file = (path: string) => new Uint8Array(readFileSync(join(process.cwd(), p
 
 describe("readImageDimensions (ADM-08)", () => {
   it("lê PNG e WebP reais do repositório", () => {
-    expect(readImageDimensions(file("app/icon.png"), "image/png")).toEqual({ width: 512, height: 512 });
+    expect(readImageDimensions(file("public/icon.png"), "image/png")).toEqual({ width: 512, height: 512 });
     expect(readImageDimensions(file("public/brand/cases/fecap.webp"), "image/webp")).toEqual({
       width: 1200,
       height: 750,

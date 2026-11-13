@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 25/10/2026
- Modificado em: 12/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,7 +20,7 @@
  25/10/2026 Vinícius Binda             Criação inicial (DB-01/DBX-01).
  02/11/2026 Vinicius Binda             Transições e catálogo de blocos (DBX-04).
  04/11/2026 Vinícius Nishimura Reis  Posições, destinos e limites do CTA conferidos com o banco (ADM-11).
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
+ 04/11/2026 Vinícius Nishimura Reis  Lista de tipos de bloco conferida com BLOCK_TYPES (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -84,12 +84,6 @@ describe("consistência conteúdo código × banco (DB-01/DBX-01)", () => {
     expect(quoted(allowed).sort()).toEqual(expected.sort());
   });
 
-  it("blocks aceita os mesmos tipos de BLOCK_TYPES (DBX-04)", () => {
-    const types =
-      [...sql.matchAll(/constraint blocks_type_catalog\s+check \(type in \(([^)]+)\)\)/g)].at(-1)?.[1] ?? "";
-    expect(quoted(types).sort()).toEqual([...BLOCK_TYPES].sort());
-  });
-
   it("ctas aceita as mesmas posições, tipos de destino e limites do formulário do painel", () => {
     const placements = sql.match(/placement text not null check \(placement in \(([^)]+)\)\)/)?.[1] ?? "";
     expect(quoted(placements)).toEqual([...CTA_PLACEMENTS]);
@@ -97,6 +91,11 @@ describe("consistência conteúdo código × banco (DB-01/DBX-01)", () => {
     expect(quoted(kinds)).toEqual([...CTA_TARGET_KINDS]);
     expect(sql).toContain(`char_length(label) between ${CTA_LIMITS.labelMin} and ${CTA_LIMITS.label}`);
     expect(sql).toContain(`char_length(target_url) <= ${CTA_LIMITS.url}`);
+  });
+
+  it("a última lista de tipos de bloco é a mesma de BLOCK_TYPES", () => {
+    const lists = [...sql.matchAll(/constraint blocks_type_catalog\s+check \(type in \(([^)]+)\)\)/g)];
+    expect(quoted(lists.at(-1)?.[1] ?? "").sort()).toEqual([...BLOCK_TYPES].sort());
   });
 
   it("toda tabela de public habilita RLS (supabase/README.md)", () => {

@@ -21,6 +21,7 @@
  04/11/2026 Vinícius Nishimura Reis  Tela de leads e feedbacks disponível (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Módulo de CTAs e destaques da Home (ADM-11).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
  12/11/2026 Codex                     Inclui artigos no painel (FUT-10).
  12/11/2026 Codex                     Habilita gestão de usuários (ADM-01).
  12/11/2026 Codex                     Expõe histórico de atividades (TECH-10).
@@ -52,7 +53,9 @@ export type AdminModuleIcon =
   | "chamadas"
   | "contatos"
   | "midia"
-  | "configuracoes";
+  | "configuracoes"
+  | "aparencia"
+  | "historico";
 
 export interface AdminModule {
   name: string;
@@ -79,6 +82,15 @@ export const ADMIN_MODULES: readonly AdminModule[] = [
     group: "geral",
     icon: "revisao",
     href: "/admin/conteudos",
+  },
+  {
+    name: "Histórico de alterações",
+    resource: "dashboard",
+    action: "view",
+    group: "geral",
+    icon: "historico",
+    href: "/admin/historico",
+    itemLabel: "Versões",
   },
   {
     name: "Páginas e textos",
@@ -167,6 +179,14 @@ export const ADMIN_MODULES: readonly AdminModule[] = [
     icon: "midia",
     href: "/admin/midia",
     itemLabel: "Arquivo",
+  },
+  {
+    name: "Aparência do site",
+    resource: "settings",
+    action: "view",
+    group: "administracao",
+    icon: "aparencia",
+    href: "/admin/aparencia",
   },
   {
     name: "Contato, links e redes sociais",
@@ -259,6 +279,11 @@ export function breadcrumbsFor(pathname: string): AdminCrumb[] {
 
   const rest = path.slice(current.href.length).split("/").filter(Boolean);
   if (!rest.length) return [root, { label: current.name }];
+
+  // Histórico: /admin/historico/<tipo>/<id>[/<versão>].
+  if (current.href === "/admin/historico") {
+    return [root, { label: current.name, href: current.href }, { label: rest[2] ? `Versão ${rest[2]}` : "Versões" }];
+  }
 
   const [first, nested, nestedItem] = rest;
   const isNew = first === "novo" || first === "nova";

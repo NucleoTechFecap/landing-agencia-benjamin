@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,6 +19,7 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Testes de aceite do bloco Quem é a Benjamin (HOME-02).
  02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -26,15 +27,15 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { siteSettings } from "@/content";
+import { pageFields } from "@/lib/domain/content/catalog";
 import { AboutPreview } from "./about-preview";
 
-const render = (about: Partial<typeof siteSettings.about> = {}, solutionsSummary = "9 serviços e mais.") =>
-  renderToStaticMarkup(
-    createElement(AboutPreview, {
-      settings: { ...siteSettings, about: { ...siteSettings.about, ...about } },
-      solutionsSummary,
-    }),
+const render = (about: Partial<typeof siteSettings.about> = {}, solutionsSummary = "9 serviços e mais.") => {
+  const settings = { ...siteSettings, about: { ...siteSettings.about, ...about } };
+  return renderToStaticMarkup(
+    createElement(AboutPreview, { campos: pageFields("home", null, settings).quemSomos, solutionsSummary }),
   );
+};
 
 describe('bloco "Quem é a Benjamin" (HOME-02)', () => {
   it("mostra apresentação, proposta, atuação e entregas com o texto da configuração", () => {

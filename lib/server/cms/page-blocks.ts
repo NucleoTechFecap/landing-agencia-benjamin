@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 12/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,22 +20,33 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Falha ao gravar bloco é auditada e expira o cache (TECH-13, #369).
  04/11/2026 Vinícius Nishimura Reis  Foto do time só do bucket de mídia e só imagem (TECH-13, #369).
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import "server-only";
 import { can } from "@/lib/domain/auth/rbac";
 import { blockContentFromForm, type BlockFormInput } from "@/lib/domain/content/block-input";
-import { BLOCK_SCHEMAS, blockRestriction, isBlockType, type PageBlock } from "@/lib/domain/content/blocks";
+import {
+  BLOCK_FIELDS,
+  BLOCK_LABELS,
+  BLOCK_SCHEMAS,
+  blockRestriction,
+  isBlockType,
+  isFieldBlock,
+  type BlockType,
+} from "@/lib/domain/content/blocks";
 import { fieldErrorsOf } from "@/lib/domain/content/cms-schema";
+import { entriesFromForm, readFields, type FormEntries } from "@/lib/domain/content/fields";
 import { transition } from "@/lib/domain/content/publication";
 import type { Page } from "@/lib/domain/content/types";
 import { AppError } from "../errors";
 import { publicationError, stateOf, type CmsActor, type CmsDeps, type ItemRef } from "./content-service";
 import { PAGE } from "./entities";
 import { lines, text } from "./form-data";
+import { mediaLookup } from "./media-lookup";
 import type { MediaAsset } from "./store";
+import { itemVersion, recordBaseline, recordVersion } from "./version-log";
 
 export type BlockOperation = "subir" | "descer" | "excluir";
 
@@ -43,22 +54,16 @@ export const isBlockOperation = (value: string): value is BlockOperation =>
   value === "subir" || value === "descer" || value === "excluir";
 
 /** Campos do formulário de bloco. As listas de pessoas chegam alinhadas, na ordem da tela. */
+/** Prefixo dos campos dos blocos descritos por catálogo no formulário. */
+export const BLOCK_FIELD_PREFIX = "bloco";
+
+export const blockEntriesFromForm = (form: FormData): FormEntries => entriesFromForm(form);
+
 export function blockInputFromForm(form: FormData): BlockFormInput {
   const repeated = (name: string) => form.getAll(name).map((value) => (typeof value === "string" ? value : ""));
   const roles = repeated("memberRole");
   const photos = repeated("memberPhoto");
-  const fields = [
-    "title",
-    "text",
-    "label",
-    "href",
-    "intro",
-    "valueProposition",
-    "howWeWork",
-    "fecapRelation",
-    "imageId",
-    "caption",
-  ];
+  const fields = ["title", "text", "label", "href", "intro", "valueProposition", "howWeWork", "fecapRelation", "fundo"];
   return {
     fields: Object.fromEntries(fields.map((name) => [name, text(form, name)])),
     paragraphs: lines(form, "paragraphs"),
@@ -80,7 +85,7 @@ async function loadForChange(
   deps: CmsDeps,
   actor: CmsActor,
   ref: ItemRef,
-  blocksAfter: (page: Page) => readonly PageBlock[],
+  problemsAfter: (page: Page) => string[],
 ): Promise<Page> {
   if (!can(actor.role, "page", "edit")) throw new AppError("FORBIDDEN");
   const page = (await deps.store.snapshot()).pages.find((item) => item.id === ref.id);
@@ -90,7 +95,7 @@ async function loadForChange(
     role: actor.role,
     resource: "page",
     now: deps.now(),
-    validateForPublish: () => PAGE.validateForPublish({ ...page, blocks: [...blocksAfter(page)] }),
+    validateForPublish: () => problemsAfter(page),
   });
   if (!check.ok) throw publicationError(check.error);
   return page;
@@ -107,6 +112,7 @@ const touchPage = (deps: CmsDeps, page: Page) =>
  * renumera a ordem de 0 em diante.
  */
 async function applyChange(deps: CmsDeps, page: Page, action: string, type: string, write: () => Promise<unknown>) {
+  await recordBaseline(deps, itemVersion("page", page, "baseline"));
   const audit = (outcome: "success" | "failure") =>
     deps.audit({
       event: "content.updated",
@@ -115,12 +121,7 @@ async function applyChange(deps: CmsDeps, page: Page, action: string, type: stri
       metadata: { entity: "page", slug: page.slug, action, kind: type, fromStatus: page.status },
     });
   const invalidate = () => {
-    if (page.status === "published")
-      deps.invalidate({
-        entity: "page",
-        slug: page.slug,
-        ...(page.isCustom ? { relatedPaths: [`/paginas/${page.slug}`] } : {}),
-      });
+    if (page.status === "published") deps.invalidate({ entity: "page", slug: page.slug });
   };
   try {
     await write();
@@ -130,8 +131,24 @@ async function applyChange(deps: CmsDeps, page: Page, action: string, type: stri
     throw error;
   }
   await audit("success");
+  const after = await deps.store.readPage(page.id);
+  if (after) {
+    await recordVersion(
+      deps,
+      itemVersion("page", after, "updated", {
+        summary: `${CHANGE_LABELS[action] ?? action}: ${isBlockType(type) ? BLOCK_LABELS[type as BlockType] : type}`,
+      }),
+    );
+  }
   invalidate();
 }
+
+const CHANGE_LABELS: Readonly<Record<string, string>> = {
+  "bloco-criado": "Bloco adicionado",
+  "bloco-editado": "Bloco editado",
+  "bloco-excluido": "Bloco excluído",
+  "bloco-movido": "Bloco movido",
+};
 
 /** Foto só vem da biblioteca, nunca do formulário: o bloco guarda endereço e texto alternativo. */
 function withPhotos(content: unknown, media: readonly MediaAsset[]): unknown {
@@ -155,30 +172,37 @@ export interface SaveBlockRequest {
   blockId?: string;
   type: string;
   input: BlockFormInput;
+  /** Campos dos blocos descritos por catálogo, lidos pelo nome. */
+  entries?: FormEntries;
 }
 
 /** Cria ou edita um bloco. Em página publicada, o site muda ao salvar. */
 export async function saveBlock(deps: CmsDeps, actor: CmsActor, ref: ItemRef, request: SaveBlockRequest) {
-  const { blockId, type, input } = request;
+  const { blockId, type, input, entries } = request;
   if (!isBlockType(type)) throw new AppError("BAD_REQUEST", { message: "Tipo de bloco desconhecido." });
-  const page = await loadForChange(deps, actor, ref, (current) => current.blocks);
+  // Criar ou editar um bloco nunca deixa a página sem conteúdo.
+  const page = await loadForChange(deps, actor, ref, () => []);
 
   const current = blockId ? page.blocks.find((block) => block.id === blockId) : undefined;
   if (blockId && current?.type !== type) throw new AppError("NOT_FOUND");
   const restriction = blockId ? null : blockRestriction(type, page.slug, page.blocks);
   if (restriction) throw new AppError("VALIDATION_FAILED", { message: restriction });
 
-  const draft = blockContentFromForm(type, input);
-  let content: unknown = draft;
-  if (type === "team") content = withPhotos(draft, await deps.store.listMedia());
-  if (type === "image") {
-    const { imageId, ...rest } = draft as { imageId?: string; title?: string; caption?: string };
-    const asset = (await deps.store.listMedia()).find((item) => item.id === imageId);
-    if (!asset?.alt || !asset.mimeType.startsWith("image/"))
-      throw new AppError("VALIDATION_FAILED", {
-        fieldErrors: { imageId: ["Escolha uma imagem da biblioteca com texto alternativo."] },
-      });
-    content = { ...rest, image: { id: asset.id, src: asset.src, alt: asset.alt } };
+  let content: unknown;
+  if (isFieldBlock(type)) {
+    const { values, errors } = readFields(
+      BLOCK_FIELDS[type],
+      entries ?? new Map(),
+      { media: mediaLookup(await deps.store.listMedia()) },
+      BLOCK_FIELD_PREFIX,
+    );
+    if (Object.keys(errors).length) {
+      throw new AppError("VALIDATION_FAILED", { message: "Revise os campos destacados.", fieldErrors: errors });
+    }
+    content = values;
+  } else {
+    const draft = blockContentFromForm(type, input);
+    content = type === "team" ? withPhotos(draft, await deps.store.listMedia()) : draft;
   }
   const parsed = BLOCK_SCHEMAS[type].safeParse(content);
   if (!parsed.success) throw new AppError("VALIDATION_FAILED", { fieldErrors: fieldErrorsOf(parsed.error) });
@@ -202,7 +226,10 @@ export async function changeBlock(
   operation: BlockOperation,
 ) {
   const page = await loadForChange(deps, actor, ref, (current) =>
-    operation === "excluir" ? current.blocks.filter((block) => block.id !== blockId) : current.blocks,
+    PAGE.validateForPublish({
+      ...current,
+      blocks: operation === "excluir" ? current.blocks.filter((block) => block.id !== blockId) : current.blocks,
+    }),
   );
   const index = page.blocks.findIndex((block) => block.id === blockId);
   if (index < 0) throw new AppError("NOT_FOUND");

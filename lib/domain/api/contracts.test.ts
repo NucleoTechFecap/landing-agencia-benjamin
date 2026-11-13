@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 26/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Testes de áreas, serviços e mídia (DB-04).
  26/10/2026 Vinícius Nishimura Reis  Id da mídia no mapeamento e fora do DTO (ADM-06).
  26/10/2026 Vinícius Nishimura Reis  Veículo e data nos links de clipping (CASE-10).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -104,7 +105,8 @@ describe("páginas e CTAs (DB-03)", () => {
       path: "/sobre",
       blocks: [{ type: "rich-text", content: { paragraphs: ["Olá."] } }],
     });
-    expect(toPageDTO({ ...page, slug: "campanha-2026" }).path).toBeNull();
+    expect(toPageDTO({ ...page, slug: "campanha-2026" }).path).toBe("/campanha-2026");
+    expect(toPageDTO({ ...page, slug: "site-geral" }).path).toBeNull();
   });
 
   it("CtaDTO expõe só rótulo e link resolvido", () => {

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 12/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,13 +20,14 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
- 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
 import { CheckboxField, TextArea, TextField } from "@/components/forms/fields";
+import { isFreePageSlug } from "@/lib/domain/content/blocks";
 import type { Page } from "@/lib/domain/content/types";
 import { CmsFormShell, type CmsSaveAction } from "./form-shell";
 
@@ -40,16 +41,15 @@ export function PageForm({
   page,
   slug,
   defaultTitle,
-  custom = false,
   readOnly,
 }: {
   action: CmsSaveAction;
   page?: Page;
   slug?: string;
   defaultTitle?: string;
-  custom?: boolean;
   readOnly?: boolean;
 }) {
+  const freePage = page ? isFreePageSlug(page.slug) : !slug;
   return (
     <CmsFormShell
       action={action}
@@ -60,28 +60,40 @@ export function PageForm({
     >
       {({ errors, value }) => (
         <>
-          {page?.isCustom || custom ? <input type="hidden" name="isCustom" value="on" /> : null}
-          {slug ? <input type="hidden" name="slug" value={slug} /> : null}
-          <TextField
-            name="title"
-            label="Título interno"
-            required
-            maxLength={120}
-            hint="Identifica a página no painel e na API."
-            errors={errors("title")}
-            defaultValue={value("title", page?.title ?? defaultTitle)}
-          />
-          {custom && !page ? (
+          {slug ? <input type="hidden" name="rota" value={slug} /> : null}
+          {!slug && !page ? (
             <TextField
               name="slug"
-              label="Endereço da página"
-              required
+              label="Endereço"
               maxLength={80}
-              hint="Letras minúsculas, números e hífens; a página ficará em /paginas/endereco."
+              hint="Em branco, sai do título. A página fica em seu-site/endereco. Depois de publicada, o endereço não muda."
               errors={errors("slug")}
               defaultValue={value("slug")}
             />
           ) : null}
+          {page && isFreePageSlug(page.slug) && !page.publishedAt ? (
+            <TextField
+              name="slug"
+              label="Endereço"
+              maxLength={80}
+              hint="Depois da primeira publicação, o endereço não muda."
+              errors={errors("slug")}
+              defaultValue={value("slug", page.slug)}
+            />
+          ) : null}
+          <TextField
+            name="title"
+            label={freePage ? "Título da página" : "Título interno"}
+            required
+            maxLength={120}
+            hint={
+              freePage
+                ? "Aparece no topo da página, se ela não começar por um bloco de abertura."
+                : "Identifica a página no painel e na API."
+            }
+            errors={errors("title")}
+            defaultValue={value("title", page?.title ?? defaultTitle)}
+          />
           <TextArea
             name="description"
             label="Descrição"

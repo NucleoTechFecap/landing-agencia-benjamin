@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,13 +19,14 @@
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Testes de aceite da proposta de valor (SOB-02).
  02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { ReactElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { siteSettings } from "@/content";
+import { renderServerTree } from "@/tests/render-server-tree";
 
 /*
  * Proposta de valor e modelo de atuação vêm da configuração, que o painel sobrescreve quando há
@@ -40,7 +41,7 @@ vi.mock("@/lib/server/content/repository", () => ({
 }));
 
 const { default: AboutPage } = await import("./page");
-const render = async () => renderToStaticMarkup((await AboutPage()) as ReactElement);
+const render = async () => renderServerTree((await AboutPage()) as ReactElement);
 
 describe("proposta de valor e modelo de atuação (SOB-02)", () => {
   it("mostra o texto vindo da configuração, na ordem da seção", async () => {

@@ -26,12 +26,20 @@
 | HTML semântico | Páginas | Um `h1` por página, `lang="pt-BR"`, `alt` em imagens informativas, breadcrumbs |
 
 
+## SEO editável no painel
+
+Título, descrição, palavras-chave, indexação e Open Graph de cada página, serviço e case são editados na aba **SEO e
+compartilhamento** (`seo` em `pages`, `services` e `cases`). O que fica em branco segue o padrão: o título e a descrição
+da rota (`lib/domain/content/catalog/`), ou o nome e o resumo do item. Marcar **não listar** põe `noindex` na página e a
+tira do sitemap e do `llms.txt`. Fora de produção nada é indexado, com ou sem essa marca.
+
 ## Imagem de compartilhamento
 
 `buildMetadata()` declara a imagem da marca (`/opengraph-image` e `/twitter-image`) em toda página. Sem
 isso a imagem some: o `openGraph` da página substitui o do segmento pai por inteiro, e o arquivo
 `app/opengraph-image` não chega ao HTML (achado do SEG-09). Rota com `opengraph-image` próprio, como o
-detalhe de serviço e de case, usa `segmentImage: true`. `tests/e2e/seo-e-compartilhamento.spec.ts` confere
+detalhe de serviço e de case, usa `segmentImage: true`. Ordem de prioridade: a imagem da aba SEO, o arquivo do segmento, a
+imagem padrão de **Aparência do site** e, por fim, a da marca. `tests/e2e/seo-e-compartilhamento.spec.ts` confere
 título, descrição, canonical e imagem de **toda** rota do sitemap.
 
 Capa de case pode ser caminho em `/public` ou URL absoluta do Storage: no sitemap e no JSON-LD, use

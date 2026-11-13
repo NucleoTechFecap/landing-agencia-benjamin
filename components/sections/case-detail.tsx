@@ -18,19 +18,23 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-14).
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import Image from "next/image";
 import Link from "next/link";
 import { CaseCard } from "@/components/cards/case-card";
-import { ClosingCta } from "@/components/sections/closing-cta";
+import { ClosingCta, closingLinks } from "@/components/sections/closing-cta";
 import { PageHero } from "@/components/sections/page-hero";
 import { Badge } from "@/components/ui/badge";
 import { BrandIcon } from "@/components/ui/brand-icon";
 import { Section } from "@/components/ui/section";
 import { EmptyState } from "@/components/ui/states";
+import type { Page } from "@/lib/domain/content/types";
+import { isSectionHidden, pageFields } from "@/lib/domain/content/catalog";
 import type { CaseCard as CaseCardData, CaseDetail } from "@/lib/domain/content/details";
+import { fillText } from "@/lib/domain/content/fields";
 
 const MONTHS = [
   "janeiro",
@@ -60,12 +64,26 @@ const formatDay = (value?: string) => {
 };
 
 /** Desafio, solução, resultados, galeria, links e serviços (CASE-02, CASE-04). */
-export function CaseDetailSections({ detail, related }: { detail: CaseDetail; related: readonly CaseCardData[] }) {
+export function CaseDetailSections({
+  detail,
+  related,
+  modelo,
+  geralPage,
+}: {
+  detail: CaseDetail;
+  related: readonly CaseCardData[];
+  /** Textos fixos de toda página de case; sem página publicada, os originais. */
+  modelo: Page | null;
+  geralPage: Page | null;
+}) {
+  const campos = pageFields("modelo-case", modelo);
+  const geral = pageFields("site-geral", geralPage);
+  const { historia, ficha } = campos;
   const { item, category, services, areas } = detail;
   const story = [
-    { id: "desafio", title: "Desafio", text: item.challenge, icon: "interrogacao" },
-    { id: "solucao", title: "Solução", text: item.solution, icon: "raio" },
-    { id: "resultados", title: "Resultados", text: item.results, icon: "estrela" },
+    { id: "desafio", title: historia.desafio, text: item.challenge, icon: historia.desafioIcone },
+    { id: "solucao", title: historia.solucao, text: item.solution, icon: historia.solucaoIcone },
+    { id: "resultados", title: historia.resultados, text: item.results, icon: historia.resultadosIcone },
   ].filter((block) => block.text);
   const reference = formatMonth(item.date);
 
@@ -76,8 +94,8 @@ export function CaseDetailSections({ detail, related }: { detail: CaseDetail; re
         path={`/cases/${item.slug}`}
         title={item.title}
         description={<p>{item.summary}</p>}
-        breadcrumbs={[{ label: "Início", href: "/" }, { label: "Cases", href: "/cases" }, { label: item.client }]}
-        tone="azul"
+        breadcrumbs={[{ label: geral.mensagens.inicio, href: "/" }, campos.abertura.trilha, { label: item.client }]}
+        tone={campos.abertura.fundo}
       >
         <div className="mt-6 flex flex-wrap gap-2">
           {category ? (
@@ -115,7 +133,7 @@ export function CaseDetailSections({ detail, related }: { detail: CaseDetail; re
               story.map((block) => (
                 <article key={block.id} data-motion="reveal" aria-labelledby={`${block.id}-titulo`}>
                   <div className="flex items-center gap-3">
-                    <BrandIcon name={block.icon} color="lima" size={40} />
+                    <BrandIcon name={block.icon.name} color={block.icon.color} size={40} />
                     <h3 id={`${block.id}-titulo`} className="text-2xl font-black text-benja-verde">
                       {block.title}
                     </h3>
@@ -124,9 +142,7 @@ export function CaseDetailSections({ detail, related }: { detail: CaseDetail; re
                 </article>
               ))
             ) : (
-              <EmptyState className="text-benja-grafite">
-                Os detalhes deste case (desafio, solução e resultados) estão sendo preparados com o cliente.
-              </EmptyState>
+              <EmptyState className="text-benja-grafite">{historia.vazio}</EmptyState>
             )}
           </div>
           <aside
@@ -135,12 +151,12 @@ export function CaseDetailSections({ detail, related }: { detail: CaseDetail; re
             className="h-fit space-y-6 rounded-3xl border-2 border-benja-noite bg-benja-claro p-6 shadow-sticker"
           >
             <div>
-              <h3 className="text-xs font-black tracking-widest text-benja-verde uppercase">Cliente</h3>
+              <h3 className="text-xs font-black tracking-widest text-benja-verde uppercase">{ficha.cliente}</h3>
               <p className="mt-1 font-bold">{item.client}</p>
             </div>
             {services.length > 0 ? (
               <div>
-                <h3 className="text-xs font-black tracking-widest text-benja-verde uppercase">Serviços</h3>
+                <h3 className="text-xs font-black tracking-widest text-benja-verde uppercase">{ficha.servicos}</h3>
                 <ul className="mt-2 flex flex-wrap gap-2">
                   {services.map((service) => (
                     <li key={service.id}>
@@ -157,19 +173,19 @@ export function CaseDetailSections({ detail, related }: { detail: CaseDetail; re
             ) : null}
             {areas.length > 0 ? (
               <div>
-                <h3 className="text-xs font-black tracking-widest text-benja-verde uppercase">Áreas</h3>
+                <h3 className="text-xs font-black tracking-widest text-benja-verde uppercase">{ficha.areas}</h3>
                 <p className="mt-1 text-sm">{areas.map((area) => area.name).join(" · ")}</p>
               </div>
             ) : null}
             {item.team.length > 0 ? (
               <div>
-                <h3 className="text-xs font-black tracking-widest text-benja-verde uppercase">Equipe</h3>
+                <h3 className="text-xs font-black tracking-widest text-benja-verde uppercase">{ficha.equipe}</h3>
                 <p className="mt-1 text-sm">{item.team.join(", ")}</p>
               </div>
             ) : null}
             {item.externalLinks.length > 0 ? (
               <div>
-                <h3 className="text-xs font-black tracking-widest text-benja-verde uppercase">Veja publicado</h3>
+                <h3 className="text-xs font-black tracking-widest text-benja-verde uppercase">{ficha.publicado}</h3>
                 <ul className="mt-2 space-y-1">
                   {item.externalLinks.map((link) => (
                     <li key={link.url}>
@@ -196,10 +212,10 @@ export function CaseDetailSections({ detail, related }: { detail: CaseDetail; re
         </div>
       </Section>
 
-      {item.gallery.length > 0 ? (
+      {item.gallery.length > 0 && !isSectionHidden(modelo, "galeria") ? (
         <Section tone="creme" labelledBy="galeria-titulo">
           <h2 id="galeria-titulo" data-motion="lines" className="text-3xl font-black text-benja-verde">
-            Galeria
+            {campos.galeria.titulo}
           </h2>
           <ul data-motion="cards" className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {item.gallery.map((image) => (
@@ -220,27 +236,29 @@ export function CaseDetailSections({ detail, related }: { detail: CaseDetail; re
         </Section>
       ) : null}
 
-      {related.length > 0 ? (
-        <Section tone="verde" halftone labelledBy="relacionados-titulo">
+      {related.length > 0 && !isSectionHidden(modelo, "relacionados") ? (
+        <Section tone={campos.relacionados.fundo} halftone labelledBy="relacionados-titulo">
           <h2 id="relacionados-titulo" data-motion="lines" className="text-3xl font-black">
-            Mais cases de {category?.name}
+            {fillText(campos.relacionados.titulo, { categoria: category?.name ?? "" })}
           </h2>
           <ul data-motion="cards" className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((entry) => (
               <li key={entry.id}>
-                <CaseCard item={entry} />
+                <CaseCard item={entry} ctaLabel={geral.mensagens.verCase} />
               </li>
             ))}
           </ul>
         </Section>
       ) : null}
 
-      <ClosingCta
-        links={[
-          { id: "contato", label: "Quero um projeto assim", href: "/contato#formulario", external: false },
-          { id: "cases", label: "Ver todos os cases", href: "/cases", external: false },
-        ]}
-      />
+      {isSectionHidden(modelo, "fechamento") ? null : (
+        <ClosingCta
+          title={geral.fechamento.titulo}
+          description={geral.fechamento.texto}
+          sticker={geral.fechamento.sticker.src}
+          links={closingLinks(campos.fechamento.botao1, campos.fechamento.botao2)}
+        />
+      )}
     </>
   );
 }

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -21,9 +21,11 @@
  26/10/2026 Vinícius Nishimura Reis  Parâmetro estático para banco vazio (DB-03).
  26/10/2026 Vinícius Nishimura Reis  Áreas e serviços do Supabase e checagem de slug do proxy (DB-04).
  29/10/2026 Vinicius Binda             Endereço antigo e maiúsculas com 301 para o slug atual (DB-08).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
+import { isFreePageSlug } from "@/lib/domain/content/blocks";
 import { isValidSlug } from "@/lib/domain/content/slug";
 import { getContentSource, type DetailRoute } from "./sources";
 
@@ -38,6 +40,17 @@ export const PLACEHOLDER_SLUG = "__sem-conteudo__";
 
 export function toStaticParams(slugs: readonly string[]): { slug: string }[] {
   return (slugs.length ? slugs : [PLACEHOLDER_SLUG]).map((slug) => ({ slug }));
+}
+
+/**
+ * Página livre (app/(site)/[slug]): 404 real antes do streaming para o que não existe ou não está
+ * publicado. O endereço com maiúsculas vai para o certo, como nos detalhes. Rotas fixas nem chegam aqui.
+ */
+export async function resolvePageSlug(slug: string): Promise<SlugResolution> {
+  const lower = slug.toLowerCase();
+  if (!isValidSlug(lower) || !isFreePageSlug(lower)) return { status: "missing" };
+  if (!(await getContentSource().hasPublishedPage(lower))) return { status: "missing" };
+  return lower === slug ? { status: "current" } : { status: "moved", slug: lower };
 }
 
 /**

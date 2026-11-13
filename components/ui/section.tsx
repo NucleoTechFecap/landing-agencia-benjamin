@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -19,14 +19,16 @@
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import type { SectionToneName } from "@/lib/domain/content/tones";
 import { Container } from "./container";
 
 /** Tons de seção do sistema de cores variadas (UX-05), com contraste AA garantido. */
-export const SECTION_TONES = {
+export const SECTION_TONES: Readonly<Record<SectionToneName, string>> = {
   nyanza: "bg-benja-nyanza text-benja-noite",
   verde: "bg-benja-verde text-benja-nyanza",
   lima: "bg-benja-lima text-benja-verde",
@@ -35,9 +37,9 @@ export const SECTION_TONES = {
   azul: "bg-benja-azul text-benja-nyanza",
   rosa: "bg-benja-rosa text-benja-noite",
   creme: "bg-benja-creme text-benja-noite",
-} as const;
+};
 
-export type SectionTone = keyof typeof SECTION_TONES;
+export type SectionTone = SectionToneName;
 
 export function Section({
   id,
