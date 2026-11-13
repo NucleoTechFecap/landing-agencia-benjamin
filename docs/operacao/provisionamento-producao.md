@@ -32,8 +32,11 @@
    migrations `20261027000100` e `20261027000200`:
    ```bash
    supabase link --project-ref <ref-prd>
-   supabase db push
+   supabase db push --remote --dry-run
+   supabase db push --remote
    ```
+   Na CLI 3.x, `db push` sem `--remote` vale para o banco **local**. Confira a versão com
+   `npx supabase --version`: nas anteriores, o equivalente é `--linked`.
 4. Conferir: `profiles`, `role_permissions` (148 linhas), `audit_log`, `form_submissions`, bucket `media` e as tabelas de conteúdo (DB-02) com RLS **habilitada** (`select relname, relrowsecurity from pg_class …`).
 5. Marcar o banco como produção (ARC-11). O `supabase/seed.sql` de desenvolvimento recusa rodar
    em banco marcado, mesmo que alguém use `db push --include-seed` ou cole o arquivo no SQL Editor.
@@ -104,6 +107,8 @@
 | Projeto na Vercel | 🟡 Existe (`agencia-benjamin`) e publica a cada merge. Ver a divergência abaixo |
 | Projeto no Supabase | 🟡 Existe na organização NucleoTech FECAP. Ver a divergência abaixo. O conteúdo do banco **não foi inspecionado** |
 | Migrations de conteúdo (DB-02) e da TECH-13 (#301, #312) | ✅ Na `main` |
+| Migrations pendentes | ⏳ `20261102000300` (#365) e `20261102000200` (#366) na `main`; `20261102000400` e `20261102000500` (DBX-04) aguardando revisão. Conferir com `db push --remote --dry-run` |
+| Aplicação | 🟡 Next.js 16.4.3 na `main`, 16.4.4 no #368. Falta o release de segurança de 03/11. `vercel.json` em `gru1` |
 | Migrations pendentes | ⏳ `20261102000300` (#365) e `20261102000200` (#366), aguardando revisão. Não aplicadas em ambiente remoto |
 | Aplicação | ✅ Next.js 16.4.5 na `main` desde 04/11 (#378), com o release de segurança de 03/11. `vercel.json` em `gru1` |
 | Acesso às contas na máquina de quem provisiona | ⏳ Em 02/11, a Vercel CLI estava na conta pessoal e a Supabase CLI não via o projeto |

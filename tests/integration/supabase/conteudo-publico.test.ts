@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (DB-03).
+ 02/11/2026 Vinicius Binda             Bloco descartado por conteúdo inválido, já que o tipo é limitado no banco (DBX-04).
  04/11/2026 Vinícius Nishimura Reis  Configuração vai para configuracao-institucional.test.ts (ADM-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
@@ -53,7 +54,7 @@ describe.runIf(hasSupabaseTestEnv)("conteúdo público no Supabase (DB-03)", () 
     await must(
       admin.from("blocks").insert([
         { page_id: pageId(slugs.published), type: "rich-text", content: { paragraphs: ["Visível."] }, sort_order: 1 },
-        { page_id: pageId(slugs.published), type: "html", content: { html: "<b>x</b>" }, sort_order: 2 },
+        { page_id: pageId(slugs.published), type: "rich-text", content: { html: "<b>x</b>" }, sort_order: 2 },
         { page_id: pageId(slugs.draft), type: "rich-text", content: { paragraphs: ["Oculto."] }, sort_order: 1 },
       ]),
     );

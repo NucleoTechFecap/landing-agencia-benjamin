@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 04/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 09/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (SEG-04).
+ 09/11/2026 Vinicius Binda           Protocolos no formato que a aplicação grava (DB-06).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -41,8 +42,8 @@ update public.profiles set role = 'viewer' where id = '00000000-0000-4000-8000-0
 update public.profiles set role = 'admin', active = false where id = '00000000-0000-4000-8000-0000000007d1';
 
 insert into public.form_submissions (id, protocol, kind, category, payload, fingerprint, updated_at) values
-  ('00000000-0000-4000-8000-000000000701', 'AB-SEG401', 'lead', 'lead:nao-sei', '{"name":"Lead"}', 'seg04-lead', '2020-01-01'),
-  ('00000000-0000-4000-8000-000000000702', 'AB-SEG402', 'feedback', 'feedback:aluno', '{"message":"Feedback"}', 'seg04-feedback', '2020-01-01');
+  ('00000000-0000-4000-8000-000000000701', 'AB-000701', 'lead', 'lead:nao-sei', '{"name":"Lead"}', 'seg04-lead', '2020-01-01'),
+  ('00000000-0000-4000-8000-000000000702', 'AB-000702', 'feedback', 'feedback:aluno', '{"message":"Feedback"}', 'seg04-feedback', '2020-01-01');
 
 create temporary view seg04_visiveis with (security_invoker = true) as
   select id from public.form_submissions where fingerprint like 'seg04-%';
