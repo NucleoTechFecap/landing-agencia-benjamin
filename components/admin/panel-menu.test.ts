@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 04/11/2026
- Modificado em: 04/11/2026
+ Modificado em: 12/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-04).
  04/11/2026 Vinícius Nishimura Reis  Exemplo de módulo em construção não depende de uma tela (FORM-09).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 12/11/2026 Codex                     Amplia gestão editorial e segurança do painel.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -79,7 +80,8 @@ describe("menu do painel (ADM-04)", () => {
 
   it("não mostra módulo sem tela", () => {
     expect(render("admin")).not.toContain("Em construção");
-    expect(render("admin")).not.toContain("Usuários e papéis");
+    expect(render("admin")).toContain("Usuários e papéis");
+    expect(render("viewer")).not.toContain("Usuários e papéis");
   });
 
   it("todo item tem área de toque de ao menos 44 px", () => {
