@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-14).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -264,14 +265,15 @@ test.describe("Painel · prévia protegida @cms", () => {
     await expectOptimized(page.getByRole("img", { name: "Ana sorrindo" }));
     expect(blocked).toEqual([]);
     await expect(page.getByText("Ana Fictícia")).toBeVisible();
-    await expect(page.getByRole("status").first()).toContainText("seções fixas");
+    await expect(page.getByRole("status").first()).toContainText("salvo no painel");
     expect(await (await request.get("/")).text()).not.toContain(secret.paragraph);
   });
 
-  test("bloco de manifesto aparece no topo da prévia, sem chegar à Home", async ({ page, request }) => {
+  // O manifesto só vale na Home: a prévia dela está em editor-do-site.spec.ts, que pode mexer nessa linha.
+  test("manifesto fora da Home não vira o título da página nem chega ao site", async ({ page, request }) => {
     await login(page, accounts.editor);
     await page.goto(`/admin/previa/pagina/${ids.manifesto}`);
-    await expect(page.getByRole("heading", { level: 1, name: secret.manifesto })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: `Topo ${suffix}` })).toBeVisible();
     expect(await (await request.get("/")).text()).not.toContain(secret.manifesto);
   });
 

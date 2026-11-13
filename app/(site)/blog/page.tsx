@@ -50,6 +50,7 @@ export default function BlogPage({ searchParams }: PageProps<"/blog">) {
       </Section>
       <ClosingCta
         title="Vamos criar algo juntos?"
+        description="Conte com a equipe da Benjamin para transformar a sua próxima ideia em um projeto."
         links={[{ id: "contato", label: "Fale com a gente", href: "/contato#formulario", external: false }]}
       />
     </>

@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 26/10/2026
- Modificado em: 29/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Categorias, cases, vínculos e galeria do CMS (DB-05).
  26/10/2026 Vinícius Nishimura Reis  CMS como fonte padrão com Supabase; provisório recusado em hml/prd (INT-02).
  29/10/2026 Vinicius Binda             Slug atual no lugar de slugExists, com endereços antigos (DB-08).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -37,6 +38,8 @@ import {
   fetchCasesAndCategories,
   fetchCtas,
   fetchPage,
+  fetchPublishedPages,
+  isPagePublished,
   fetchSiteSettings,
   resolvePublicSlug,
 } from "./supabase/queries";
@@ -52,6 +55,10 @@ export interface ContentSource {
   snapshot(): Promise<ContentSnapshot>;
   settings(): Promise<SiteSettings>;
   page(slug: string): Promise<Page | null>;
+  /** Páginas publicadas, sem os blocos: base do sitemap e dos endereços pré-gerados. */
+  pages(): Promise<Page[]>;
+  /** A página existe e está publicada? Consulta leve, usada pelo proxy antes do streaming. */
+  hasPublishedPage(slug: string): Promise<boolean>;
   /**
    * Slug atual do item publicado que responde pelo endereço: ele mesmo, o novo quando o
    * endereço é antigo (301) ou `null` (404). Usado pelo proxy, antes do streaming, e pela API.
@@ -66,6 +73,8 @@ export const localSource: ContentSource = {
   settings: async () => siteSettings,
   // Páginas só existem no CMS: sem banco, as rotas exibem apenas as seções fixas.
   page: async () => null,
+  pages: async () => [],
+  hasPublishedPage: async () => false,
   // O conteúdo versionado não muda de endereço: não há endereços antigos.
   async currentSlug(route, slug, now = new Date()) {
     const items = route === "servicos" ? seedSnapshot.services : seedSnapshot.cases;
@@ -91,6 +100,8 @@ export const supabaseSource: ContentSource = {
   },
   settings: () => fetchSiteSettings(createPublicClient(), siteSettings),
   page: (slug) => fetchPage(createPublicClient(), slug),
+  pages: () => fetchPublishedPages(createPublicClient()),
+  hasPublishedPage: (slug) => isPagePublished(createPublicClient(), slug),
   currentSlug: (route, slug) =>
     resolvePublicSlug(createPublicClient(), route === "servicos" ? "service" : "case", slug),
 };

@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  SEO e compartilhamento das páginas públicas (SEG-09).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
  12/11/2026 Codex                     Exercita artigos no sitemap (FUT-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
@@ -36,6 +37,8 @@ vi.mock("@/lib/server/blog/repository", () => ({
   listArticles: async () => [{ slug: "artigo", updated_at: "2026-10-20T00:00:00.000Z" }],
 }));
 vi.mock("@/lib/server/content/repository", () => ({
+  getPage: async () => null,
+  listFreePages: async () => [{ slug: "campanha", updatedAt: "2026-10-20T00:00:00.000Z" }],
   listServices: async () => [{ slug: "social-media", updatedAt: "2026-10-20T00:00:00.000Z" }],
   listCases: async () => [
     { slug: "no-storage", updatedAt: "2026-10-20T00:00:00.000Z", cover: { src: STORAGE, alt: "Capa" } },
@@ -47,8 +50,11 @@ vi.mock("@/lib/server/content/repository", () => ({
 const { default: sitemap } = await import("./sitemap");
 
 describe("sitemap (SEG-09)", () => {
+  it("entra a página criada no painel", async () => {
+    expect((await sitemap()).map((entry) => entry.url)).toContain("https://agencia.exemplo/campanha");
+  });
   it("inclui artigos publicados", async () => {
-    expect((await sitemap()).some((entry) => entry.url === "https://agencia.exemplo/blog/artigo")).toBe(true);
+    expect((await sitemap()).map((entry) => entry.url)).toContain("https://agencia.exemplo/blog/artigo");
   });
   const imagesOf = async (slug: string) =>
     (await sitemap()).find((entry) => entry.url === `https://agencia.exemplo/cases/${slug}`)?.images;

@@ -22,6 +22,7 @@
  26/10/2026 Vinícius Nishimura Reis  Detalhe de área com serviços (DB-04).
  01/11/2026 Vinícius Nishimura Reis  Site lê páginas e blocos publicados no CMS (INT-03).
  04/11/2026 Vinícius Nishimura Reis  Seleção de detalhes movida para lib/domain, compartilhada com a prévia (ADM-14).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -45,6 +46,7 @@ import {
   type CaseDetail,
   type ServiceDetail,
 } from "@/lib/domain/content/details";
+import { isFreePageSlug } from "@/lib/domain/content/blocks";
 import { withPublishedTexts } from "@/lib/domain/content/page-texts";
 import { isPubliclyVisible, visibleSorted } from "@/lib/domain/content/visibility";
 import { CONTENT_TAGS } from "./cache-tags";
@@ -102,6 +104,15 @@ export async function getPage(slug: string): Promise<Page | null> {
   cacheLife("hours");
   const page = await getContentSource().page(slug);
   return page && isPubliclyVisible(page) ? page : null;
+}
+
+/** Páginas livres publicadas (endereço próprio, conteúdo em blocos): sitemap, llms.txt e pré-render. */
+export async function listFreePages(): Promise<Page[]> {
+  "use cache";
+  cacheTag(CONTENT_TAGS.all, CONTENT_TAGS.pages);
+  cacheLife("hours");
+  const pages = await getContentSource().pages();
+  return pages.filter((page) => isFreePageSlug(page.slug) && isPubliclyVisible(page));
 }
 
 export async function listAreas(): Promise<Area[]> {

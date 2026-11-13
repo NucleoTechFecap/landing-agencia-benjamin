@@ -293,7 +293,8 @@ rascunho: salvar publica e gera auditoria `settings.updated`. Só `admin` e `sup
 > **O que foi implementado difere desta proposta:** tabelas `pages` e `blocks`, sem páginas de sistema
 > nem `block_key`. O catálogo em vigor e as regras estão no
 > [dicionário de dados](dicionario-de-dados.md#pages-e-blocks--páginas-editáveis-db-01). O motivo para
-> separar de `site_settings`, abaixo, continua valendo.
+> separar de `site_settings`, abaixo, continua valendo. Os textos das seções fixas ficam em `pages.fields`,
+> e o histórico, em `content_versions`.
 
 `pages` guarda as **rotas fixas** do site, criadas pela migration como `published` e
 `is_system = true` (uma página de sistema não pode ser arquivada nem excluída): `home`, `sobre`,

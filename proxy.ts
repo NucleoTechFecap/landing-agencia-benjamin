@@ -23,6 +23,8 @@
  29/10/2026 Vinicius Binda             301 de endereço antigo ou com maiúsculas para o atual (DB-08).
  04/11/2026 Vinícius Nishimura Reis  Cookies de sessão com HttpOnly, SameSite e Secure (SEG-06).
  04/11/2026 Vinícius Nishimura Reis  301 de endereço antigo com cache curto (TECH-13, #369).
+ 04/11/2026 Vinícius Nishimura Reis  404 real e endereço único nas páginas livres (editor do site).
+ 04/11/2026 Vinícius Nishimura Reis  Endereço que só começa com admin não é o painel.
  12/11/2026 Codex                     404 para artigos não publicados (FUT-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
@@ -33,7 +35,7 @@ import { publicEnv } from "@/lib/config/public-env";
 import { LOGIN_PATH, isPublicAdminPath } from "@/lib/domain/auth/redirect";
 import { isValidSlug, REDIRECT_CACHE_CONTROL } from "@/lib/domain/content/slug";
 import { sessionCookieOptions } from "@/lib/domain/security/http-policy";
-import { resolveDetailSlug, type DetailRoute } from "@/lib/server/content/published-slugs";
+import { resolveDetailSlug, resolvePageSlug, type DetailRoute } from "@/lib/server/content/published-slugs";
 import { getContentSource } from "@/lib/server/content/sources";
 import { createPublicClient } from "@/lib/server/supabase/server";
 
@@ -47,7 +49,8 @@ import { createPublicClient } from "@/lib/server/supabase/server";
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   if (pathname.startsWith("/blog/")) return guardBlogRoute(request, pathname);
-  if (!pathname.startsWith("/admin")) return guardDetailRoute(request, pathname);
+  // Comparar o segmento inteiro: /administracao é uma página livre, não o painel.
+  if (pathname !== "/admin" && !pathname.startsWith("/admin/")) return guardDetailRoute(request, pathname);
 
   let response = NextResponse.next({ request });
   const isPublic = isPublicAdminPath(pathname);
@@ -107,17 +110,16 @@ async function guardBlogRoute(request: NextRequest, pathname: string) {
  * só consegue status 200 + noindex (o shell já começou a ser enviado).
  */
 async function guardDetailRoute(request: NextRequest, pathname: string) {
-  const [, route, slug] = pathname.split("/") as [string, DetailRoute, string];
-  if (!slug) return NextResponse.next();
-  const resolution = await resolveDetailSlug(route, slug);
+  const [, first, slug] = pathname.split("/") as [string, DetailRoute | string, string | undefined];
+  // Um segmento só é uma página livre; dois, o detalhe de serviço ou case.
+  const resolution = slug ? await resolveDetailSlug(first as DetailRoute, slug) : await resolvePageSlug(first);
   if (resolution.status === "missing") {
-    return NextResponse.rewrite(new URL("/_conteudo-inexistente", request.url), { status: 404 });
+    // Dois segmentos de propósito: um só cairia em app/(site)/[slug], que não consegue responder 404.
+    return NextResponse.rewrite(new URL("/_conteudo/inexistente", request.url), { status: 404 });
   }
   if (resolution.status === "moved") {
-    const moved = NextResponse.redirect(
-      new URL(`/${route}/${resolution.slug}${request.nextUrl.search}`, request.url),
-      301,
-    );
+    const target = slug ? `/${first}/${resolution.slug}` : `/${resolution.slug}`;
+    const moved = NextResponse.redirect(new URL(`${target}${request.nextUrl.search}`, request.url), 301);
     moved.headers.set("Cache-Control", REDIRECT_CACHE_CONTROL);
     return moved;
   }
@@ -131,5 +133,11 @@ function redirectToLogin(request: NextRequest, next: string) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/servicos/:slug", "/cases/:slug", "/blog/:slug"],
+  matcher: [
+    "/admin/:path*",
+    "/servicos/:slug",
+    "/cases/:slug",
+    "/blog/:slug",
+    "/:pagina((?!_next$|admin$|api$|sobre$|areas$|servicos$|cases$|blog$|contato$|feedback$|privacidade$|opengraph-image|twitter-image|favicon\\.ico$|icon\\.png$|apple-icon\\.png$|robots\\.txt$|sitemap\\.xml$|llms\\.txt$|llms-full\\.txt$|manifest\\.webmanifest$)[^/]+)",
+  ],
 };

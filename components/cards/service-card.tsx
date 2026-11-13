@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 02/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -20,6 +20,7 @@
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (estrutura da landing).
  01/11/2026 Vinícius Nishimura Reis  Foco visível no card e testes do portfólio (CASE-01).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,10 +35,13 @@ export function ServiceCard({
   service,
   index = 0,
   headingLevel = "h3",
+  ctaLabel,
 }: {
   service: Service;
   index?: number;
   headingLevel?: "h2" | "h3";
+  /** Chamada do cartão, editável em Menu, rodapé e textos gerais. */
+  ctaLabel: string;
 }) {
   const Heading = headingLevel;
   return (
@@ -58,7 +62,7 @@ export function ServiceCard({
       </Heading>
       <p className="mt-2 flex-1 text-sm leading-relaxed text-benja-grafite">{service.summary}</p>
       <span aria-hidden className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-benja-verde">
-        Saiba mais{" "}
+        {ctaLabel}{" "}
         <span data-card-arrow className="motion-off:transition motion-off:group-hover:translate-x-1">
           →
         </span>

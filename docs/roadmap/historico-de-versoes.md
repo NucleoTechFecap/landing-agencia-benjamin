@@ -4,7 +4,7 @@
 | ------------ | -------------------------------------------------------------------------------------------- |
 | Issue        | FUT-04 (#205)                                                                                |
 | Responsável  | Murilo Ribeiro Vasconcellos (`@murilovasconcellos`) · redação: Vinícius Nishimura Reis (`@Vinishireis`) |
-| Versão       | 1.0.0 — **proposta de novo escopo (não faz parte do MVP)**                                   |
+| Versão       | 2.0.0 — **implementado em 04/11/2026**, com as diferenças da seção 12                        |
 | Data         | 27/10/2026                                                                                   |
 | Origem       | ATA §4.6 ("será avaliada a implementação de histórico de versões"); PRJ §24; [ADR-0007](../adr/0007-historico-de-versoes.md) (ADM-17) |
 | Base técnica | Serviço de conteúdo do CMS (ADM-06/07/08), fluxo de publicação (TECH-04, ADM-12), auditoria (TECH-10), RBAC (TECH-03), backup (DB-10) |
@@ -205,5 +205,26 @@ que o ADR não detalhava.
 - Recriar itens excluídos (fase 2) entra no mesmo ciclo?
 - A comparação campo a campo atende ou a Benjamin precisa de destaque palavra a palavra?
 
-Nada desta proposta é implementado antes da aprovação acima. O MVP segue com a opção C do
-ADR-0007: auditoria, arquivamento antes da exclusão e backup.
+## 12. O que foi implementado (04/11/2026)
+
+A coordenação pediu o histórico junto do editor do site, então os critérios da seção 8 foram tratados como decisão dela.
+O texto acima fica como registro da proposta. Diferenças:
+
+| Proposta | Implementado | Por quê |
+| -------- | ------------ | ------- |
+| Áreas, serviços, categorias e cases | Também CTAs, páginas e blocos, configuração e aparência | O pedido foi "tudo" |
+| "Usar esta versão" preenche o formulário | "Restaurar esta versão" grava direto, depois de uma confirmação e de comparar com a versão atual | Pedido da coordenação. Passa pelas mesmas validações, e a restauração vira uma versão nova, que pode ser desfeita |
+| Guardar a entrada do formulário (`I`) | Guardar o item (`T`), sem os campos de controle; `toRawInput` converte para o formulário ao restaurar | O retrato anterior à primeira edição só existe como `T`, e a comparação fica mais legível |
+| Linha do tempo cruzada com a auditoria | Publicar, despublicar, arquivar e excluir são linhas da própria tabela, sem conteúdo | Uma consulta só, e `audit_log` continua restrita a quem tem `audit:view` |
+| Sem versão de antes da primeira edição | `baseline`: guarda como o item estava na primeira edição | Sem isso, o texto original não teria para onde voltar |
+| Autor pelo id | Id, com o nome vindo de `content_version_authors` | `profiles` só mostra o próprio perfil a quem não gerencia usuários |
+
+Página e blocos voltam juntos, em uma transação (`save_page_document`). Os demais usam o `saveContent` de sempre. A
+falha ao gravar a versão vai para o log (`cms.version.record_failed`), sem desfazer a edição.
+
+**Ainda não implementado:**
+
+- Retenção automática (seção 6). Até haver a rotina, a tabela só cresce. A estimativa de volume da seção 6 segue válida.
+- Recriar item excluído (fase 2).
+- Comparação palavra a palavra.
+- `metadata.versionRecorded` na auditoria e o alerta no monitoramento: a falha fica só no log.

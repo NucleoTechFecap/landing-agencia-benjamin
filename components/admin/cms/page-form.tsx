@@ -20,12 +20,14 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  O site público não exibe mais o selo de provisório.
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 "use client";
 
 import { CheckboxField, TextArea, TextField } from "@/components/forms/fields";
+import { isFreePageSlug } from "@/lib/domain/content/blocks";
 import type { Page } from "@/lib/domain/content/types";
 import { CmsFormShell, type CmsSaveAction } from "./form-shell";
 
@@ -47,6 +49,7 @@ export function PageForm({
   defaultTitle?: string;
   readOnly?: boolean;
 }) {
+  const freePage = page ? isFreePageSlug(page.slug) : !slug;
   return (
     <CmsFormShell
       action={action}
@@ -57,13 +60,37 @@ export function PageForm({
     >
       {({ errors, value }) => (
         <>
-          {slug ? <input type="hidden" name="slug" value={slug} /> : null}
+          {slug ? <input type="hidden" name="rota" value={slug} /> : null}
+          {!slug && !page ? (
+            <TextField
+              name="slug"
+              label="Endereço"
+              maxLength={80}
+              hint="Em branco, sai do título. A página fica em seu-site/endereco. Depois de publicada, o endereço não muda."
+              errors={errors("slug")}
+              defaultValue={value("slug")}
+            />
+          ) : null}
+          {page && isFreePageSlug(page.slug) && !page.publishedAt ? (
+            <TextField
+              name="slug"
+              label="Endereço"
+              maxLength={80}
+              hint="Depois da primeira publicação, o endereço não muda."
+              errors={errors("slug")}
+              defaultValue={value("slug", page.slug)}
+            />
+          ) : null}
           <TextField
             name="title"
-            label="Título interno"
+            label={freePage ? "Título da página" : "Título interno"}
             required
             maxLength={120}
-            hint="Identifica a página no painel e na API."
+            hint={
+              freePage
+                ? "Aparece no topo da página, se ela não começar por um bloco de abertura."
+                : "Identifica a página no painel e na API."
+            }
             errors={errors("title")}
             defaultValue={value("title", page?.title ?? defaultTitle)}
           />

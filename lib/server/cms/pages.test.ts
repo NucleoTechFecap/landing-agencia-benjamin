@@ -20,6 +20,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  04/11/2026 Vinícius Nishimura Reis  Falha ao gravar bloco é auditada e expira o cache (TECH-13, #369).
  04/11/2026 Vinícius Nishimura Reis  Foto do time só do bucket de mídia e só imagem (TECH-13, #369).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -197,7 +198,7 @@ describe("CMS de páginas — blocos (ADM-05)", () => {
     const env = setup();
     const id = await createPage(env);
     await expect(
-      saveBlock(env.deps, env.actor("editor"), env.ref(id), { type: "hero", input: form() }),
+      saveBlock(env.deps, env.actor("editor"), env.ref(id), { type: "inexistente", input: form() }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     await expect(
       saveBlock(env.deps, env.actor("editor"), env.ref(id), { blockId: "outro", ...textBlock("X.") }),

@@ -26,6 +26,7 @@
  04/11/2026 Vinícius Nishimura Reis  Editar texto alternativo e excluir arquivo sem uso da biblioteca (ADM-09).
  04/11/2026 Vinícius Nishimura Reis  Ações aceitam conteúdo sem endereço próprio, como o CTA (ADM-11).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
  12/11/2026 Codex                     Invalida capas do blog ao editar mídia (FUT-10).
 ──────────────────────────────────────────────────────────────────────────────
 */
@@ -37,6 +38,7 @@ import { safeAdminRedirect } from "@/lib/domain/auth/redirect";
 import type { Action, Resource } from "@/lib/domain/auth/rbac";
 import type { CmsFlash, CmsFormState, CmsWarning, MediaUploadTicket } from "@/lib/domain/content/cms-form";
 import { COMMAND_PERMISSION, type PublicationCommand } from "@/lib/domain/content/publication";
+import type { VersionEntity } from "@/lib/domain/content/versions";
 import { recordAuditEvent } from "../audit";
 import { requirePermission } from "../auth/guards";
 import type { SessionUser } from "../auth/session";
@@ -65,6 +67,17 @@ export async function cmsDeps(): Promise<CmsDeps> {
 /** Snapshot do painel (todos os estados) para as páginas de listagem e edição. */
 export async function loadCmsSnapshot(): Promise<CmsSnapshot> {
   return (await cmsDeps()).store.snapshot();
+}
+
+/** Última alteração registrada do item, para mostrar quem mexeu por último. */
+export async function loadLastChange(entity: VersionEntity, id: string) {
+  const [latest] = await (await cmsDeps()).store.listVersions({ entity, entityId: id, limit: 1 });
+  return latest
+    ? {
+        author: latest.authorName ?? (latest.authorId ? "Pessoa sem nome no perfil" : "Conta removida"),
+        createdAt: latest.createdAt,
+      }
+    : undefined;
 }
 
 /** Imagens da biblioteca de mídia para os campos de escolha (rótulo = texto alternativo). */

@@ -26,6 +26,7 @@
  01/11/2026 Vinícius Nishimura Reis  Editor de páginas e blocos (ADM-05).
  02/11/2026 Vinícius Nishimura Reis  Relações entram na gravação em transação (TECH-13, #314).
  04/11/2026 Vinícius Nishimura Reis  Entidade de CTA, que não tem endereço próprio (ADM-11).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -36,9 +37,9 @@ import { areaInputSchema, validateAreaForPublish, type AreaInput } from "@/lib/d
 import { caseInputSchema, type CaseInput } from "@/lib/domain/content/case-input-schema";
 import { validateCaseForPublish } from "@/lib/domain/content/case-schema";
 import { categoryInputSchema, type CategoryInput } from "@/lib/domain/content/category-schema";
-import { ctaInputSchema, validateCtaForPublish, type CtaInput } from "@/lib/domain/content/cta-schema";
+import { ctaInputSchema, ctaFormValues, validateCtaForPublish, type CtaInput } from "@/lib/domain/content/cta-schema";
 import { serviceInputSchema, validateServiceForPublish, type ServiceInput } from "@/lib/domain/content/service-schema";
-import { pagePath } from "@/lib/domain/content/blocks";
+import { isFreePageSlug, pagePath } from "@/lib/domain/content/blocks";
 import { pageInputSchema, type PageInput } from "@/lib/domain/content/page-schema";
 import { isPubliclyVisible } from "@/lib/domain/content/visibility";
 import type {
@@ -91,6 +92,10 @@ export interface EntityDefinition<I extends { slug?: string }, T extends CmsItem
    * `media` resolve ids da biblioteca (ex.: imagem do serviço) para a validação de `alt` (R12).
    */
   merge(current: T | undefined, input: I, id: string, media: ReadonlyMap<string, MediaRef>): T;
+  /** O conteúdo do item no formato do formulário: é por onde uma versão antiga volta (restauração). */
+  toRawInput?(item: T): unknown;
+  /** O tipo tem SEO próprio, gravado à parte do formulário principal. */
+  hasSeo?: boolean;
   /** Campos obrigatórios para publicar (TECH-05 §5). */
   validateForPublish(item: T): string[];
   /** Regras de integridade já cobertas pela validação acima (não repetir a mensagem). */
@@ -147,6 +152,15 @@ export const AREA: EntityDefinition<AreaInput, Area> = {
     icon: input.icon,
     order: input.order,
   }),
+  toRawInput: (area) => ({
+    slug: area.slug,
+    name: area.name,
+    summary: area.summary,
+    description: area.description,
+    highlights: area.highlights,
+    icon: area.icon,
+    order: area.order,
+  }),
   validateForPublish: (area) => validateAreaForPublish(area),
   relatedPaths: (area, snapshot, now) =>
     live(snapshot.services, now)
@@ -190,6 +204,19 @@ export const SERVICE: EntityDefinition<ServiceInput, Service> = {
     featured: input.featured,
     order: input.order,
   }),
+  toRawInput: (service) => ({
+    slug: service.slug,
+    name: service.name,
+    summary: service.summary,
+    description: service.description,
+    examples: service.examples,
+    areaIds: service.areaIds,
+    icon: service.icon,
+    imageId: service.image?.id,
+    featured: service.featured,
+    order: service.order,
+  }),
+  hasSeo: true,
   validateForPublish: (service) => validateServiceForPublish({ ...service, imageId: service.image?.id }),
   coveredRules: ["R03"],
   relations: (input) => ({ table: "services", areaIds: input.areaIds }),
@@ -222,6 +249,12 @@ export const CATEGORY: EntityDefinition<CategoryInput, CaseCategory> = {
     name: input.name,
     description: input.description ?? "",
     order: input.order,
+  }),
+  toRawInput: (category) => ({
+    slug: category.slug,
+    name: category.name,
+    description: category.description,
+    order: category.order,
   }),
   // Nome e slug já são exigidos pelo próprio formulário (TECH-05 §5).
   validateForPublish: () => [],
@@ -308,6 +341,26 @@ export const CASE: EntityDefinition<CaseInput, CaseStudy> = {
     featured: input.featured,
     order: input.order,
   }),
+  toRawInput: (item) => ({
+    title: item.title,
+    slug: item.slug,
+    client: item.client,
+    categoryId: item.categoryId,
+    serviceIds: item.serviceIds,
+    deliveryType: item.deliveryType,
+    summary: item.summary,
+    challenge: item.challenge,
+    solution: item.solution,
+    results: item.results,
+    coverId: item.cover?.id,
+    galleryIds: item.gallery.flatMap((photo) => photo.id ?? []),
+    externalLinks: item.externalLinks,
+    date: item.date,
+    team: item.team,
+    featured: item.featured,
+    order: item.order,
+  }),
+  hasSeo: true,
   validateForPublish: (item) =>
     labeled(
       validateCaseForPublish({
@@ -358,7 +411,14 @@ export const PAGE: EntityDefinition<PageInput, Page> = {
     description: input.description,
     provisional: input.provisional,
   }),
-  validateForPublish: (page) => (page.blocks.length ? [] : ["Inclua ao menos um bloco de conteúdo."]),
+  validateForPublish: (page) => {
+    // Rota fixa já tem o que mostrar: basta ter algo diferente do padrão. Página livre vive dos blocos.
+    const hasBlocks = page.blocks.length > 0;
+    const hasFields = Object.keys(page.fields?.values ?? {}).length > 0 || (page.fields?.hidden.length ?? 0) > 0;
+    const hasSeo = Object.keys(page.seo ?? {}).length > 0;
+    const enough = isFreePageSlug(page.slug) ? hasBlocks : hasBlocks || hasFields || hasSeo;
+    return enough ? [] : ["Inclua ao menos um bloco de conteúdo."];
+  },
 };
 
 /**
@@ -389,5 +449,6 @@ export const CTA: EntityDefinition<CtaInput, Cta> = {
     target: input.target,
     order: input.order,
   }),
+  toRawInput: (cta) => ctaFormValues(cta),
   validateForPublish: (cta) => validateCtaForPublish(cta),
 };

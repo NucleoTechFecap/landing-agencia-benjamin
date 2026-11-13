@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (ADM-10).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -33,9 +34,12 @@ import {
 } from "@/lib/domain/content/settings-schema";
 import type { SiteSettings } from "@/lib/domain/content/types";
 import { AppError } from "../errors";
+import { SINGLE_ENTITY_ID } from "@/lib/domain/content/versions";
 import type { CmsActor, CmsDeps } from "./content-service";
+import { recordBaseline, recordVersion } from "./version-log";
 
 const SETTINGS_RESOURCE_ID = "site_settings";
+const VERSION_LABEL = "Configurações do site";
 
 export interface SettingsForEdit {
   settings: SiteSettings;
@@ -60,7 +64,7 @@ const editableColumns = ({ tagline, description, contact, socials }: EditableSet
  * Primeira gravação de um ambiente sem a linha: o que o painel não edita recebe o valor de
  * referência, que é o que o site já exibe sem a linha. Assim, só muda o que a pessoa alterou.
  */
-const firstRowColumns = (input: EditableSettings) => ({
+export const firstRowColumns = (input: EditableSettings) => ({
   name: siteSettings.name,
   short_name: siteSettings.shortName,
   manifesto: siteSettings.manifesto,
@@ -80,6 +84,7 @@ export async function saveSiteSettings(
   actor: CmsActor,
   raw: unknown,
   expectedUpdatedAt: string | null,
+  restoredFrom?: number,
 ): Promise<SettingsField[]> {
   if (!can(actor.role, "settings", "edit")) throw new AppError("FORBIDDEN");
   const parsed = settingsFormSchema.safeParse(raw);
@@ -90,6 +95,9 @@ export async function saveSiteSettings(
 
   const changed = changedSettingsFields(settings, parsed.data);
   if (!changed.length) return changed;
+
+  const version = { entity: "settings" as const, entityId: SINGLE_ENTITY_ID, status: null, label: VERSION_LABEL };
+  await recordBaseline(deps, { ...version, snapshot: { ...editableColumns(settings) } });
 
   const audit = (outcome: "success" | "failure") =>
     deps.audit({
@@ -108,6 +116,25 @@ export async function saveSiteSettings(
     await audit("failure").catch(() => undefined);
     throw error;
   }
+  await recordVersion(deps, {
+    ...version,
+    action: restoredFrom ? "version_restored" : "updated",
+    snapshot: { ...editableColumns(parsed.data) },
+    summary: changed.join(", "),
+    restoredFrom: restoredFrom ?? null,
+  });
   deps.invalidate({ entity: "settings" });
   return changed;
 }
+
+/** O que uma versão da configuração guarda. */
+export type RestorableSettings = EditableSettings;
+
+/** Restaura uma versão pelo mesmo caminho do formulário: as regras de hoje valem para o texto de ontem. */
+export const saveSiteSettingsValues = (
+  deps: CmsDeps,
+  actor: CmsActor,
+  { tagline, description, contact, socials }: RestorableSettings,
+  expectedUpdatedAt: string | null,
+  restoredFrom: number,
+) => saveSiteSettings(deps, actor, { tagline, description, ...contact, ...socials }, expectedUpdatedAt, restoredFrom);

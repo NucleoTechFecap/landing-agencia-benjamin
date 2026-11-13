@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 13/10/2026
- Modificado em: 13/10/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  13/10/2026 Vinícius Nishimura Reis  Criação inicial (TECH-10).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -52,6 +53,11 @@ export const AUDIT_EVENTS = {
   "content.unpublished": { description: "Conteúdo despublicado", resourceType: "content", critical: true },
   "content.archived": { description: "Conteúdo arquivado", resourceType: "content", critical: true },
   "content.restored": { description: "Conteúdo restaurado", resourceType: "content", critical: false },
+  "content.version_restored": {
+    description: "Versão anterior do conteúdo restaurada",
+    resourceType: "content",
+    critical: true,
+  },
   "content.deleted": { description: "Conteúdo excluído definitivamente", resourceType: "content", critical: true },
   "settings.updated": {
     description: "Contato, links ou redes sociais alterados",

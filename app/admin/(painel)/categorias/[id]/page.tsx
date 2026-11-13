@@ -20,6 +20,7 @@
  26/10/2026 Vinícius Nishimura Reis  Criação inicial (ADM-08).
  04/11/2026 Vinícius Nishimura Reis  Responsividade, toque e teclado no painel (ADM-16).
  04/11/2026 Vinícius Nishimura Reis  Reestruturação visual do painel (Benjamin Studio).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -34,6 +35,7 @@ import { ItemPanel } from "@/components/admin/cms/item-panel";
 import { StatusBadge } from "@/components/admin/cms/status-badge";
 import { can } from "@/lib/domain/auth/rbac";
 import { allowedCommands } from "@/lib/domain/content/publication";
+import { historyPath } from "@/lib/domain/content/versions";
 import { requirePageAccess } from "@/lib/server/auth/guards";
 import { publishProblems } from "@/lib/server/cms/content-service";
 import { loadCmsSnapshot } from "@/lib/server/cms/context";
@@ -68,6 +70,7 @@ export default async function EditCategoryPage({ params, searchParams }: PagePro
         </div>
         <ItemPanel
           item={category}
+          historyHref={historyPath("category", category.id)}
           publicHref={CATEGORY.publicPath(category)}
           missing={publishProblems(CATEGORY, category, snapshot, new Date())}
           warnings={[]}

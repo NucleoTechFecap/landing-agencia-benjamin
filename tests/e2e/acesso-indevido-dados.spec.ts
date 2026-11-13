@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (QA-06).
+ 04/11/2026 Vinícius Nishimura Reis  Editor do site: campos, SEO, aparência e histórico.
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -90,7 +91,14 @@ const restUrl = (path: string) => new URL(`/rest/v1/${path}`, SUPABASE_URL);
 const anonHeaders = () => ({ apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY}` });
 
 /** Tabelas sem nenhum privilégio para a chave anônima. */
-const PRIVATE_TABLES = ["ambiente_banco", "audit_log", "form_submissions", "profiles", "role_permissions"];
+const PRIVATE_TABLES = [
+  "ambiente_banco",
+  "audit_log",
+  "content_versions",
+  "form_submissions",
+  "profiles",
+  "role_permissions",
+];
 /** Tabelas com leitura pública só do que está no ar, e sem coluna de estado própria. */
 const FILTERED_RELATIONS = ["blocks", "case_media", "case_services", "media_assets", "service_areas", "slug_redirects"];
 /** Tabelas com `status`: a chave anônima só pode ver `published` com data já vencida. */
@@ -380,7 +388,14 @@ test.describe("QA-06 · API REST do Supabase vista de fora @cms", () => {
     const { paths } = (await (await asAnon("")).json()) as { paths: Record<string, unknown> };
     const listed = Object.keys(paths).map((path) => path.slice(1));
     for (const table of PRIVATE_TABLES) expect(listed, table).not.toContain(table);
-    for (const name of ["rpc/assign_role", "rpc/set_profile_active", "rpc/record_audit_event", "rpc/save_case"]) {
+    for (const name of [
+      "rpc/assign_role",
+      "rpc/set_profile_active",
+      "rpc/record_audit_event",
+      "rpc/save_case",
+      "rpc/save_page_document",
+      "rpc/content_version_authors",
+    ]) {
       expect(listed, name).not.toContain(name);
     }
   });
@@ -485,6 +500,8 @@ test.describe("QA-06 · API REST do Supabase vista de fora @cms", () => {
     ["record_audit_event", { p_event: "auth.login.succeeded", p_resource_type: "user" }],
     ["save_case", { p_id: null, p_expected_updated_at: null, p_values: {}, p_service_ids: [], p_gallery_ids: [] }],
     ["save_service", { p_id: null, p_expected_updated_at: null, p_values: {}, p_area_ids: [] }],
+    ["save_page_document", { p_id: null, p_expected_updated_at: null, p_values: {}, p_blocks: [] }],
+    ["content_version_authors", { p_ids: [] }],
   ] as const) {
     test(`rpc/${name}: a chave anônima não executa`, async () => {
       const response = await asAnon(`rpc/${name}`, {

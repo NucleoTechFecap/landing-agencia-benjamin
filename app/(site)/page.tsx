@@ -24,148 +24,31 @@
  01/11/2026 Vinícius Nishimura Reis  Estados globais de carregamento, vazio e erro (LAY-07).
  02/11/2026 Vinícius Nishimura Reis  Marca em vetor, animações GSAP e remoção do selo provisório.
  04/11/2026 Vinícius Nishimura Reis  Home sem CTA ou com destaques acima do limite continua coerente (HOME-07).
+ 04/11/2026 Vinícius Nishimura Reis  Textos, SEO e seções editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { Metadata } from "next";
-import { AreaCard } from "@/components/cards/area-card";
-import { CaseCard } from "@/components/cards/case-card";
-import { ServiceCard } from "@/components/cards/service-card";
-import { AboutPreview } from "@/components/sections/about-preview";
-import { ClosingCta } from "@/components/sections/closing-cta";
-import { HeroManifesto } from "@/components/sections/hero-manifesto";
-import { PageBlocks } from "@/components/sections/page-blocks";
-import type { BrandIconColor } from "@/components/ui/brand-icon";
-import { ButtonLink } from "@/components/ui/button-link";
-import { Section } from "@/components/ui/section";
-import { SectionHeading } from "@/components/ui/section-heading";
-import { EmptyState } from "@/components/ui/states";
-import { FEATURED_LIMITS } from "@/lib/domain/content/integrity";
-import { servicesSummary } from "@/lib/domain/content/services-summary";
-import {
-  getPage,
-  getSiteSettings,
-  listAreas,
-  listCtas,
-  listFeaturedCases,
-  listServices,
-} from "@/lib/server/content/repository";
-import { DEFAULT_TITLE, buildMetadata } from "@/lib/server/seo";
+import { HomeView } from "@/app/(site)/_views/home-view";
+import { HOME } from "@/lib/domain/content/catalog/home";
+import { getPage, getSiteSettings } from "@/lib/server/content/repository";
+import { buildMetadata } from "@/lib/server/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSiteSettings();
+  const [settings, page] = await Promise.all([getSiteSettings(), getPage("home")]);
   return buildMetadata(
     {
-      title: DEFAULT_TITLE,
+      title: HOME.seo.title,
       absoluteTitle: true,
       description: settings.description,
       path: "/",
-      keywords: ["agência experimental de comunicação", "Agência Benjamin FECAP"],
+      keywords: [...HOME.seo.keywords],
+      seo: page?.seo,
     },
     settings,
   );
 }
 
-const AREA_COLORS: BrandIconColor[] = ["verde", "laranja", "azul", "rosa", "verde-claro", "lima"];
-
 export default async function HomePage() {
-  const [settings, page, heroCtas, highlightCtas, areas, featuredServices, allServices, featuredCases] =
-    await Promise.all([
-      getSiteSettings(),
-      getPage("home"),
-      listCtas("home-hero"),
-      listCtas("home-highlight"),
-      listAreas(),
-      listServices({ featuredOnly: true }),
-      listServices(),
-      listFeaturedCases(),
-    ]);
-
-  const toLinks = (ctas: typeof heroCtas) =>
-    ctas.map((cta) => ({ id: cta.id, label: cta.label, href: cta.link.href, external: cta.link.external }));
-  const solutionsSummary = servicesSummary(allServices.map((service) => service.name));
-  // Limite da Home (TECH-05 §4): acima dele o painel avisa, e aqui valem os primeiros pela ordem.
-  const homeServices = featuredServices.slice(0, FEATURED_LIMITS.services);
-
-  return (
-    <>
-      <HeroManifesto settings={settings} ctas={toLinks(heroCtas)} />
-
-      <AboutPreview settings={settings} solutionsSummary={solutionsSummary} />
-
-      <Section tone="lima" halftone labelledBy="areas-titulo">
-        <SectionHeading
-          id="areas-titulo"
-          eyebrow="Áreas de atuação"
-          title="Seis frentes, um mesmo time."
-          description="Cada projeto combina as áreas certas para o objetivo da sua marca."
-        />
-        {areas.length > 0 ? (
-          <ul data-motion="cards" className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {areas.map((area, index) => (
-              <li key={area.id}>
-                <AreaCard area={area} color={AREA_COLORS[index % AREA_COLORS.length]} />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <EmptyState className="mt-10">As áreas de atuação estão sendo atualizadas. Volte em breve!</EmptyState>
-        )}
-      </Section>
-
-      <Section tone="nyanza" labelledBy="servicos-titulo">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <SectionHeading
-            id="servicos-titulo"
-            eyebrow="Serviços"
-            title="O que a Benjamin faz pela sua marca"
-            description="Do planejamento à entrega, com acompanhamento em cada etapa."
-          />
-          <ButtonLink href="/servicos" variant="secondary" className="self-start lg:self-auto">
-            Ver todos os serviços
-          </ButtonLink>
-        </div>
-        {homeServices.length > 0 ? (
-          <ul data-motion="cards" className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {homeServices.map((service, index) => (
-              <li key={service.id}>
-                <ServiceCard service={service} index={index} />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <EmptyState className="mt-10">Os serviços em destaque estão sendo atualizados. Volte em breve!</EmptyState>
-        )}
-      </Section>
-
-      <Section tone="verde" halftone labelledBy="cases-titulo">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <SectionHeading
-            id="cases-titulo"
-            eyebrow="Cases"
-            title="Trabalhos que saíram do briefing"
-            description="Projetos reais desenvolvidos pela Agência Benjamin."
-          />
-          <ButtonLink href="/cases" variant="lima" className="self-start lg:self-auto">
-            Ver portfólio completo
-          </ButtonLink>
-        </div>
-        {featuredCases.length > 0 ? (
-          <ul data-motion="cards" className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredCases.map((item) => (
-              <li key={item.id}>
-                <CaseCard item={item} />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <EmptyState className="mt-10">Os primeiros cases estão sendo preparados. Volte em breve!</EmptyState>
-        )}
-      </Section>
-
-      <PageBlocks page={page} />
-
-      <ClosingCta links={toLinks(highlightCtas)} />
-    </>
-  );
+  return <HomeView page={await getPage("home")} />;
 }

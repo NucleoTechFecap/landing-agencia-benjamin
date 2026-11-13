@@ -10,7 +10,7 @@
  Projeto      : Agência Benjamin Landing Page
  Versão       : 1.0.0
  Criado em    : 01/11/2026
- Modificado em: 01/11/2026
+ Modificado em: 04/11/2026
 ════════════════════════════════════════════════════════════════════════════════
 
  Histórico
@@ -18,18 +18,19 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  01/11/2026 Vinícius Nishimura Reis  Testes de aceite do detalhe do case (CASE-02).
+ 04/11/2026 Vinícius Nishimura Reis  Textos e imagens editáveis no painel (editor do site).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
 import type { ReactElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { renderServerTree } from "@/tests/render-server-tree";
 
 /*
  * Template do case com o conteúdo que existir: desafio, solução, resultados, galeria, links e
  * equipe são opcionais, e nenhum deles pode deixar título solto ou espaço vazio (CASE-02).
  */
-const repository = vi.hoisted(() => ({ getCaseDetail: vi.fn(), listCases: vi.fn() }));
+const repository = vi.hoisted(() => ({ getCaseDetail: vi.fn(), listCases: vi.fn(), getPage: async () => null }));
 vi.mock("next/cache", () => ({ cacheTag: () => {}, cacheLife: () => {} }));
 vi.mock("@/lib/server/content/repository", () => repository);
 
@@ -61,7 +62,7 @@ const render = async (item: Record<string, unknown>, extra: Record<string, unkno
     ...extra,
   });
   const page = (await CasePage({ params: Promise.resolve({ slug: "meridiano" }) } as never)) as ReactElement;
-  return renderToStaticMarkup(page);
+  return renderServerTree(page);
 };
 
 describe("detalhe do case (CASE-02)", () => {

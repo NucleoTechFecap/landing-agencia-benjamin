@@ -18,6 +18,7 @@
     "perf:queries": "node scripts/explain-queries.mjs",
     "seed:write": "node --experimental-strip-types --no-warnings scripts/content-seed.mjs --write",
     "seed:check": "node --experimental-strip-types --no-warnings scripts/content-seed.mjs --check",
+    "carga:write": "node --experimental-strip-types --no-warnings scripts/content-seed.mjs --carga --write",
     "seed:users": "node scripts/seed-users.mjs",
     "check:headers": "node scripts/file-headers.mjs --check",
     "headers:write": "node scripts/file-headers.mjs --write",

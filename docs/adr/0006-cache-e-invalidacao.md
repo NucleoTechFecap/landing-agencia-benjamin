@@ -104,6 +104,12 @@ na Vercel. Se uma regeneração passar de 3 s, a corrida pode voltar; nesse caso
 `POST /api/internal/revalidate` resolve. Salvar de novo só resolve em item publicado: em rascunho, salvar
 não invalida o cache.
 
+**Editor do site (04/11/2026).** Campos, SEO e blocos usam a tag da página (`content:page:<slug>`), e a aparência usa
+`content:settings`. Toda página lê menu e rodapé de `content:page:site-geral`. Ao salvar uma página de rota ou livre, a
+própria rota é aquecida. Aparência, menu, rodapé e modelos aparecem também nos detalhes: entram até 12 páginas de detalhe
+no aquecimento (`MAX_WARMED_PATHS`). Se houver mais, as demais podem mostrar a versão anterior na primeira visita, e a
+partir da segunda já vem a nova. Ainda não foi medido na Vercel.
+
 ### 4. Latência-alvo
 
 | Situação | Meta |

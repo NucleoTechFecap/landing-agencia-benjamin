@@ -18,6 +18,7 @@
  Data        Autor                     Descrição
  ──────────────────────────────────────────────────────────────────────────────
  04/11/2026 Vinícius Nishimura Reis  Criação inicial (reestruturação do painel).
+ 04/11/2026 Vinícius Nishimura Reis  Sufixo novo a cada preparação: endereço excluído fica reservado (DB-08).
 ──────────────────────────────────────────────────────────────────────────────
 */
 
@@ -43,8 +44,8 @@ test.describe("Painel · casca, início e listas @cms", () => {
   test.skip(!SUPABASE_URL || !SERVICE_KEY, REQUIRES_SUPABASE);
   test.skip(({ isMobile }) => isMobile, "A largura é a do desktop: a gaveta do celular tem teste próprio.");
 
-  const suffix = newSuffix();
-  const titles = { published: `Case vitrine ${suffix}`, draft: `Rascunho ótimo ${suffix}` };
+  let suffix = "";
+  const titles = { published: "", draft: "" };
   const accounts: Partial<Record<PanelRole, Account>> = {};
   const caseIds: string[] = [];
   let client: SupabaseClient;
@@ -52,6 +53,11 @@ test.describe("Painel · casca, início e listas @cms", () => {
   let coverId = "";
 
   test.beforeAll(async () => {
+    // Um worker pode voltar a este bloco depois do afterAll, e o endereço excluído fica reservado (DB-08).
+    suffix = newSuffix();
+    titles.published = `Case vitrine ${suffix}`;
+    titles.draft = `Rascunho ótimo ${suffix}`;
+    caseIds.length = 0;
     client = serviceClient();
     for (const role of ["admin", "editor", "viewer"] as const) {
       accounts[role] = await createAccount(client, role, suffix);
